@@ -4,18 +4,38 @@ import hashlib
 
 # ============================================================================
 class PagesMixin(object):
+    """Recording pages.
+
+    :cvar str PAGES_KEY: pages Redis key template
+    :cvar str PAGE_BOOKMARKS_KEY: list of bookmarks Redis key template
+    :ivar _pages_cache: n.s.
+    """
     PAGES_KEY = 'c:{coll}:p'
     PAGE_BOOKMARKS_KEY = 'c:{coll}:p_to_b'
 
     def __init__(self, **kwargs):
+        """Initialize recording pages."""
         super(PagesMixin, self).__init__(**kwargs)
         self._pages_cache = None
 
     @property
     def pages_key(self):
+        """Read-only property pages_key.
+
+        :returns: pages_key
+        :rtype: str
+        """
         return self.PAGES_KEY.format(coll=self.my_id)
 
     def add_page(self, props, recording):
+        """Add page to recording.
+
+        :param dict props: page properties
+        :param Recording recording: recording
+
+        :returns: page ID
+        :rtype: str
+        """
         self.access.assert_can_write_coll(self)
 
         page = {'url': props['url'],
@@ -34,10 +54,22 @@ class PagesMixin(object):
         return pid
 
     def _new_page_id(self, page):
+        """Return new page ID.
+
+        :param dict page: page
+
+        :returns: page ID
+        :rtype: str
+        """
         page_attrs = (page['url'] + page['timestamp'] + page.get('rec', '') + page.get('browser', '')).encode('utf-8')
         return hashlib.md5(page_attrs).hexdigest()[:10]
 
     def delete_page(self, pid, all_page_bookmarks):
+        """Delete page.
+
+        :param str pid: page ID
+        :param dict all_page_bookmarks: list of bookmarks
+        """
         page_bookmarks = all_page_bookmarks.get(pid, {})
         for bid, list_id in page_bookmarks.items():
             blist = self.get_list(list_id)
@@ -50,9 +82,23 @@ class PagesMixin(object):
         self.redis.hdel(page_bookmarks_key, pid)
 
     def page_exists(self, pid):
+        """Return whether page exists.
+
+        :param str pid: page ID
+
+        :returns: whether page exists (1/0)
+        :rtype: int
+        """
         return self.redis.hexists(self.pages_key, pid)
 
     def get_page(self, pid):
+        """Return page.
+
+        :param str pid: page ID
+
+        :returns page or None
+        :rtype: dict
+        """
         page = self.redis.hget(self.pages_key, pid)
         if page:
             page = json.loads(page)
@@ -60,11 +106,21 @@ class PagesMixin(object):
             return page
 
     def count_pages(self):
+        """Return number of pages.
+
+        :returns: number of pages
+        :rtype: int
+        """
         self.access.assert_can_read_coll(self)
 
         return self.redis.hlen(self.pages_key)
 
     def list_pages(self):
+        """List pages.
+
+        :returns: list of pages
+        :rtype: list
+        """
         page_data = self.redis.hgetall(self.pages_key)
         pages = []
 
@@ -76,6 +132,13 @@ class PagesMixin(object):
         return pages
 
     def list_rec_pages(self, recording):
+        """List pages in recording.
+
+        :param Recording recording: recording
+
+        :returns: list of pages
+        :rtype: list
+        """
         rec_id = recording.my_id
 
         if not self._pages_cache:
@@ -84,6 +147,13 @@ class PagesMixin(object):
         return [page for page in self._pages_cache if page.get('rec') == rec_id]
 
     def get_pages_for_list(self, id_list):
+        """List all pages in list of page IDs.
+
+        :param list id_list: list of page IDs
+
+        :returns: list of pages
+        :rtype: list
+        """
         if not id_list:
             return []
 
@@ -91,6 +161,10 @@ class PagesMixin(object):
         return page_data_list
 
     def delete_rec_pages(self, recording):
+        """Delete pages from recording.
+
+        :param Recording recording: recording
+        """
         self.access.assert_can_write_coll(self)
 
         rec_pages = self.list_rec_pages(recording)
@@ -101,6 +175,14 @@ class PagesMixin(object):
             self.delete_page(n['id'], all_page_bookmarks)
 
     def import_pages(self, pagelist, recording):
+        """Import pages into recording.
+
+        :param list pagelist: list of pages
+        :param Recording recording: recording
+
+        :returns: mapping page IDs to new page IDs
+        :rtype: dict
+        """
         if not pagelist:
             return {}
 
@@ -127,6 +209,12 @@ class PagesMixin(object):
         return id_map
 
     def add_page_bookmark(self, pid, bid, list_id):
+        """Add bookmark.
+
+        :param str pid: page ID
+        :param str bid: bookmark ID
+        :param str list_id: list of bookmarks ID
+        """
         key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
         if not self.redis.exists(key):
             return
@@ -140,6 +228,11 @@ class PagesMixin(object):
             print('Error Updating page->bookmark table')
 
     def remove_page_bookmark(self, pid, bid):
+        """Remove bookmark.
+
+        :param str pid: page ID
+        :param str bid: bookmark ID
+        """
         key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
         if not self.redis.exists(key):
             return
@@ -153,6 +246,11 @@ class PagesMixin(object):
             print('Error Updating page->bookmark table')
 
     def get_all_page_bookmarks(self, filter_pages=None):
+        """List all bookmarks.
+
+        :param filter_pages: filter
+        :type: list or None
+        """
         key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
         filter_pages = filter_pages or []
         filter_pages = [page['id'] for page in filter_pages]

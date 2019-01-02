@@ -36,13 +36,28 @@ EMPTY_DIGEST = '3I42H3S6NNFQ2MSVX7XZKYAYSCX5QBYJ'
 
 # ============================================================================
 class ImportStatusChecker(object):
+    """WARC upload status monitor.
+
+    :cvar str UPLOAD_KEY: upload Redis key
+    :cvar int UPLOAD_EXP: upload Redis entry TTL
+    :ivar StrictRedis redis: Redis interface
+    """
     UPLOAD_KEY = 'u:{user}:upl:{upid}'
     UPLOAD_EXP = 120
 
     def __init__(self, redis):
+        """Initialize status monitor.
+
+        :param StrictRedis redis: Redis interface
+        """
         self.redis = redis
 
     def get_upload_status(self, user, upload_id):
+        """Return WARC upload status.
+
+        :param User user: user
+        :param str upload_id: upload ID
+        """
         upload_key = self.UPLOAD_KEY.format(user=user.name, upid=upload_id)
 
         props = self.redis.hgetall(upload_key)
@@ -71,7 +86,24 @@ class ImportStatusChecker(object):
 
 # ============================================================================
 class BaseImporter(ImportStatusChecker):
+    """WARC importer base class.
+
+    :ivar dict config: Webrecorder configuration
+    :ivar wam_loader: n.s.
+    :ivar str cdxj_key: CDX index file Redis key template
+    :ivar str upload_path: upload URL template
+    :ivar int upload_exp: upload status TTL
+    :ivar str record_host: record host
+    :ivar dict upload_coll_info: upload collection information
+    :ivar int max_detect_pages: maximum number of detectable pages
+    """
     def __init__(self, redis, config, wam_loader=None):
+        """Initialize base class.
+
+        :param StrictRedis redis: Redis interface
+        :param dict config: Webrecorder configuration
+        :param wam_loader: n.s.
+        """
         super(BaseImporter, self).__init__(redis)
         self.config = config
         self.wam_loader = wam_loader
@@ -91,6 +123,20 @@ class BaseImporter(ImportStatusChecker):
 
     def handle_upload(self, stream, upload_id, upload_key, infos, filename,
                       user, force_coll_name, total_size):
+        """Operate WARC archive upload.
+
+        :param stream: file object
+        :param str upload_id: upload ID
+        :param str upload_key: upload Redis key
+        :param list infos: list of recordings
+        :param str filename: WARC archive filename
+        :param user User: user
+        :param str force_coll_name: name of collection to upload into
+        :param int total_size: size of WARC archive
+
+        :returns: upload information
+        :rtype: dict
+        """
 
         logger.debug('Begin handle_upload() from: ' + filename + ' force_coll_name: ' + str(force_coll_name))
 
@@ -130,6 +176,19 @@ class BaseImporter(ImportStatusChecker):
                }
 
     def _init_upload_status(self, user, total_size, num_files, filename=None, expire=None):
+        """Initialize upload status.
+
+        :param User user: user
+        :param int total_size: size of WARC archive
+        :param int num_files: n.s.
+        :param filename: WARC archive filename
+        :type: str or None
+        :param expire: upload TTL
+        :type: int or None
+
+        :returns: upload ID and upload Redis key
+        :rtype: str and str
+        """
         upload_id = self._get_upload_id()
 
         upload_key = self.UPLOAD_KEY.format(user=user.name, upid=upload_id)
@@ -149,6 +208,16 @@ class BaseImporter(ImportStatusChecker):
         return upload_id, upload_key
 
     def run_upload(self, upload_key, filename, stream, user, rec_infos, total_size, first_coll):
+        """Upload WARC archive.
+
+        :param str upload_key: upload Redis key
+        :param str filename: WARC archive filename
+        :param stream: file object
+        :param User user: user
+        :param list rec_infos: list of recordings
+        :param int total_size: size of WARC archive
+        :param Collection first_coll: collection
+        """
         try:
             count = 0
             num_recs = len(rec_infos)
@@ -235,6 +304,14 @@ class BaseImporter(ImportStatusChecker):
                 bookmark = blist.create_bookmark(page, incr_stats=False)
 
     def har2warc(self, filename, stream):
+        """Convert HTTP Archive format file to WARC archive.
+
+        :param str filename: name of HAR file
+        :param stream: file object (input)
+
+        :returns: file object (output) and size of WARC archive
+        :rtype: file object and int
+        """
         out = self._har2warc_temp_file(filename)
 
         stream = codecs.getreader('utf-8')(stream)
@@ -251,6 +328,19 @@ class BaseImporter(ImportStatusChecker):
         return out, size
 
     def process_upload(self, user, force_coll_name, infos, stream, filename, total_size, num_recs):
+        """Process WARC archive.
+
+        :param User user: user
+        :param str force_coll_name: name of collection to upload into
+        :param list infos: list of recordings (indices)
+        :param stream: file object
+        :param str filename: WARC archive filename
+        :param int total_size: WARC archive size
+        :param int num_recs: number of recordings
+
+        :returns: collection and recordings
+        :rtype: Collection and list
+        """
         stream.seek(0)
 
         count = 0
@@ -323,6 +413,11 @@ class BaseImporter(ImportStatusChecker):
         return first_coll, rec_infos
 
     def import_lists(self, collection, page_id_map):
+        """Import lists of bookmarks.
+
+        :param Collection collection: collection
+        :param page_id_map: n.s.
+        """
         lists = collection.data.get('_lists')
 
         if not lists:
@@ -339,6 +434,14 @@ class BaseImporter(ImportStatusChecker):
                 bookmark = blist.create_bookmark(bookmark_data, incr_stats=False)
 
     def detect_pages(self, coll, rec):
+        """Find pages in recording.
+
+        :param str coll: collection ID
+        :param str rec: recording ID
+
+        :returns: pages
+        :rtype: list
+        """
         key = self.cdxj_key.format(coll=coll, rec=rec)
 
         pages = []
@@ -356,6 +459,13 @@ class BaseImporter(ImportStatusChecker):
         return pages
 
     def is_page(self, cdxj):
+        """Return whether CDX/CDXJ index line is a page.
+
+        :param CDXObject cdxj: CDX/CDXJ index line
+
+        :returns: whether CDX/CDXJ index line is a page
+        :rtype: bool
+        """
         if cdxj['url'].endswith('/robots.txt'):
             return False
 
@@ -380,6 +490,14 @@ class BaseImporter(ImportStatusChecker):
         return False
 
     def parse_uploaded(self, stream, expected_size):
+        """Parse WARC archive.
+
+        :param stream: file object
+        :param int expected_size: expected WARC archive size
+
+        :returns: list of recordings (indices)
+        :rtype: list
+        """
         arciterator = ArchiveIterator(stream,
                                       no_record_parse=True,
                                       verify_http=True,
@@ -456,6 +574,12 @@ class BaseImporter(ImportStatusChecker):
         return infos
 
     def add_index_info(self, infos, indexinfo, curr_offset):
+        """Add index to list of recordings.
+
+        :param list infos: list of recordings (indices)
+        :param dict indexinfo: information about index
+        :param int curr_offset: current offset to start of stream
+        """
         if not indexinfo or indexinfo.get('offset') is None:
             return
 
@@ -464,6 +588,13 @@ class BaseImporter(ImportStatusChecker):
         infos.append(indexinfo)
 
     def parse_warcinfo(self, record):
+        """Parse WARC information.
+
+        :param record: WARC information
+
+        :returns: WARC information or None
+        :rtype: dict or None
+        """
         valid = False
         warcinfo = {}
         warcinfo_buff = record.raw_stream.read(record.length)
@@ -525,7 +656,19 @@ class BaseImporter(ImportStatusChecker):
 
 # ============================================================================
 class UploadImporter(BaseImporter):
+    """WARC archive importer (upload)."""
     def upload_file(self, user, stream, expected_size, filename, force_coll_name=''):
+        """Upload WARC archive.
+
+        :param User user: user
+        :param stream: file object
+        :param int expected_size: expected WARC archive size
+        :param str filename: WARC archive filename
+        :param str force_coll_name: name of collection to upload into
+
+        :returns: upload information
+        :rtype: dict
+        """
         temp_file = None
         logger.debug('Upload Begin')
 
@@ -569,6 +712,17 @@ class UploadImporter(BaseImporter):
                                   user, force_coll_name, total_size)
 
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
+        """Send PUT request to upload recording.
+
+        :param str upload_key: upload Redis key
+        :param str filename: WARC archive filename
+        :param stream: file object
+        :param User user: user
+        :param str coll: collection ID
+        :param str rec: record ID
+        :param int offset: offset to start of stream
+        :param int length: length of recording
+        """
         stream.seek(offset)
 
         logger.debug('do_upload(): {0} offset: {1}: len: {2}'.format(rec, offset, length))
@@ -587,6 +741,11 @@ class UploadImporter(BaseImporter):
                          data=stream)
 
     def _get_upload_id(self):
+        """Return new upload ID.
+
+        :returns: new upload ID
+        :rtype: str
+        """
         return base64.b32encode(os.urandom(5)).decode('utf-8')
 
     def postprocess_coll(self, collection):
@@ -596,15 +755,40 @@ class UploadImporter(BaseImporter):
         pass
 
     def _add_split_padding(self, diff, upload_key):
+        """Update size of upload by size of padding.
+
+        :param int diff: size of padding
+        :param str upload_key: upload Redis key
+        """
         self.redis.hincrby(upload_key, 'size', diff * 2)
 
     def _har2warc_temp_file(self, filename):
+        """Return temporary file.
+
+        :returns: temporary file
+        :rtype: SpooledTemporaryFile
+        """
         return SpooledTemporaryFile(max_size=BLOCK_SIZE)
 
     def launch_upload(self, func, *args):
+        """Spawn upload process.
+
+        :param function func: upload function
+        """
         gevent.spawn(func, *args)
 
     def make_collection(self, user, filename, info, rec_info=None):
+        """Create collection.
+
+        :param User user: user
+        :param str filename: WARC archive filename
+        :param dict info: collection information
+        :param rec_info: recording information
+        :type: dict or None
+
+        :returns: collection
+        :rtype: Collection
+        """
         self.prepare_coll_desc(filename, info, rec_info)
         public = info.get('public', False)
         public_index = info.get('public_index', False)
@@ -628,6 +812,15 @@ class UploadImporter(BaseImporter):
 
 # ============================================================================
 class InplaceImporter(BaseImporter):
+    """WARC archive importer (in-place).
+
+    :ivar indexer: n.s.
+    :ivar str upload_id: upload ID
+    :ivar the_collection: collection to import WARC archive into
+    :type: Collection or None
+    :ivar str cache_dir: cache directory
+    :ivar str wr_temp_coll: temporary collection
+    """
     def __init__(self, redis, config, user, indexer, upload_id, create_coll=True, cache_dir=None):
         wam_loader = indexer.wam_loader if indexer else None
         super(InplaceImporter, self).__init__(redis, config, wam_loader)
@@ -647,6 +840,11 @@ class InplaceImporter(BaseImporter):
                                                      public=self.upload_coll_info['public'])
 
     def multifile_upload(self, user, files):
+        """Import multiple files.
+
+        :param User user: user
+        :param list files: list of filenames
+        """
         total_size = 0
 
         for filename in files:
@@ -692,6 +890,17 @@ class InplaceImporter(BaseImporter):
                     fh.close()
 
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
+        """Upload recording.
+
+        :param str upload_key: upload Redis key
+        :param str filename: filename
+        :param stream: file object
+        :param User user: user
+        :param str coll: collection ID
+        :param str rec: recording ID
+        :param int offset: offset to start of stream
+        :param int length: length of recording
+        """
         stream.seek(offset)
 
         if hasattr(stream, 'name'):
@@ -707,6 +916,7 @@ class InplaceImporter(BaseImporter):
         self.indexer.add_urls_to_index(stream, params, filename, length)
 
     def _get_upload_id(self):
+        """Return upload ID."""
         return self.upload_id
 
     def postprocess_coll(self, collection):
@@ -714,13 +924,27 @@ class InplaceImporter(BaseImporter):
             collection.set_bool_prop('public_index', True)
 
     def process_list_data(self, list_data):
+        """Set list to public.
+
+        :param dict list_data: list information
+        """
         if list_data:
             list_data['public'] = True
 
     def _add_split_padding(self, diff, upload_key):
+        """Update import size by size of padding.
+
+        :param int diff: size of padding
+        :param str upload_key: upload Redis key
+        """
         self.redis.hincrby(upload_key, 'size', diff)
 
     def _har2warc_temp_file(self, filename):
+        """Return temporay file.
+
+        :returns: temporary file
+        :rtype: NamedTemporaryFile
+        """
         if not self.cache_dir:
             out = NamedTemporaryFile(suffix='.warc.gz', delete=False)
             out_name = out.name
@@ -732,9 +956,24 @@ class InplaceImporter(BaseImporter):
         return out
 
     def launch_upload(self, func, *args):
+        """Call upload function.
+
+        :param function func: upload function
+        """
         func(*args)
 
     def make_collection(self, user, filename, info, rec_info=None):
+        """Create collection.
+
+        :param User user: user
+        :param str filename: filename
+        :param dict info: collection information
+        :param rec_info: recording information
+        :type: dict or None
+
+        :returns: collection
+        :rtype: Collection
+        """
         params = self.prepare_coll_desc(filename, info, rec_info)
 
         if info.get('title') == 'Temporary Collection':

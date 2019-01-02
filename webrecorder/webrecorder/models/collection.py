@@ -24,6 +24,24 @@ from webrecorder.rec.storage.storagepaths import strip_prefix, add_local_store_p
 
 # ============================================================================
 class Collection(PagesMixin, RedisUniqueComponent):
+    """Collection Redis building block.
+
+    :cvar str RECS_KEY: recordings Redis key
+    :cvar str LISTS_KEY: lists Redis key
+    :cvar str LIST_NAMES_KEY: list names Redis key
+    :cvar str LIST_REDIR_KEY: list redirect Redis key
+    :cvar str COLL_CDXJ_KEY: CDX index file Redis key
+    :cvar str CLOSE_WAIT_KEY: n.s.
+    :cvar str COMMIT_WAIT_KEY: n.s.
+    :cvar str INDEX_FILE_KEY: CDX index file
+    :cvar int COMMIT_WAIT_SECS: wait for the given number of seconds
+    :cvar str DEFAULT_COLL_DESC: default description
+    :cvar str DEFAULT_STORE_TYPE: default Webrecorder storage
+    :cvar int COLL_CDXJ_TTL: TTL of CDX index file
+    :ivar RedisUnorderedList recs: recordings
+    :ivar RedisOrderedList lists: n.s.
+    :ivar RedisNamedMap list_names: n.s.
+    """
     MY_TYPE = 'coll'
     INFO_KEY = 'c:{coll}:info'
     ALL_KEYS = 'c:{coll}:*'
@@ -51,6 +69,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
     COLL_CDXJ_TTL = 1800
 
     def __init__(self, **kwargs):
+        """Initialize collection Redis building block."""
         super(Collection, self).__init__(**kwargs)
         self.recs = RedisUnorderedList(self.RECS_KEY, self)
         self.lists = RedisOrderedList(self.LISTS_KEY, self)
@@ -59,6 +78,10 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
     @classmethod
     def init_props(cls, config):
+        """Initialize class variables.
+
+        :param dict config: Webrecorder configuration
+        """
         cls.COLL_CDXJ_TTL = int(config['coll_cdxj_ttl'])
 
         cls.DEFAULT_STORE_TYPE = os.environ.get('DEFAULT_STORAGE', 'local')
@@ -68,6 +91,11 @@ class Collection(PagesMixin, RedisUniqueComponent):
         cls.COMMIT_WAIT_SECS = int(config['commit_wait_secs'])
 
     def create_recording(self, **kwargs):
+        """Create recording.
+
+        :returns: recording
+        :rtype: Recording
+        """
         self.access.assert_can_admin_coll(self)
 
         recording = Recording(redis=self.redis,
@@ -80,6 +108,14 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return recording
 
     def move_recording(self, obj, new_collection):
+        """Move recording into new collection.
+
+        :param Recording obj: recording
+        :param new_collection: new collection
+
+        :returns: name of new recording or None
+        :rtype: str or None
+        """
         new_recording = new_collection.create_recording()
 
         if new_recording.copy_data_from_recording(obj, delete_source=True):
@@ -88,6 +124,13 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return None
 
     def create_bookmark_list(self, props):
+        """Create list of bookmarks.
+
+        :param dict props: properties
+
+        :returns: list of bookmarks
+        :rtype: BookmarkList
+        """
         self.access.assert_can_write_coll(self)
 
         bookmark_list = BookmarkList(redis=self.redis,
@@ -106,6 +149,14 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return bookmark_list
 
     def get_lists(self, load=True, public_only=False):
+        """Return lists of bookmarks.
+
+        :param bool load: whether to load Redis entries
+        :param bool public_only: whether only to load public lists
+
+        :returns: lists of bookmarks
+        :rtype: list
+        """
         self.access.assert_can_read_coll(self)
 
         lists = self.lists.get_ordered_objects(BookmarkList, load=load)
@@ -117,6 +168,13 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return lists
 
     def get_list_slug(self, title):
+        """Return reserved field name.
+
+        :param str title: title
+
+        :returns: reserved field name
+        :rtype: str
+        """
         if not title:
             return
 
@@ -127,6 +185,14 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return self.list_names.reserve_obj_name(slug, allow_dupe=True)
 
     def update_list_slug(self, new_title, bookmark_list):
+        """Rename list field name.
+
+        :param str new_title: new field name
+        :param BookmarkList bookmark_list: list of bookmarks
+
+        :returns: whether successful or not
+        :rtype: bool or None
+        """
         old_title = bookmark_list.get_prop('title')
         if old_title == new_title:
             return False
@@ -135,6 +201,13 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return new_slug is not None
 
     def get_list(self, blist_id):
+        """Return list of bookmarks.
+
+        :param str blist_id: list ID
+
+        :returns: list of bookmarks
+        :rtype: BookmarkList or None
+        """
         if not self.lists.contains_id(blist_id):
             return None
 
@@ -150,17 +223,36 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return bookmark_list
 
     def get_list_by_slug_or_id(self, slug_or_id):
+        """Return list of bookmarks.
+
+        :param str slug_or_id: either list ID or list title
+
+        :returns: list of bookmarks
+        :rtype: BookmarkList or None
+        """
         # see if its a slug, otherwise treat as id
         blist_id = self.list_names.name_to_id(slug_or_id) or slug_or_id
 
         return self.get_list(blist_id)
 
     def move_list_before(self, blist, before_blist):
+        """Move list of bookmarks in ordered list.
+
+        :param str blist: list ID
+        :param str before_blist: list ID
+        """
         self.access.assert_can_write_coll(self)
 
         self.lists.insert_ordered_object(blist, before_blist)
 
     def remove_list(self, blist):
+        """Remove list of bookmarks from ordered list.
+
+        :param str blist: list ID
+
+        :returns: whether successful or not
+        :rtype: bool
+        """
         self.access.assert_can_write_coll(self)
 
         if not self.lists.remove_ordered_object(blist):
@@ -173,12 +265,27 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return True
 
     def num_lists(self):
+        """Return number of lists of bookmarks.
+
+        :returns: number of lists
+        :rtype: int
+        """
         if self.access.assert_can_write_coll(self):
             return self.lists.num_ordered_objects()
         else:
             return len(self.get_lists())
 
     def init_new(self, slug, title, desc='', public=False, public_index=False):
+        """Initialize new collection.
+
+        :param str title: title
+        :param str desc: description
+        :param bool public: whether collection is public
+        :param bool public_index: whether CDX index file is public
+
+        :returns: collection
+        :rtype: Collection
+        """
         coll = self._create_new_id()
 
         key = self.INFO_KEY.format(coll=coll)
@@ -195,6 +302,13 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return coll
 
     def get_recording(self, rec):
+        """Return recording.
+
+        :param str rec: recording ID
+
+        :returns: recording
+        :rtype: Recording or None
+        """
         if not self.recs.contains_id(rec):
             return None
 
@@ -207,12 +321,31 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return recording
 
     def num_recordings(self):
+        """Return number of recordings.
+
+        :returns: number of recordings
+        :rtype: int
+        """
         return self.recs.num_objects()
 
     def get_recordings(self, load=True):
+        """Return recordings.
+
+        :param bool load: whether to load Redis entries
+
+        :returns: list of recordings
+        :rtype: list
+        """
         return self.recs.get_objects(Recording, load=load)
 
     def _get_rec_keys(self, key_templ):
+        """Return recording Redis keys.
+
+        :param str key_templ: Redis key template
+
+        :returns: recording Redis keys
+        :rtype: list
+        """
         self.access.assert_can_read_coll(self)
 
         key_pattern = key_templ.format(rec='*')
