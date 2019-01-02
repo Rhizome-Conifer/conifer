@@ -789,6 +789,31 @@ class CLIUserManager(UserManager):
 
         print('All done!')
 
+    def list_users(self):
+        """List all existing users."""
+        input_ = input(
+            "{number} users, do you want to list users? (y/n)".format(
+                number=len(self.all_users)
+            )
+        )
+        if input_ == "Y" or input_ == "y":
+            print(
+                "\n".join(
+                    "User {username}".format(username=user)
+                    for user in self.all_users
+                )
+            )
+
+    def check_user(self, username):
+        """Check if username exists.
+
+        :param str username: username
+        """
+        if username not in self.all_users:
+            print("User {username} does not exist".format(username=username))
+        else:
+            print("User {username} exists".format(username=username))
+
     def delete_user(self):
         """Remove a user from the system"""
         username = input('username to delete: ')
