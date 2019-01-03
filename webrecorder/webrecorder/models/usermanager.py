@@ -131,8 +131,8 @@ class UserManager(object):
                           host=host)
 
             # add to announce list if user opted in
-            if input_data.get('announce_mailer') == '1' and self.announce_list:
-                self.add_to_mailing_list(username, email, name,
+            if input_data.get('announce_mailer') and self.announce_list:
+                self.add_to_mailing_list(username, email, full_name,
                                          list_endpoint=self.announce_list)
 
             if self.invites_enabled:
