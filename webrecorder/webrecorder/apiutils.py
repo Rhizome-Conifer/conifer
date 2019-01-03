@@ -67,6 +67,7 @@ class WRAPISpec(object):
         'timestamp': 'Archived at Timestamp',
         'browser': 'Browser Used',
         'page_id': 'Page Id',
+        'upload_id': 'Upload Id',
     }
 
     opt_bool_params = {
