@@ -97,6 +97,8 @@ class UserSignup extends Component {
   handleChange = (evt) => {
     if (evt.target.type === 'radio') {
       this.setState({ [evt.target.name]: evt.target.value === 'yes' });
+    } else if (evt.target.type === 'checkbox') {
+      this.setState({ [evt.target.name]: !this.state[evt.target.name] });
     } else {
       this.setState({ [evt.target.name]: evt.target.value });
     }
