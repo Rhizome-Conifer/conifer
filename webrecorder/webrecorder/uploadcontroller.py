@@ -16,20 +16,28 @@ class UploadController(BaseController):
                                        wam_loader=content_app.wam_loader)
 
     def init_routes(self):
-        @self.app.put('/_upload')
+        @self.app.put(['/_upload', '/api/v1/upload'])
         def upload_file():
-            if self.access.session_user.is_anon():
-                return self._raise_error(400, 'not_logged_in')
+            user = self.access.session_user
+            force_coll_name = request.query.getunicode('force-coll', '')
+
+            if force_coll_name:
+                collection = user.get_collection_by_name(force_coll_name)
+            else:
+                collection = None
+
+            # allow uploading to external collections
+            if not collection or not collection.is_external():
+                if user.is_anon():
+                    return self._raise_error(400, 'not_logged_in')
 
             expected_size = int(request.headers['Content-Length'])
 
             if not expected_size:
                 return self._raise_error(400, 'no_file_specified')
 
-            force_coll_name = request.query.getunicode('force-coll', '')
             filename = request.query.getunicode('filename')
             stream = request.environ['wsgi.input']
-            user = self.access.session_user
 
             res = self.uploader.upload_file(user,
                                     stream,
@@ -43,7 +51,7 @@ class UploadController(BaseController):
             Stats(self.redis).incr_upload(user, expected_size)
             return res
 
-        @self.app.get('/_upload/<upload_id>')
+        @self.app.get(['/_upload/<upload_id>', '/api/v1/upload/<upload_id>'])
         def get_upload_status(upload_id):
             user = self.get_user(api=True)
 
