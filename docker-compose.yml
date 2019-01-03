@@ -139,9 +139,6 @@ services:
         env_file:
             - ./wr.env
 
-        ports:
-            - 6379:6379
-
         volumes:
             - ./data:/data
 
