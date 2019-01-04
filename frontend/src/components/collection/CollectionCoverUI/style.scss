@@ -14,7 +14,7 @@
         font-size: 1.6rem;
     }
 
-    .capstone {
+    & > .capstone {
         align-self: flex-start;
         margin: 1.5rem 0 1.5rem 1.5rem;
     }
@@ -79,7 +79,13 @@
                 padding-right: 20%;
                 overflow: auto;
 
+                .capstone {
+                    margin: 2rem 0 0 0;
+                    justify-content: flex-start;
+                }
+
                 h1 {
+                    margin: 1rem 0;
                     max-width: 75vw;
                     font-size: 2.6rem;
                 }

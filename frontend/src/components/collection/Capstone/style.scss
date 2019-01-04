@@ -19,12 +19,34 @@
         }
     }
 
-    a {
-        &:link, &:visited, &:active, &:hover {
-          color: $gray500;
-          font-weight: 400;
-          font-size: 1.2rem;
-          text-decoration: underline;
+    .user-link {
+        a {
+            &:link, &:visited, &:active, &:hover {
+              color: $gray500;
+              font-weight: 400;
+              font-size: 1.2rem;
+              text-decoration: underline;
+            }
+        }
+    }
+
+    .capstone-column {
+        margin-left: 1rem;
+
+        h3 {
+            margin: 0;
+            color: $body-gray;
+        }
+
+        .user-link {
+            color: $gray600;
+
+            a {
+                &:link, &:visited, &:active, &:hover {
+                    color: $gray600;
+                }
+            }
+
         }
     }
 }

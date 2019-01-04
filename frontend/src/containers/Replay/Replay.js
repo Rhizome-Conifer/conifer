@@ -123,6 +123,7 @@ class Replay extends Component {
       activeBookmarkId,
       activeBrowser,
       appSettings,
+      auth,
       collection,
       dispatch,
       list,
@@ -166,6 +167,7 @@ class Replay extends Component {
       );
     }
 
+    const canAdmin = auth.getIn(['user', 'username']) === params.user;
     const tsMod = remoteBrowserMod(activeBrowser, timestamp);
     const { listSlug } = params;
     const bkId = params.bookmarkId;
@@ -211,7 +213,7 @@ class Replay extends Component {
                     <TabList>
                       <Tab>Lists</Tab>
                       {
-                        collection.get('public_index') &&
+                        (collection.get('public_index') || canAdmin) &&
                           <Tab>Browse All</Tab>
                       }
                     </TabList>
