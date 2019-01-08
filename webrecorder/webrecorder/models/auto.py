@@ -18,6 +18,7 @@ class Auto(RedisUniqueComponent):
     SCOPE_KEY = 'a:{auto}:scope'
 
     BR_KEY = 'a:{auto}:br'
+    BR_DONE_KEY = 'a:{auto}:br:done'
 
     DEFAULT_DEPTH = 1
 
@@ -51,6 +52,7 @@ class Auto(RedisUniqueComponent):
         self.seen_key = self.SEEN_KEY.format(auto=self.my_id)
 
         self.browser_key = self.BR_KEY.format(auto=self.my_id)
+        self.browser_done_key = self.BR_DONE_KEY.format(auto=self.my_id)
 
         self.pending_q_key = self.QP_KEY.format(auto=self.my_id)
 
@@ -125,7 +127,7 @@ class Auto(RedisUniqueComponent):
 
             return err
 
-    def start(self):
+    def start(self, timeout=0, headless=False):
         if self['status'] == 'running':
             return {'error': 'already_running'}
 
@@ -148,9 +150,15 @@ class Auto(RedisUniqueComponent):
 
         environ = self.AUTO_CONTAINER_ENVIRON.copy()
         environ['AUTO_ID'] = self.my_id
+        if timeout > 0:
+            environ['BEHAVIOR_RUN_TIME'] = timeout
+
+        deferred = {'autodriver': False}
+        if headless:
+            deferred['xserver'] = True
 
         opts = dict(overrides={'browser': 'oldwebtoday/' + browser_id},
-                    deferred={'autodriver': False},
+                    deferred=deferred,
                     user_params=browser_data,
                     environ=environ)
 
@@ -164,7 +172,8 @@ class Auto(RedisUniqueComponent):
                     errors.append(res['error'])
                 continue
 
-            res = self.do_request('/start_flock/' + reqid)
+            res = self.do_request('/start_flock/' + reqid,
+                                  {'environ': {'REQ_ID': reqid}})
 
             if 'error' in res:
                 errors.append(res['error'])
@@ -173,7 +182,9 @@ class Auto(RedisUniqueComponent):
 
         if not errors:
             self['status'] = 'running'
-            return {'success': True, 'browsers': list(self.redis.smembers(self.browser_key))}
+            self['rec'] = recording.my_id
+            return {'success': True,
+                    'browsers': list(self.redis.smembers(self.browser_key))}
 
         else:
             return {'error': 'not_started', 'details': errors}
@@ -195,17 +206,49 @@ class Auto(RedisUniqueComponent):
         else:
             return {'error': 'not_stopped', 'details': errors}
 
+    def is_done(self):
+        status = self['status']
+        if status == 'done':
+            return True
 
-    def serialize(self):
+        # if not running, won't be done
+        if status != 'running':
+            return False
+
+        # if frontier not empty, not done
+        if self.redis.llen(self.frontier_q_key) > 0:
+            return False
+
+        # if pending q not empty, not done
+        if self.redis.scard(self.pending_q_key) > 0:
+            return False
+
+        # if not all browsers are done, not done
+        browsers = self.redis.smembers(self.browser_key)
+        browsers_done = self.redis.smembers(self.browser_done_key)
+        if browsers != browsers_done:
+            return False
+
+        collection = self.get_owner()
+
+        # if automation recording still pending, not yet done
+        recording = collection.get_recording(self['rec'])
+        if not recording or recording.get_pending_count() > 0:
+            return False
+
+        self['status'] = 'done'
+        return True
+
+    def serialize(self, include_details=True):
         data = super(Auto, self).serialize()
+        if not include_details:
+            return data
+
         browsers = self.redis.smembers(self.browser_key)
 
-        #for reqid in browsers:
-        #    tabs = self.redis.hgetall(self.get_tab_key(reqid))
-        #    if tabs:
-        #        browsers[reqid] = tabs
-
         data['browsers'] = list(browsers)
+        data['browsers_done'] = list(self.redis.smembers(self.browser_done_key))
+
         data['scopes'] = list(self.redis.smembers(self.scopes_key))
 
         data['queue'] = self.redis.lrange(self.frontier_q_key, 0, -1)

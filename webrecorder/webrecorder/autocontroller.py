@@ -12,7 +12,7 @@ class AutoController(BaseController):
         def create_auto():
             user, collection = self.load_user_coll()
 
-            #self.access.assert_can_admin_coll(collection)
+            self.access.assert_can_admin_coll(collection)
 
             autoid = collection.create_auto(request.json)
 
@@ -23,7 +23,7 @@ class AutoController(BaseController):
         def add_urls(autoid):
             user, collection, auto = self.load_user_coll_auto(autoid)
 
-            #self.access.assert_can_admin_coll(collection)
+            self.access.assert_can_admin_coll(collection)
 
             data = request.json or {}
 
@@ -34,16 +34,19 @@ class AutoController(BaseController):
         def add_urls(autoid):
             user, collection, auto = self.load_user_coll_auto(autoid)
 
-            #self.access.assert_can_admin_coll(collection)
+            self.access.assert_can_admin_coll(collection)
 
-            return auto.start()
+            data = request.json or {}
+
+            return auto.start(timeout=data.get('timeout', 0),
+                              headless=data.get('headless', False))
 
         # STOP
         @self.app.post('/api/v1/auto/<autoid>/stop')
         def add_urls(autoid):
             user, collection, auto = self.load_user_coll_auto(autoid)
 
-            #self.access.assert_can_admin_coll(collection)
+            self.access.assert_can_admin_coll(collection)
 
             return auto.stop()
 
@@ -52,16 +55,25 @@ class AutoController(BaseController):
         def get_auto(autoid):
             user, collection, auto = self.load_user_coll_auto(autoid)
 
-            #self.access.assert_can_read_coll(collection)
+            self.access.assert_can_read_coll(collection)
 
             return {'auto': auto.serialize()}
+
+        # GET AUTO IS DONE
+        @self.app.get('/api/v1/auto/<autoid>/done')
+        def get_auto_done(autoid):
+            user, collection, auto = self.load_user_coll_auto(autoid)
+
+            self.access.assert_can_read_coll(collection)
+
+            return {'done': auto.is_done()}
 
         # DELETE AUTO
         @self.app.delete('/api/v1/auto/<autoid>')
         def delete_auto(autoid):
             user, collection, auto = self.load_user_coll_auto(autoid)
 
-            #self.access.assert_can_admin_coll(collection)
+            self.access.assert_can_admin_coll(collection)
 
             auto.delete_me()
 

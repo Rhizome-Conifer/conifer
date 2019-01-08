@@ -252,6 +252,7 @@ class ContentController(BaseController, RewriterApp):
             full_url += url
 
             return {'url': full_url,
+                    'user': self.access.session_user.name,
                     'rec_name': rec,
                     'patch_rec_name': patch_rec
                    }
