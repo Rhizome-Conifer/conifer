@@ -126,6 +126,7 @@ class UserManagementUI extends PureComponent {
 
     const userDropdown = <React.Fragment><UserIcon dark={canAdmin} />{ isAnon ? 'Temporary Account' : username }</React.Fragment>;
     const usage = (user.getIn(['space_utilization', 'used']) / user.getIn(['space_utilization', 'total']) * 100) + 0.5 | 0;
+    const hasCollections = (!isAnon || (isAnon && collCount > 0));
 
     return (
       <React.Fragment>
@@ -169,23 +170,24 @@ class UserManagementUI extends PureComponent {
               <DropdownButton pullRight id="user-dropdown" title={userDropdown}>
                 <li className="display login-display">
                   <span className="sm-label">{ isAnon ? 'Active as' : 'Signed in as'}</span>
-                  <h5>{user.get('name') || username}</h5>
+                  <h5>{user.get('full_name') || username}</h5>
                   <span className="username"><span className="glyphicon glyphicon-user right-buffer-sm" />{ username }</span>
                 </li>
 
                 {
-                  (!isAnon || (isAnon && collCount > 0)) &&
-                    <React.Fragment>
-                      <MenuItem onClick={this.goToCollections}>
-                        Your Collections<span className="num-collection">{ collCount }</span>
-                      </MenuItem>
-                      <li className="display">
-                        <span className="sm-label">Space Used: {usage}% of {<SizeFormat bytes={user.getIn(['space_utilization', 'total'])} />}</span>
-                        <div className="space-display">
-                          <span style={{ width: `${usage}%` }} />
-                        </div>
-                      </li>
-                    </React.Fragment>
+                  hasCollections &&
+                    <MenuItem onClick={this.goToCollections}>
+                      Your Collections<span className="num-collection">{ collCount }</span>
+                    </MenuItem>
+                }
+                {
+                  hasCollections &&
+                    <li className="display">
+                      <span className="sm-label">Space Used: {usage}% of {<SizeFormat bytes={user.getIn(['space_utilization', 'total'])} />}</span>
+                      <div className="space-display">
+                        <span style={{ width: `${usage}%` }} />
+                      </div>
+                    </li>
                 }
 
                 {

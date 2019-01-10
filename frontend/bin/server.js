@@ -4,9 +4,7 @@ require('@babel/register')({
 });
 
 // ignore css imports within react-rte
-require.extensions['.css'] = () => {
-  return;
-};
+require.extensions['.css'] = () => {};
 
 const server = require('universal-webpack/server');
 const settings = require('../webpack/universal-webpack-settings');

@@ -112,7 +112,6 @@ class CollectionCoverUI extends Component {
 
   render() {
     const { browsers, collection, match: { params: { user, coll } }, pages } = this.props;
-    const lists = this.getLists(collection);
 
     if (collection.get('error')) {
       return user.startsWith('temp-') ?
@@ -125,6 +124,8 @@ class CollectionCoverUI extends Component {
         <RedirectWithStatus to={getCollectionLink(collection)} status={301} />
       );
     }
+
+    const lists = collection.get('loaded') && this.getLists(collection);
 
     return (
       <div className="coll-cover">
@@ -140,10 +141,10 @@ class CollectionCoverUI extends Component {
           <meta property="og:description" content={collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : tagline} />
         </Helmet>
         {
-          this.context.canAdmin && !this.context.isAnon && !collection.get('public') &&
-          <div className="visibility-warning">
-            Note: this collection is set to 'private' so only you can see it. <Link to={getCollectionLink(collection, true)}>If you set this collection to 'public'</Link> you can openly share the web pages you have collected.
-          </div>
+          this.context.canAdmin && !this.context.isAnon && !collection.get('public') && collection.get('loaded') &&
+            <div className="visibility-warning">
+              Note: this collection is set to 'private' so only you can see it. <Link to={getCollectionLink(collection, true)}>If you set this collection to 'public'</Link> you can openly share the web pages you have collected.
+            </div>
         }
         <Capstone title={collection.get('title')} user={collection.get('owner')} />
         <Tabs>
@@ -158,7 +159,7 @@ class CollectionCoverUI extends Component {
           <TabPanel className="react-tabs__tab-panel overview-tab">
             <ul className="scrollspy">
               {
-                lists.map((list, idx) => {
+                lists && lists.map((list, idx) => {
                   return (
                     <ScrollspyEntry
                       key={list.get('id')}

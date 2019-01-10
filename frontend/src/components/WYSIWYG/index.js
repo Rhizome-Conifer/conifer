@@ -41,6 +41,7 @@ class WYSIWYG extends Component {
     externalEditButton: false,
     initial: '',
     minimal: true,
+    placeholder: '',
     readOnly: false
   };
 
@@ -106,6 +107,12 @@ class WYSIWYG extends Component {
       }
 
       const text = nextProps.readOnly ? nextProps.initial : nextProps.initial || nextProps.placeholder;
+      this.setState({ editorState: createValueFromString(text, this.method) });
+    }
+
+    // readOnly state changed
+    if (this.props.readOnly && !nextProps.readOnly) {
+      const text = nextProps.initial || nextProps.placeholder;
       this.setState({ editorState: createValueFromString(text, this.method) });
     }
   }

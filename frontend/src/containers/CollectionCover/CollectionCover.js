@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
+import { Map } from 'immutable';
 
 import { timestampOrderedPages } from 'store/selectors';
 

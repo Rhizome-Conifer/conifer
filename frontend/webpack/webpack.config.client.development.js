@@ -34,12 +34,16 @@ const devConfig = {
         exclude: /node_modules/,
         loader: 'eslint-loader',
         options: {
+          cache: true,
           quiet: true
         }
       },
       {
         test: /\.scss$/,
         use: [
+          {
+            loader: 'cache-loader',
+          },
           {
             loader: 'style-loader'
           },
@@ -85,6 +89,9 @@ const devConfig = {
         test: /\.css$/,
         exclude: /node_modules\/react-rte/,
         use: [
+          {
+            loader: 'cache-loader',
+          },
           {
             loader: 'style-loader'
           },
