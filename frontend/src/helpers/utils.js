@@ -24,6 +24,11 @@ export function apiFetch(path, data, opts = {}) {
 }
 
 
+export function applyLocalTimeOffset(dt) {
+  return new Date(dt.getTime() - (new Date().getTimezoneOffset() * 60000));
+}
+
+
 export function buildDate(dt, gmt, humanize) {
   let displayTime;
   if(humanize) {

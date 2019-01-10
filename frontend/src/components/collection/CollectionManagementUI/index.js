@@ -4,7 +4,7 @@ import Helmet from 'react-helmet';
 import querystring from 'querystring';
 import { Button } from 'react-bootstrap';
 
-import { getCollectionLink } from 'helpers/utils';
+import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
 
 import { DeleteCollection, SessionCollapsible, Upload } from 'containers';
 
@@ -61,6 +61,9 @@ class CollectionManagementUI extends Component {
       return <HttpStatus status={401} />;
     }
 
+    const utcCreated = new Date(collection.get('created_at'));
+    const localCreated = applyLocalTimeOffset(utcCreated).toLocaleString();
+
     return (
       <div className="wr-coll-mgmt">
         <Helmet>
@@ -80,7 +83,7 @@ class CollectionManagementUI extends Component {
               <div className="coll-info">
                 <dl>
                   <dt>Created</dt>
-                  <dd>{collection.get('created_at')}</dd>
+                  <dd>{localCreated}</dd>
 
                   <dt>Contents</dt>
                   <dd>{recordings.size} session{recordings.size === 1 ? '' : 's'}</dd>

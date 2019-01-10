@@ -9,7 +9,7 @@ import { List } from 'immutable';
 import { Button, Overlay, Popover } from 'react-bootstrap';
 
 import { defaultRecDesc } from 'config';
-import { getCollectionLink } from 'helpers/utils';
+import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
 
 import { getRecordingBookmarks } from 'store/modules/recordings';
 
@@ -104,10 +104,14 @@ class SessionCollapsibleUI extends PureComponent {
     const pageCount = pages.size;
     const popoverClasses = classNames({ 'popover-open': this.state.deletePopover });
     const title = recording.get('title');
+
+    const utcCreated = new Date(recording.get('created_at'));
+    const localTs = applyLocalTimeOffset(utcCreated);
+
     const titleRender = (
       title ?
         (<span>{title}</span>) :
-        (<span>Session from <TimeFormat iso={recording.get('created_at')} /></span>)
+        (<span>{`Session from ${localTs.toLocaleString()}`}</span>)
     );
 
     const header = (
