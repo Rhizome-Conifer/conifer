@@ -4,7 +4,7 @@ import Helmet from 'react-helmet';
 import querystring from 'querystring';
 import { Button } from 'react-bootstrap';
 
-import { getCollectionLink } from 'helpers/utils';
+import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
 
 import { DeleteCollection, SessionCollapsible, Upload } from 'containers';
 
@@ -61,6 +61,9 @@ class CollectionManagementUI extends Component {
       return <HttpStatus status={401} />;
     }
 
+    const utcCreated = new Date(collection.get('created_at'));
+    const localCreated = applyLocalTimeOffset(utcCreated).toLocaleString();
+
     return (
       <div className="wr-coll-mgmt">
         <Helmet>
@@ -77,9 +80,26 @@ class CollectionManagementUI extends Component {
             <WarcIcon />
             <div>
               <h2>{collection.get('title')}</h2>
-              <span className="created-at">Created on <TimeFormat iso={collection.get('created_at')} /></span>
               <div className="coll-info">
-                <strong>{recordings.size}</strong> sessions over approximately <strong><TimeFormat seconds={collection.get('timespan')} /></strong> containing <strong>{collection.get('pages').size} pages</strong>. Total capture time is <strong><TimeFormat seconds={collection.get('duration')} /></strong> and total data size is <strong><SizeFormat bytes={collection.get('size')} /></strong>.
+                <dl>
+                  <dt>Created</dt>
+                  <dd>{localCreated}</dd>
+
+                  <dt>Contents</dt>
+                  <dd>{recordings.size} session{recordings.size === 1 ? '' : 's'}</dd>
+
+                  <dt>Size</dt>
+                  <dd><SizeFormat bytes={collection.get('size')} /></dd>
+
+                  <dt>Pages</dt>
+                  <dd>{collection.get('pages').size}</dd>
+
+                  <dt>Capture Time</dt>
+                  <dd><TimeFormat seconds={collection.get('duration')} /></dd>
+
+                  <dt>Coverage</dt>
+                  <dd><TimeFormat seconds={collection.get('timespan')} /></dd>
+                </dl>
               </div>
               <div className="function-row">
                 <DeleteCollection>

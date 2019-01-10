@@ -16,7 +16,11 @@ const serverOptions = {
   inline: true,
   publicPath: webpackConfig.output.publicPath,
   headers: { 'Access-Control-Allow-Origin': '*' },
-  stats: { colors: true }
+  stats: { colors: true },
+  watchOptions: {
+    aggregateTimeout: 300,
+    poll: 1000
+  }
 };
 
 const app = new Express();

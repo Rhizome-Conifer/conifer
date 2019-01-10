@@ -10,11 +10,12 @@ import CollectionDropdownUI from 'components/collection/CollectionDropdownUI';
 
 
 const mapStateToProps = ({ app }) => {
+  const mostRecent = sortUserCollsByUpdateAt(app);
   return {
     activeCollection: getActiveCollection(app),
     auth: app.get('auth'),
     collections: sortUserCollsByAlpha(app),
-    mostRecent: sortUserCollsByUpdateAt(app).getIn([0, 'id']),
+    mostRecent: mostRecent ? mostRecent.getIn([0, 'id']) : '',
     creatingCollection: app.getIn(['collections', 'creatingCollection']),
     collectionError: app.getIn(['collections', 'error']),
     loading: app.getIn(['user', 'loading']),

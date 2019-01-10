@@ -11,6 +11,7 @@ import './style.scss';
 class Searchbox extends PureComponent {
   static propTypes = {
     clear: PropTypes.func,
+    disabled: PropTypes.bool,
     isIndexing: PropTypes.bool,
     placeholder: PropTypes.string,
     search: PropTypes.func,
@@ -45,12 +46,12 @@ class Searchbox extends PureComponent {
   }
 
   render() {
-    const { clear, placeholder, search, searchText } = this.props;
+    const { clear, disabled, placeholder, searchText } = this.props;
     const { indexing } = this.state;
 
     return (
       <InputGroup bsClass="input-group search-box" title={indexing ? 'Indexing...' : 'Filter'}>
-        <FormControl aria-label="filter" bsSize="sm" onChange={this.handleChange} onFocus={this.props.index} value={searchText} placeholder={indexing ? 'Indexing...' : placeholder || 'Filter'} name="filter" />
+        <FormControl disabled={disabled} aria-label="filter" bsSize="sm" onChange={this.handleChange} onFocus={this.props.index} value={searchText} placeholder={indexing ? 'Indexing...' : placeholder || 'Filter'} name="filter" />
         <InputGroup.Button>
           {
             searchText ?

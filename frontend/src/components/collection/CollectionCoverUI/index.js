@@ -12,7 +12,7 @@ import { collection as collectionErr } from 'helpers/userMessaging';
 
 import { setSort } from 'store/modules/collection';
 
-import { Temp404 } from 'containers';
+import { CollectionFilters, Temp404 } from 'containers';
 
 import Capstone from 'components/collection/Capstone';
 import HttpStatus from 'components/HttpStatus';
@@ -112,7 +112,6 @@ class CollectionCoverUI extends Component {
 
   render() {
     const { browsers, collection, match: { params: { user, coll } }, pages } = this.props;
-    const lists = this.getLists(collection);
 
     if (collection.get('error')) {
       return user.startsWith('temp-') ?
@@ -125,6 +124,8 @@ class CollectionCoverUI extends Component {
         <RedirectWithStatus to={getCollectionLink(collection)} status={301} />
       );
     }
+
+    const lists = collection.get('loaded') && this.getLists(collection);
 
     return (
       <div className="coll-cover">
@@ -140,25 +141,22 @@ class CollectionCoverUI extends Component {
           <meta property="og:description" content={collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : tagline} />
         </Helmet>
         {
-          this.context.canAdmin && !this.context.isAnon && !collection.get('public') &&
-          <div className="visibility-warning">
-            Note: this collection is set to 'private' so only you can see it. <Link to={getCollectionLink(collection, true)}>If you set this collection to 'public'</Link> you can openly share the web pages you have collected.
-          </div>
+          this.context.canAdmin && !this.context.isAnon && !collection.get('public') && collection.get('loaded') &&
+            <div className="visibility-warning">
+              Note: this collection is set to 'private' so only you can see it. <Link to={getCollectionLink(collection, true)}>If you set this collection to 'public'</Link> you can openly share the web pages you have collected.
+            </div>
         }
         <Capstone title={collection.get('title')} user={collection.get('owner')} />
         <Tabs>
           <TabList>
             <Tab>Overview</Tab>
-            {
-              collection.get('public_index') &&
-                <Tab>Browse All</Tab>
-            }
+            <Tab><span className={classNames({ 'private-index': !collection.get('public_index') })}>Browse All</span></Tab>
           </TabList>
 
           <TabPanel className="react-tabs__tab-panel overview-tab">
             <ul className="scrollspy">
               {
-                lists.map((list, idx) => {
+                lists && lists.map((list, idx) => {
                   return (
                     <ScrollspyEntry
                       key={list.get('id')}
@@ -178,17 +176,24 @@ class CollectionCoverUI extends Component {
               scrollHandler={this.scrollHandler} />
           </TabPanel>
 
-          {
-            collection.get('public_index') &&
-              <TabPanel className="react-tabs__tab-panel browse-all-tab">
+          <TabPanel className="react-tabs__tab-panel browse-all-tab">
+            {
+              collection.get('public_index') ?
                 <TableRenderer {...{
                   browsers,
                   collection,
                   displayObjects: pages,
                   sort: this.sort
-                }} />
-              </TabPanel>
-          }
+                }} /> :
+                <div className="table-container">
+                  <div className="collection-header">
+                    <h2>Pages</h2>
+                    <CollectionFilters disabled />
+                  </div>
+                  <div className="private-index">This collection does not have a public index.</div>
+                </div>
+            }
+          </TabPanel>
         </Tabs>
       </div>
     );

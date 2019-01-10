@@ -260,12 +260,16 @@ export const getRemoteArchiveStats = createSelector(
 
 export const sortUserCollsByUpdateAt = createSelector(
   [getUserCollections],
-  colls => colls.sortBy(c => c.get('updated_at')).reverse()
+  (colls) => {
+    return colls ? colls.sortBy(c => c.get('updated_at')).reverse() : colls;
+  }
 );
 
 export const sortUserCollsByAlpha = createSelector(
   [getUserCollections],
-  colls => colls.sortBy(c => c.get('title').toLowerCase())
+  (colls) => {
+    return colls ? colls.sortBy(c => c.get('title').toLowerCase()) : colls;
+  }
 );
 
 

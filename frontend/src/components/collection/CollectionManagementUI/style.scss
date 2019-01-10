@@ -4,6 +4,7 @@
 
     .extra-info {
         padding: 1.5rem 2.5rem;
+        background: $gray200;
 
         h4 {
             text-transform: uppercase;
@@ -14,7 +15,7 @@
     & > header {
         padding: 1.5rem 2.5rem;
         border: solid .1rem $mgmt-gray;
-        border-width: .1rem 0 .1rem 0;
+        border-width: 0 0 .1rem 0;
 
         .mgmt-overview {
             display: flex;
@@ -32,7 +33,23 @@
         .coll-info {
             padding: 1rem 2rem;
             margin: 1rem 0;
-            background: $gray200;
+
+            dt {
+                width: 9rem;
+                float: left;
+                margin-right: .5rem;
+                font-weight: 300;
+                color: $mgmt-gray;
+                text-align: right;
+
+                &:after {
+                    content: ':';
+                }
+            }
+
+            dd {
+                margin-bottom: 1rem;
+            }
         }
 
         .function-row {

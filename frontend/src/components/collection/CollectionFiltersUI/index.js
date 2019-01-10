@@ -16,6 +16,7 @@ class CollectionFiltersUI extends PureComponent {
 
   static propTypes = {
     collection: PropTypes.object,
+    disabled: PropTypes.bool,
     dispatch: PropTypes.func,
     isIndexing: PropTypes.bool,
     querying: PropTypes.bool,
@@ -85,6 +86,7 @@ class CollectionFiltersUI extends PureComponent {
               <Searchbox
                 search={this.search}
                 clear={this.clearSearch}
+                disabled={this.props.disabled}
                 index={this.startIndex}
                 searchText={this.props.searchText}
                 isIndexing={this.props.isIndexing} />

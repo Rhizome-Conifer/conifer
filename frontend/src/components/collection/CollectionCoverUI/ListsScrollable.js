@@ -28,7 +28,7 @@ class ListsScrollable extends PureComponent {
           </div>
           <ul className="lists">
             {
-              lists.size === 0 ?
+              !lists || lists.size === 0 ?
                 <em>This collection has no public lists.</em> :
                 lists.map((list) => {
                   return (

@@ -109,5 +109,10 @@ module.exports = smp.wrap({
       FRONTEND_PORT: 8095,
       SCHEME: 'http'
     })
-  ]
+  ],
+
+  watchOptions: {
+    aggregateTimeout: 300,
+    poll: 1000
+  }
 });

@@ -19,7 +19,9 @@ const config = {
       {
         test: /\.scss$/,
         use: [
-
+          {
+            loader: 'cache-loader',
+          },
           {
             loader: 'css-loader'
           },
@@ -47,7 +49,6 @@ const config = {
         test: /\.css$/,
         include: /node_modules\/react-rte/,
         use: [
-
           {
             loader: 'css-loader',
             options: {
@@ -60,7 +61,9 @@ const config = {
         test: /\.css$/,
         exclude: /node_modules\/react-rte/,
         use: [
-
+          {
+            loader: 'cache-loader',
+          },
           {
             loader: 'css-loader'
           }
@@ -79,6 +82,5 @@ const config = {
     }),
   ]
 };
-
 
 export default merge(baseConfig, config);

@@ -54,6 +54,10 @@ a.collection-title:hover {
         font-size: 1.8rem;
         color: $gray550;
         margin: 0 auto;
+
+        .glyphicon {
+            font-size: 1.1rem;
+        }
     }
 
     .wr-editor {

@@ -25,6 +25,22 @@
         flex-grow: 1;
         width: calc(100% - 40px);
 
+        .react-tabs__tab {
+            border-color: $mgmt-gray;
+            border-radius: .5rem .5rem 0 0;
+            margin-left: 1rem;
+
+            .private-index {
+                font-style: italic;
+                color: $body-gray;
+                opacity: .5;
+            }
+
+            &.react-tabs__tab--selected {
+                opacity: 1;
+            }
+        }
+
         .overview-tab.react-tabs__tab-panel--selected {
             flex-grow: 1;
             display: grid;
@@ -120,6 +136,12 @@
             display: flex;
             flex-direction: column;
 
+            .private-index {
+                font-style: italic;
+                color: $body-gray;
+                opacity: .5;
+                margin-left: 1.5rem;
+            }
         }
     }
 }
