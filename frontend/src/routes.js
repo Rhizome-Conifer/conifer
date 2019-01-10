@@ -73,7 +73,7 @@ const userRoutes = [
     component: CollectionManagement,
     exact: true,
     footer: true,
-    managementView: true,
+    managementView: false,
     name: 'collectionMgmt'
   },
   {

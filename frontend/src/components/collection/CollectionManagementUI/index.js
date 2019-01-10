@@ -77,9 +77,26 @@ class CollectionManagementUI extends Component {
             <WarcIcon />
             <div>
               <h2>{collection.get('title')}</h2>
-              <span className="created-at">Created on <TimeFormat iso={collection.get('created_at')} /></span>
               <div className="coll-info">
-                <strong>{recordings.size}</strong> sessions over approximately <strong><TimeFormat seconds={collection.get('timespan')} /></strong> containing <strong>{collection.get('pages').size} pages</strong>. Total capture time is <strong><TimeFormat seconds={collection.get('duration')} /></strong> and total data size is <strong><SizeFormat bytes={collection.get('size')} /></strong>.
+                <dl>
+                  <dt>Created</dt>
+                  <dd>{collection.get('created_at')}</dd>
+
+                  <dt>Contents</dt>
+                  <dd>{recordings.size} session{recordings.size === 1 ? '' : 's'}</dd>
+
+                  <dt>Size</dt>
+                  <dd><SizeFormat bytes={collection.get('size')} /></dd>
+
+                  <dt>Pages</dt>
+                  <dd>{collection.get('pages').size}</dd>
+
+                  <dt>Capture Time</dt>
+                  <dd><TimeFormat seconds={collection.get('duration')} /></dd>
+
+                  <dt>Coverage</dt>
+                  <dd><TimeFormat seconds={collection.get('timespan')} /></dd>
+                </dl>
               </div>
               <div className="function-row">
                 <DeleteCollection>
