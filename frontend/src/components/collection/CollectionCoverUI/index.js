@@ -12,7 +12,7 @@ import { collection as collectionErr } from 'helpers/userMessaging';
 
 import { setSort } from 'store/modules/collection';
 
-import { Temp404 } from 'containers';
+import { CollectionFilters, Temp404 } from 'containers';
 
 import Capstone from 'components/collection/Capstone';
 import HttpStatus from 'components/HttpStatus';
@@ -150,10 +150,7 @@ class CollectionCoverUI extends Component {
         <Tabs>
           <TabList>
             <Tab>Overview</Tab>
-            {
-              collection.get('public_index') &&
-                <Tab>Browse All</Tab>
-            }
+            <Tab><span className={classNames({ 'private-index': !collection.get('public_index') })}>Browse All</span></Tab>
           </TabList>
 
           <TabPanel className="react-tabs__tab-panel overview-tab">
@@ -179,17 +176,24 @@ class CollectionCoverUI extends Component {
               scrollHandler={this.scrollHandler} />
           </TabPanel>
 
-          {
-            collection.get('public_index') &&
-              <TabPanel className="react-tabs__tab-panel browse-all-tab">
+          <TabPanel className="react-tabs__tab-panel browse-all-tab">
+            {
+              collection.get('public_index') ?
                 <TableRenderer {...{
                   browsers,
                   collection,
                   displayObjects: pages,
                   sort: this.sort
-                }} />
-              </TabPanel>
-          }
+                }} /> :
+                <div className="table-container">
+                  <div className="collection-header">
+                    <h2>Pages</h2>
+                    <CollectionFilters disabled />
+                  </div>
+                  <div className="private-index">This collection does not have a public index.</div>
+                </div>
+            }
+          </TabPanel>
         </Tabs>
       </div>
     );
