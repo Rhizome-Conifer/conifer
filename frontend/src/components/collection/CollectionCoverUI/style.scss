@@ -43,13 +43,12 @@
 
         .overview-tab.react-tabs__tab-panel--selected {
             flex-grow: 1;
-            display: grid;
-            grid-template-rows: 100%;
-            grid-template-columns: 20vw 1fr;
+            display: flex;
 
             .scrollspy {
                 list-style-type: none;
                 padding: 0;
+                width: 20vw;
 
                 li {
                     position: relative;
@@ -85,6 +84,8 @@
 
             .scroll-wrapper {
                 position: relative;
+                width: calc(100% - 2.5rem);
+                margin-left: 2.5rem;
             }
 
             .lists-container {

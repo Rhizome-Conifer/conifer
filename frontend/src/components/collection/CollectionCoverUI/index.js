@@ -154,7 +154,7 @@ class CollectionCoverUI extends Component {
           </TabList>
 
           <TabPanel className="react-tabs__tab-panel overview-tab">
-            <ul className="scrollspy">
+            <ul className="scrollspy hidden-xs">
               {
                 lists && lists.map((list, idx) => {
                   return (

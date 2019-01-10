@@ -19,6 +19,7 @@ class RemoveWidget extends Component {
     callback: PropTypes.func,
     classes: PropTypes.string,
     children: PropTypes.node,
+    deleteMsg: PropTypes.string,
     error: PropTypes.oneOfType([
       PropTypes.object,
       PropTypes.string
@@ -32,6 +33,7 @@ class RemoveWidget extends Component {
   static defaultProps = {
     borderless: true,
     classes: '',
+    deleteMsg: 'Are you sure you want to delete this item?',
     error: null,
     isDeleting: false,
     placement: 'bottom',
@@ -84,7 +86,7 @@ class RemoveWidget extends Component {
   }
 
   render() {
-    const { borderless, children, classes, error, isDeleting, placement } = this.props;
+    const { borderless, children, classes, deleteMsg, error, isDeleting, placement } = this.props;
 
     return (
       <React.Fragment>
@@ -102,7 +104,7 @@ class RemoveWidget extends Component {
                 {
                   error ?
                     <p className="rm-error">{listErr[error] || 'Error Encountered'}</p> :
-                    <p>Are you sure you want to delete this item?</p>
+                    <p>{deleteMsg}</p>
                 }
                 <div className="action-row">
                   <Button onClick={this.outsideClickCheck} disabled={error || isDeleting}>Cancel</Button>
