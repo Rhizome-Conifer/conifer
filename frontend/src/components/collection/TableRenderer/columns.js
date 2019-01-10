@@ -61,9 +61,10 @@ export function RemoveRenderer({ rowData, columnData: { bkDeleting, bkDeleteErro
   const removeClick = () => removeCallback(listId, rowData.get('id'));
   return (
     <RemoveWidget
+      callback={removeClick}
+      deleteMsg="Remove from list?"
       error={bkDeleteError}
       isDeleting={bkDeleting}
-      callback={removeClick}
       placement="right"
       scrollCheck=".ReactVirtualized__Grid" />
   );
