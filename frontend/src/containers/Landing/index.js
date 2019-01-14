@@ -80,13 +80,17 @@ class Landing extends Component {
 
     const allowDat = JSON.parse(process.env.ALLOW_DAT);
     const loadIndicator = source === 'dat' ?
-      (<div className="dat-container">
-        <h4>Downloading from peer-to-peer Dat network:</h4>
-        <ProgressBar now={this.state.progress} label={`${progress}%`} bsStyle="success" />
-      </div>) :
-      (<div className="bigOpen">
-        <img src={require('shared/images/loading.svg')} id="loadingGif" alt="loading" />
-      </div>);
+      (
+        <div className="dat-container">
+          <h4>Downloading from peer-to-peer Dat network:</h4>
+          <ProgressBar now={this.state.progress} label={`${progress}%`} bsStyle="success" />
+        </div>
+      ) :
+      (
+        <div className="bigOpen">
+          <img src={require('shared/images/loading.svg')} id="loadingGif" alt="loading" />
+        </div>
+      );
 
     return (
       <div id="landingContainer">
@@ -96,7 +100,7 @@ class Landing extends Component {
             loadIndicator :
             <React.Fragment>
               <div className="bigOpen">
-                <button onClick={openFile}>
+                <button onClick={openFile} type="button">
                   Open WARC File
                 </button>
                 {

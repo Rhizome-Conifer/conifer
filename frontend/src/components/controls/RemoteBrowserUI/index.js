@@ -9,7 +9,7 @@ import { createRemoteBrowser } from 'store/modules/remoteBrowsers';
 
 import './style.scss';
 
-const CBrowser = __CLIENT__ && require('shepherd-client/lib/browser').default;
+const CBrowser = !__PLAYER__ && __CLIENT__ && require('shepherd-client/lib/browser').default;
 
 
 class RemoteBrowserUI extends Component {

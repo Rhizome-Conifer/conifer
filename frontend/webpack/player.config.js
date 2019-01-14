@@ -1,76 +1,84 @@
 /* eslint-disable */
-require('babel-polyfill');
+require('@babel/polyfill');
 
 // Webpack config for creating the production bundle.
 var autoprefixer = require('autoprefixer');
-var fs = require('fs');
 var path = require('path');
 var webpack = require('webpack');
 var CleanPlugin = require('clean-webpack-plugin');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var strip = require('strip-loader');
+var MiniCssExtractPlugin = require('mini-css-extract-plugin');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 var projectRootPath = path.resolve(__dirname, '../../../app/');
 var assetsPath = path.resolve(projectRootPath, './static');
 
-// https://github.com/halt-hammerzeit/webpack-isomorphic-tools
-var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
-var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
-var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
-var CopyWebpackPlugin = require('copy-webpack-plugin');
+const sassLoaders = [
+  {
+    loader: MiniCssExtractPlugin.loader
+  },
+  {
+    loader: 'css-loader'
+  },
+  {
+    loader: 'postcss-loader',
+    options: {
+      plugins: () => {
+        return [
+          autoprefixer({
+            browsers: [
+              '>1%',
+              'last 4 versions',
+              'Firefox ESR',
+              'not ie < 10',
+            ]
+          })
+        ];
+      }
+    }
+  },
+  'sass-loader'
+];
+
+if (process.env.NODE_ENV === 'development') {
+  // sassLoaders.push({loader: 'cache-loader'});
+}
 
 
 module.exports = {
-  devtool: 'source-map',
+  devtool: process.env.NODE_ENV === 'production' ? 'source-map' : 'eval',
   context: path.resolve(__dirname, '..'),
   entry: {
     main: [
       './config/polyfills',
-      'bootstrap-loader/extractStyles',
+      'bootstrap-loader',
       './src/client.js'
     ]
   },
+
   output: {
     path: assetsPath,
     filename: '[name].js',
     chunkFilename: '[name]-[chunkhash].js',
     publicPath: ''
   },
+
   module: {
     rules: [
       {
         test: /\.(js|jsx)?$/,
         exclude: /node_modules(\/|\\)(?!(react-rte))/,
         use: [
-          'babel-loader'
+          {
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: true
+            }
+          }
         ]
       },
       {
         test: /\.scss$/,
-        use: ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-            use: [
-              'css-loader',
-              {
-                loader: 'postcss-loader',
-                options: {
-                  plugins: function (){
-                    return [
-                      autoprefixer({
-                        browsers: [
-                          '>1%',
-                          'last 4 versions',
-                          'Firefox ESR',
-                          'not ie < 9',
-                        ]
-                      })
-                    ]
-                  }
-                }
-              },
-              'sass-loader',
-            ]
-          })
+        use: sassLoaders
       },
       {
         test: /\.css$/,
@@ -118,21 +126,33 @@ module.exports = {
         }
       },
       {
-        test: webpackIsomorphicToolsPlugin.regular_expression('images'),
-        loader: "url-loader"
+        test: /\.(png|jpg|jpeg|gif)$/,
+        loader: 'url-loader'
       }
     ]
   },
+
   node: {
     fs: "empty"
   },
+
   resolve: {
+    alias: {
+      components: path.resolve(__dirname, '../src/components'),
+      containers: path.resolve(__dirname, '../src/containers'),
+      helpers: path.resolve(__dirname, '../src/helpers'),
+      store: path.resolve(__dirname, '../src/store'),
+      shared: path.resolve(__dirname, '../src/shared'),
+      config: path.resolve(__dirname, '../src/config.js'),
+      routes: path.resolve(__dirname, '../src/routes.js')
+    },
     modules: [
-      'src',
-      'node_modules'
+      'node_modules',
+      path.resolve(__dirname, '../src'),
     ],
     extensions: ['.json', '.js']
   },
+
   plugins: [
     new CopyWebpackPlugin([
       'src/shared/images/favicon.png',
@@ -141,10 +161,9 @@ module.exports = {
     ]),
     new CleanPlugin([assetsPath], { root: projectRootPath }),
 
-    // css files from the extract-text-plugin loader
-    new ExtractTextPlugin({
-      filename: '[name].css',
-      allChunks: true
+    new MiniCssExtractPlugin({
+      filename: "[name].css",
+      chunkFilename: "[id].css"
     }),
 
     new webpack.EnvironmentPlugin({
@@ -153,7 +172,6 @@ module.exports = {
       'APP_HOST': 'localhost:8089',
       'CONTENT_HOST': 'localhost:8092',
       'FRONTEND_PORT': 8095,
-      'NODE_ENV': 'production',
       'SCHEME': 'http',
     }),
 
@@ -163,18 +181,6 @@ module.exports = {
       __DEVELOPMENT__: true,
       __DEVTOOLS__: true,
       __PLAYER__: true
-    }),
-
-    // optimizations
-    // new webpack.optimize.UglifyJsPlugin({
-    //   compress: {
-    //     unused: true,
-    //     warnings: true,
-    //     dead_code: true,
-    //     drop_console: true
-    //   }
-    // }),
-
-    webpackIsomorphicToolsPlugin
+    })
   ]
 };

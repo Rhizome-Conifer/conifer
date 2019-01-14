@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import HTML5Backend from 'react-dnd-html5-backend';
-import renderRoutes from 'react-router-config/renderRoutes';
+import { renderRoutes } from 'react-router-config';
 import { matchPath } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import { DragDropContext } from 'react-dnd';

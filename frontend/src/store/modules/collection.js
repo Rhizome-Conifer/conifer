@@ -268,10 +268,10 @@ export function load(user, coll, host = '') {
 /**
  * withBookmarks accepts `first` or `all` for `include_bookmarks` query prop
  */
-export function loadLists(user, coll, withBookmarks = 'first') {
+export function loadLists(user, coll, withBookmarks = 'first', host = '') {
   return {
     types: [LISTS_LOAD, LISTS_LOAD_SUCCESS, LISTS_LOAD_FAIL],
-    promise: client => client.get(`${apiPath}/lists`, {
+    promise: client => client.get(`${host}${apiPath}/lists`, {
       params: { user, coll: decodeURIComponent(coll), include_bookmarks: withBookmarks }
     })
   };

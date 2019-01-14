@@ -171,7 +171,6 @@ class CollectionDropdownUI extends Component {
                   {
                     <MenuItem key="filter">
                       <input
-                        autoFocus
                         autoComplete="off"
                         className="form-control"
                         name="filter"

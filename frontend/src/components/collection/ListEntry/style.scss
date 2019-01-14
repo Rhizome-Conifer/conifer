@@ -1,7 +1,7 @@
 @import 'src/vars';
 
 .list-entry {
-    width: 70vw;
+    width: 100%;
     margin-top: 3.5rem;
 
     .wr-editor {
@@ -90,9 +90,12 @@
         }
     }
 
-    ol {
+    & > ol {
         li {
+            margin-bottom: 3.5rem;
+
             .source-link {
+                display: inline-block;
                 color: $blue;
                 text-decoration: underline;
             }
@@ -100,6 +103,8 @@
             .bk-timestamp {
                 display: block;
                 margin: 1rem 0;
+                color: $gray525;
+                font-weight: 300;
             }
 
             .wr-editor {
