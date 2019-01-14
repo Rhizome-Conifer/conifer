@@ -54,7 +54,7 @@ const initialData = [
       }
 
       return dispatch(loadColl(user, coll, host))
-        .then(() => dispatch(loadLists(user, coll, 'all')));
+        .then(() => dispatch(loadLists(user, coll, 'all', host)));
     }
   },
   {
