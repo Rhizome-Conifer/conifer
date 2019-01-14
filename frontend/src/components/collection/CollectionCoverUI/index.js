@@ -111,6 +111,7 @@ class CollectionCoverUI extends Component {
   }
 
   render() {
+    const { isMobile } = this.context;
     const { browsers, collection, match: { params: { user, coll } }, pages } = this.props;
 
     if (collection.get('error')) {
@@ -156,7 +157,7 @@ class CollectionCoverUI extends Component {
           <TabPanel className="react-tabs__tab-panel overview-tab">
             <ul className="scrollspy hidden-xs">
               {
-                lists && lists.map((list, idx) => {
+                !isMobile && lists && lists.map((list, idx) => {
                   return (
                     <ScrollspyEntry
                       key={list.get('id')}

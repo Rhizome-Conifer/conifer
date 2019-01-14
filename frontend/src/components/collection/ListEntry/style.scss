@@ -93,6 +93,7 @@
     ol {
         li {
             .source-link {
+                display: inline-block;
                 color: $blue;
                 text-decoration: underline;
             }
