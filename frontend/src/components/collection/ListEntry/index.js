@@ -6,7 +6,6 @@ import { getCollectionLink, getListLink } from 'helpers/utils';
 
 import ClippedLink from 'components/ClippedLink';
 import TimeFormat from 'components/TimeFormat';
-import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
 import { ListIcon } from 'components/icons';
 
@@ -39,11 +38,9 @@ const ListEntry = ({ collection, isDetail, list }) => {
       <div className="desc">
         {
           list.get('desc') &&
-            <Truncate height={1000}>
-              <WYSIWYG
-                readOnly
-                initial={collection.get('desc')} />
-            </Truncate>
+            <WYSIWYG
+              readOnly
+              initial={list.get('desc')} />
         }
       </div>
       <ol>
