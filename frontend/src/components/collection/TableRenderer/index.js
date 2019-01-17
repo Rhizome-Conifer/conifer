@@ -43,6 +43,7 @@ class TableRenderer extends Component {
     deselect: PropTypes.func,
     displayObjects: PropTypes.object,
     list: PropTypes.object,
+    removeBookmark: PropTypes.func,
     onKeyNavigate: PropTypes.func,
     onSelectRow: PropTypes.func,
     saveSort: PropTypes.func,

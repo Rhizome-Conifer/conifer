@@ -277,7 +277,7 @@ class CollectionDetailUI extends Component {
 
   render() {
     const { canAdmin, isAnon } = this.context;
-    const { pages, browsers, collection, list, match: { params }, publicIndex } = this.props;
+    const { pages, browsers, collection, list, match: { params }, publicIndex, removeBookmark } = this.props;
     const { listBookmarks, selectedPageIdx, sortedBookmarks } = this.state;
     const activeList = Boolean(params.list);
 
@@ -387,6 +387,7 @@ class CollectionDetailUI extends Component {
           list,
           onKeyNavigate: this.onKeyNavigate,
           onSelectRow: this.onSelectRow,
+          removeBookmark,
           saveSort: this.saveSort,
           selectedPageIdx,
           sort: this.sort,
