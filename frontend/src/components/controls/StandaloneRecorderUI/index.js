@@ -143,11 +143,13 @@ class StandaloneRecorderUI extends Component {
           </Row>
         </div>
 
-        <div className="col-md-8 col-md-offset-2 top-buffer rb-dropdown">
-          <Row>
-            <p className="col-md-2 standalone-dropdown-label">Select browser</p><div className="col-md-10"><RemoteBrowserSelect /></div>
-          </Row>
-        </div>
+        { !__DESKTOP__ &&
+          <div className="col-md-8 col-md-offset-2 top-buffer rb-dropdown">
+            <Row>
+              <p className="col-md-2 standalone-dropdown-label">Select browser</p><div className="col-md-10"><RemoteBrowserSelect /></div>
+            </Row>
+          </div>
+        }
 
         <div className="col-md-8 col-md-offset-2 top-buffer">
           <Collapsible

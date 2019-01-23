@@ -219,7 +219,7 @@ class UserManagementUI extends PureComponent {
                 <MenuItem onClick={this.goToFAQ}>About Webrecorder</MenuItem>
                 <MenuItem href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</MenuItem>
                 {
-                  !isAnon &&
+                  (!isAnon && !__DESKTOP__) &&
                     <React.Fragment>
                       <MenuItem divider />
                       <MenuItem onClick={this.goToLogout}><span className="glyphicon glyphicon-log-out" title="Logout" /> Logout</MenuItem>

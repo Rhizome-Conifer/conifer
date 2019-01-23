@@ -11,7 +11,7 @@ function formatUrl(path) {
   }
 
   const adjustedPath = path[0] !== '/' ? `/${path}` : path;
-  if (__SERVER__) {
+  if (__SERVER__ || __DESKTOP__) {
     // on the server use internal network
     return `http://${config.internalApiHost}:${config.internalApiPort}${adjustedPath}`;
   }
@@ -34,6 +34,7 @@ export default class ApiClient {
 
         // add  x-requested-with header
         request.set({ 'x-requested-with': 'XMLHttpRequest' });
+        request.withCredentials();
 
         if (__SERVER__) {
           if (req.get('cookie')) {
@@ -59,6 +60,11 @@ export default class ApiClient {
         }
         // eslint-disable-next-line no-confusing-arrow
         request.end((err, response) => {
+          if (err && (!response || !response.body)) {
+            console.log(err);
+            reject(err);
+          }
+          
           const { body } = response;
 
           if (__SERVER__) {

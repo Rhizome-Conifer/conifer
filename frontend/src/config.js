@@ -20,8 +20,19 @@ try {
   localSettings = {};
 }
 
-// custom app domain or localhost default port mapping
-const appHost = process.env.APP_HOST ? process.env.APP_HOST : `localhost:8089`;
+
+let appHost = null;
+
+if (__DESKTOP__) {
+  let remoteProcess = window.require('electron').remote.process;
+  process.env.INTERNAL_HOST = remoteProcess.env.INTERNAL_HOST;
+  process.env.INTERNAL_PORT = remoteProcess.env.INTERNAL_PORT;
+  appHost = `localhost:` + remoteProcess.env.INTERNAL_PORT;
+} else {
+
+  // custom app domain or localhost default port mapping
+  appHost = process.env.APP_HOST ? process.env.APP_HOST : `localhost:8089`;
+}
 
 // customizable hosting scheme
 const hostScheme = process.env.SCHEME ? process.env.SCHEME : 'http';

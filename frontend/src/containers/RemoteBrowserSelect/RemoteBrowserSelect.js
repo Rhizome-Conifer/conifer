@@ -15,7 +15,7 @@ class RemoteBrowserSelect extends Component {
   })
 
   render() {
-    return (
+    return (!__DESKTOP__ &&
       <RemoteBrowserSelectUI {...this.props} />
     );
   }

@@ -6,7 +6,7 @@ import removeMd from 'remove-markdown';
 import { Button, DropdownButton, FormControl, MenuItem } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import { onboardingLink, truncSentence, truncWord } from 'config';
+import { appHost, onboardingLink, truncSentence, truncWord } from 'config';
 import { doubleRAF, getCollectionLink, truncate } from 'helpers/utils';
 
 import { DeleteCollection, Upload } from 'containers';
@@ -55,7 +55,7 @@ class CollectionHeaderUI extends Component {
 
   downloadCollection = () => {
     const { collection } = this.props;
-    window.location = `${getCollectionLink(collection)}/$download`;
+    window.location.href = `${appHost}/${getCollectionLink(collection)}/$download`;
   }
 
   copyDat = () => {

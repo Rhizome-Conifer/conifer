@@ -26,8 +26,8 @@ import { IFrame, ReplayUI } from 'components/controls';
 
 
 let Webview;
-if (__PLAYER__) {
-  Webview = require('components/player/Webview');
+if (__DESKTOP__) {
+  Webview = require('components/desktop/Webview');
 }
 
 
@@ -59,8 +59,11 @@ class Replay extends Component {
   // TODO move to HOC
   static childContextTypes = {
     currMode: PropTypes.string,
-    canAdmin: PropTypes.bool
-  };
+    canAdmin: PropTypes.bool,
+    coll: PropTypes.string,
+    rec: PropTypes.string,
+    user: PropTypes.string,
+   };
 
   constructor(props) {
     super(props);
@@ -71,11 +74,14 @@ class Replay extends Component {
   }
 
   getChildContext() {
-    const { auth, match: { params: { user } } } = this.props;
+    const { auth, match: { params: { user, coll, rec } } } = this.props;
 
     return {
       currMode: this.mode,
-      canAdmin: auth.getIn(['user', 'username']) === user
+      canAdmin: auth.getIn(['user', 'username']) === user,
+      user,
+      coll,
+      rec,
     };
   }
 
@@ -208,7 +214,7 @@ class Replay extends Component {
         <div className={classNames('iframe-container', { embed: isEmbed && params.embed !== '_embed_noborder' })}>
           {
             !isMobile && !isEmbed &&
-              <Sidebar defaultExpanded={Boolean(listSlug) || __PLAYER__} storageKey={listSlug ? 'listReplaySidebar' : 'pageReplaySidebar'}>
+              <Sidebar defaultExpanded={Boolean(listSlug) || __DESKTOP__} storageKey={listSlug ? 'listReplaySidebar' : 'pageReplaySidebar'}>
                 <Resizable axis="y" minHeight={200} storageKey="replayNavigator">
                   <Tabs defaultIndex={listSlug ? 0 : 1}>
                     <TabList>
@@ -236,7 +242,7 @@ class Replay extends Component {
               </Sidebar>
           }
           {
-            __PLAYER__ &&
+            __DESKTOP__ &&
               <Webview
                 key="webview"
                 host={appSettings.get('host')}
@@ -253,7 +259,7 @@ class Replay extends Component {
               <EmbedFooter timestamp={timestamp} />
           }
           {
-            !__PLAYER__ && (
+            !__DESKTOP__ && (
               activeBrowser ?
                 <RemoteBrowser
                   params={params}
@@ -284,7 +290,7 @@ const initialData = [
   {
     promise: ({ store: { dispatch, getState } }) => {
       const state = getState();
-      if (!isRBLoaded(state) && !__PLAYER__) {
+      if (!isRBLoaded(state) && !__DESKTOP__) {
         return dispatch(loadBrowsers());
       }
 
@@ -311,7 +317,7 @@ const initialData = [
       if (listSlug && !listLoaded(listSlug, state)) {
         let host = '';
 
-        if (__PLAYER__) {
+        if (__DESKTOP__) {
           host = state.app.getIn(['appSettings', 'host']);
         }
 
@@ -330,7 +336,7 @@ const initialData = [
       if (!isLoaded(state) || collection.get('id') !== coll) {
         let host = '';
 
-        if (__PLAYER__) {
+        if (__DESKTOP__) {
           host = state.app.getIn(['appSettings', 'host']);
         }
 
@@ -348,7 +354,7 @@ const initialData = [
       if (!app.getIn(['controls', 'archives']).size) {
         let host = '';
 
-        if (__PLAYER__) {
+        if (__DESKTOP__) {
           host = app.getIn(['appSettings', 'host']);
         }
         return dispatch(getArchives(host));
@@ -364,7 +370,7 @@ const mapStateToProps = (outerState) => {
   const activePage = app.getIn(['collection', 'loaded']) ? getActivePage(outerState) : null;
   let appSettings = null;
 
-  if (__PLAYER__) {
+  if (__DESKTOP__) {
     appSettings = app.get('appSettings');
   }
 

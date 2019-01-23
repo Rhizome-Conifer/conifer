@@ -8,7 +8,7 @@ import Collapsible from 'react-collapsible';
 import { List } from 'immutable';
 import { Button, Overlay, Popover } from 'react-bootstrap';
 
-import { defaultRecDesc } from 'config';
+import { apiHost, defaultRecDesc } from 'config';
 import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
 
 import { getRecordingBookmarks } from 'store/modules/recordings';
@@ -73,7 +73,7 @@ class SessionCollapsibleUI extends PureComponent {
   downloadAction = (evt) => {
     evt.stopPropagation();
     const { collection, recording } = this.props;
-    window.location = `${getCollectionLink(collection)}/${recording.get('id')}/$download`;
+    window.location.href = `${apiHost}/${getCollectionLink(collection)}/${recording.get('id')}/$download`;
   }
 
   editDescription = (txt) => {

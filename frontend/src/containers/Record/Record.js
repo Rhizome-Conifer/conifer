@@ -13,6 +13,13 @@ import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
+let Webview;
+if (__DESKTOP__) {
+  Webview = require('components/desktop/Webview');
+}
+
+
+
 
 class Record extends Component {
   static contextTypes = {
@@ -21,6 +28,7 @@ class Record extends Component {
 
   static propTypes = {
     activeBrowser: PropTypes.string,
+    appSettings: PropTypes.object,
     autoscroll: PropTypes.bool,
     auth: PropTypes.object,
     collection: PropTypes.object,
@@ -33,7 +41,10 @@ class Record extends Component {
   // TODO move to HOC
   static childContextTypes = {
     currMode: PropTypes.string,
-    canAdmin: PropTypes.bool
+    canAdmin: PropTypes.bool,
+    coll: PropTypes.string,
+    rec: PropTypes.string,
+    user: PropTypes.string,
   };
 
   constructor(props) {
@@ -43,11 +54,14 @@ class Record extends Component {
   }
 
   getChildContext() {
-    const { auth, match: { params: { user } } } = this.props;
+    const { auth, match: { params: { user, coll, rec } } } = this.props;
 
     return {
       currMode: 'record',
-      canAdmin: auth.getIn(['user', 'username']) === user
+      canAdmin: auth.getIn(['user', 'username']) === user,
+      user,
+      coll,
+      rec
     };
   }
 
@@ -61,7 +75,7 @@ class Record extends Component {
   // }
 
   render() {
-    const { activeBrowser, dispatch, match: { params }, timestamp, url } = this.props;
+    const { activeBrowser, appSettings, dispatch, match: { params }, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
     const appPrefix = `${config.appHost}/${user}/${coll}/${rec}/record/`;
@@ -79,21 +93,36 @@ class Record extends Component {
 
         <div className="iframe-container">
           {
-            activeBrowser ?
-              <RemoteBrowser
+            __DESKTOP__ &&
+              <Webview
+                key="webview"
+                host={appSettings.get('host')}
                 params={params}
-                rb={activeBrowser}
-                rec={rec}
-                url={url} /> :
-              <IFrame
-                appPrefix={appPrefix}
-                auth={this.props.auth}
-                autoscroll={this.props.autoscroll}
-                contentPrefix={contentPrefix}
                 dispatch={dispatch}
-                params={params}
                 timestamp={timestamp}
+                canGoBackward={appSettings.get('canGoBackward')}
+                canGoForward={appSettings.get('canGoForward')}
                 url={url} />
+          }
+
+          {
+            !__DESKTOP__ && (
+              activeBrowser ?
+                <RemoteBrowser
+                  params={params}
+                  rb={activeBrowser}
+                  rec={rec}
+                  url={url} /> :
+                <IFrame
+                  appPrefix={appPrefix}
+                  auth={this.props.auth}
+                  autoscroll={this.props.autoscroll}
+                  contentPrefix={contentPrefix}
+                  dispatch={dispatch}
+                  params={params}
+                  timestamp={timestamp}
+                  url={url} />
+            )
           }
         </div>
       </React.Fragment>
@@ -104,7 +133,7 @@ class Record extends Component {
 const initialData = [
   {
     promise: ({ store: { dispatch, getState } }) => {
-      if (!isRBLoaded(getState()) && !__PLAYER__) {
+      if (!isRBLoaded(getState()) && !__DESKTOP__) {
         return dispatch(loadBrowsers());
       }
 
@@ -157,8 +186,15 @@ const initialData = [
 ];
 
 const mapStateToProps = ({ app }) => {
+  let appSettings = null;
+
+  if (__DESKTOP__) {
+    appSettings = app.get('appSettings');
+  }
+
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
+    appSettings,
     autoscroll: app.getIn(['controls', 'autoscroll']),
     auth: app.get('auth'),
     collection: app.get('collection'),

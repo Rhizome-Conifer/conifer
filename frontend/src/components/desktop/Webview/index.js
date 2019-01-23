@@ -10,6 +10,8 @@ import { stripProtocol } from 'helpers/utils';
 import { setBrowserHistory } from 'store/modules/appSettings';
 import { updateUrlAndTimestamp, updateTimestamp } from 'store/modules/controls';
 
+import { appHost } from 'config';
+
 import './style.scss';
 
 const { ipcRenderer } = window.require('electron');
@@ -24,11 +26,14 @@ class Webview extends Component {
     host: PropTypes.string,
     params: PropTypes.object,
     timestamp: PropTypes.string,
-    url: PropTypes.string
+    url: PropTypes.string,
   };
 
   static contextTypes = {
-    currMode: PropTypes.string
+    coll: PropTypes.string,
+    currMode: PropTypes.string,
+    rec: PropTypes.string,
+    user: PropTypes.string,
   };
 
   constructor(props) {
@@ -45,7 +50,9 @@ class Webview extends Component {
     const { currMode } = this.context;
     const { dispatch, host, params } = this.props;
 
-    this.socket = new WebSocketHandler(params, currMode, dispatch, false, '@INIT', stripProtocol(host));
+    const realHost = host || appHost;
+
+    this.socket = new WebSocketHandler(params, currMode, dispatch, false, '@INIT', stripProtocol(realHost));
     this.webviewHandle.addEventListener('ipc-message', this.handleReplayEvent);
 
     window.addEventListener('wr-go-back', this.goBack);
@@ -60,9 +67,8 @@ class Webview extends Component {
 
     if (nextProps.url !== url || nextProps.timestamp !== timestamp) {
       if (!this.internalUpdate) {
-        const proxyUrl = `http://webrecorder.proxy/local/collection/${nextProps.timestamp}/${nextProps.url}`;
         this.setState({ loading: true });
-        this.webviewHandle.loadURL(proxyUrl);
+        this.webviewHandle.loadURL(this.buildProxyUrl(nextProps.url, nextProps.timestamp));
       }
       this.internalUpdate = false;
     }
@@ -84,6 +90,19 @@ class Webview extends Component {
     window.removeEventListener('wr-refresh', this.refresh);
 
     ipcRenderer.removeListener('toggle-devtools', this.toggleDevTools);
+  }
+
+  buildProxyUrl(url, timestamp) {
+    const { user, coll, rec, currMode } = this.context;
+    let proxyUrl = `http://webrecorder.proxy/${user}/${coll}/`;
+    if (rec) {
+      proxyUrl += `${rec}/${currMode}/`;
+    }
+    if (timestamp) {
+      proxyUrl += `${timestamp}/`;
+    }
+    proxyUrl += url;
+    return proxyUrl;
   }
 
   openDroppedFile = (filename) => {
@@ -175,7 +194,7 @@ class Webview extends Component {
   render() {
     const { loading } = this.state;
     const { timestamp, url } = this.props;
-    const proxyUrl = `http://webrecorder.proxy/local/collection/${timestamp}/${url}`;
+
     const classes = classNames('webview-wrapper', { loading });
 
     return (
@@ -183,10 +202,9 @@ class Webview extends Component {
         <webview
           id="replay"
           ref={(obj) => { this.webviewHandle = obj; }}
-          src={proxyUrl}
+          src={this.buildProxyUrl(url, timestamp)}
           autosize="on"
           plugins="true"
-          preload="./static/preload.js"
           partition="persist:wr" />
       </div>
     );

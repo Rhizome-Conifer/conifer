@@ -5,6 +5,7 @@ import querystring from 'querystring';
 import { Button } from 'react-bootstrap';
 
 import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
+import config from 'config';
 
 import { DeleteCollection, SessionCollapsible, Upload } from 'containers';
 
@@ -44,7 +45,9 @@ class CollectionManagementUI extends Component {
 
   downloadAction = (evt) => {
     const { collection } = this.props;
-    window.location = `${getCollectionLink(collection)}/$download`;
+    //window.location = `${getCollectionLink(collection)}/$download`;
+    console.log(`${config.apiHost}/${getCollectionLink(collection)}/$download`);
+    window.location.href = `${config.apiHost}/${getCollectionLink(collection)}/$download`;
   }
 
   render() {

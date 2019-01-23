@@ -37,16 +37,19 @@ class ModeSelectorUI extends PureComponent {
     const { match: { params: { coll, rec, user } } } = this.props;
 
     if (this.context.currMode.indexOf('replay') !== -1) {
-      window.location.href = `/${user}/${coll}/manage`;
+      //window.location.href = `/${user}/${coll}/index`;
+      this.props.history.push(`/${user}/${coll}/manage`);
     } else {
-      window.location.href = `/${user}/${coll}/manage?query=session:${rec}`;
+      //window.location.href = `/${user}/${coll}/index?query=session:${rec}`;
+      this.props.history.push(`/${user}/${coll}/manage?query=session:${rec}`);
     }
   }
 
   onReplay = () => {
     const { activeBrowser, match: { params: { coll, user } }, timestamp, url } = this.props;
 
-    window.location.href = `/${user}/${coll}/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`;
+    //window.location.href = `/${user}/${coll}/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`;
+    this.props.history.push(`/${user}/${coll}/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`);
   }
 
   onPatch = () => {

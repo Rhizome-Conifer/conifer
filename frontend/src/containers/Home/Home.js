@@ -42,7 +42,10 @@ class Home extends Component {
           <h1>Webrecorder</h1>
         </div>
         <div className="row tagline">
-          <h4 className="text-center">Collect & Revisit the Web</h4>
+          { !__DESKTOP__ ?
+              <h4 className="text-center">Collect & Revisit the Web</h4> :
+              <h4 className="text-center">Desktop App</h4>
+          }
         </div>
         {
           user.get('anon') && user.get('num_collections') > 0 &&
@@ -58,6 +61,16 @@ class Home extends Component {
             <HomepageAnnouncement />
         }
 
+        { !__DESKTOP__ &&
+            this.homepage_marketing()
+        }
+      </React.Fragment>
+    );
+  }
+
+  homepage_marketing() {
+    return (
+      <React.Fragment>
         <div className="row intro-blurb">
           <div className="col-sm-8 col-sm-offset-2">
             <h6>Our Mission</h6>
@@ -68,7 +81,6 @@ class Home extends Component {
           </div>
         </div>
 
-        {/*  Online Forever */}
         <div className="row landing-info">
           <div>
             <div className="col-sm-6 hidden-xs">
