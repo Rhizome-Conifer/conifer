@@ -13,9 +13,10 @@ function ScrollspyEntry({ index, onSelect, selected, title }) {
     }
   };
 
+  const widowlessTitle = title.replace(/(\w+)\s(\w+([!?.;,]+)?)$/, '$1\u00A0$2');
   return (
     <li className={classNames({ selected })} onClick={onEvent} onKeyUp={onEvent} role="button" tabIndex="0">
-      <h3><ListIcon />{title}</h3>
+      <h3><ListIcon /><div>{widowlessTitle}</div></h3>
     </li>
   );
 }

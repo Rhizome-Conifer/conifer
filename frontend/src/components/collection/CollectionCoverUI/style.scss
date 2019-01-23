@@ -23,7 +23,11 @@
         display: flex;
         flex-direction: column;
         flex-grow: 1;
-        width: calc(100% - 40px);
+        width: 100%;
+
+        .react-tabs__tab-list {
+            margin: 0 2rem 1rem 2rem;
+        }
 
         .react-tabs__tab {
             border-color: $mgmt-gray;
@@ -44,11 +48,15 @@
         .overview-tab.react-tabs__tab-panel--selected {
             flex-grow: 1;
             display: flex;
+            margin-left: 2rem;
 
             .scrollspy {
                 list-style-type: none;
-                padding: 0;
-                width: 20vw;
+                padding: 0 .5rem 0 0;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                overflow: auto;
 
                 li {
                     position: relative;
@@ -75,8 +83,11 @@
                         margin-left: 1.5rem;
                         font-size: 1.9rem;
 
+                        display: flex;
+
                         svg {
                             margin-right: 1rem;
+                            flex-shrink: 0;
                         }
                     }
                 }
@@ -84,8 +95,15 @@
 
             .scroll-wrapper {
                 position: relative;
-                width: calc(100% - 2.5rem);
-                margin-left: 2.5rem;
+
+                &.scrollspy-scrollable {
+                    width: 20vw;
+                }
+
+                &.lists-scrollable {
+                    width: calc(100% - 2.5rem);
+                    margin-left: 2.5rem;
+                }
             }
 
             .lists-container {

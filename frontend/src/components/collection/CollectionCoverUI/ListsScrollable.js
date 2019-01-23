@@ -17,7 +17,7 @@ class ListsScrollable extends PureComponent {
   render() {
     const { collection, lists, outerRef, scrollHandler } = this.props;
     return (
-      <div className="scroll-wrapper">
+      <div className="scroll-wrapper lists-scrollable">
         <div className="lists-container" onScroll={scrollHandler} ref={outerRef}>
           <Capstone user={collection.get('owner')} />
           <h1>{collection.get('title')}</h1>

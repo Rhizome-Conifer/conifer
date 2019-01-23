@@ -9,7 +9,7 @@ const smp = new SpeedMeasurePlugin({ disable: process.env.STATS });
 
 
 module.exports = smp.wrap({
-  devtool: 'cheap-module-source-map',
+  devtool: 'eval-source-map',
   context: path.resolve(__dirname, '..'),
 
   output: {
