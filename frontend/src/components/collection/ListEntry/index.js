@@ -23,7 +23,15 @@ const ListEntry = ({ collection, isDetail, list }) => {
             </div>
             <div className="list-metadata">
               <div className="title-container"><h1>{list.get('title')}</h1>{ list.get('public') && <span className="visibility-badge">PUBLIC</span>}</div>
-              from <Link to={getCollectionLink(collection)}>{collection.get('title')}</Link> by <Link to={`/${collection.get('owner')}`}>{collection.get('owner')}</Link>
+              <React.Fragment>
+                from <Link to={getCollectionLink(collection)}>{collection.get('title')}</Link>
+                {
+                  !__PLAYER__ &&
+                  <React.Fragment>
+                    by <Link to={`/${collection.get('owner')}`}>{collection.get('owner')}</Link>
+                  </React.Fragment>
+                }
+              </React.Fragment>
             </div>
           </div> :
           <Link to={getListLink(collection, list)}>

@@ -1,7 +1,7 @@
 import Indexing from 'containers/Indexing';
 import Landing from 'containers/Landing';
 import PlayerApp from 'containers/PlayerApp';
-import { CollectionCover, CollectionDetail, Replay } from 'containers';
+import { CollectionCover, ListDetail, Replay } from 'containers';
 
 import Help from 'components/player/Help';
 import HttpStatus from 'components/HttpStatus';
@@ -19,24 +19,16 @@ export default [
       },
       {
         path: '/:user/:coll',
+        classOverride: '',
         component: CollectionCover,
         exact: true,
         footer: true,
         name: 'collectionCover'
       },
       {
-        path: '/:user/:coll/index',
-        breadcrumb: 'Collection Index',
-        classOverride: 'direction-override',
-        component: CollectionDetail,
-        exact: true,
-        footer: false,
-        name: 'collectionPages'
-      },
-      {
         path: '/:user/:coll/list/:list',
-        classOverride: 'direction-override',
-        component: CollectionDetail,
+        classOverride: 'container',
+        component: ListDetail,
         exact: true,
         footer: false,
         name: 'collectionDetailList'

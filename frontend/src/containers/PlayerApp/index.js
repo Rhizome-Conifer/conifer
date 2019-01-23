@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import memoize from 'memoize-one';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { renderRoutes } from 'react-router-config';
 import { matchPath } from 'react-router-dom';
@@ -57,7 +58,7 @@ class PlayerApp extends Component {
 
       // clear error state on navigation
       if (this.state.error) {
-        this.setState({ error: null, info: null });
+        this.setState({ error: null });
       }
     }
   }
@@ -69,6 +70,15 @@ class PlayerApp extends Component {
   componentDidCatch(error, info) {
     this.setState({ error });
   }
+
+  getActiveRoute = memoize((url) => {
+    const { routes } = playerRoutes[0];
+    const match = routes.find((route) => {
+      return matchPath(url, route);
+    });
+
+    return match;
+  })
 
   openDroppedFile = (evt) => {
     const { history } = this.props;
@@ -93,11 +103,8 @@ class PlayerApp extends Component {
   render() {
     const { error } = this.state;
 
-    const match = playerRoutes[0].routes.find((route) => {
-      return matchPath(this.props.location.pathname, route);
-    });
-
-    const classOverride = match.classOverride;
+    const match = this.getActiveRoute(this.props.location.pathname);
+    const { classOverride } = match;
     const containerClasses = classNames('wr-content', [classOverride]);
 
     if (error) {
