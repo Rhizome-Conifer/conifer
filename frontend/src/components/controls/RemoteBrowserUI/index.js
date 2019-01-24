@@ -62,14 +62,15 @@ class RemoteBrowserUI extends Component {
     };
 
     this.pywbParams = {
-      audio: 1,
+      audio: "wait_for_click",
       static_prefix: '/static/',
       api_prefix: '/api/browsers',
       clipboard: '#clipboard',
       fill_window: true,
       on_countdown: this.onCountdown,
       on_event: this.onEvent,
-      headers: { 'x-requested-with': 'XMLHttpRequest' }
+      headers: { 'x-requested-with': 'XMLHttpRequest' },
+      webrtc: true,
     };
   }
 

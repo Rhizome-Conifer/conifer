@@ -122,7 +122,6 @@ services:
             - REDIS_BROWSER_URL=redis://redis/0
             - BROWSER_NET=webrecorder_browsers
             - MAIN_NET=webrecorder_default
-            - DEFAULT_FLOCK=auto-browsers-vnc
 
         ports:
             - 9020:9020

@@ -98,7 +98,7 @@
     "resolve-url-loader": "^2.3.0",
     "sass-loader": "^7.1.0",
     "serialize-javascript": "^1.5.0",
-    "shepherd-client": "github:oldweb-today/shepherd-client",
+    "shepherd-client": "github:oldweb-today/shepherd-client#develop",
     "strip-loader": "^0.1.2",
     "style-loader": "0.23.1",
     "superagent": "^4.0.0",
