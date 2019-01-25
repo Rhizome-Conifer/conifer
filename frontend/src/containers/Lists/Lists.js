@@ -12,13 +12,14 @@ import {
   sortLists,
   getBookmarkCount
 } from 'store/modules/collection';
-import { addTo, bulkAddTo, create, deleteList, edit, resetEditState } from 'store/modules/list';
+import { addTo, bulkAddBatch, bulkAddTo, create, deleteList, edit, resetEditState } from 'store/modules/list';
 
 import ListsUI from 'components/collection/ListsUI';
 
 
 const mapStateToProps = ({ app }) => {
   return {
+    bulkAdding: app.getIn(['list', 'adding']),
     collection: app.get('collection'),
     deleting: app.getIn(['list', 'deleting']),
     deleteError: app.getIn(['list', 'deleteError']),
@@ -41,8 +42,20 @@ const mapDispatchToProps = (dispatch) => {
         .then(() => dispatch(getBookmarkCount(user, coll, listId)));
     },
     bulkAddToList: (user, coll, listId, pages) => {
+      const delay = (action, ms) => {
+        return new Promise(
+          resolve => setTimeout(
+            () => dispatch(action()).then(resolve),
+            ms
+          )
+        );
+      };
+
+      dispatch(bulkAddBatch(listId));
+      // TODO: delay might not be necessary
       dispatch(bulkAddTo(user, coll, listId, pages))
-        .then(() => dispatch(getBookmarkCount(user, coll, listId)));
+        .then(() => delay(() => getBookmarkCount(user, coll, listId), 1500))
+        .then(() => dispatch(bulkAddBatch()));
     },
     editColl: (user, coll, data) => {
       return dispatch(editCollection(user, coll, data))

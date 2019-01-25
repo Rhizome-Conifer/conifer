@@ -141,6 +141,10 @@
                         font-feature-settings: 'tnum';
                         margin: 0 .5rem;
 
+                        svg {
+                            height: 1rem;
+                        }
+
                         &:before {
                             content: '(';
                             padding-right: .1rem;

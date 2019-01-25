@@ -5,7 +5,7 @@ import webpack from 'webpack';
 import { port } from '../src/config';
 import baseConfig from './webpack.config.server';
 
-const host = '127.0.0.1';
+const host = process.env.APP_HOST || '127.0.0.1';
 const assetPort = Number(port) + 1;
 
 const config = {

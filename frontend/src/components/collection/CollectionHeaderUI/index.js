@@ -79,11 +79,6 @@ class CollectionHeaderUI extends Component {
     unshareFromDat(collection.get('owner'), collection.get('id'));
   }
 
-  howTo = () => {
-    const { history } = this.props;
-    history.push('/_documentation');
-  }
-
   editModal = () => {
     this.setState({ editModal: !this.state.editModal });
   }
@@ -204,7 +199,7 @@ class CollectionHeaderUI extends Component {
                     onboardingLink && !this.context.isMobile &&
                       <MenuItem onClick={this.showOnboarding}><span role="img" aria-label="tada emoji">&#127881;</span> Tour New Features</MenuItem>
                   }
-                  <MenuItem href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">Help</MenuItem>
+                  <MenuItem href="https://guide.webrecorder.io/" target="_blank">Help</MenuItem>
                 </DropdownButton>
               </div>
           }

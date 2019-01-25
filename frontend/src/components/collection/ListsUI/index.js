@@ -27,6 +27,7 @@ class ListsUI extends Component {
   static propTypes = {
     activeListSlug: PropTypes.string,
     addToList: PropTypes.func,
+    bulkAdding: PropTypes.bool,
     bulkAddToList: PropTypes.func,
     collection: PropTypes.object,
     collapsibleToggle: PropTypes.func,
@@ -259,10 +260,11 @@ class ListsUI extends Component {
               {
                 lists.map((listObj, idx) => (
                   <ListItem
-                    dropCallback={this.pageDropCallback}
+                    bulkAdding={this.props.bulkAdding}
                     collId={collection.get('id')}
                     collPublic={collection.get('public')}
                     collUser={collection.get('owner')}
+                    dropCallback={this.pageDropCallback}
                     editList={this.sendEditList}
                     index={idx}
                     key={listObj.get('id')}

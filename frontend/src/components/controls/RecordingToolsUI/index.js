@@ -88,10 +88,6 @@ class RecordingToolsUI extends PureComponent {
     this.props.toggleAutoscroll(!this.props.autoscroll);
   }
 
-  userGuide = () => {
-    this.props.history.push('/_documentation');
-  }
-
   openClipboard = () => this.props.toggleClipboard(true)
 
   closeClipboard = () => this.props.toggleClipboard(false)
@@ -141,7 +137,7 @@ class RecordingToolsUI extends PureComponent {
                   </MenuItem>
               }
               <MenuItem divider />
-              <MenuItem onClick={this.userGuide}>Help</MenuItem>
+              <MenuItem href="https://guide.webrecorder.io/" target="_blank">Help</MenuItem>
             </DropdownButton>
         }
         {

@@ -14,3 +14,4 @@ static
 npm-debug.log
 webpack-assets.json
 mocks
+.cache-loader

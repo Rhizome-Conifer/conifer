@@ -7,7 +7,7 @@ import webpack from 'webpack';
 import config from '../src/config';
 import getBaseConfig from './webpack.config.client';
 
-const host = '127.0.0.1';
+const host = process.env.APP_HOST || '127.0.0.1';
 const port = Number(config.port) + 1;
 const baseConfig = getBaseConfig({
   development: true,

@@ -228,7 +228,7 @@ class CollectionDetailUI extends Component {
 
   selectAll = (evt) => {
     // ignore when edtiors in use
-    if (evt.target.nodeName.toLowerCase() === 'input' || evt.target.classList.contains('public-DraftEditor-content')) {
+    if (['input', 'textarea'].includes(evt.target.nodeName.toLowerCase()) || evt.target.classList.contains('public-DraftEditor-content')) {
       return;
     }
 

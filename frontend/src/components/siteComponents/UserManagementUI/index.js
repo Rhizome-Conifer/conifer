@@ -158,7 +158,7 @@ class UserManagementUI extends PureComponent {
           </li>
 
           <li className="hidden-xs">
-            <a href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">Help</a>
+            <a href="https://guide.webrecorder.io/" target="_blank">Help</a>
           </li>
 
           { !auth.get('loaded') || !username || (isAnon && collCount === 0) ?
@@ -196,7 +196,7 @@ class UserManagementUI extends PureComponent {
                 }
 
                 <MenuItem divider />
-                <MenuItem href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">User Guide</MenuItem>
+                <MenuItem href="https://guide.webrecorder.io/" target="_blank">User Guide</MenuItem>
                 <MenuItem href="mailto:support@webrecorder.io" target="_blank">Contact Support</MenuItem>
                 <MenuItem divider />
                 <MenuItem onClick={this.goToFAQ}>About Webrecorder</MenuItem>

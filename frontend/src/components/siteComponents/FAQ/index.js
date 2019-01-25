@@ -58,7 +58,7 @@ function FAQ() {
 
           <h4 className="q">How do I use Webrecorder?</h4>
           <p className="a">
-            <a href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">We created a user guide to help get acquianted.</a>
+            <a href="https://guide.webrecorder.io/" target="_blank">We created a user guide to help get acquianted.</a>
           </p>
 
           <h4 className="q">What can I do with recordings made in Webrecorder?</h4>

@@ -85,6 +85,17 @@ export function capitalize(str) {
 }
 
 
+export function chunk(arr, size) {
+  const chunkedArr = [];
+  let index = 0;
+  while (index < arr.length) {
+    chunkedArr.push(arr.slice(index, size + index));
+    index += size;
+  }
+  return chunkedArr;
+}
+
+
 export function deleteStorage(key, device = null) {
   try {
     const storageDevice = device || window.localStorage;

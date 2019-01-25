@@ -1,8 +1,8 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, MenuItem } from 'react-bootstrap';
 
-import { getCollectionLink } from 'helpers/utils';
+import { truncWord } from 'config';
+import { getCollectionLink, truncate } from 'helpers/utils';
 
 import { CollectionDropdown } from 'containers';
 
@@ -54,7 +54,7 @@ class AdminHeaderUI extends PureComponent {
           <span className="caret" />
           Collection Manager
         </button>
-        <span className="active-collection">{collection.get('title')}</span>
+        <span className="active-collection" title={collection.get('title')}>{truncate(collection.get('title'), 10, truncWord)}</span>
         {
           collection.get('public') &&
             <span className="visibility-badge">PUBLIC</span>

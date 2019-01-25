@@ -65,6 +65,10 @@ a.collection-title:hover {
         max-width: 35rem;
         word-break: break-word;
 
+        & > div {
+            width: 100%;
+        }
+
         * {
             max-width: 35rem;
         }
@@ -81,6 +85,7 @@ a.collection-title:hover {
     .wr-inline-editor {
         line-height: 1;
         color: $gray550;
+        width: 100%;
 
         .glyphicon {
             color: $gray500;

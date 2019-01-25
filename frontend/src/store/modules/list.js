@@ -1,6 +1,7 @@
 import { fromJS } from 'immutable';
 
 import { apiPath } from 'config';
+import { chunk } from 'helpers/utils';
 
 
 const LIST_CREATE = 'wr/list/LIST_CREATE';
@@ -15,6 +16,7 @@ const LIST_ADD = 'wr/list/LIST_ADD';
 const LIST_ADD_SUCCESS = 'wr/list/LIST_ADD_SUCCESS';
 const LIST_ADD_FAIL = 'wr/list/LIST_ADD_FAIL';
 
+const BULK_ADD_WAIT = 'wr/list/BULK_ADD_WAIT';
 const BULK_ADD = 'wr/list/BULK_ADD';
 const BULK_ADD_SUCCESS = 'wr/list/BULK_ADD_SUCCESS';
 const BULK_ADD_FAIL = 'wr/list/BULK_ADD_FAIL';
@@ -43,6 +45,7 @@ const BOOKMARK_REMOVE_FAIL = 'wr/list/BOOKMARK_REMOVE_FAIL';
 
 
 const initialState = fromJS({
+  adding: false,
   bookmarks: [],
   bkEdited: false,
   bkDeleting: false,
@@ -80,6 +83,8 @@ export default function list(state = initialState, action = {}) {
           return 0;
         })
       );
+    case BULK_ADD_WAIT:
+      return state.set('adding', action.adding);
     case LIST_EDIT:
       return state.set('editing', true);
     case LIST_EDIT_SUCCESS: {
@@ -184,13 +189,30 @@ export function addTo(user, coll, listId, page) {
 }
 
 
+export function bulkAddBatch(id = false) {
+  return {
+    type: BULK_ADD_WAIT,
+    adding: id
+  };
+}
+
+
 export function bulkAddTo(user, coll, listId, pages) {
   return {
     types: [BULK_ADD, BULK_ADD_SUCCESS, BULK_ADD_FAIL],
-    promise: client => client.post(`${apiPath}/list/${listId}/bulk_bookmarks`, {
-      params: { user, coll: decodeURIComponent(coll) },
-      data: pages
-    })
+    promise: (client) => {
+      const pageChunks = chunk(pages, 25);
+      const batch = chunk => client.post(`${apiPath}/list/${listId}/bulk_bookmarks`, {
+        params: { user, coll: decodeURIComponent(coll) },
+        data: chunk
+      });
+      const promises = pageChunks.map(chunk => () => batch(chunk));
+
+      return new Promise((resolve) => {
+        promises.push(resolve);
+        promises.reduce((prev, cur) => prev.then(cur()), Promise.resolve());
+      });
+    }
   };
 }
 

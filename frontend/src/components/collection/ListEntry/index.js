@@ -28,7 +28,7 @@ const ListEntry = ({ collection, isDetail, list }) => {
                 {
                   !__PLAYER__ &&
                   <React.Fragment>
-                    by <Link to={`/${collection.get('owner')}`}>{collection.get('owner')}</Link>
+                    &nbsp;by <Link to={`/${collection.get('owner')}`}>{collection.get('owner')}</Link>
                   </React.Fragment>
                 }
               </React.Fragment>

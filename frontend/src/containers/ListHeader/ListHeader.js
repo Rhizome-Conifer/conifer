@@ -26,7 +26,7 @@ const mapDispatchToProps = (dispatch, { history }) => {
       dispatch(editList(user, coll, listId, data))
         .then((res) => {
           if (data.hasOwnProperty('title')) {
-            history.replace(`/${user}/${coll}/list/${res.list.slug}`);
+            history.replace(`/${user}/${coll}/list/${res.list.slug}/manage`);
           }
           return dispatch(loadColl(user, coll));
         }, () => {})

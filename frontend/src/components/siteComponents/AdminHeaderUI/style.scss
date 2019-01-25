@@ -34,14 +34,19 @@
     .wr-collection-menu {
         flex-shrink: 0;
 
+        @media (max-width: $xs) {
+            width: 15rem;
+        }
+
         .dropdown {
             .dropdown-toggle {
                 background: transparent;
                 color: $white;
                 border-color: $mgmt-gray;
 
-                &:hover {
-
+                span {
+                    text-overflow: elipsis;
+                    overflow: hidden;
                 }
             }
 

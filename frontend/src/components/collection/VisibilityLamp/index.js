@@ -51,13 +51,15 @@ class VisibilityLamp extends PureComponent {
       // exited checks for whether the the widget is still moused over
       // or if the user left while the edit was finishing..
       doubleRAF(() => {
-        const bcr = this.bulb.getBoundingClientRect();
-        this.setState({
-          origWidth: bcr.width,
-          width: this.state.exited ? 0 : bcr.width,
-          open: !this.state.exited,
-          exited: false
-        });
+        if (this.bulb) {
+          const bcr = this.bulb.getBoundingClientRect();
+          this.setState({
+            origWidth: bcr.width,
+            width: this.state.exited ? 0 : bcr.width,
+            open: !this.state.exited,
+            exited: false
+          });
+        }
       });
     }
   }

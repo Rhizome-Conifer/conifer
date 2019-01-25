@@ -8,6 +8,7 @@ import { withRouter } from 'react-router';
 import { draggableTypes as dt } from 'config';
 
 import VisibilityLamp from 'components/collection/VisibilityLamp';
+import { LoaderIcon } from 'components/icons';
 
 
 const listSource = {
@@ -92,6 +93,7 @@ class ListItem extends PureComponent {
 
   static propTypes = {
     addToList: PropTypes.func,
+    bulkAdding: PropTypes.bool,
     collId: PropTypes.string,
     collPublic: PropTypes.bool,
     collUser: PropTypes.string,
@@ -118,7 +120,7 @@ class ListItem extends PureComponent {
 
   render() {
     const { canAdmin } = this.context;
-    const { collId, collPublic, collUser, connectDragSource, connectDropTarget, isOver, isDragging, list, selected } = this.props;
+    const { bulkAdding, collPublic, connectDragSource, connectDropTarget, isOver, isDragging, list, selected } = this.props;
 
     const title = list.get('title');
     const isPublic = list.get('public');
@@ -130,7 +132,7 @@ class ListItem extends PureComponent {
           <span className="title" title={list.get('title')}>
             { list.get('title') }
           </span>
-          <span className="bookmark-count">{list.get('total_bookmarks')}</span>
+          <span className="bookmark-count">{bulkAdding === list.get('id') ? <LoaderIcon /> : list.get('total_bookmarks')}</span>
           {
             canAdmin &&
               <VisibilityLamp
