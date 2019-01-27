@@ -33,6 +33,9 @@ USER_LOGINS_1000 = 'User-Logins-1GB'
 COLL_SIZES_CREATED = 'Collections Created'
 COLL_SIZES_UPDATED = 'Collections Updated'
 
+COLL_COUNT_CREATED = 'Number of Collections Created'
+COLL_COUNT_UPDATED = 'Number of Collections Updated'
+
 
 # ============================================================================
 class AdminController(BaseController):
@@ -70,7 +73,8 @@ class AdminController(BaseController):
                     USER_TABLE, COLL_TABLE, TEMP_TABLE,
                     ACTIVE_SESSIONS, TOTAL_USERS,
                     USER_LOGINS, USER_LOGINS_100, USER_LOGINS_1000,
-                    COLL_SIZES_CREATED, COLL_SIZES_UPDATED
+                    COLL_SIZES_CREATED, COLL_SIZES_UPDATED,
+                    COLL_COUNT_CREATED, COLL_COUNT_UPDATED,
                    ]
 
     CACHE_TTL = 600
@@ -161,7 +165,10 @@ class AdminController(BaseController):
                 return self.load_user_logins(name, dates, timestamps, 1000000000)
 
             elif name == COLL_SIZES_CREATED or name == COLL_SIZES_UPDATED:
-                return self.load_coll_series_by_size(name, dates, timestamps)
+                return self.load_coll_series_by_size_or_count(name, dates, timestamps, count_only=False)
+
+            elif name == COLL_COUNT_CREATED or name == COLL_COUNT_UPDATED:
+                return self.load_coll_series_by_size_or_count(name, dates, timestamps, count_only=True)
 
             return self.load_time_series(name, dates, timestamps)
 
@@ -360,10 +367,10 @@ class AdminController(BaseController):
                 'type': 'table'
                }
 
-    def load_coll_series_by_size(self, key, dates, timestamps):
+    def load_coll_series_by_size_or_count(self, key, dates, timestamps, count_only=False):
         date_bucket = {}
 
-        if key == COLL_SIZES_CREATED:
+        if key in (COLL_SIZES_CREATED, COLL_COUNT_CREATED):
             index = 4
         else:
             index = 5
@@ -373,7 +380,7 @@ class AdminController(BaseController):
             dt = datetime.fromtimestamp(coll_data[index] / 1000)
             dt = dt.date().isoformat()
 
-            date_bucket[dt] = date_bucket.get(dt, 0) + coll_data[2]
+            date_bucket[dt] = date_bucket.get(dt, 0) + (coll_data[2] if not count_only else 1)
 
         datapoints = []
         for dt, ts in zip(dates, timestamps):

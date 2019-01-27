@@ -241,13 +241,15 @@ class TestAdminAPI(FullStackTests):
                               {'target': COLL_TABLE, 'type': 'table'},
                               {'target': COLL_SIZES_CREATED, 'type': 'timeserie'},
                               {'target': COLL_SIZES_UPDATED, 'type': 'timeserie'},
-                             ]
+                              {'target': COLL_COUNT_CREATED, 'type': 'timeserie'},
+                              {'target': COLL_COUNT_UPDATED, 'type': 'timeserie'},
+                              ]
                  }
 
         res = self.testapp.post_json('/api/v1/stats/query', params=params)
 
         assert isinstance(res.json, list)
-        assert len(res.json) == 3
+        assert len(res.json) == 5
 
         colls = res.json[0]['rows']
 
