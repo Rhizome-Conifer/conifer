@@ -11,7 +11,7 @@ import { publicIP } from 'config';
 
 import './style.scss';
 
-const CBrowser = !__PLAYER__ && __CLIENT__ && require('shepherd-client/src/browser').default;
+const CBrowser = !__DESKTOP__ && !__PLAYER__ && __CLIENT__ && require('shepherd-client/src/browser').default;
 
 
 class RemoteBrowserUI extends Component {

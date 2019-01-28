@@ -45,6 +45,7 @@ if (process.env.NODE_ENV === 'development') {
 
 
 module.exports = {
+  mode: process.env.NODE_ENV,
   devtool: process.env.NODE_ENV === 'production' ? 'source-map' : 'eval',
   context: path.resolve(__dirname, '..'),
   entry: {
