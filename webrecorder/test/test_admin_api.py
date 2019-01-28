@@ -239,18 +239,20 @@ class TestAdminAPI(FullStackTests):
                            },
                   'targets': [
                               {'target': COLL_TABLE, 'type': 'table'},
-                              {'target': COLL_SIZES_CREATED, 'type': 'timeserie'},
-                              {'target': COLL_SIZES_UPDATED, 'type': 'timeserie'},
-                              {'target': COLL_COUNT_CREATED, 'type': 'timeserie'},
+                              {'target': COLL_COUNT, 'type': 'timeserie'},
                               {'target': COLL_COUNT_PUBLIC, 'type': 'timeserie'},
                               {'target': COLL_COUNT_PUBLIC_W_LISTS, 'type': 'timeserie'},
-                              ]
+                              {'target': COLL_SIZES_CREATED, 'type': 'timeserie'},
+                              {'target': COLL_SIZES_UPDATED, 'type': 'timeserie'},
+                              {'target': COLL_SIZES_PUBLIC, 'type': 'timeserie'},
+                              {'target': COLL_SIZES_PUBLIC_W_LISTS, 'type': 'timeserie'},
+                             ]
                  }
 
         res = self.testapp.post_json('/api/v1/stats/query', params=params)
 
         assert isinstance(res.json, list)
-        assert len(res.json) == 6
+        assert len(res.json) == 8
 
         colls = res.json[0]['rows']
 

@@ -32,8 +32,11 @@ USER_LOGINS_1000 = 'User-Logins-1GB'
 
 COLL_SIZES_CREATED = 'Collections Created'
 COLL_SIZES_UPDATED = 'Collections Updated'
+COLL_SIZES_PUBLIC = 'Size of Public Collections'
+COLL_SIZES_PUBLIC_W_LISTS = 'Size of Public Collections with Lists'
 
-COLL_COUNT_CREATED = 'Num Collections'
+
+COLL_COUNT = 'Num Collections'
 COLL_COUNT_PUBLIC = 'Num Public Collections'
 COLL_COUNT_PUBLIC_W_LISTS = 'Num Public Collections with Lists'
 
@@ -74,8 +77,8 @@ class AdminController(BaseController):
                     USER_TABLE, COLL_TABLE, TEMP_TABLE,
                     ACTIVE_SESSIONS, TOTAL_USERS,
                     USER_LOGINS, USER_LOGINS_100, USER_LOGINS_1000,
-                    COLL_SIZES_CREATED, COLL_SIZES_UPDATED,
-                    COLL_COUNT_CREATED, COLL_COUNT_PUBLIC, COLL_COUNT_PUBLIC_W_LISTS,
+                    COLL_SIZES_CREATED, COLL_SIZES_UPDATED, COLL_SIZES_PUBLIC, COLL_SIZES_PUBLIC_W_LISTS,
+                    COLL_COUNT, COLL_COUNT_PUBLIC, COLL_COUNT_PUBLIC_W_LISTS,
                    ]
 
     CACHE_TTL = 600
@@ -165,25 +168,35 @@ class AdminController(BaseController):
             elif name == USER_LOGINS_1000:
                 return self.load_user_logins(name, dates, timestamps, 1000000000)
 
+            elif name in COLL_COUNT:
+                # add 1 per collection
+                return self.load_coll_series(name, dates, timestamps, False,
+                                             lambda coll_data: 1)
+
+            elif name == COLL_COUNT_PUBLIC:
+                # add 1 per collection if public
+                return self.load_coll_series(name, dates, timestamps, False,
+                                             lambda coll_data: 1 if coll_data[6] == '1' else 0)
+
+            elif name == COLL_COUNT_PUBLIC_W_LISTS:
+                # add 1 per collection if public and has lists
+                return self.load_coll_series(name, dates, timestamps, False,
+                                             lambda coll_data: 1 if coll_data[6] == '1' and coll_data[7] > 0 else 0)
+
             elif name in (COLL_SIZES_CREATED, COLL_SIZES_UPDATED):
                 # add collection size
                 return self.load_coll_series(name, dates, timestamps, (name == COLL_SIZES_CREATED),
                                              lambda coll_data: coll_data[2])
 
-            elif name in COLL_COUNT_CREATED:
-                # add 1 per collection
-                return self.load_coll_series(name, dates, timestamps, True,
-                                             lambda coll_data: 1)
+            elif name == COLL_SIZES_PUBLIC:
+                # add collection size if public
+                return self.load_coll_series(name, dates, timestamps, False,
+                                             lambda coll_data: coll_data[2] if coll_data[6] == '1' else 0)
 
-            elif name == COLL_COUNT_PUBLIC:
-                # add 1 per collection
-                return self.load_coll_series(name, dates, timestamps, True,
-                                             lambda coll_data: 1 if coll_data[6] == '1' else 0)
-
-            elif name == COLL_COUNT_PUBLIC_W_LISTS:
-                # add 1 per collection
-                return self.load_coll_series(name, dates, timestamps, True,
-                                             lambda coll_data: 1 if coll_data[6] == '1' and coll_data[7] > 0 else 0)
+            elif name == COLL_SIZES_PUBLIC_W_LISTS:
+                # add collection size if public and has lists
+                return self.load_coll_series(name, dates, timestamps, False,
+                                             lambda coll_data: coll_data[2] if coll_data[6] == '1' and coll_data[7] > 0 else 0)
 
             return self.load_time_series(name, dates, timestamps)
 
