@@ -178,12 +178,12 @@ class AdminController(BaseController):
             elif name == COLL_COUNT_PUBLIC:
                 # add 1 per collection
                 return self.load_coll_series(name, dates, timestamps, True,
-                                             lambda coll_data: 1 if coll_data[6] else 0)
+                                             lambda coll_data: 1 if coll_data[6] == '1' else 0)
 
             elif name == COLL_COUNT_PUBLIC_W_LISTS:
                 # add 1 per collection
                 return self.load_coll_series(name, dates, timestamps, True,
-                                             lambda coll_data: 1 if coll_data[6] and coll_data[7] > 0 else 0)
+                                             lambda coll_data: 1 if coll_data[6] == '1' and coll_data[7] > 0 else 0)
 
             return self.load_time_series(name, dates, timestamps)
 
