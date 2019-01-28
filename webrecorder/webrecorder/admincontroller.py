@@ -33,8 +33,9 @@ USER_LOGINS_1000 = 'User-Logins-1GB'
 COLL_SIZES_CREATED = 'Collections Created'
 COLL_SIZES_UPDATED = 'Collections Updated'
 
-COLL_COUNT_CREATED = 'Number of Collections Created'
-COLL_COUNT_UPDATED = 'Number of Collections Updated'
+COLL_COUNT_CREATED = 'Num Collections'
+COLL_COUNT_PUBLIC = 'Num Public Collections'
+COLL_COUNT_PUBLIC_W_LISTS = 'Num Public Collections with Lists'
 
 
 # ============================================================================
@@ -74,7 +75,7 @@ class AdminController(BaseController):
                     ACTIVE_SESSIONS, TOTAL_USERS,
                     USER_LOGINS, USER_LOGINS_100, USER_LOGINS_1000,
                     COLL_SIZES_CREATED, COLL_SIZES_UPDATED,
-                    COLL_COUNT_CREATED, COLL_COUNT_UPDATED,
+                    COLL_COUNT_CREATED, COLL_COUNT_PUBLIC, COLL_COUNT_PUBLIC_W_LISTS,
                    ]
 
     CACHE_TTL = 600
@@ -164,11 +165,25 @@ class AdminController(BaseController):
             elif name == USER_LOGINS_1000:
                 return self.load_user_logins(name, dates, timestamps, 1000000000)
 
-            elif name == COLL_SIZES_CREATED or name == COLL_SIZES_UPDATED:
-                return self.load_coll_series_by_size_or_count(name, dates, timestamps, count_only=False)
+            elif name in (COLL_SIZES_CREATED, COLL_SIZES_UPDATED):
+                # add collection size
+                return self.load_coll_series(name, dates, timestamps, (name == COLL_SIZES_CREATED),
+                                             lambda coll_data: coll_data[2])
 
-            elif name == COLL_COUNT_CREATED or name == COLL_COUNT_UPDATED:
-                return self.load_coll_series_by_size_or_count(name, dates, timestamps, count_only=True)
+            elif name in COLL_COUNT_CREATED:
+                # add 1 per collection
+                return self.load_coll_series(name, dates, timestamps, True,
+                                             lambda coll_data: 1)
+
+            elif name == COLL_COUNT_PUBLIC:
+                # add 1 per collection
+                return self.load_coll_series(name, dates, timestamps, True,
+                                             lambda coll_data: 1 if coll_data[6] else 0)
+
+            elif name == COLL_COUNT_PUBLIC_W_LISTS:
+                # add 1 per collection
+                return self.load_coll_series(name, dates, timestamps, True,
+                                             lambda coll_data: 1 if coll_data[6] and coll_data[7] > 0 else 0)
 
             return self.load_time_series(name, dates, timestamps)
 
@@ -342,6 +357,7 @@ class AdminController(BaseController):
             coll_data[2] = int(coll_data[2])
             coll_data[4] = self.parse_iso_or_ts(coll_data[4])
             coll_data[5] = self.parse_iso_or_ts(coll_data[5])
+            coll_data.append(self.redis.zcard(coll_key.replace(':info', ':lists')))
 
             colls.append(coll_data)
 
@@ -358,6 +374,7 @@ class AdminController(BaseController):
             {'text': 'Creation Date', 'type': 'time'},
             {'text': 'Updated Date', 'type': 'time'},
             {'text': 'Public', 'type': 'string'},
+            {'text': 'Num Lists', 'type': 'number'},
         ]
 
         public_colls = [row for row in self.fetch_coll_table() if row[6] == '1']
@@ -367,10 +384,10 @@ class AdminController(BaseController):
                 'type': 'table'
                }
 
-    def load_coll_series_by_size_or_count(self, key, dates, timestamps, count_only=False):
+    def load_coll_series(self, key, dates, timestamps, use_created_date, incr_func):
         date_bucket = {}
 
-        if key in (COLL_SIZES_CREATED, COLL_COUNT_CREATED):
+        if use_created_date:
             index = 4
         else:
             index = 5
@@ -380,7 +397,8 @@ class AdminController(BaseController):
             dt = datetime.fromtimestamp(coll_data[index] / 1000)
             dt = dt.date().isoformat()
 
-            date_bucket[dt] = date_bucket.get(dt, 0) + (coll_data[2] if not count_only else 1)
+            #date_bucket[dt] = date_bucket.get(dt, 0) + (coll_data[2] if not count_only else 1)
+            date_bucket[dt] = date_bucket.get(dt, 0) + incr_func(coll_data)
 
         datapoints = []
         for dt, ts in zip(dates, timestamps):
