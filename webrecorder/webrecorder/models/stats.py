@@ -158,14 +158,14 @@ class Stats(object):
         self.redis.hincrby(self.UPLOADS_COUNT_KEY, today, 1)
         self.redis.hincrby(self.UPLOADS_SIZE_KEY, today, size)
 
-    def incr_bookmark_add(self):
-        self.redis.hincrby(self.BOOKMARK_ADD_KEY, today_str(), 1)
+    def incr_bookmark_add(self, num=1):
+        self.redis.hincrby(self.BOOKMARK_ADD_KEY, today_str(), num)
 
-    def incr_bookmark_mod(self):
-        self.redis.hincrby(self.BOOKMARK_MOD_KEY, today_str(), 1)
+    def incr_bookmark_mod(self, num=1):
+        self.redis.hincrby(self.BOOKMARK_MOD_KEY, today_str(), num)
 
-    def incr_bookmark_del(self):
-        self.redis.hincrby(self.BOOKMARK_DEL_KEY, today_str(), 1)
+    def incr_bookmark_del(self, num=1):
+        self.redis.hincrby(self.BOOKMARK_DEL_KEY, today_str(), num)
 
     def incr_replay(self, size, username):
         if username.startswith(self.TEMP_PREFIX):

@@ -7,6 +7,6 @@ requests>=2.9.1
 werkzeug
 gevent-websocket
 har2warc>=1.0.4
-fakeredis
+fakeredis<1.0
 apispec<1.0
 

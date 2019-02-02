@@ -140,11 +140,9 @@ class ListsController(BaseController):
 
             bookmark_list = request.json
 
-            for bookmark_data in bookmark_list:
-                bookmark = blist.create_bookmark(bookmark_data)
+            blist.add_bookmarks(bookmark_list)
 
-            blist.mark_updated()
-            return {'list': blist.serialize()}
+            return {'success': True}
 
         @self.app.get('/api/v1/list/<list_id>/bookmarks')
         @self.api(query=['user', 'coll'],

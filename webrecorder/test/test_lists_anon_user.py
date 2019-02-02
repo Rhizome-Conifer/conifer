@@ -471,7 +471,7 @@ class TestListsAnonUserAPI(FullStackTests):
                                      params=bookmarks)
 
 
-        assert res.json['list']
+        assert res.json['success'] == True
 
     def test_multiple_bookmarks_for_page(self):
         res = self._add_bookmark('1003', title='An Example 2', url='http://example.com/испытание/test',

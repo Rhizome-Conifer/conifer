@@ -7,11 +7,11 @@ class PagesMixin(object):
     """Recording pages.
 
     :cvar str PAGES_KEY: pages Redis key template
-    :cvar str PAGE_BOOKMARKS_KEY: list of bookmarks Redis key template
+    :cvar str PAGE_BOOKMARKS_CACHE_KEY: temporary list of pages->bookmarks Redis key template
     :ivar _pages_cache: n.s.
     """
     PAGES_KEY = 'c:{coll}:p'
-    PAGE_BOOKMARKS_KEY = 'c:{coll}:p_to_b'
+    PAGE_BOOKMARKS_CACHE_KEY = 'c:{coll}:p_to_b'
 
     def __init__(self, **kwargs):
         """Initialize recording pages."""
@@ -78,7 +78,7 @@ class PagesMixin(object):
 
         self.redis.hdel(self.pages_key, pid)
 
-        page_bookmarks_key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
+        page_bookmarks_key = self.PAGE_BOOKMARKS_CACHE_KEY.format(coll=self.my_id)
         self.redis.hdel(page_bookmarks_key, pid)
 
     def page_exists(self, pid):
@@ -208,42 +208,11 @@ class PagesMixin(object):
 
         return id_map
 
-    def add_page_bookmark(self, pid, bid, list_id):
-        """Add bookmark.
-
-        :param str pid: page ID
-        :param str bid: bookmark ID
-        :param str list_id: list of bookmarks ID
+    def clear_page_bookmark_cache(self):
+        """ Check if on-demand page->bookmark cache already exists
         """
-        key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
-        if not self.redis.exists(key):
-            return
-
-        res = self.redis.hget(key, pid)
-        try:
-            data = json.loads(res)
-            data[bid] = list_id
-            self.redis.hset(key, pid, json.dumps(data))
-        except:
-            print('Error Updating page->bookmark table')
-
-    def remove_page_bookmark(self, pid, bid):
-        """Remove bookmark.
-
-        :param str pid: page ID
-        :param str bid: bookmark ID
-        """
-        key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
-        if not self.redis.exists(key):
-            return
-
-        res = self.redis.hget(key, pid)
-        try:
-            data = json.loads(res)
-            data.pop(bid, '')
-            self.redis.hset(key, pid, json.dumps(data))
-        except:
-            print('Error Updating page->bookmark table')
+        key = self.PAGE_BOOKMARKS_CACHE_KEY.format(coll=self.my_id)
+        return self.redis.delete(key)
 
     def get_all_page_bookmarks(self, filter_pages=None):
         """List all bookmarks.
@@ -251,7 +220,7 @@ class PagesMixin(object):
         :param filter_pages: filter
         :type: list or None
         """
-        key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
+        key = self.PAGE_BOOKMARKS_CACHE_KEY.format(coll=self.my_id)
         filter_pages = filter_pages or []
         filter_pages = [page['id'] for page in filter_pages]
 
