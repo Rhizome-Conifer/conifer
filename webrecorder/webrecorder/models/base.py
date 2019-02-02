@@ -680,17 +680,37 @@ class RedisOrderedList(object):
 
         # insert at the end
         if new_score is None:
-            res = self.redis.zrevrange(key, 0, 1, withscores=True)
-            if len(res) == 0:
-                new_score = self.SCORE_UNIT
-
-            elif len(res) == 1:
-                new_score = res[0][1] * 2.0
-
-            elif len(res) == 2:
-                new_score = res[0][1] * 2.0 - res[1][1]
+            new_score = self._new_score()
 
         self.redis.zadd(key, new_score, id)
+
+    def _new_score(self):
+        """
+        Create score using score unit
+        """
+        res = self.redis.zrevrange(self._ordered_list_key, 0, 1, withscores=True)
+        if len(res) == 0:
+            new_score = self.SCORE_UNIT
+
+        elif len(res) == 1:
+            new_score = res[0][1] * 2.0
+
+        elif len(res) == 2:
+            new_score = res[0][1] * 2.0 - res[1][1]
+
+        return new_score
+
+
+    def insert_ordered_ids(self, id_list):
+        start_score = self._new_score()
+
+        add_dict = {}
+
+        for id in id_list:
+            add_dict[id] = start_score
+            start_score += 2.0
+
+        self.redis.zadd(self._ordered_list_key, **add_dict)
 
     def contains_id(self, obj_id):
         """Return whether sorted set contains component ID.

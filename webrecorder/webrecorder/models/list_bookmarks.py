@@ -64,10 +64,43 @@ class BookmarkList(RedisUniqueComponent):
             Stats(self.redis).incr_bookmark_add()
 
         if page_id:
-            collection.add_page_bookmark(page_id, bid, self.my_id)
+            collection.clear_page_bookmark_cache()
             self.load_pages([bookmark])
 
         return bookmark
+
+    def add_bookmarks(self, bookmarks):
+        collection = self.get_owner()
+        self.access.assert_can_write_coll(collection)
+
+        all_bookmarks = {}
+
+        clear_cache = False
+
+        for bookmark_data in bookmarks:
+            # don't store rec id, if provided
+            bookmark_data.pop('rec', '')
+
+            # if a page is specified for this bookmark, ensure that it has the same url and timestamp
+            page_id = bookmark_data.get('page_id')
+            if page_id:
+                clear_cache = True
+
+            bid = self.get_new_bookmark_id()
+            bookmark_data['id'] = bid
+
+            all_bookmarks[bid] = json.dumps(bookmark_data)
+
+        self.bookmark_order.insert_ordered_ids(all_bookmarks.keys())
+
+        self.redis.hmset(self.BOOK_CONTENT_KEY.format(blist=self.my_id), all_bookmarks)
+
+        if clear_cache:
+            self.get_owner().clear_page_bookmark_cache()
+
+        Stats(self.redis).incr_bookmark_add(len(bookmarks))
+
+        self.mark_updated()
 
     def get_bookmarks(self, load=True, start=0, end=-1, load_pages=True):
         self.access.assert_can_read_coll(self.get_owner())
@@ -133,7 +166,8 @@ class BookmarkList(RedisUniqueComponent):
         bookmark = self.get_bookmark(bid)
         page_id = bookmark.get('page_id')
         if page_id:
-            self.get_owner().remove_page_bookmark(page_id, bid)
+            #self.get_owner().remove_page_bookmark(page_id, bid)
+            self.get_owner().clear_page_bookmark_cache()
 
         if self.redis.hdel(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid) == 1:
             Stats(self.redis).incr_bookmark_del()
