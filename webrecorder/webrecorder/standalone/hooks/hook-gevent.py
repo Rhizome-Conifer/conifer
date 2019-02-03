@@ -10,6 +10,8 @@ hiddenimports = [
         'gevent.__semaphore',
         'gevent.__tracer',
         'gevent.__waiter',
+        'gevent._abstract_linkable',
+        'gevent.__abstract_linkable',
         'gevent._event',
         'gevent._greenlet',
         'gevent._local',
