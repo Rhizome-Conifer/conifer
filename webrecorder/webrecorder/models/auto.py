@@ -26,7 +26,7 @@ class Auto(RedisUniqueComponent):
 
     DEFAULT_BROWSER = 'chrome:67'
 
-    DEFAULT_FLOCK = 'auto-browsers-vnc'
+    DEFAULT_FLOCK = 'browsers'
 
     DEFAULT_SHEPHERD = 'http://shepherd:9020'
 
@@ -42,7 +42,9 @@ class Auto(RedisUniqueComponent):
             'URL': 'about:blank',
             'REDIS_URL': os.environ['REDIS_BASE_URL'],
             'WAIT_FOR_Q': '5',
-            'TAB_TYPE': 'CrawlerTab'
+            'TAB_TYPE': 'CrawlerTab',
+            'VNC_PASS': 'pass',
+            'IDLE_TIMEOUT': '',
         }
 
     def __init__(self, **kwargs):
@@ -157,7 +159,8 @@ class Auto(RedisUniqueComponent):
         if headless:
             deferred['xserver'] = True
 
-        opts = dict(overrides={'browser': 'oldwebtoday/' + browser_id},
+        opts = dict(overrides={'browser': 'oldwebtoday/' + browser_id,
+                               'xserver': 'oldwebtoday/vnc-webrtc-audio'},
                     deferred=deferred,
                     user_params=browser_data,
                     environ=environ)
