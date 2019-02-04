@@ -7,6 +7,8 @@ import { deleteStorage, getStorage, remoteBrowserMod, setStorage } from 'helpers
 
 import { createRemoteBrowser } from 'store/modules/remoteBrowsers';
 
+import { publicIP } from 'config';
+
 import './style.scss';
 
 const CBrowser = !__PLAYER__ && __CLIENT__ && require('shepherd-client/lib/browser').default;
@@ -71,6 +73,7 @@ class RemoteBrowserUI extends Component {
       on_event: this.onEvent,
       headers: { 'x-requested-with': 'XMLHttpRequest' },
       webrtc: true,
+      webrtcHostIP: publicIP,
     };
   }
 

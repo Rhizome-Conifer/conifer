@@ -10,6 +10,8 @@ import { load as loadColl } from 'store/modules/collection';
 
 import Modal from 'components/Modal';
 
+import { publicIP } from 'config'
+
 import './style.scss';
 
 
@@ -130,7 +132,7 @@ class Automation extends Component {
                 <ControlLabel>Automation Workers:</ControlLabel>
                 <FormControl.Static>
                   {
-                    this.props.workers.map((worker, idx) => <a href={`http://${window.location.hostname}:9020/attach/${worker}`} key={worker} target="_blank" style={{display: 'block'}}>Worker {idx + 1}</a>)
+                    this.props.workers.map((worker, idx) => <a href={`http://${publicIP}:9020/attach/${worker}`} key={worker} target="_blank" style={{display: 'block'}}>Worker {idx + 1}</a>)
                   }
                 </FormControl.Static>
               </FormGroup>

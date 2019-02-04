@@ -30,12 +30,17 @@ const hostScheme = process.env.SCHEME ? process.env.SCHEME : 'http';
 const contentHost = process.env.CONTENT_HOST ? process.env.CONTENT_HOST : `localhost:8092`;
 
 
+// public IP (for WebRTC connection)
+const publicIP = process.env.PUBLIC_IP ? process.env.PUBLIC_IP : appHost;
+
+
 export default Object.assign({
   announceMailingList: process.env.ANNOUNCE_MAILING_LIST,
   apiProxy: false,
   apiPath: '/api/v1',
   appHost: `${hostScheme}://${appHost}`,
   contentHost: `${hostScheme}://${contentHost}`,
+  publicIP: publicIP,
   columns: ['rowIndex', 'timestamp', 'title', 'url', 'browser', 'session'],
   columnLabels: {
     'browser': 'Capture Browser',

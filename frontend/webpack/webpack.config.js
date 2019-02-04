@@ -108,7 +108,8 @@ module.exports = smp.wrap({
       ANNOUNCE_MAILING_LIST: null,
       CONTENT_HOST: 'localhost:8092',
       FRONTEND_PORT: 8095,
-      SCHEME: 'http'
+      SCHEME: 'http',
+      PUBLIC_IP: process.env.PUBLIC_IP,
     })
   ],
 
