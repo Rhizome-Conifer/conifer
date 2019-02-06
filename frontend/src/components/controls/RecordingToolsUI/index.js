@@ -14,6 +14,7 @@ import './style.scss';
 class RecordingToolsUI extends PureComponent {
   static propTypes = {
     activeBrowser: PropTypes.string,
+    auth: PropTypes.object,
     autoscroll: PropTypes.bool,
     history: PropTypes.object,
     match: PropTypes.object,
@@ -115,6 +116,7 @@ class RecordingToolsUI extends PureComponent {
     const isNew = currMode === 'new';
     const isWrite = ['new', 'patch', 'record', 'extract'].includes(currMode);
     const modalFooter = <Button onClick={this._close}>Close</Button>;
+    const newFeatures = canAdmin && ['admin', 'beta-archivist'].includes(this.props.auth.get('role'));
 
     return (
       <div className="recording-actions text-center hidden-xs">
@@ -131,9 +133,16 @@ class RecordingToolsUI extends PureComponent {
         {
           canAdmin && !isNew &&
             <DropdownButton pullRight noCaret id="tool-dropdown" title={<span className="glyphicon glyphicon-option-vertical" aria-hidden="true" />}>
-              <MenuItem onClick={this.startAuto}>Start Automation</MenuItem>
-              <MenuItem onClick={this.stopAuto}>Stop Automation</MenuItem>
-              <MenuItem divider />
+
+              {
+                newFeatures &&
+                  <React.Fragment>
+                    <MenuItem onClick={this.startAuto}>Start Automation</MenuItem>
+                    <MenuItem onClick={this.stopAuto}>Stop Automation</MenuItem>
+                    <MenuItem divider />
+                  </React.Fragment>
+              }
+
               <MenuItem onClick={this.catalogView}>Collection Index</MenuItem>
               {
                 currMode.includes('replay') &&

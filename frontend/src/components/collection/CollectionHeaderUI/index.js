@@ -136,6 +136,8 @@ class CollectionHeaderUI extends Component {
     const titleCapped = truncate(collTitle, 9, truncWord);
     const allowDat = JSON.parse(process.env.ALLOW_DAT);
 
+    const newFeatures = canAdmin && ['admin', 'beta-archivist'].includes(this.props.auth.get('role'));
+
     return (
       <header className={containerClasses}>
         {
@@ -187,7 +189,12 @@ class CollectionHeaderUI extends Component {
                   <MenuItem divider />
                   <MenuItem onClick={this.togglePublicView}>Cover</MenuItem>
                   <MenuItem divider />
-                  <MenuItem onClick={this.props.toggleAutomationModal}>Automation <sup>beta</sup></MenuItem>
+
+                  {
+                    newFeatures &&
+                      <MenuItem onClick={this.props.toggleAutomationModal}>Automation <sup>beta</sup></MenuItem>
+                  }
+
                   {
                     this.props.active &&
                       <MenuItem onClick={this.stopAutomation}>Stop Automation</MenuItem>
@@ -201,7 +208,7 @@ class CollectionHeaderUI extends Component {
                   <MenuItem onClick={this.downloadCollection}>Download Collection</MenuItem>
                   <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
                   {
-                    allowDat && canAdmin && !isAnon && ['admin', 'beta-archivist'].includes(this.props.auth.get('role') || '') &&
+                    allowDat && canAdmin && !isAnon && newFeatures &&
                       <React.Fragment>
                         <MenuItem divider />
                         <MenuItem onClick={this.toggleDatModal}><p className="menu-label">More Sharing Options</p><DatIcon /> Share via Dat...</MenuItem>

@@ -10,7 +10,7 @@ import { load as loadColl } from 'store/modules/collection';
 
 import Modal from 'components/Modal';
 
-import { publicIP } from 'config'
+import { publicIP } from 'config';
 
 import './style.scss';
 

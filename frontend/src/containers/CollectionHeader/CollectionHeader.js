@@ -6,8 +6,7 @@ import { saveDelay } from 'config';
 
 import { loadCollections } from 'store/modules/auth';
 import { toggleAutomation, toggleModal } from 'store/modules/automation';
-import { resetEditState as resetCollEditState, edit as editCollDesc,
-         shareToDat, unshareFromDat } from 'store/modules/collection';
+import { resetEditState as resetCollEditState, edit as editCollDesc, shareToDat, unshareFromDat } from 'store/modules/collection';
 
 import CollectionHeaderUI from 'components/collection/CollectionHeaderUI';
 
