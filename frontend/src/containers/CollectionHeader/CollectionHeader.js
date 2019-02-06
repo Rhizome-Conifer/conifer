@@ -15,6 +15,7 @@ const mapStateToProps = ({ app }) => {
   return {
     active: app.getIn(['automation', 'active']),
     auth: app.getIn(['auth', 'user']),
+    autoId: app.getIn(['automation', 'autoId']),
     collection: app.get('collection'),
     collEditing: app.getIn(['collection', 'editing']),
     collEdited: app.getIn(['collection', 'edited']),

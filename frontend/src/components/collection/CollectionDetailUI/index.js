@@ -282,11 +282,9 @@ class CollectionDetailUI extends Component {
     const { listBookmarks, selectedPageIdx, sortedBookmarks } = this.state;
     const activeList = Boolean(params.list);
 
-    const pageIndexAccess = !canAdmin && !collection.get('public_index') && !activeList;
-    const listIndexAccess = !canAdmin && activeList && !list.get('loaded');
     const collRedirect = collection.get('loaded') && !collection.get('slug_matched') && params.coll !== collection.get('slug');
 
-    if (collection.get('error') || pageIndexAccess || listIndexAccess) {
+    if (collection.get('error') || !canAdmin) {
       return params.user.startsWith('temp-') ?
         <Temp404 /> :
         <HttpStatus>{collection.getIn(['error', 'error_message'])}</HttpStatus>;

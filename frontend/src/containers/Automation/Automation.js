@@ -24,6 +24,7 @@ class Automation extends Component {
     createAutomation: PropTypes.func,
     refresh: PropTypes.func,
     stopAutomation: PropTypes.func,
+    toggleAutomationModal: PropTypes.func,
     visible: PropTypes.bool,
     workers: PropTypes.array
   };
@@ -34,10 +35,7 @@ class Automation extends Component {
     this.refreshHandle = null;
     this.pingHandle = null;
     this.state = {
-      addToListModal: false,
       autoHops: 0,
-      autoModal: false,
-      checkedLists: {},
       listAutoLinks: '',
       num_browsers: 1,
       scope: 'single-page'
@@ -56,8 +54,6 @@ class Automation extends Component {
     clearInterval(this.refreshHandle);
     clearInterval(this.pingHandle);
   }
-
-  closeAutoModal = () => this.setState({ autoModal: false })
 
   handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
 
@@ -86,7 +82,7 @@ class Automation extends Component {
         header={<h4>New Automation</h4>}
         footer={
           <React.Fragment>
-            <Button style={{ marginRight: 5 }} onClick={this.closeAutoModal}>Close</Button>
+            <Button style={{ marginRight: 5 }} onClick={this.toggleAutomationModal}>Close</Button>
             {
               this.props.active &&
                 <Button style={{ marginRight: 5 }} onClick={this.sendStopAutomation}>Stop Automation</Button>

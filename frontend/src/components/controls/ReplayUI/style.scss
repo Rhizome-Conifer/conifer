@@ -52,6 +52,10 @@
     *::-ms-backdrop, iframe {
         min-height: 100%;
     }
+
+    .react-tabs__tab-panel {
+        min-height: 0;
+    }
 }
 
 @media (max-width: 500px) {

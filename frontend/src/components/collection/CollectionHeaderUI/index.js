@@ -188,7 +188,11 @@ class CollectionHeaderUI extends Component {
                   <MenuItem onClick={this.newSession}>New Session</MenuItem>
                   <MenuItem divider />
                   <MenuItem onClick={this.togglePublicView}>Cover</MenuItem>
-                  <MenuItem divider />
+
+                  {
+                    newFeatures &&
+                      <MenuItem divider />
+                  }
 
                   {
                     newFeatures &&
@@ -196,7 +200,7 @@ class CollectionHeaderUI extends Component {
                   }
 
                   {
-                    this.props.active &&
+                    newFeatures && this.props.active &&
                       <MenuItem onClick={this.stopAutomation}>Stop Automation</MenuItem>
                   }
                   <MenuItem divider />

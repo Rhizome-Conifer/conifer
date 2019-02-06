@@ -44,6 +44,7 @@ class CollectionCoverUI extends Component {
   constructor(options, { collection }) {
     super(options);
 
+    this.frameHandle = null
     this.waypoints = [];
     this.halfWidth = 0;
     this.scrollable = React.createRef();
@@ -67,6 +68,7 @@ class CollectionCoverUI extends Component {
 
   componentWillUnmount() {
     clearTimeout(this.lockHandle);
+    cancelAnimationFrame(this.frameHandle);
   }
 
   getLists = memoize(collection => collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size))
@@ -87,7 +89,7 @@ class CollectionCoverUI extends Component {
       return;
     }
 
-    requestAnimationFrame(() => {
+    this.frameHandle = requestAnimationFrame(() => {
       const t = this.scrollable.current.scrollTop;
       this.waypoints.some((wp, idx) => {
         if (t + this.halfWidth >= wp) {
@@ -98,6 +100,10 @@ class CollectionCoverUI extends Component {
             const spyBcr = this.scrollSpy.getBoundingClientRect();
             if (this.scrollSpy.scrollHeight > spyBcr.height) {
               requestAnimationFrame(() => {
+                if (!this.scrollSpy) {
+                  return;
+                }
+
                 const ele = this.scrollSpy.querySelectorAll('li')[index];
                 const bcr = ele.getBoundingClientRect();
                 if ((bcr.bottom - spyBcr.top) < this.scrollSpy.scrollTop || (bcr.top - spyBcr.top) > (this.scrollSpy.scrollTop + spyBcr.height)) {

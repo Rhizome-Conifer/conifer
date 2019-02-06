@@ -119,6 +119,7 @@ class Replay extends Component {
   }
 
   render() {
+    const { isEmbed, isMobile } = this.context;
     const {
       activeBookmarkId,
       activeBrowser,
@@ -143,7 +144,7 @@ class Replay extends Component {
     } else if (collection.get('loaded') && !collection.get('slug_matched') && params.coll !== collection.get('slug')) {
       return (
         <RedirectWithStatus
-          to={`${getCollectionLink(collection)}/${remoteBrowserMod(activeBrowser, timestamp)}/${url}`}
+          to={`${isEmbed ? `/${params.embed}` : ''}${getCollectionLink(collection)}/${remoteBrowserMod(activeBrowser, timestamp)}/${url}`}
           status={301} />
       );
     }
@@ -153,7 +154,7 @@ class Replay extends Component {
       if (list.get('loaded') && !list.get('slug_matched')) {
         return (
           <RedirectWithStatus
-            to={`${getCollectionLink(collection)}/list/${list.get('slug')}/b${activeBookmarkId}/${timestamp}/${url}`}
+            to={`${isEmbed ? `/${params.embed}` : ''}${getCollectionLink(collection)}/list/${list.get('slug')}/b${activeBookmarkId}/${timestamp}/${url}`}
             status={301} />
         );
       }
@@ -195,7 +196,7 @@ class Replay extends Component {
           {desc}
         </Helmet>
         {
-          !this.context.isEmbed &&
+          !isEmbed &&
             <ReplayUI
               activeBrowser={activeBrowser}
               params={params}
@@ -204,9 +205,9 @@ class Replay extends Component {
               toggle={this.props.toggleSidebar}
               url={url} />
         }
-        <div className={classNames('iframe-container', { embed: this.context.isEmbed && params.embed !== '_embed_noborder' })}>
+        <div className={classNames('iframe-container', { embed: isEmbed && params.embed !== '_embed_noborder' })}>
           {
-            !this.context.isMobile && !this.context.isEmbed &&
+            !isMobile && !isEmbed &&
               <Sidebar defaultExpanded={Boolean(listSlug) || __PLAYER__} storageKey={listSlug ? 'listReplaySidebar' : 'pageReplaySidebar'}>
                 <Resizable axis="y" minHeight={200} storageKey="replayNavigator">
                   <Tabs defaultIndex={listSlug ? 0 : 1}>
@@ -248,7 +249,7 @@ class Replay extends Component {
           }
           {
 
-            this.context.isEmbed && params.embed !== '_embed_noborder' &&
+            isEmbed && params.embed !== '_embed_noborder' &&
               <EmbedFooter timestamp={timestamp} />
           }
           {
