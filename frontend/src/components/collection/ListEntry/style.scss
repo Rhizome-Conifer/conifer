@@ -10,18 +10,12 @@
         }
     }
 
-    & > a {
-        transition: color $quickShift ease-in-out;
-        text-decoration: none;
-        color: #000;
-    }
-
     .list-title {
         display: flex;
         align-items: flex-start;
         border: solid 0 $gray500;
         border-width: 0 0 .2rem 0;
-        padding: 0 1.5rem 1rem 1.5rem;
+        padding: 0 1.5rem 1rem 2.5rem;
 
         .list-metadata {
             a {
@@ -55,6 +49,20 @@
         h3 {
             font-weight: 400;
             margin: 0;
+
+            & > a {
+                transition: color $quickShift ease-in-out;
+                text-decoration: none;
+                display: inline-block;
+
+                &:link, &:visited {
+                    color: #000;
+                }
+
+                &:hover {
+                    color: blue;
+                }
+            }
         }
 
         svg {
@@ -94,9 +102,28 @@
         li {
             margin-bottom: 3.5rem;
 
+            .link-group {
+                width: fit-content;
+
+                &:hover {
+
+                    h4 a {
+                        text-decoration: underline;
+                    }
+
+                    .source-link {
+                        color: $blue;
+                    }
+                }
+            }
+
+            h4 {
+                margin-bottom: .2rem;
+            }
+
             .source-link {
                 display: inline-block;
-                color: $blue;
+                color: $gray600;
                 text-decoration: underline;
             }
 

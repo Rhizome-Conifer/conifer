@@ -34,14 +34,13 @@ const ListEntry = ({ collection, isDetail, list }) => {
               </React.Fragment>
             </div>
           </div> :
-          <Link to={getListLink(collection, list)}>
-            <div className="list-title">
-              <div>
-                <ListIcon />
-              </div>
-              <h3>{list.get('title')}</h3>
+          <div className="list-title">
+            <div>
+              <ListIcon />
             </div>
-          </Link>
+
+            <h3><Link to={getListLink(collection, list)}>{list.get('title')}</Link></h3>
+          </div>
       }
       <div className="desc">
         {
@@ -57,8 +56,11 @@ const ListEntry = ({ collection, isDetail, list }) => {
             const replay = `${getListLink(collection, list)}/b${bk.get('id')}/${bk.get('timestamp')}/${bk.get('url')}`;
             return (
               <li key={bk.get('id')}>
-                <h4><Link to={replay}>{bk.get('title')}</Link></h4>
-                <ClippedLink to={replay} link={bk.get('url')} className="source-link" />
+                <div className="link-group">
+                  <h4><Link to={replay}>{bk.get('title')}</Link></h4>
+                  <ClippedLink to={replay} link={bk.get('url')} className="source-link" />
+                </div>
+
                 <TimeFormat classes="bk-timestamp" dt={bk.get('timestamp')} />
                 {
                   bk.get('desc') &&
