@@ -26,6 +26,7 @@ TEMP_TABLE = 'Temp Table'
 ACTIVE_SESSIONS = 'Active Sessions'
 TOTAL_USERS = 'Total Users'
 
+USER_CREATED =  'User-Created'
 USER_LOGINS = 'User-Logins-Any'
 USER_LOGINS_100 = 'User-Logins-100MB'
 USER_LOGINS_1000 = 'User-Logins-1GB'
@@ -76,7 +77,7 @@ class AdminController(BaseController):
     CUSTOM_STATS = [
                     USER_TABLE, COLL_TABLE, TEMP_TABLE,
                     ACTIVE_SESSIONS, TOTAL_USERS,
-                    USER_LOGINS, USER_LOGINS_100, USER_LOGINS_1000,
+                    USER_CREATED, USER_LOGINS, USER_LOGINS_100, USER_LOGINS_1000,
                     COLL_SIZES_CREATED, COLL_SIZES_UPDATED, COLL_SIZES_PUBLIC, COLL_SIZES_PUBLIC_W_LISTS,
                     COLL_COUNT, COLL_COUNT_PUBLIC, COLL_COUNT_PUBLIC_W_LISTS,
                    ]
@@ -159,14 +160,17 @@ class AdminController(BaseController):
             elif name == TOTAL_USERS:
                 return self.load_total_users(name)
 
+            elif name == USER_CREATED:
+                return self.load_user_stats(name, dates, timestamps, use_updated=False)
+
             elif name == USER_LOGINS:
-                return self.load_user_logins(name, dates, timestamps)
+                return self.load_user_stats(name, dates, timestamps)
 
             elif name == USER_LOGINS_100:
-                return self.load_user_logins(name, dates, timestamps, 100000000)
+                return self.load_user_stats(name, dates, timestamps, 100000000)
 
             elif name == USER_LOGINS_1000:
-                return self.load_user_logins(name, dates, timestamps, 1000000000)
+                return self.load_user_stats(name, dates, timestamps, 1000000000)
 
             elif name in COLL_COUNT:
                 # add 1 per collection
@@ -324,15 +328,21 @@ class AdminController(BaseController):
                 'type': 'table'
                }
 
-    def load_user_logins(self, key, dates, timestamps, size_threshold=None):
+    def load_user_stats(self, key, dates, timestamps, size_threshold=None, use_updated=True):
         date_bucket = {}
 
         for user_data in self.fetch_user_table():
             if size_threshold is not None and user_data[1] < size_threshold:
                 continue
 
+            # updated date vs created date
+            if use_updated:
+                value = user_data[6]
+            else:
+                value = user_data[5]
+
             # note: ts should already be utc!
-            dt = datetime.fromtimestamp(user_data[6] / 1000)
+            dt = datetime.fromtimestamp(value / 1000)
             dt = dt.date().isoformat()
 
             date_bucket[dt] = date_bucket.get(dt, 0) + 1
