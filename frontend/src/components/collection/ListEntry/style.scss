@@ -15,7 +15,7 @@
         align-items: flex-start;
         border: solid 0 $gray500;
         border-width: 0 0 .2rem 0;
-        padding: 0 1.5rem 1rem 2.5rem;
+        padding: 0 1.5rem 1rem 0;
 
         .list-metadata {
             a {
@@ -66,8 +66,11 @@
         }
 
         svg {
+            width: 1.5rem;
+            height: 1.5rem;
             vertical-align: bottom;
-            margin-right: 1.5rem;
+            margin-right: 1rem;
+
             g {
               fill: $gray600;
             }
@@ -77,6 +80,7 @@
     .desc {
         padding: 1rem 0 0 2.5rem;
         margin-bottom: 3rem;
+        font-size: 1.6rem;
 
         .wr-truncate {
             align-items: flex-start;
@@ -129,7 +133,7 @@
 
             .bk-timestamp {
                 display: block;
-                margin: 1rem 0;
+                margin: 0.5rem 0;
                 color: $gray525;
                 font-weight: 300;
             }
