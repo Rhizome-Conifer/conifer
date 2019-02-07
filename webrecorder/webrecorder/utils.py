@@ -119,8 +119,8 @@ def spawn_once(*args, **kwargs):
 
 # ============================================================================
 @contextmanager
-def redis_pipeline(redis_obj):
-    p = redis_obj.pipeline(transaction=False)
+def redis_pipeline(redis_obj, transaction=False):
+    p = redis_obj.pipeline(transaction=transaction)
     yield p
     p.execute()
 
