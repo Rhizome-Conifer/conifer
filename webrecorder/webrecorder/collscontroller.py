@@ -216,13 +216,8 @@ class CollsController(BaseController):
         def dat_do_share(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
-            self.access.assert_can_admin_coll(collection)
-
             # BETA only
-            try:
-                self.cork.require(role='beta-archivist')
-            except:
-                self._raise_error(400, 'not_allowed')
+            self.require_admin_beta_access(collection)
 
             try:
                 data = request.json or {}
@@ -239,13 +234,8 @@ class CollsController(BaseController):
         def dat_do_unshare(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
-            self.access.assert_can_admin_coll(collection)
-
             # BETA only
-            try:
-                self.cork.require(role='beta-archivist')
-            except:
-                self._raise_error(400, 'not_allowed')
+            self.require_admin_beta_access(collection)
 
             try:
                 result = DatShare.dat_share.unshare(collection)
