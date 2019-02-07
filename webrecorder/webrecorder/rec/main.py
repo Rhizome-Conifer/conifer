@@ -6,7 +6,7 @@ from webrecorder.rec.webrecrecorder import WebRecRecorder
 
 # =============================================================================
 def init():
-    init_logging()
+    init_logging(debug=True)
 
     config = load_wr_config()
 
