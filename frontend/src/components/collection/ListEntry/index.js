@@ -56,10 +56,10 @@ const ListEntry = ({ collection, isDetail, list }) => {
             const replay = `${getListLink(collection, list)}/b${bk.get('id')}/${bk.get('timestamp')}/${bk.get('url')}`;
             return (
               <li key={bk.get('id')}>
-                <div className="link-group">
-                  <h4><Link to={replay}>{bk.get('title')}</Link></h4>
-                  <ClippedLink to={replay} link={bk.get('url')} className="source-link" />
-                </div>
+                <Link className="link-group" to={replay}>
+                  <h4>{bk.get('title')}</h4>
+                  <ClippedLink link={bk.get('url')} className="source-link" />
+                </Link>
 
                 <TimeFormat classes="bk-timestamp" dt={bk.get('timestamp')} />
                 {

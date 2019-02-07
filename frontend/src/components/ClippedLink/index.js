@@ -1,15 +1,12 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-
-import { truncate } from 'helpers/utils';
+import memoize from 'memoize-one';
 
 
 class ClippedLink extends PureComponent {
   static propTypes = {
     className: PropTypes.string,
-    link: PropTypes.string,
-    to: PropTypes.string
+    link: PropTypes.string
   };
 
   static defaultProps = {
@@ -21,7 +18,6 @@ class ClippedLink extends PureComponent {
 
     this.handle = null;
     this.state = {
-      clipped: props.link.split('?')[0],
       show: false
     };
   }
@@ -31,6 +27,8 @@ class ClippedLink extends PureComponent {
   }
 
   clearActions = () => clearTimeout(this.handle)
+
+  clippedLink = memoize(link => link.split('?')[0])
 
   furl = () => {
     clearTimeout(this.handle);
@@ -43,15 +41,17 @@ class ClippedLink extends PureComponent {
   }
 
   render() {
-    const { className, link, to } = this.props;
-    const { clipped, show } = this.state;
+    const { className, link } = this.props;
+    const { show } = this.state;
 
     if (!link.includes('?')) {
-      return <Link className={className} to={to}>{link}</Link>;
+      return <span className={className}>{link}</span>;
     }
 
+    const clipped = this.clippedLink(link);
+
     return (
-      <Link className={className} to={to} onMouseLeave={this.furl} onMouseEnter={this.clearActions}>
+      <span className={className} onMouseLeave={this.furl} onMouseEnter={this.clearActions}>
         {
           show ?
             link :
@@ -59,7 +59,7 @@ class ClippedLink extends PureComponent {
               <span>{clipped}</span><button className="button-link" onMouseEnter={this.unfurl} type="button">...</button>
             </React.Fragment>
         }
-      </Link>
+      </span>
     );
   }
 }
