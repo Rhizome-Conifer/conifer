@@ -12,8 +12,6 @@ class AutoController(BaseController):
         def create_auto():
             user, collection = self.load_user_coll()
 
-            self.access.assert_can_admin_coll(collection)
-
             autoid = collection.create_auto(request.json)
 
             return {'auto': autoid}
@@ -23,8 +21,6 @@ class AutoController(BaseController):
         def add_urls(autoid):
             user, collection, auto = self.load_user_coll_auto(autoid)
 
-            self.access.assert_can_admin_coll(collection)
-
             data = request.json or {}
 
             return auto.queue_urls(data.get('urls'))
@@ -33,8 +29,6 @@ class AutoController(BaseController):
         @self.app.post('/api/v1/auto/<autoid>/start')
         def add_urls(autoid):
             user, collection, auto = self.load_user_coll_auto(autoid)
-
-            self.access.assert_can_admin_coll(collection)
 
             data = request.json or {}
 
@@ -46,16 +40,12 @@ class AutoController(BaseController):
         def add_urls(autoid):
             user, collection, auto = self.load_user_coll_auto(autoid)
 
-            self.access.assert_can_admin_coll(collection)
-
             return auto.stop()
 
         # GET AUTO
         @self.app.get('/api/v1/auto/<autoid>')
         def get_auto(autoid):
             user, collection, auto = self.load_user_coll_auto(autoid)
-
-            self.access.assert_can_read_coll(collection)
 
             return {'auto': auto.serialize()}
 
@@ -64,16 +54,12 @@ class AutoController(BaseController):
         def get_auto_done(autoid):
             user, collection, auto = self.load_user_coll_auto(autoid)
 
-            self.access.assert_can_read_coll(collection)
-
             return {'done': auto.is_done()}
 
         # DELETE AUTO
         @self.app.delete('/api/v1/auto/<autoid>')
         def delete_auto(autoid):
             user, collection, auto = self.load_user_coll_auto(autoid)
-
-            self.access.assert_can_admin_coll(collection)
 
             auto.delete_me()
 
@@ -82,17 +68,23 @@ class AutoController(BaseController):
         # START BEHAVIOR
         @self.app.post('/api/v1/browser/behavior/start/<reqid>')
         def start_browser(reqid):
+            self.require_admin_beta_access()
+
             res = Auto.do_request('/api/behavior/start/' + reqid, use_pool=False)
             return res
 
         # STOP BEHAVIOR
         @self.app.post('/api/v1/browser/behavior/stop/<reqid>')
         def stop_browser(reqid):
+            self.require_admin_beta_access()
+
             res = Auto.do_request('/api/behavior/stop/' + reqid, use_pool=False)
             return res
 
     def load_user_coll_auto(self, autoid, user=None, coll_name=None):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
+
+        self.require_admin_beta_access(collection)
 
         return user, collection, self.load_auto(collection, autoid)
 
