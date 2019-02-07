@@ -19,6 +19,7 @@ class UserManagementUI extends PureComponent {
     auth: PropTypes.object,
     canAdmin: PropTypes.bool,
     history: PropTypes.object,
+    loadAuth: PropTypes.func,
     loginFn: PropTypes.func.isRequired,
     next: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     open: PropTypes.bool,
@@ -107,6 +108,12 @@ class UserManagementUI extends PureComponent {
     this.props.toggleBugModal(!this.props.uiBug);
   }
 
+  toggleDropdown = (isOpen) => {
+    if (isOpen) {
+      this.props.loadAuth();
+    }
+  }
+
   render() {
     const { anonCTA, auth, canAdmin, open } = this.props;
     const { formError } = this.state;
@@ -167,7 +174,7 @@ class UserManagementUI extends PureComponent {
               <li><button className="rounded login-link" onClick={this.showLogin} type="button">Login</button></li>
             </React.Fragment> :
             <li className="navbar-text">
-              <DropdownButton pullRight id="user-dropdown" title={userDropdown}>
+              <DropdownButton pullRight id="user-dropdown" title={userDropdown} onToggle={this.toggleDropdown}>
                 <li className="display login-display">
                   <span className="sm-label">{ isAnon ? 'Active as' : 'Signed in as'}</span>
                   <h5>{user.get('full_name') || username}</h5>
@@ -183,7 +190,7 @@ class UserManagementUI extends PureComponent {
                 {
                   hasCollections &&
                     <li className="display">
-                      <span className="sm-label">Space Used: {usage}% of {<SizeFormat bytes={user.getIn(['space_utilization', 'total'])} />}</span>
+                      <span className="sm-label space-usage">Space Used: {usage}% of {<SizeFormat bytes={user.getIn(['space_utilization', 'total'])} />}</span>
                       <div className="space-display">
                         <span style={{ width: `${usage}%` }} />
                       </div>
