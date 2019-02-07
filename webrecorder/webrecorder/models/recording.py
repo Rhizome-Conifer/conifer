@@ -3,6 +3,8 @@ import hashlib
 import os
 import base64
 import shutil
+import traceback
+import logging
 
 from six.moves.urllib.parse import urlsplit
 
@@ -19,6 +21,9 @@ from webrecorder.rec.storage import LocalFileStorage
 
 from warcio.timeutils import timestamp_now, sec_to_timestamp, timestamp20_now
 
+logger = logging.getLogger('wr.io')
+
+
 
 # ============================================================================
 class Recording(RedisUniqueComponent):
@@ -32,7 +37,8 @@ class Recording(RedisUniqueComponent):
     :cvar str RA_KEY: remote archives Redis key
     :cvar str PENDING_SIZE_KEY: outstanding size Redis key
     :cvar str PENDING_COUNT_KEY: outstanding CDX index lines Redis key
-    :cvar str PENDING_TTL: outstanding TTL Redis key
+    :cvar int PENDING_TTL: outstanding TTL Redis key
+    :cvar int COMMIT_WAIT_SECS: wait for the given number of seconds
     :cvar str REC_WARC_KEY: WARC Redis key (recording)
     :cvar str COLL_WARC_KEY: WARC Redis key (collection)
     :cvar str COMMIT_LOCK_KEY: storage lock Redis key
@@ -54,6 +60,8 @@ class Recording(RedisUniqueComponent):
     PENDING_SIZE_KEY = 'r:{rec}:_ps'
     PENDING_COUNT_KEY = 'r:{rec}:_pc'
     PENDING_TTL = 90
+
+    COMMIT_WAIT_SECS = 30
 
     REC_WARC_KEY = 'r:{rec}:wk'
     COLL_WARC_KEY = 'c:{coll}:warc'
@@ -82,6 +90,7 @@ class Recording(RedisUniqueComponent):
         #cls.INDEX_NAME_TEMPL = config['index_name_templ']
 
         #cls.COMMIT_WAIT_TEMPL = config['commit_wait_templ']
+        cls.COMMIT_WAIT_SECS = int(config['commit_wait_secs'])
 
     @property
     def name(self):
@@ -182,8 +191,10 @@ class Recording(RedisUniqueComponent):
             return
 
         pending_count = self.PENDING_COUNT_KEY.format(rec=self.my_id)
-        self.redis.incrby(pending_count, 1)
-        self.redis.expire(pending_count, self.PENDING_TTL)
+
+        with redis_pipeline(self.redis) as pi:
+            pi.incrby(pending_count, 1)
+            pi.expire(pending_count, self.PENDING_TTL)
 
     def inc_pending_size(self, size):
         """Increase outstanding size.
@@ -194,8 +205,9 @@ class Recording(RedisUniqueComponent):
             return
 
         pending_size = self.PENDING_SIZE_KEY.format(rec=self.my_id)
-        self.redis.incrby(pending_size, size)
-        self.redis.expire(pending_size, self.PENDING_TTL)
+        with redis_pipeline(self.redis) as pi:
+            pi.incrby(pending_size, size)
+            pi.expire(pending_size, self.PENDING_TTL)
 
     def dec_pending_count_and_size(self, size):
         """Decrease outstanding CDX index lines and size.
@@ -207,10 +219,14 @@ class Recording(RedisUniqueComponent):
             return
 
         pending_count = self.PENDING_COUNT_KEY.format(rec=self.my_id)
-        self.redis.incrby(pending_count, -1)
 
         pending_size = self.PENDING_SIZE_KEY.format(rec=self.my_id)
-        self.redis.incrby(pending_size, -size)
+
+        with redis_pipeline(self.redis) as pi:
+            pi.incrby(pending_count, -1)
+            pi.incrby(pending_size, -size)
+            pi.expire(pending_count, self.PENDING_TTL)
+            pi.expire(pending_size, self.PENDING_TTL)
 
     def serialize(self,
                   include_pages=False,
@@ -413,39 +429,43 @@ class Recording(RedisUniqueComponent):
         :type: BaseStorage or None
         """
         commit_lock = self.COMMIT_LOCK_KEY.format(rec=self.my_id)
-        if not self.redis.setnx(commit_lock, '1'):
+        if not self.redis.set(commit_lock, '1', ex=self.COMMIT_WAIT_SECS, nx=True):
+            logger.debug('Skipping, Already Committing Rec: {0}'.format(self.my_id))
             return
 
-        collection = self.get_owner()
-        user = collection.get_owner()
+        try:
+            logger.debug('Committing Rec: {0}'.format(self.my_id))
+            collection = self.get_owner()
+            user = collection.get_owner()
 
-        if not storage and not user.is_anon():
-            storage = collection.get_storage()
+            if not storage and not user.is_anon():
+                storage = collection.get_storage()
 
-        info_key = self.INFO_KEY.format(rec=self.my_id)
-        cdxj_key = self.CDXJ_KEY.format(rec=self.my_id)
-        warc_key = self.COLL_WARC_KEY.format(coll=collection.my_id)
+            info_key = self.INFO_KEY.format(rec=self.my_id)
+            cdxj_key = self.CDXJ_KEY.format(rec=self.my_id)
+            warc_key = self.COLL_WARC_KEY.format(coll=collection.my_id)
 
-        self.redis.publish('close_rec', info_key)
+            self.redis.publish('close_rec', info_key)
 
-        cdxj_filename, full_cdxj_filename = self.write_cdxj(user, cdxj_key)
+            cdxj_filename, full_cdxj_filename = self.write_cdxj(user, cdxj_key)
 
-        all_done = True
+            all_done = True
 
-        if storage:
-            all_done = collection.commit_file(cdxj_filename, full_cdxj_filename, 'indexes',
-                                        info_key, self.INDEX_FILE_KEY, direct_delete=True)
+            if storage:
+                all_done = collection.commit_file(cdxj_filename, full_cdxj_filename, 'indexes',
+                                            info_key, self.INDEX_FILE_KEY, direct_delete=True)
 
-            for warc_filename, warc_full_filename in self.iter_all_files():
-                done = collection.commit_file(warc_filename, warc_full_filename, 'warcs', warc_key)
+                for warc_filename, warc_full_filename in self.iter_all_files():
+                    done = collection.commit_file(warc_filename, warc_full_filename, 'warcs', warc_key)
 
-                all_done = all_done and done
+                    all_done = all_done and done
 
-        if all_done:
-            print('Deleting Redis Key: ' + cdxj_key)
-            self.redis.delete(cdxj_key)
+            if all_done:
+                logger.debug('Commit Done, Deleting Rec CDXJ: ' + cdxj_key)
+                self.redis.delete(cdxj_key)
 
-        self.redis.delete(commit_lock)
+        finally:
+            self.redis.delete(commit_lock)
 
     def _copy_prop(self, source, name):
         """Copy attribute value from given building block.
@@ -497,7 +517,7 @@ class Recording(RedisUniqueComponent):
 
             try:
                 with open(target_file, 'wb') as dest:
-                    print('Copying {0} -> {1}'.format(url, target_file))
+                    logger.debug('Copying {0} -> {1}'.format(url, target_file))
                     shutil.copyfileobj(src, dest)
                     size = dest.tell()
 
@@ -508,7 +528,6 @@ class Recording(RedisUniqueComponent):
                     self.set_prop(n, target_file)
 
             except:
-                import traceback
                 traceback.print_exc()
                 errored = True
 

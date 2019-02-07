@@ -4,6 +4,9 @@ import os
 
 from webrecorder.utils import load_wr_config
 
+import logging
+logger = logging.getLogger('wr.io')
+
 
 # ============================================================================
 class Worker(object):
@@ -11,7 +14,7 @@ class Worker(object):
         self._running = True
 
         self.sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
-        print('Running {0} every {1}'.format(worker_cls.__name__, self.sleep_secs))
+        logger.info('Worker: Running {0} every {1}'.format(worker_cls.__name__, self.sleep_secs))
 
         config = load_wr_config()
 

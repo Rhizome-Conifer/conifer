@@ -17,9 +17,10 @@ def init_logging(debug=False):
                         level=logging.WARNING if not debug else logging.DEBUG)
 
     # set boto log to error
-    boto_log = logging.getLogger('boto')
-    if boto_log:
-        boto_log.setLevel(logging.ERROR)
+    import boto3
+    logging.getLogger('boto3').setLevel(logging.ERROR)
+    logging.getLogger('botocore').setLevel(logging.ERROR)
+    logging.getLogger('s3transfer').setLevel(logging.ERROR)
 
     tld_log = logging.getLogger('tldextract')
     if tld_log:
@@ -119,8 +120,8 @@ def spawn_once(*args, **kwargs):
 
 # ============================================================================
 @contextmanager
-def redis_pipeline(redis_obj):
-    p = redis_obj.pipeline(transaction=False)
+def redis_pipeline(redis_obj, transaction=False):
+    p = redis_obj.pipeline(transaction=transaction)
     yield p
     p.execute()
 

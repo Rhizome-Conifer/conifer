@@ -36,6 +36,8 @@ import os
 from six import iteritems
 from six.moves.urllib.parse import quote
 
+logger = logging.getLogger('wr.io')
+
 
 # ============================================================================
 class WebRecRecorder(object):
@@ -87,13 +89,13 @@ class WebRecRecorder(object):
             if self.pubsub:
                 self.pubsub.close()
         except Exception as e:
-            print(e)
+            logger.error(str(e))
 
         try:
             if self.writer:
                 self.writer.close()
         except Exception as e:
-            print(e)
+            logger.error(str(e))
 
     def init_indexer(self):
         return WebRecRedisIndexer(
@@ -152,14 +154,14 @@ class WebRecRecorder(object):
         self.pubsub.subscribe('handle_delete_file')
         self.pubsub.subscribe('handle_delete_dir')
 
-        print('Waiting for messages')
+        logger.info('Recorder pubsub: Waiting for messages')
 
         try:
             for item in self.pubsub.listen():
                 self.handle_message(item)
 
         except:
-            print('Message Loop Done')
+            logger.info('Recorder pubsub: Message Loop Done')
 
     def handle_message(self, item):
         try:
@@ -354,7 +356,7 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
     def _is_write_resp(self, resp, params):
         if not params['recording'].is_open():
-            logging.debug('Writing skipped, recording not open for write')
+            logger.debug('Record Writer: Writing skipped, recording not open for write')
             return False
 
         user_key = res_template(self.user_key, params)
@@ -370,7 +372,7 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
             length = resp.length
 
         if size + length > max_size:
-            print('New Record for {0} exceeds max size, not recording!'.format(params['url']))
+            logger.error('Record Writer: New Record for {0} exceeds max size, not recording!'.format(params['url']))
             return False
 
         return True
@@ -382,7 +384,7 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
         skip_key = res_template(self.skip_key_template, params)
 
         if self.redis.get(skip_key) == '1':
-            print('SKIPPING REQ', params.get('url'))
+            logger.debug('Record Writer: Skipping Request for: ' + params.get('url'))
             return False
 
         return True

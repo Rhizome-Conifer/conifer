@@ -9,6 +9,9 @@ import time
 from webrecorder.models import User
 from webrecorder.models.base import BaseAccess
 
+import logging
+logger = logging.getLogger('wr.io')
+
 
 # ============================================================================
 class TempChecker(object):
@@ -36,7 +39,7 @@ class TempChecker(object):
 
         self.sesh_key_template = config['session.key_template']
 
-        print('Dir Checker Root: ' + self.record_root_dir)
+        logger.info('Temp Check Root: ' + self.record_root_dir)
 
     def delete_if_expired(self, temp_user, temp_dir):
         temp_key = 't:' + temp_user
@@ -45,19 +48,19 @@ class TempChecker(object):
         if sesh == 'commit-wait':
             try:
                 if not os.path.isdir(temp_dir):
-                    print('Remove Session For Already Deleted Dir: ' + temp_dir)
+                    logger.debug('TempChecker: Remove Session For Already Deleted Dir: ' + temp_dir)
                     self.sesh_redis.delete(temp_key)
                     return True
 
-                print('Removing if empty: ' + temp_dir)
+                logger.debug('TempChecker: Removing if empty: ' + temp_dir)
                 os.rmdir(temp_dir)
                 #shutil.rmtree(temp_dir)
-                print('Deleted empty dir: ' + temp_dir)
+                logger.debug('TempChecker: Deleted empty dir: ' + temp_dir)
 
                 self.sesh_redis.delete(temp_key)
 
             except Exception as e:
-                print('Waiting for commit')
+                logger.debug('TempChecker: Waiting for commit')
                 return False
 
         # temp user key exists
@@ -68,7 +71,7 @@ class TempChecker(object):
                 return False
 
             # delete user
-            print('Deleting expired user: ' + temp_user)
+            logger.debug('TempChecker: Deleting expired user: ' + temp_user)
 
             user = User(my_id=temp_user,
                         redis=self.data_redis,
@@ -84,10 +87,10 @@ class TempChecker(object):
         # no user session, remove temp dir and everything in it
         else:
             try:
-                print('Deleted expired temp dir: ' + temp_dir)
+                logger.debug('TempChecker: Deleted expired temp dir: ' + temp_dir)
                 shutil.rmtree(temp_dir)
             except Exception as e:
-                print(e)
+                logger.warn(str(e))
                 return False
 
         return True
@@ -99,14 +102,12 @@ class TempChecker(object):
                 return False
 
             os.rmdir(warc_dir)
-            print('Removed Empty User Dir: ' + warc_dir)
+            logger.debug('TempChecker: Removed Empty User Dir: ' + warc_dir)
             return True
         except Exception as e:
             return False
 
     def __call__(self):
-        print('Temp Dir Check')
-
         temps_to_remove = set()
 
         # check all warc dirs

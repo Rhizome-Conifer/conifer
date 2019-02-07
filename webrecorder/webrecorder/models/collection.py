@@ -3,6 +3,7 @@ import logging
 import json
 import hashlib
 import os
+import traceback
 
 from datetime import date
 
@@ -21,6 +22,8 @@ from webrecorder.models.list_bookmarks import BookmarkList
 from webrecorder.rec.storage import get_storage as get_global_storage
 
 from webrecorder.rec.storage.storagepaths import strip_prefix, add_local_store_prefix
+
+logger = logging.getLogger('wr.io')
 
 
 # ============================================================================
@@ -683,6 +686,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         storage = self.get_storage()
 
         if not storage:
+            logger.debug('Skip File Commit: No Storage')
             return True
 
         orig_full_filename = full_filename
@@ -690,10 +694,12 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         # not a local filename
         if '://' in full_filename and not full_filename.startswith('local'):
+            logger.debug('Skip File Commit: Not Local Filename: {0}'.format(full_filename))
             return True
 
         if not os.path.isfile(full_filename):
-            return True
+            logger.debug('Fail File Commit: Not Found: {0}'.format(full_filename))
+            return False
 
         commit_wait = self.COMMIT_WAIT_KEY.format(filename=full_filename)
 
@@ -708,16 +714,16 @@ class Collection(PagesMixin, RedisUniqueComponent):
         # if so, finalize and delete original
         remote_url = storage.get_upload_url(filename)
         if not remote_url:
-            print('Not yet available: {0}'.format(full_filename))
+            logger.debug('File Commit: Not Yet Available: {0}'.format(full_filename))
             return False
 
-        print('Committed {0} -> {1}'.format(full_filename, remote_url))
         if update_key:
             update_prop = update_prop or filename
             self.redis.hset(update_key, update_prop, remote_url)
 
         # just in case, if remote_url is actually same as original (local file double-commit?), just return
         if remote_url == orig_full_filename:
+            logger.debug('File Already Committed: {0}'.format(remote_url))
             return True
 
         # if direct delete, call os.remove directly
@@ -726,13 +732,13 @@ class Collection(PagesMixin, RedisUniqueComponent):
             try:
                 os.remove(full_filename)
             except Exception as e:
-                print(e)
-                return True
+                traceback.print_exc()
         else:
         # for WARCs, send handle_delete to ensure writer can close the file
              if self.redis.publish('handle_delete_file', full_filename) < 1:
-                print('No Delete Listener!')
+                logger.debug('No Delete Listener!')
 
+        logger.debug('File Committed {0} -> {1}'.format(full_filename, remote_url))
         return True
 
     def sync_coll_index(self, exists=False, do_async=False):
@@ -766,15 +772,15 @@ class Collection(PagesMixin, RedisUniqueComponent):
             rec_info_key = cdxj_key.rsplit(':', 1)[0] + ':info'
             cdxj_filename = self.redis.hget(rec_info_key, self.INDEX_FILE_KEY)
             if not cdxj_filename:
-                logging.debug('No index for ' + rec_info_key)
+                logger.debug('CDX Sync: No index for ' + rec_info_key)
                 return
 
             lock_key = cdxj_key + ':_'
-            logging.debug('Downloading for {0} file {1}'.format(rec_info_key, cdxj_filename))
+            logger.debug('CDX Sync: Downloading for {0} file {1}'.format(rec_info_key, cdxj_filename))
             attempts = 0
 
-            if not self.redis.set(lock_key, 1, nx=True):
-                logging.warning('Already downloading, skipping')
+            if not self.redis.set(lock_key, 1, ex=self.COMMIT_WAIT_SECS, nx=True):
+                logger.warning('CDX Sync: Already downloading, skipping: {0}'.format(cdxj_filename))
                 lock_key = None
                 return
 
@@ -789,9 +795,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
                     break
                 except Exception as e:
-                    import traceback
                     traceback.print_exc()
-                    logging.error('Could not load: ' + cdxj_filename)
+                    logger.error('CDX Sync: Could not load: ' + cdxj_filename)
                     attempts += 1
 
                 finally:
@@ -802,8 +807,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
                 self.redis.expire(output_key, self.COLL_CDXJ_TTL)
 
         except Exception as e:
-            logging.error('Error downloading cache: ' + str(e))
-            import traceback
+            logger.error('CDX Sync: Error downloading cache: ' + str(e))
             traceback.print_exc()
 
         finally:

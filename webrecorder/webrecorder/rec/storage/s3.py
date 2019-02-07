@@ -1,9 +1,12 @@
 import boto3
 import os
+import logging
 
 from six.moves.urllib.parse import urlsplit, quote_plus
 
 from webrecorder.rec.storage.base import BaseStorage
+
+logger = logging.getLogger('wr.io')
 
 
 # ============================================================================
@@ -60,7 +63,6 @@ class S3Storage(BaseStorage):
 
 
         except Exception as e:
-            print(e)
             return False
 
     def get_client_url(self, target_url):
@@ -85,16 +87,15 @@ class S3Storage(BaseStorage):
         s3_url = self._get_s3_url(target_url)
 
         try:
-            print('Uploading {0} -> {1}'.format(full_filename, s3_url))
-            with open(full_filename, 'rb') as fh:
-                self.s3.put_object(Bucket=self.bucket_name,
-                                   Key=target_url,
-                                   Body=fh)
+            logger.debug('S3: Uploading {0} -> {1}'.format(full_filename, s3_url))
+            self.s3.upload_file(full_filename,
+                                Bucket=self.bucket_name,
+                                Key=target_url)
 
             return True
         except Exception as e:
-            print(e)
-            print('Failed to Upload to {0}'.format(s3_url))
+            logger.debug(str(e))
+            logger.debug('S3: Failed to Upload to {0}'.format(s3_url))
             return False
 
     def client_url_to_target_url(self, client_url):
@@ -118,12 +119,12 @@ class S3Storage(BaseStorage):
         :returns: whether successful or not
         :rtype: bool
         """
-        print('Deleting Remote', client_url)
+        logger.debug('S3: Deleting Remote', client_url)
 
         try:
             resp = self.s3.delete_object(Bucket=self.bucket_name,
                                          Key=target_url)
             return True
         except Exception as e:
-            print(e)
+            logger.debug(str(e))
             return False
