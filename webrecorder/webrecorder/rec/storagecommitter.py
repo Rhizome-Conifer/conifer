@@ -38,8 +38,13 @@ class StorageCommitter(object):
 
 
 # =============================================================================
-if __name__ == "__main__":
+def run():
     from webrecorder.rec.worker import Worker
     Worker(StorageCommitter).run()
+
+
+# =============================================================================
+if __name__ == "__main__":
+    run()
 
 

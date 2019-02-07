@@ -26,12 +26,20 @@ TEMP_TABLE = 'Temp Table'
 ACTIVE_SESSIONS = 'Active Sessions'
 TOTAL_USERS = 'Total Users'
 
+USER_CREATED =  'User-Created'
 USER_LOGINS = 'User-Logins-Any'
 USER_LOGINS_100 = 'User-Logins-100MB'
 USER_LOGINS_1000 = 'User-Logins-1GB'
 
 COLL_SIZES_CREATED = 'Collections Created'
 COLL_SIZES_UPDATED = 'Collections Updated'
+COLL_SIZES_PUBLIC = 'Size of Public Collections'
+COLL_SIZES_PUBLIC_W_LISTS = 'Size of Public Collections with Lists'
+
+
+COLL_COUNT = 'Num Collections'
+COLL_COUNT_PUBLIC = 'Num Public Collections'
+COLL_COUNT_PUBLIC_W_LISTS = 'Num Public Collections with Lists'
 
 
 # ============================================================================
@@ -69,8 +77,9 @@ class AdminController(BaseController):
     CUSTOM_STATS = [
                     USER_TABLE, COLL_TABLE, TEMP_TABLE,
                     ACTIVE_SESSIONS, TOTAL_USERS,
-                    USER_LOGINS, USER_LOGINS_100, USER_LOGINS_1000,
-                    COLL_SIZES_CREATED, COLL_SIZES_UPDATED
+                    USER_CREATED, USER_LOGINS, USER_LOGINS_100, USER_LOGINS_1000,
+                    COLL_SIZES_CREATED, COLL_SIZES_UPDATED, COLL_SIZES_PUBLIC, COLL_SIZES_PUBLIC_W_LISTS,
+                    COLL_COUNT, COLL_COUNT_PUBLIC, COLL_COUNT_PUBLIC_W_LISTS,
                    ]
 
     CACHE_TTL = 600
@@ -151,17 +160,47 @@ class AdminController(BaseController):
             elif name == TOTAL_USERS:
                 return self.load_total_users(name)
 
+            elif name == USER_CREATED:
+                return self.load_user_stats(name, dates, timestamps, use_updated=False)
+
             elif name == USER_LOGINS:
-                return self.load_user_logins(name, dates, timestamps)
+                return self.load_user_stats(name, dates, timestamps)
 
             elif name == USER_LOGINS_100:
-                return self.load_user_logins(name, dates, timestamps, 100000000)
+                return self.load_user_stats(name, dates, timestamps, 100000000)
 
             elif name == USER_LOGINS_1000:
-                return self.load_user_logins(name, dates, timestamps, 1000000000)
+                return self.load_user_stats(name, dates, timestamps, 1000000000)
 
-            elif name == COLL_SIZES_CREATED or name == COLL_SIZES_UPDATED:
-                return self.load_coll_series_by_size(name, dates, timestamps)
+            elif name in COLL_COUNT:
+                # add 1 per collection
+                return self.load_coll_series(name, dates, timestamps, False,
+                                             lambda coll_data: 1)
+
+            elif name == COLL_COUNT_PUBLIC:
+                # add 1 per collection if public
+                return self.load_coll_series(name, dates, timestamps, False,
+                                             lambda coll_data: 1 if coll_data[6] == '1' else 0)
+
+            elif name == COLL_COUNT_PUBLIC_W_LISTS:
+                # add 1 per collection if public and has lists
+                return self.load_coll_series(name, dates, timestamps, False,
+                                             lambda coll_data: 1 if coll_data[6] == '1' and coll_data[7] > 0 else 0)
+
+            elif name in (COLL_SIZES_CREATED, COLL_SIZES_UPDATED):
+                # add collection size
+                return self.load_coll_series(name, dates, timestamps, (name == COLL_SIZES_CREATED),
+                                             lambda coll_data: coll_data[2])
+
+            elif name == COLL_SIZES_PUBLIC:
+                # add collection size if public
+                return self.load_coll_series(name, dates, timestamps, False,
+                                             lambda coll_data: coll_data[2] if coll_data[6] == '1' else 0)
+
+            elif name == COLL_SIZES_PUBLIC_W_LISTS:
+                # add collection size if public and has lists
+                return self.load_coll_series(name, dates, timestamps, False,
+                                             lambda coll_data: coll_data[2] if coll_data[6] == '1' and coll_data[7] > 0 else 0)
 
             return self.load_time_series(name, dates, timestamps)
 
@@ -289,15 +328,21 @@ class AdminController(BaseController):
                 'type': 'table'
                }
 
-    def load_user_logins(self, key, dates, timestamps, size_threshold=None):
+    def load_user_stats(self, key, dates, timestamps, size_threshold=None, use_updated=True):
         date_bucket = {}
 
         for user_data in self.fetch_user_table():
             if size_threshold is not None and user_data[1] < size_threshold:
                 continue
 
+            # updated date vs created date
+            if use_updated:
+                value = user_data[6]
+            else:
+                value = user_data[5]
+
             # note: ts should already be utc!
-            dt = datetime.fromtimestamp(user_data[6] / 1000)
+            dt = datetime.fromtimestamp(value / 1000)
             dt = dt.date().isoformat()
 
             date_bucket[dt] = date_bucket.get(dt, 0) + 1
@@ -335,6 +380,7 @@ class AdminController(BaseController):
             coll_data[2] = int(coll_data[2])
             coll_data[4] = self.parse_iso_or_ts(coll_data[4])
             coll_data[5] = self.parse_iso_or_ts(coll_data[5])
+            coll_data.append(self.redis.zcard(coll_key.replace(':info', ':lists')))
 
             colls.append(coll_data)
 
@@ -351,6 +397,7 @@ class AdminController(BaseController):
             {'text': 'Creation Date', 'type': 'time'},
             {'text': 'Updated Date', 'type': 'time'},
             {'text': 'Public', 'type': 'string'},
+            {'text': 'Num Lists', 'type': 'number'},
         ]
 
         public_colls = [row for row in self.fetch_coll_table() if row[6] == '1']
@@ -360,10 +407,10 @@ class AdminController(BaseController):
                 'type': 'table'
                }
 
-    def load_coll_series_by_size(self, key, dates, timestamps):
+    def load_coll_series(self, key, dates, timestamps, use_created_date, incr_func):
         date_bucket = {}
 
-        if key == COLL_SIZES_CREATED:
+        if use_created_date:
             index = 4
         else:
             index = 5
@@ -373,7 +420,8 @@ class AdminController(BaseController):
             dt = datetime.fromtimestamp(coll_data[index] / 1000)
             dt = dt.date().isoformat()
 
-            date_bucket[dt] = date_bucket.get(dt, 0) + coll_data[2]
+            #date_bucket[dt] = date_bucket.get(dt, 0) + (coll_data[2] if not count_only else 1)
+            date_bucket[dt] = date_bucket.get(dt, 0) + incr_func(coll_data)
 
         datapoints = []
         for dt, ts in zip(dates, timestamps):

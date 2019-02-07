@@ -168,6 +168,7 @@ class TestAdminAPI(FullStackTests):
                             'to': today_str()
                            },
                   'targets': [
+                              {'target': USER_CREATED, 'type': 'timeserie'},
                               {'target': USER_LOGINS, 'type': 'timeserie'},
                               {'target': USER_LOGINS_100, 'type': 'timeserie'},
                               {'target': ACTIVE_SESSIONS, 'type': 'timeserie'},
@@ -177,16 +178,19 @@ class TestAdminAPI(FullStackTests):
         res = self.testapp.post_json('/api/v1/stats/query', params=params)
 
         assert isinstance(res.json, list)
-        assert len(res.json) == 3
+        assert len(res.json) == 4
 
-        # 3 user logins (for 3 users!)
+        # 3 users created
         assert res.json[0]['datapoints'][0][0] == 3
 
+        # 3 user logins (for 3 users!)
+        assert res.json[1]['datapoints'][0][0] == 3
+
         # 0 user logins for users with >100MB
-        assert res.json[1]['datapoints'][0][0] == 0
+        assert res.json[2]['datapoints'][0][0] == 0
 
         # 1 active session
-        assert res.json[2]['datapoints'][0][0] == 1
+        assert res.json[3]['datapoints'][0][0] == 1
 
     def test_api_stats_query_users(self):
         # user table cached
@@ -239,15 +243,20 @@ class TestAdminAPI(FullStackTests):
                            },
                   'targets': [
                               {'target': COLL_TABLE, 'type': 'table'},
+                              {'target': COLL_COUNT, 'type': 'timeserie'},
+                              {'target': COLL_COUNT_PUBLIC, 'type': 'timeserie'},
+                              {'target': COLL_COUNT_PUBLIC_W_LISTS, 'type': 'timeserie'},
                               {'target': COLL_SIZES_CREATED, 'type': 'timeserie'},
                               {'target': COLL_SIZES_UPDATED, 'type': 'timeserie'},
+                              {'target': COLL_SIZES_PUBLIC, 'type': 'timeserie'},
+                              {'target': COLL_SIZES_PUBLIC_W_LISTS, 'type': 'timeserie'},
                              ]
                  }
 
         res = self.testapp.post_json('/api/v1/stats/query', params=params)
 
         assert isinstance(res.json, list)
-        assert len(res.json) == 3
+        assert len(res.json) == 8
 
         colls = res.json[0]['rows']
 
