@@ -4,6 +4,9 @@ import redis
 from webrecorder.models.recording import Recording
 from webrecorder.models.base import BaseAccess
 
+import logging
+logger = logging.getLogger('wr.io')
+
 
 # ============================================================================
 class StorageCommitter(object):
@@ -14,8 +17,8 @@ class StorageCommitter(object):
 
         self.all_cdxj_templ = Recording.CDXJ_KEY.format(rec='*')
 
-        print('Storage Committer Started')
-        print('Storage Root: ' + os.environ['STORAGE_ROOT'])
+        logger.info('Storage Committer Started')
+        logger.info('Storage Root: ' + os.environ['STORAGE_ROOT'])
 
     def __call__(self):
         for cdxj_key in self.redis.scan_iter(self.all_cdxj_templ):
