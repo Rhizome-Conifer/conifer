@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { login } from 'store/modules/auth';
+import { load, login } from 'store/modules/auth';
 import { reportBug, toggleModal } from 'store/modules/bugReport';
 import { showModal } from 'store/modules/userLogin';
 
@@ -21,6 +21,7 @@ const mapStateToProps = ({ app }) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
+    loadAuth: () => dispatch(load()),
     loginFn: data => dispatch(login(data)),
     sendUIReport: data => dispatch(reportBug(data, true)),
     showModal: b => dispatch(showModal(b)),
