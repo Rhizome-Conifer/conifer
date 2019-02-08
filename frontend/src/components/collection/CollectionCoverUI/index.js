@@ -122,6 +122,10 @@ class CollectionCoverUI extends Component {
   }
 
   setWaypoints = () => {
+    if (!this.scrollable.current) {
+      return;
+    }
+
     const ref = this.scrollable.current;
     const topOffset = ref.scrollTop - ref.getBoundingClientRect().top;
     this.waypoints = [...ref.querySelectorAll('.lists > li')].map(li => li.getBoundingClientRect().top + topOffset);
