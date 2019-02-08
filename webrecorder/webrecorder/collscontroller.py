@@ -18,8 +18,6 @@ class CollsController(BaseController):
 
         self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
 
-        self.cork = kwargs['cork']
-
     def init_routes(self):
         wr_api_spec.set_curr_tag('Collections')
 

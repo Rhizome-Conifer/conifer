@@ -16,21 +16,22 @@ def init_logging(debug=False):
                         datefmt='%Y-%m-%d %H:%M:%S',
                         level=logging.WARNING if not debug else logging.DEBUG)
 
-    # set boto log to error
-    import boto3
-    logging.getLogger('boto3').setLevel(logging.ERROR)
-    logging.getLogger('botocore').setLevel(logging.ERROR)
-    logging.getLogger('s3transfer').setLevel(logging.ERROR)
-
-    tld_log = logging.getLogger('tldextract')
-    if tld_log:
-        tld_log.setLevel(logging.ERROR)
-
     try:
         from requests.packages.urllib3 import disable_warnings
         disable_warnings()
     except:
         pass
+
+    ERROR_ONLY_LOGGERS = (
+        'boto3', 'botocore', 's3transfer',
+        'tldextract', 'requests', 'urllib3.connectionpool'
+    )
+
+    # set boto log to error
+    import boto3
+    import requests
+    for logger_name in ERROR_ONLY_LOGGERS:
+        logging.getLogger(logger_name).setLevel(logging.ERROR)
 
 
 # ============================================================================

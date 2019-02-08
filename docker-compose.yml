@@ -119,7 +119,6 @@ services:
             - CONTAINER_EXPIRE_SECS=3600
             - IDLE_TIMEOUT=120
 
-            - REDIS_BROWSER_URL=redis://redis/0
             - BROWSER_NET=webrecorder_browsers
             - MAIN_NET=webrecorder_default
 

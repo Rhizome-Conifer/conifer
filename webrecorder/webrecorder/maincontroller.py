@@ -126,7 +126,8 @@ class MainController(BaseController):
                                         user_manager=user_manager,
                                         config=config,
                                         browser_mgr=browser_mgr,
-                                        redis=self.redis)
+                                        redis=self.redis,
+                                        cork=cork)
 
         # Init Sesion temp_prefix
         Session.temp_prefix = config['temp_prefix']

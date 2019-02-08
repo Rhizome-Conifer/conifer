@@ -21,6 +21,7 @@ class BaseController(object):
         self.user_manager = kwargs['user_manager']
         self.config = kwargs['config']
         self.redis = kwargs['redis']
+        self.cork = kwargs['cork']
 
         self.api = api_decorator
 
