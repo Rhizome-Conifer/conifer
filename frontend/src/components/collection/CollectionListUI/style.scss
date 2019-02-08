@@ -65,7 +65,7 @@ a.collection-title:hover {
         max-width: 35rem;
         word-break: break-word;
 
-        & > div {
+        &:not(.click-to-edit) > div {
             width: 100%;
         }
 
@@ -80,6 +80,11 @@ a.collection-title:hover {
         .DraftEditor-editorContainer {
             max-height: inherit;
         }
+    }
+
+    .wr-editor-readonly {
+        width: 100%;
+        word-break: break-word;
     }
 
     .wr-inline-editor {

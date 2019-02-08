@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-import { getCollectionLink, getListLink } from 'helpers/utils';
+import { getCollectionLink, getListLink, remoteBrowserMod } from 'helpers/utils';
 
 import ClippedLink from 'components/ClippedLink';
 import TimeFormat from 'components/TimeFormat';
@@ -53,7 +53,7 @@ const ListEntry = ({ collection, isDetail, list }) => {
       <ol>
         {
           list.get('bookmarks').map((bk) => {
-            const replay = `${getListLink(collection, list)}/b${bk.get('id')}/${bk.get('timestamp')}/${bk.get('url')}`;
+            const replay = `${getListLink(collection, list)}/b${bk.get('id')}/${remoteBrowserMod(bk.get('browser'), bk.get('timestamp'))}/${bk.get('url')}`;
             return (
               <li key={bk.get('id')}>
                 <Link className="link-group" to={replay}>

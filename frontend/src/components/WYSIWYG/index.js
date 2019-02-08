@@ -228,7 +228,7 @@ class WYSIWYG extends Component {
 
     if (readOnly || !canAdmin) {
       return (
-        <div>
+        <div className="wr-editor-readonly">
           {
             remark()
               .use(remark2react)
