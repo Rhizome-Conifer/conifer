@@ -106,12 +106,26 @@ class WebrecPlayerRunner(StandaloneRunner):
         if not self.inputs:
             logging.debug('Not Loading WARCs')
 
-        if self.serializer.load_db():
-            logging.debug('Index Loaded from Cache, Skipping Reindex')
-            return True
-        else:
+        if not self.serializer.load_db():
             logging.debug('Index Not Loaded from cache, Reindexing')
+
+        user_manager = CLIUserManager()
+
+        try:
+            user = user_manager.all_users['local']
+        except:
+            logging.debug('Cached Index Invalid, missing user')
             return False
+
+        collection = user.get_collection_by_name('collection')
+        if not collection:
+            logging.debug('Cached Index Invalid, missing collection')
+            return False
+
+        self._init_browser_redis(user, collection)
+
+        logging.debug('Index Loaded from Cache, Skipping Reindex')
+        return True
 
     def save_cache(self, user_manager, user):
         if not self.serializer:

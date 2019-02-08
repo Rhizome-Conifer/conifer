@@ -20,6 +20,10 @@ from warcio import ArchiveIterator
 
 from webrecorder.standalone.webrecorder_player import webrecorder_player
 
+from webrecorder.standalone.serializefakeredis import FakeRedisSerializer, DATABASES
+
+from mock import patch
+
 
 # ============================================================================
 class TestUpload(FullStackTests):
@@ -469,7 +473,31 @@ class TestUpload(FullStackTests):
 
 
 # ============================================================================
+class PatchedFakeRedisSerializer(FakeRedisSerializer):
+    def load_db(self):
+        if super(PatchedFakeRedisSerializer, self).load_db():
+            # remove this on load to ensure reinit if missing or key changes
+            assert 'up:127.0.0.1' in DATABASES[0]
+            del DATABASES[0]['up:127.0.0.1']
+            return True
+
+        return False
+
+
+# ============================================================================
 class TestPlayerUpload(BaseWRTests):
+    @classmethod
+    def setup_class(cls):
+        cls.patch_serialize = patch('webrecorder.standalone.webrecorder_player.FakeRedisSerializer', PatchedFakeRedisSerializer)
+        cls.patch_serialize.start()
+        super(TestPlayerUpload, cls).setup_class()
+
+
+    @classmethod
+    def teardown_class(cls):
+        cls.patch_serialize.stop()
+        super(TestPlayerUpload, cls).teardown_class()
+
     @pytest.fixture(params=['cache_save', 'cache_load', 'nocache'])
     def cache_dir(self, request):
         if request.param != 'nocache':
