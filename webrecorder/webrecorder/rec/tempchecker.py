@@ -77,6 +77,18 @@ class TempChecker(object):
                         redis=self.data_redis,
                         access=BaseAccess())
 
+            wait_to_delete = False
+
+            for collection in user.get_collections(load=False):
+                for recording in collection.get_recordings(load=False):
+                    if recording.is_open(extend=False):
+                        recording.set_closed()
+                        logger.debug('TempChecker: Closing temp recording: ' + recording.my_id)
+                        wait_to_delete = True
+
+            if wait_to_delete:
+                return False
+
             user.delete_me()
 
             self.sesh_redis.delete(temp_key)
