@@ -152,6 +152,8 @@ class TempChecker(object):
             if temp_user not in temps_to_remove:
                 temps_to_remove.add((temp_user, os.path.join(self.record_root_dir, temp_user)))
 
+        logger.debug('TempChecker: Temp Users to Remove: {0}'.format(len(temps_to_remove)))
+
         # remove if expired
         for temp_user, temp_dir in temps_to_remove:
             self.delete_if_expired(temp_user, temp_dir)
