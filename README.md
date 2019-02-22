@@ -1,5 +1,6 @@
 # Webrecorder Project
 ### *Web archiving for All!*
+[![Join the chat at https://gitter.im/webrecorder/webrecorder](https://badges.gitter.im/webrecorder/webrecorder.svg)](https://gitter.im/webrecorder/webrecorder)
 
 Webrecorder provides an integrated platform for creating high-fidelity, ISO-compliant web archives in a user-friendly interface, providing access to archived content, and sharing collections.
 
@@ -228,6 +229,8 @@ For any general questions/concerns regarding the project or https://webrecorder.
 * Tweet to us at https://twitter.com/webrecorder_io
 
 * Contact us at support@webrecorder.io
+
+* Ask questions via our Gitter channel at https://gitter.im/webrecorder/webrecorder
 
 ### License
 
