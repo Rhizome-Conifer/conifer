@@ -30,7 +30,7 @@ export default function passwordReset(state = initialState, action = {}) {
     case RESET_FAIL:
       return state.merge({
         reset: false,
-        errors: action.error
+        errors: fromJS(action.error)
       });
     case SET:
       return state.set('setNew', false);
@@ -42,7 +42,7 @@ export default function passwordReset(state = initialState, action = {}) {
     case SET_FAIL:
       return state.merge({
         setNew: false,
-        errors: action.error
+        errors: fromJS(action.error)
       });
     default:
       return state;

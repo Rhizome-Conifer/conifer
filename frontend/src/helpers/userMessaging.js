@@ -42,6 +42,9 @@ export default {
     out_of_space: 'Sorry, not enough space to import this Temporary Collection into your account.',
     invalid_coll_name: 'The collection name entered is not valid'
   },
+  passwordReset: {
+    already_logged_in: 'An account is already logged in.'
+  },
   registration: {
     already_registered: 'This account has already been registered',
     duplicate_name: 'A collection with the supplied name already exists.',
