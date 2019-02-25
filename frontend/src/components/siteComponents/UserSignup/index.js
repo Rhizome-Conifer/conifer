@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { Alert, Button, Checkbox, ControlLabel, Form, HelpBlock, FormControl, FormGroup } from 'react-bootstrap';
 
 import { product, userRegex } from 'config';
+import { registration as registrationErr } from 'helpers/userMessaging';
 
 import { passwordPassRegex } from 'helpers/utils';
 import { TempUsage } from 'containers';
@@ -215,7 +216,7 @@ class UserSignup extends Component {
                     <b>Errors:</b>
                     <ul>
                       {
-                        errors.entrySeq().toArray().map(error => <li key={error[0]}>{`Error ${error[0]}:`} <span dangerouslySetInnerHTML={{ __html: error[1] }} /></li>)
+                        errors.entrySeq().toArray().map(error => <li key={error[0]}>{`${registrationErr[error[1]]}`}</li>)
                       }
                     </ul>
                   </div>
