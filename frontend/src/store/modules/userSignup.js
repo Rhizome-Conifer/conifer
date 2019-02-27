@@ -37,7 +37,7 @@ export default function userSignup(state = initialState, action = {}) {
       return state.merge({
         submitting: false,
         success: false,
-        errors: action.error.errors
+        errors: fromJS(action.error.errors)
       });
     case USERNAME_CHECK:
       return state.merge({

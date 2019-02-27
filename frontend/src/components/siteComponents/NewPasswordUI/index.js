@@ -6,6 +6,7 @@ import { Alert, Button, ControlLabel, Form, HelpBlock, FormControl, FormGroup } 
 
 import { product } from 'config';
 import { passwordPassRegex } from 'helpers/utils';
+import { passwordReset as passwordResetErr } from 'helpers/userMessaging';
 
 import './style.scss';
 
@@ -69,7 +70,7 @@ class NewPasswordUI extends Component {
             <Alert bsStyle={errors ? 'danger' : 'success'}>
               {
                 errors ?
-                  <span>{errors}</span> :
+                  <span>{passwordResetErr[errors.get('error')]}</span> :
                   <span>Your password has been successfully reset! <button onClick={this.props.toggleLogin} className="button-link" type="button">You can now login with your new password.</button></span>
               }
             </Alert>

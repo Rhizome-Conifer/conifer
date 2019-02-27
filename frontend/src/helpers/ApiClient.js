@@ -1,3 +1,4 @@
+/* eslint-disable */
 import superagent from 'superagent';
 import config from '../config';
 

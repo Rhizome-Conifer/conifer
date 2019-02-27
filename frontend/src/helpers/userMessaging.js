@@ -42,9 +42,13 @@ export default {
     out_of_space: 'Sorry, not enough space to import this Temporary Collection into your account.',
     invalid_coll_name: 'The collection name entered is not valid'
   },
+  passwordReset: {
+    already_logged_in: 'An account is already logged in.'
+  },
   registration: {
-    already_registered: 'This account has already been registerd',
+    already_registered: 'This account has already been registered',
     duplicate_name: 'A collection with the supplied name already exists.',
+    email_not_available: 'This email address is associated with another account.',
     invalid_code: `The registration code is not valid. Please try registering again, or contact ${supportEmail} if this error persists.`,
   },
   upload: {
