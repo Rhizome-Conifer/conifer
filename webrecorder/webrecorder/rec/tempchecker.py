@@ -77,6 +77,18 @@ class TempChecker(object):
                         redis=self.data_redis,
                         access=BaseAccess())
 
+            wait_to_delete = False
+
+            for collection in user.get_collections(load=False):
+                for recording in collection.get_recordings(load=False):
+                    if recording.is_open(extend=False):
+                        recording.set_closed()
+                        logger.debug('TempChecker: Closing temp recording: ' + recording.my_id)
+                        wait_to_delete = True
+
+            if wait_to_delete:
+                return False
+
             user.delete_me()
 
             self.sesh_redis.delete(temp_key)
@@ -139,6 +151,8 @@ class TempChecker(object):
 
             if temp_user not in temps_to_remove:
                 temps_to_remove.add((temp_user, os.path.join(self.record_root_dir, temp_user)))
+
+        logger.debug('TempChecker: Temp Users to Remove: {0}'.format(len(temps_to_remove)))
 
         # remove if expired
         for temp_user, temp_dir in temps_to_remove:

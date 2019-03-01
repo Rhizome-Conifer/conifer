@@ -12,7 +12,7 @@ import base64
 
 # ============================================================================
 def init_logging(debug=False):
-    logging.basicConfig(format='%(asctime)s: [%(levelname)s]: %(message)s',
+    logging.basicConfig(format='%(name)s: %(asctime)s: [%(levelname)s]: %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
                         level=logging.WARNING if not debug else logging.DEBUG)
 
@@ -23,8 +23,8 @@ def init_logging(debug=False):
         pass
 
     ERROR_ONLY_LOGGERS = (
-        'boto3', 'botocore', 's3transfer',
-        'tldextract', 'requests', 'urllib3.connectionpool'
+        'boto3', 'botocore', 's3transfer', 'tldextract',
+        'requests', 'urllib3.connectionpool', 'urllib3.util.retry',
     )
 
     # set boto log to error

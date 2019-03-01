@@ -30,6 +30,7 @@ USER_CREATED =  'User-Created'
 USER_LOGINS = 'User-Logins-Any'
 USER_LOGINS_100 = 'User-Logins-100MB'
 USER_LOGINS_1000 = 'User-Logins-1GB'
+USER_LOGINS_4000 = 'User-Logins-4GB'
 
 COLL_SIZES_CREATED = 'Collections Created'
 COLL_SIZES_UPDATED = 'Collections Updated'
@@ -77,7 +78,7 @@ class AdminController(BaseController):
     CUSTOM_STATS = [
                     USER_TABLE, COLL_TABLE, TEMP_TABLE,
                     ACTIVE_SESSIONS, TOTAL_USERS,
-                    USER_CREATED, USER_LOGINS, USER_LOGINS_100, USER_LOGINS_1000,
+                    USER_CREATED, USER_LOGINS, USER_LOGINS_100, USER_LOGINS_1000, USER_LOGINS_4000,
                     COLL_SIZES_CREATED, COLL_SIZES_UPDATED, COLL_SIZES_PUBLIC, COLL_SIZES_PUBLIC_W_LISTS,
                     COLL_COUNT, COLL_COUNT_PUBLIC, COLL_COUNT_PUBLIC_W_LISTS,
                    ]
@@ -171,6 +172,9 @@ class AdminController(BaseController):
 
             elif name == USER_LOGINS_1000:
                 return self.load_user_stats(name, dates, timestamps, 1000000000)
+
+            elif name == USER_LOGINS_4000:
+                return self.load_user_stats(name, dates, timestamps, 4000000000)
 
             elif name in COLL_COUNT:
                 # add 1 per collection

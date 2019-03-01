@@ -108,6 +108,9 @@ class BaseStorage(object):
         :returns: whether successful or not
         :rtype: bool
         """
+        if not filename:
+            return False
+
         target_url = self.client_url_to_target_url(filename)
 
         if not target_url or not self.is_valid_url(target_url):

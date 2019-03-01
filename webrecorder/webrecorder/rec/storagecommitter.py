@@ -33,6 +33,11 @@ class StorageCommitter(object):
                               redis=self.redis,
                               access=BaseAccess())
 
+        if not recording.get_owner():
+            logger.debug('Deleting Invalid Rec: ' + recording.my_id)
+            recording.delete_object()
+            return
+
         if not recording.is_open(extend=False):
             recording.commit_to_storage()
 

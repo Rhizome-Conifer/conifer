@@ -1,4 +1,4 @@
-FROM webrecorder/pywb:develop
+FROM webrecorder/pywb:2.2.20190227
 
 WORKDIR /build
 ADD requirements.txt /build/
@@ -9,7 +9,7 @@ RUN pip install git+https://github.com/FedericoCeratto/bottle-cork.git@94d4017a4
 
 RUN pip install -r requirements.txt
 
-USER archivist
+ENV VOLUME_DIR /data/
 
 VOLUME /data/
 
