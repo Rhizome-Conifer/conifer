@@ -614,6 +614,9 @@ class UserManager(object):
         if 'role' in data:
             user['role'] = data['role']
 
+        if 'customer_id' in data:
+            user['customer_id'] = data['customer_id']
+
         return None
 
     def delete_user(self, username):

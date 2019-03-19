@@ -30,7 +30,7 @@ class User(RedisUniqueComponent):
     SKIP_KEY_SECS = 330
 
     SERIALIZE_PROPS = ['desc', 'display_url', 'full_name']
-    SERIALIZE_FULL_PROPS = SERIALIZE_PROPS + ['role', 'last_login', 'updated_at', 'created_at', 'timespan', 'size', 'max_size']
+    SERIALIZE_FULL_PROPS = SERIALIZE_PROPS + ['customer_id', 'email_addr', 'role', 'last_login', 'updated_at', 'created_at', 'timespan', 'size', 'max_size']
 
     @classmethod
     def init_props(cls, config):
