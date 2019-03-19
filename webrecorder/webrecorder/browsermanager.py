@@ -19,6 +19,7 @@ class BrowserManager(object):
         self.browser_redis = browser_redis
 
         self.browser_req_url = config['browser_req_url']
+        self.browser_info_url = config['browser_info_url']
         self.browser_list_url = config['browser_list_url']
         self.browsers = {}
 
@@ -47,13 +48,20 @@ class BrowserManager(object):
             gevent.sleep(300)
             self.load_all_browsers()
 
-    def init_cont_browser_sesh(self):
-        remote_addr = request.environ['REMOTE_ADDR']
+    def init_remote_browser_session(self, reqid=None, remote_ip=None):
+        # init remote browser session by specified request id
+        if reqid:
+            res = requests.get(self.browser_info_url.format(reqid=reqid))
+            container_data = res.json().get('user_params')
 
-        container_data = self.browser_redis.hgetall(self.BROWSER_IP_KEY.format(remote_addr))
+        else:
+            remote_addr = remote_ip or request.environ['REMOTE_ADDR']
+            user_data_key = self.BROWSER_IP_KEY.format(remote_addr)
+            container_data = self.browser_redis.hgetall(user_data_key)
+            container_data['ip'] = remote_addr
 
         if not container_data or 'user' not in container_data:
-            print('Data not found for remote ' + remote_addr)
+            print('Data not found for remote')
             return
 
         username = container_data.get('user')
@@ -65,7 +73,6 @@ class BrowserManager(object):
         sesh.set_id(sesh_id)
 
         container_data['id'] = sesh_id
-        container_data['ip'] = remote_addr
 
         the_user = self.user_manager.all_users[username]
 

@@ -69,7 +69,7 @@ class WebsockController(BaseController):
                        status_update_secs=self.status_update_secs).run()
 
     def client_ws_cont(self):
-        info = self.browser_mgr.init_cont_browser_sesh()
+        info = self.browser_mgr.init_remote_browser_session()
         if not info:
             return {'error_message': 'conn not from valid containerized browser'}
 
