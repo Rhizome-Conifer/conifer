@@ -387,7 +387,7 @@ class MainController(BaseController):
                 res = fh.read()
 
             if 'HTTP_ORIGIN' in request.environ:
-                self.set_options_headers(None, None, res)
+                self.set_options_headers(None, None)
 
             return res
 

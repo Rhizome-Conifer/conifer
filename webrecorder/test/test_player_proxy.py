@@ -188,10 +188,18 @@ class TestPlayer(BaseTestPlayer):
         assert res.status_code == 200
         assert 'wombat' in res.text
 
-        res = self.session.get('http://webrecorder.proxy/static_cors/bundle/proxy.js', proxies=self.proxies)
+        assert 'Access-Control-Allow-Origin' not in res.headers
+
+    def test_proxy_static_cors(self):
+        res = self.session.get('http://webrecorder.proxy/static_cors/bundle/proxy.js', proxies=self.proxies,
+                               headers={'Origin': 'http://example.com/'})
+
         assert res.status_code == 200
         assert 'wombat' in res.text
 
+        assert res.headers['Access-Control-Allow-Origin'] == '*'
+
+    def test_proxy_static_err(self):
         res = self.session.get('http://webrecorder.proxy/static_cors/bundle/not-found-x', proxies=self.proxies)
         assert res.status_code == 404
         assert 'No such page' in res.text
