@@ -214,10 +214,10 @@ class MainController(BaseController):
             return self.browser_mgr.get_browsers()
 
         def get_app_host():
-            return self.app_host
+            return self.app_host or 'http://localhost:8089'
 
         def get_content_host():
-            return self.content_host
+            return self.content_host or 'http://localhost:8092'
 
         def get_num_collections():
             count = self.access.session_user.num_total_collections()
