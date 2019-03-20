@@ -51,8 +51,7 @@ class BrowserManager(object):
     def init_remote_browser_session(self, reqid=None, remote_ip=None):
         # init remote browser session by specified request id
         if reqid:
-            res = requests.get(self.browser_info_url.format(reqid=reqid))
-            container_data = res.json().get('user_params')
+            container_data = self._api_reqid_to_user_params(reqid)
 
         else:
             remote_addr = remote_ip or request.environ['REMOTE_ADDR']
@@ -70,7 +69,8 @@ class BrowserManager(object):
         sesh.set_restricted_user(username)
 
         sesh_id = self.browser_sesh_id(container_data['reqid'])
-        sesh.set_id(sesh_id)
+        if sesh_id:
+            sesh.set_id(sesh_id)
 
         container_data['id'] = sesh_id
 
@@ -97,6 +97,10 @@ class BrowserManager(object):
     def _api_new_browser(self, req_url, container_data):
         r = requests.post(req_url, json=container_data)
         return r.json()
+
+    def _api_reqid_to_user_params(self, reqid):
+        res = requests.get(self.browser_info_url.format(reqid=reqid))
+        return res.json().get('user_params')
 
     def request_new_browser(self, container_data):
         browser_id = container_data['browser']
