@@ -1,14 +1,17 @@
+sudo: false
+
 matrix:
   include:
     - os: linux
+      dist: xenial
       language: python
-      python: "3.7"
+      python: "3.6"
       sudo: false
     - os: osx
       osx_image: xcode8
       language: generic
       sudo: required
-      env: PY_VER=3.7.2
+      env: PY_VER=3.6.8
 
 env:
   global:
