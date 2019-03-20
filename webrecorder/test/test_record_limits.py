@@ -102,6 +102,8 @@ class TestRecordLimits(FullStackTests):
         res.charset = 'utf-8'
         assert res.status_code == 402
 
+        assert 'out of space in your temporary' in res.text
+
     def test_record_again(self):
         warc_file, warc_size, user_key, curr_size = self._get_info()
 

@@ -250,7 +250,7 @@ class MainController(BaseController):
 
         @contextfunction
         def is_anon(context):
-            return self.access.is_anon(get_user(context))
+            return self.access.session_user.is_anon()
 
         def get_announce_list():
             announce_list = os.environ.get('ANNOUNCE_MAILING_LIST', False)
