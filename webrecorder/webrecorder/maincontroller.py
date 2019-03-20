@@ -428,7 +428,7 @@ class MainController(BaseController):
                 return
 
             # return html error view for any content errors
-            if self.is_content_request() or 'wsgiprox.proxy_host' in request.environ:
+            if self.is_content_request() or out.status_code == 402 or 'wsgiprox.proxy_host' in request.environ:
                 if self.content_error_redirect:
                     err_context = {'status': out.status_code,
                                    'error': out.body

@@ -121,6 +121,9 @@ class TestRateLimits(FullStackTests):
 
         res = res.follow(headers=headers, status=402)
 
+        assert 'Rate Limit Exceeded' in res.text
+        assert 'network traffic quota' in res.text
+
         time.sleep(0.0)
         keys = self.redis.keys('ipr:10.0.0*')
 
