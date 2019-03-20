@@ -1,4 +1,4 @@
-from bottle import debug, request, response, static_file, redirect, BaseRequest
+from bottle import debug, request, response, redirect, BaseRequest
 
 import logging
 import json
@@ -377,10 +377,17 @@ class MainController(BaseController):
 
         @self.bottle_app.route(['/static/<path:path>', '/static_cors/<path:path>'])
         def static_files(path):
-            res = static_file(path, root=self.static_root)
+            filename = path.split('?', 1)[0]
+            filename = os.path.join(self.static_root, filename)
+            if not os.path.isfile(filename):
+                response.status = 404
+                return
+
+            with open(filename, 'rt') as fh:
+                res = fh.read()
 
             if 'HTTP_ORIGIN' in request.environ:
-                self.set_options_headers(None, None, res)
+                self.set_options_headers(None, None)
 
             return res
 
@@ -421,7 +428,7 @@ class MainController(BaseController):
                 return
 
             # return html error view for any content errors
-            if self.is_content_request():
+            if self.is_content_request() or 'wsgiprox.proxy_host' in request.environ:
                 if self.content_error_redirect:
                     err_context = {'status': out.status_code,
                                    'error': out.body

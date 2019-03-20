@@ -183,6 +183,27 @@ class TestPlayer(BaseTestPlayer):
         assert res.url == 'http://example.com/'
         assert res.headers['Memento-Datetime'] == 'Wed, 01 Jan 2014 00:00:00 GMT'
 
+    def test_proxy_static(self):
+        res = self.session.get('http://webrecorder.proxy/static/bundle/proxy.js', proxies=self.proxies)
+        assert res.status_code == 200
+        assert 'wombat' in res.text
+
+        assert 'Access-Control-Allow-Origin' not in res.headers
+
+    def test_proxy_static_cors(self):
+        res = self.session.get('http://webrecorder.proxy/static_cors/bundle/proxy.js', proxies=self.proxies,
+                               headers={'Origin': 'http://example.com/'})
+
+        assert res.status_code == 200
+        assert 'wombat' in res.text
+
+        assert res.headers['Access-Control-Allow-Origin'] == '*'
+
+    def test_proxy_static_err(self):
+        res = self.session.get('http://webrecorder.proxy/static_cors/bundle/not-found-x', proxies=self.proxies)
+        assert res.status_code == 404
+        assert 'No such page' in res.text
+
     def test_ws_init(self):
         ws = websocket.WebSocket()
         ws.connect('ws://localhost:{0}/_client_ws_cont'.format(self.app_port))
