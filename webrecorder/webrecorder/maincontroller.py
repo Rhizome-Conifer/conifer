@@ -214,10 +214,10 @@ class MainController(BaseController):
             return self.browser_mgr.get_browsers()
 
         def get_app_host():
-            return self.app_host
+            return self.app_host or 'http://localhost:8089'
 
         def get_content_host():
-            return self.content_host
+            return self.content_host or 'http://localhost:8092'
 
         def get_num_collections():
             count = self.access.session_user.num_total_collections()
@@ -250,7 +250,7 @@ class MainController(BaseController):
 
         @contextfunction
         def is_anon(context):
-            return self.access.is_anon(get_user(context))
+            return self.access.session_user.is_anon()
 
         def get_announce_list():
             announce_list = os.environ.get('ANNOUNCE_MAILING_LIST', False)
@@ -428,7 +428,7 @@ class MainController(BaseController):
                 return
 
             # return html error view for any content errors
-            if self.is_content_request() or 'wsgiprox.proxy_host' in request.environ:
+            if self.is_content_request() or out.status_code == 402 or 'wsgiprox.proxy_host' in request.environ:
                 if self.content_error_redirect:
                     err_context = {'status': out.status_code,
                                    'error': out.body

@@ -2,6 +2,7 @@
 
 {% block head %}
 {{ super() }}
+<base target="_parent">
 <script>
 
     $(function() {
@@ -14,7 +15,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container col-md-4 col-md-offset-4 top-buffer-lg">
+<div class="container col-md-8 col-md-offset-2 top-buffer-lg">
     <div class="panel panel-danger">
 {% if is_temp %}
       <div class="panel-heading">
@@ -32,16 +33,15 @@
 {% else %}
       <div class="panel-heading">
           <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-          <strong class="left-buffer">There's been an error</strong>
+          <strong class="left-buffer">{{ "Rate Limit Exceeded" if err.body == "rate_limit_exceeded" else "There's been an error"}}</strong>
       </div>
       <div class="panel-body">
         {% if err.status_code == 404 %}
         No such page or content is not accessible.
-        {% elif err.status_code == 402 and err.body == 'Rate Limit' %}
-        <p>Sorry, you have exceeded the rate limit for recording.</p>
-        <p><b>Please note:</b> Webrecorder is a <a href="/_faq">tool for high-fidelity web archiving</a>. If you are using Webrecorder for any other reason, this is not supported and you may be violating our <a href="/_policies">Terms of Service</a>.</p>
-
-        <p>If you think this message is in error, you can <a href="mailto:support@webrecorder.io" target="_parent" >let us know</a> how you are using Webrecorder.</p>
+        {% elif err.status_code == 402 and err.body == 'rate_limit_exceeded' %}
+        <p>You have reached your network traffic quota.</p>
+        <p>Webrecorder is a service for <a href="{{ get_app_host() }}/_faq">archiving web resources</a> and any other use, such as video streaming or trying to get around local access restrictions, is not supported.</p>
+        <p>If you are using Webrecorder within our <a href="{{ get_app_host() }}/_policies">terms and policies</a> and this limit is hindering a web archiving project you are working on, please send a message to <a href="mailto:support@webrecorder.io">support@webrecorder.io</a> with some details about your project and a request to raise your data limit.</p>
         {% else %}
         {{ err.body }}
         {% endif %}
