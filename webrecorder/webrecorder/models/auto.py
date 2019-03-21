@@ -45,6 +45,7 @@ class Auto(RedisUniqueComponent):
             'TAB_TYPE': 'CrawlerTab',
             'VNC_PASS': 'pass',
             'IDLE_TIMEOUT': '',
+            'BEHAVIOR_API_URL': 'http://behaviors:3030',
         }
 
     def __init__(self, **kwargs):
@@ -129,7 +130,7 @@ class Auto(RedisUniqueComponent):
 
             return err
 
-    def start(self, timeout=0, headless=False):
+    def start(self, timeout=0, headless=False, screenshot_uri=None):
         if self['status'] == 'running':
             return {'error': 'already_running'}
 
@@ -154,6 +155,11 @@ class Auto(RedisUniqueComponent):
         environ['AUTO_ID'] = self.my_id
         if timeout > 0:
             environ['BEHAVIOR_RUN_TIME'] = timeout
+
+        if screenshot_uri:
+            environ['SCREENSHOT_TARGET_URI'] = screenshot_uri
+            environ['SCREENSHOT_API_URL'] = 'http://nginx/api/v1/remote/put-record'
+            environ['SCREENSHOT_FORMAT'] = 'png'
 
         deferred = {'autodriver': False}
         if headless:

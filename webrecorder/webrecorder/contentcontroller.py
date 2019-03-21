@@ -545,13 +545,13 @@ class ContentController(BaseController, RewriterApp):
                       rec=recording.my_id,
                       type='put_record')
 
-        url = request.query.getunicode('url')
+        url = request.query.getunicode('target_uri')
 
         params = {'url': url}
 
         upstream_url = self.get_upstream_url('', kwargs, params)
 
-        headers = {'Content-Type': request.query.getunicode('content_type', 'text/plain')}
+        headers = {'Content-Type': request.environ.get('CONTENT_TYPE', 'text/plain')}
 
         r = requests.put(upstream_url,
                          data=request.body,

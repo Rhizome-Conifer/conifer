@@ -33,7 +33,8 @@ class AutoController(BaseController):
             data = request.json or {}
 
             return auto.start(timeout=data.get('timeout', 0),
-                              headless=data.get('headless', False))
+                              headless=data.get('headless', False),
+                              screenshot_uri=data.get('screenshot_uri'))
 
         # STOP
         @self.app.post('/api/v1/auto/<autoid>/stop')
