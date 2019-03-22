@@ -195,7 +195,8 @@ class TestBrowserInit(FullStackTests):
 
     def test_record_put_record(self):
         with patch('webrecorder.browsermanager.BrowserManager._api_reqid_to_user_params', mock_reqid_to_user_params):
-            res = self.testapp.put('/api/v1/remote/put-record?content_type=text/other&reqid=ABCDEF&url=custom:///test.txt', params=b'Test Resource\nData')
+            res = self.testapp.put('/api/v1/remote/put-record?reqid=ABCDEF&target_uri=custom:///test.txt', params=b'Test Resource\nData',
+                                   headers={'Content-Type': 'text/other'})
 
         assert res.json['WARC-Date']
 
