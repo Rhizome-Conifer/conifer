@@ -3,6 +3,7 @@ from .testutils import FullStackTests
 from urllib.parse import parse_qsl
 
 import os
+from webrecorder.models.usermanager import CLIUserManager
 
 
 # ============================================================================
@@ -20,7 +21,8 @@ class TestExternalColl(FullStackTests):
         os.environ['CONTENT_HOST'] = 'content-host'
         os.environ['APP_HOST'] = 'app-host'
         cls.upload_filename = os.path.join(cls.get_curr_dir(), 'warcs', 'test_3_15_upload.warc.gz')
-        super(TestExternalColl, cls).setup_class(init_anon=False)
+        super(TestExternalColl, cls).setup_class(init_anon=False, temp_worker=True, storage_worker=True)
+        cls.user_manager = CLIUserManager()
 
     @classmethod
     def teardown_class(cls):
@@ -157,4 +159,70 @@ com,example)/fake 20180306181354 http://example.com/fake text/html 200 A6DESOVDZ
                         'error': 'no_such_collection',
                        }
 
+    def test_create_users_and_login(self):
+        self.user_manager.create_user('user@example.com', 'test', 'TestTest456', 'archivist', 'Test User')
+
+        params = {'username': 'test',
+                  'password': 'TestTest456',
+                 }
+
+        res = self.testapp.post_json('/api/v1/auth/login', params=params,
+                                     headers={'Host': 'app-host'})
+
+        assert res.json['user']['username'] == 'test'
+        assert self.testapp.cookies['__test_sesh'] != ''
+
+    def test_external_upload_logged_in(self):
+        params = {'external': True,
+                  'title': 'ext-test'
+                 }
+
+        res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user='test'),
+                                     headers={'Host': 'app-host'},
+                                     params=params)
+
+        assert res.json['collection']['slug'] == 'ext-test'
+
+        with open(self.upload_filename, 'rb') as fh:
+            res = self.testapp.put('/api/v1/upload?filename=example.warc.gz&force-coll=ext-test',
+                                   params=fh.read(),
+                                   headers={'Host': 'app-host'})
+
+        res.charset = 'utf-8'
+        assert res.json['user'] == 'test'
+        assert res.json['upload_id'] != ''
+
+        upload_id = res.json['upload_id']
+        res = self.testapp.get('/api/v1/upload/{upload_id}?user={user}'.format(upload_id=upload_id, user='test'),
+                               headers={'Host': 'app-host'})
+
+        assert res.json['total_size'] >= 3000
+        assert res.json['done'] == False
+
+        def assert_finished():
+            res = self.testapp.get('/api/v1/upload/{upload_id}?user={user}'.format(upload_id=upload_id, user='test'),
+                                   headers={'Host': 'app-host'})
+
+            assert res.json['done'] == True
+            assert res.json['size'] >= res.json['total_size']
+
+        self.sleep_try(0.2, 10.0, assert_finished)
+
+    def test_external_expire(self):
+        coll_id = self.redis.hget('u:test:colls', 'ext-test')
+        assert coll_id
+
+        assert self.redis.hgetall('c:{0}:info'.format(coll_id))
+
+        assert self.redis.exists('c:{0}:ext'.format(coll_id))
+        assert self.redis.exists('c:{0}:cdxj'.format(coll_id))
+
+        self.redis.delete('c:{0}:cdxj'.format(coll_id))
+
+        def assert_done():
+            assert not self.redis.exists('c:{0}:info'.format(coll_id))
+            assert not self.redis.exists('c:{0}:ext'.format(coll_id))
+            assert not self.redis.hget('u:test:colls', 'ext-test')
+
+        self.sleep_try(0.2, 10.0, assert_done)
 
