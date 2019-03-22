@@ -65,7 +65,7 @@ class Session(object):
         # TODO: remove template params as not used with frontend?
         params = {'curr_user': self.curr_user,
                   'curr_role': self.curr_role,
-                  'csrf': self.get_csrf(),
+                  #'csrf': self.get_csrf(),
                   'message': message,
                   'msg_type': msg_type,
                  }
@@ -79,7 +79,10 @@ class Session(object):
         self.template_params = params
 
     def is_new(self):
-        return self.ttl == -2
+        if self.ttl == -2:
+            return True
+
+        return 'username' not in self._sesh and 'anon' not in self._sesh
 
     def get_id(self):
         if self.is_new():
@@ -87,8 +90,8 @@ class Session(object):
 
         return self._sesh['id']
 
-    def get_csrf(self):
-        return self._sesh.get('csrf', '')
+    #def get_csrf(self):
+    #    return self._sesh.get('csrf', '')
 
     def set_id_from_cookie(self, cookie):
         if not cookie:
@@ -311,7 +314,7 @@ class RedisSessionMiddleware(CookieGuard):
             sesh_id, redis_key = self.make_id_and_key()
 
             data = {'id': sesh_id,
-                    'csrf': self.make_id()
+                    #'csrf': self.make_id()
                    }
 
             # auto-login as designated user for each new session

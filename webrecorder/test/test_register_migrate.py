@@ -201,8 +201,8 @@ class TestRegisterMigrate(FullStackTests):
         assert 'New Coll' in res.text
 
         # ensure csrf token present
-        m = re.search('name="csrf" value="([^\"]+)"', res.text)
-        assert m
+        #m = re.search('name="csrf" value="([^\"]+)"', res.text)
+        #assert m
 
     def test_logged_in_create_coll_dupe_name_error(self):
         params = {'title': 'New Coll',
@@ -228,8 +228,8 @@ class TestRegisterMigrate(FullStackTests):
         assert 'New Coll' in res.text
 
         # ensure csrf token present
-        m = re.search('name="csrf" value="([^\"]+)"', res.text)
-        assert m
+        #m = re.search('name="csrf" value="([^\"]+)"', res.text)
+        #assert m
 
     def test_logged_in_create_coll_and_rename_to_dupe_name(self):
         params = {'title': 'Other Coll',
@@ -546,7 +546,7 @@ class TestRegisterMigrate(FullStackTests):
     def test_delete_coll(self):
         res = self.testapp.get('/someuser/new-coll')
 
-        csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
+        #csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
 
         user_dir = os.path.join(self.warcs_dir, 'someuser')
 

@@ -1,6 +1,7 @@
 import os
 import shutil
 import logging
+import traceback
 
 from webrecorder.rec.storage.base import BaseStorage
 from webrecorder.rec.storage.storagepaths import add_local_store_prefix, strip_prefix
@@ -133,12 +134,16 @@ class LocalFileStorage(DirectLocalFileStorage):
         :returns: whether successful or not
         :rtype: bool
         """
-        dirpath = os.path.join(self.storage_root, collection.get_dir_path())
-        return (self.redis.publish('handle_delete_dir', dirpath) > 0)
+        try:
+            dirpath = os.path.join(self.storage_root, collection.get_dir_path())
+            return (self.redis.publish('handle_delete_dir', dirpath) > 0)
+        except Exception:
+            traceback.print_exc()
+            return False
 
     def do_delete(self, target_url, client_url):
         """Delete file.
-        
+
         :param str target_url: target URL
         :param str client_url: client URL (unused argument)
 

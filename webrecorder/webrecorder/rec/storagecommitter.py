@@ -33,9 +33,14 @@ class StorageCommitter(object):
                               redis=self.redis,
                               access=BaseAccess())
 
-        if not recording.get_owner():
+        collection = recording.get_owner()
+        if not collection:
             logger.debug('Deleting Invalid Rec: ' + recording.my_id)
             recording.delete_object()
+            return
+
+        if collection.is_external():
+            logger.debug('Skipping recording commit for external collection: ' + collection.my_id)
             return
 
         if not recording.is_open(extend=False):

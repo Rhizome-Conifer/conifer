@@ -62,6 +62,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
     CLOSE_WAIT_KEY = 'c:{coll}:wait:{id}'
 
+    EXTERNAL_KEY = 'c:{coll}:ext'
+
     COMMIT_WAIT_KEY = 'w:{filename}'
 
     INDEX_FILE_KEY = '@index_file'
@@ -679,6 +681,10 @@ class Collection(PagesMixin, RedisUniqueComponent):
     def set_external(self, external):
         self.set_bool_prop('external', external)
 
+    def set_external_remove_on_expire(self):
+        key = self.EXTERNAL_KEY.format(coll=self.my_id)
+        self.redis.set(key, '1')
+
     def commit_file(self, filename, full_filename, obj_type,
                     update_key=None, update_prop=None, direct_delete=False):
 
@@ -740,6 +746,10 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         logger.debug('File Committed {0} -> {1}'.format(full_filename, remote_url))
         return True
+
+    def has_cdxj(self):
+        coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)
+        return self.redis.exists(coll_cdxj_key)
 
     def sync_coll_index(self, exists=False, do_async=False):
         coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)

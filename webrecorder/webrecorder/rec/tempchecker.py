@@ -6,7 +6,7 @@ import requests
 import shutil
 import time
 
-from webrecorder.models import User
+from webrecorder.models import User, Collection
 from webrecorder.models.base import BaseAccess
 
 import logging
@@ -157,6 +157,32 @@ class TempChecker(object):
         # remove if expired
         for temp_user, temp_dir in temps_to_remove:
             self.delete_if_expired(temp_user, temp_dir)
+
+        self.delete_expired_external()
+
+    def delete_expired_external(self):
+        """ Delete any expired external collections in non-temp users
+        """
+        all_ext_templ = Collection.EXTERNAL_KEY.format(coll='*')
+
+        for ext_key in self.data_redis.scan_iter(all_ext_templ):
+            try:
+                _, coll, _2 = ext_key.split(':', 2)
+
+                collection = Collection(my_id=coll,
+                                        redis=self.data_redis,
+                                        access=BaseAccess())
+
+                user = collection.get_owner()
+                if not user or user.is_anon():
+                    continue
+
+                if not collection.has_cdxj():
+                    logger.debug('TempChecker: Delete Expired External Coll: ' + collection.name)
+                    user.remove_collection(collection, delete=True)
+            except Exception:
+                import traceback
+                traceback.print_exc()
 
 
 # =============================================================================
