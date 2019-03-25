@@ -405,7 +405,12 @@ class ContentController(BaseController, RewriterApp):
                 return self.redirect(request.query.getunicode('path'))
 
             else:
-                url = request.environ['wsgi.url_scheme'] + '://' + self.content_host
+                redir_url = request.query.getunicode('redir_back')
+                if not redir_url:
+                    url = request.environ['wsgi.url_scheme'] + '://' + self.content_host
+                else:
+                    url = redir_url
+
                 self.set_options_headers(self.content_host, self.app_host)
                 response.headers['Cache-Control'] = 'no-cache'
 
@@ -424,7 +429,10 @@ class ContentController(BaseController, RewriterApp):
                     cookie = sesh.get_cookie()
 
                 cookie = quote(cookie)
-                url += '/_set_session?{0}&cookie={1}'.format(request.environ['QUERY_STRING'], cookie)
+                if not redir_url:
+                    url += '/_set_session'
+
+                url += '?{0}&cookie={1}'.format(request.environ['QUERY_STRING'], cookie)
                 redirect(url)
 
         # OPTIONS
