@@ -19,6 +19,7 @@ const USER_UPDATE_FAIL = 'wr/user/UPDATE_FAIL';
 const initialState = fromJS({
   error: null,
   edited: false,
+  editing: false,
   loaded: false,
   loading: false
 });
@@ -46,10 +47,21 @@ export default function user(state = initialState, action = {}) {
       return state.merge({
         ...action.result.user
       });
+    case USER_EDIT:
+      return state.merge({
+        edited: false,
+        editing: true
+      });
     case USER_EDIT_SUCCESS:
-      return state.set('edited', true);
+      return state.merge({
+        edited: true,
+        editing: false
+      });
     case RESET_EDIT_STATE:
-      return state.set('edited', false);
+      return state.merge({
+        edited: false,
+        editing: false
+      });
     default:
       return state;
   }

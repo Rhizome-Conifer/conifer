@@ -2,6 +2,8 @@ import React from 'react';
 import { asyncConnect } from 'redux-connect';
 import { batchActions } from 'redux-batched-actions';
 
+import { saveDelay } from 'config';
+
 import { addUserCollection, incrementCollCount } from 'store/modules/auth';
 import { load as loadCollections, createCollection } from 'store/modules/collections';
 
@@ -11,7 +13,6 @@ import { sortCollsByAlpha } from 'store/selectors';
 
 import CollectionListUI from 'components/collection/CollectionListUI';
 
-import { saveDelay } from 'config';
 
 const preloadCollections = [
   {

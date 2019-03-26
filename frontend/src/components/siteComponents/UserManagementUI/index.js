@@ -47,9 +47,12 @@ class UserManagementUI extends PureComponent {
           this.setState({ formError: false });
         }
 
-        this.props.history.push(
-          this.props.next !== null ? this.props.next : `/${nextProps.auth.getIn(['user', 'username'])}`
-        );
+        const next = this.props.next !== null ? this.props.next : `/${nextProps.auth.getIn(['user', 'username'])}`;
+        if (next.startsWith('http')) {
+          window.location.href = next;
+        } else {
+          this.props.history.push(next);
+        }
       } else {
         this.setState({ formError: true });
       }

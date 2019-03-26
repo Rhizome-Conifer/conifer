@@ -78,6 +78,7 @@ export default Object.assign({
   saveDelay: 1000,
   storageKey: 'wr__',
   supportEmail: 'support@webrecorder.io',
+  supporterPortal: '',
   tagline: 'Create high-fidelity, interactive web archives of any web site you browse.',
   truncSentence: new RegExp(/([.!?])/),
   truncWord: new RegExp(/(\s)/),

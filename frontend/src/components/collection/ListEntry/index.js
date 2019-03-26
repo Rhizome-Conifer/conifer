@@ -22,7 +22,7 @@ const ListEntry = ({ collection, isDetail, list }) => {
               <ListIcon />
             </div>
             <div className="list-metadata">
-              <div className="title-container"><h1>{list.get('title')}</h1>{ list.get('public') && <span className="visibility-badge">PUBLIC</span>}</div>
+              <div className="title-container"><h1>{list.get('title')}</h1>{ collection.get('public') && list.get('public') && <span className="visibility-badge">PUBLIC</span>}</div>
               <React.Fragment>
                 from <Link to={getCollectionLink(collection)}>{collection.get('title')}</Link>
                 {
