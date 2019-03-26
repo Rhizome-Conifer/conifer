@@ -281,8 +281,9 @@ class UserSettingsUI extends Component {
                     </FormGroup>
                   </div>
 
-                  <div className="admin-section">
-                    <h5>Current Role: {user.get('role')}</h5>
+                  <div className="admin-section update-role">
+                    <h5>Update Role</h5>
+                    <p>Current Role: {user.get('role')}</p>
                     <div>
                       <Dropdown id="roleDropdown" onSelect={this.setRole}>
                         <Dropdown.Toggle>{this.state.role ? this.state.role : 'Change Role'}</Dropdown.Toggle>

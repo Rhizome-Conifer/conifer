@@ -40,9 +40,17 @@
             margin-bottom: 1.5rem;
         }
 
-        .admin-section.suspend {
-            p {
-                width: 20rem;
+        .admin-section {
+            &.suspend {
+                p {
+                    width: 20rem;
+                }
+            }
+
+            &.update-role {
+                h5 {
+                    margin-bottom: 1rem;
+                }
             }
         }
 
