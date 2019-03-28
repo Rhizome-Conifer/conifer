@@ -53,6 +53,7 @@ class ContentController(BaseController, RewriterApp):
         self.replay_host = os.environ.get('WARCSERVER_PROXY_HOST')
         if not self.replay_host:
             self.replay_host = self.live_host
+        self.session_redirect_host = os.environ.get('SESSION_REDIRECT_HOST')
 
         self.wam_loader = WAMLoader()
         self._init_client_archive_info()
@@ -576,7 +577,7 @@ class ContentController(BaseController, RewriterApp):
     def redir_set_session(self):
         full_path = request.environ['SCRIPT_NAME'] + request.environ['PATH_INFO']
         full_path = self.add_query(full_path)
-        self.redir_host(None, '/_set_session?path=' + quote(full_path))
+        self.redir_host(self.session_redirect_host, '/_set_session?path=' + quote(full_path))
 
     def _create_new_rec(self, collection, title, mode, desc=''):
         #rec_name = self.sanitize_title(title) if title else ''
