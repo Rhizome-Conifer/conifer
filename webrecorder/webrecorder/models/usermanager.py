@@ -617,6 +617,9 @@ class UserManager(object):
         if 'customer_id' in data:
             user['customer_id'] = data['customer_id']
 
+        if 'customer_max_size' in data:
+            user['customer_max_size'] = data['customer_max_size']
+
         return None
 
     def delete_user(self, username):
