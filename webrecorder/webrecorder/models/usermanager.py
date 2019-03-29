@@ -252,7 +252,9 @@ class UserManager(object):
 
         user.update_last_login()
 
-        return {'success': '1', 'new_coll_name': new_collection.name if new_collection else None}
+        return {'success': '1',
+                'new_coll_name': new_collection.name if new_collection else None,
+                'user': user}
 
     def logout(self):
         sesh = self.get_session()

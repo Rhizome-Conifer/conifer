@@ -37,7 +37,7 @@ class TestExternalColl(FullStackTests):
                   'title': 'external'
                  }
 
-        res = self.testapp.post('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
+        res = self.testapp.post_json('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
         TestExternalColl.anon_user = res.json['user']['username']
 
         self.assert_temp_user_sesh(TestExternalColl.anon_user)
@@ -83,16 +83,16 @@ com,example)/fake 20180306181354 http://example.com/fake text/html 200 A6DESOVDZ
                   'title': 'external-upload-test'
                  }
 
-        res = self.testapp.post('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
-        TestExternalColl.anon_user = res.json['user']['username']
+        res = self.testapp.post_json('/api/v1/auth/ensure_login', headers={'Host': 'app-host'},
+                                     params=params)
+
+        TestExternalColl.anon_user = res.json['username']
 
         self.assert_temp_user_sesh(TestExternalColl.anon_user)
 
-        res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user=self.anon_user),
-                                     headers={'Host': 'app-host'},
-                                     params=params)
-
-        assert res.json['collection']['slug'] == 'external-upload-test'
+        assert res.json['coll_empty'] == True
+        assert res.json['coll_created'] == True
+        assert self.testapp.cookies['__test_sesh'] != ''
 
     def test_external_upload(self):
         with open(self.upload_filename, 'rb') as fh:
@@ -208,6 +208,32 @@ com,example)/fake 20180306181354 http://example.com/fake text/html 200 A6DESOVDZ
 
         self.sleep_try(0.2, 10.0, assert_finished)
 
+    def test_ensure_logged_in(self):
+        params = {'username': 'test',
+                  'password': 'TestTest456',
+                  'external': True,
+                  'title': 'ext-test',
+                 }
+
+        res = self.testapp.post_json('/api/v1/auth/ensure_login',
+                                     params=params,
+                                     headers={'Host': 'app-host'})
+
+        assert res.json == {'username': 'test',
+                            'coll_empty': False,
+                            'coll_created': False}
+
+    def test_ensure_logged_in_not_temp(self):
+        params = {'external': True,
+                  'title': 'ext-test',
+                 }
+
+        res = self.testapp.post_json('/api/v1/auth/ensure_login',
+                                     params=params,
+                                     headers={'Host': 'app-host'})
+
+        assert res.json == {'error': 'already_logged_in'}
+
     def test_external_expire(self):
         coll_id = self.redis.hget('u:test:colls', 'ext-test')
         assert coll_id
@@ -225,4 +251,48 @@ com,example)/fake 20180306181354 http://example.com/fake text/html 200 A6DESOVDZ
             assert not self.redis.hget('u:test:colls', 'ext-test')
 
         self.sleep_try(0.2, 10.0, assert_done)
+
+    def test_ensure_logged_in_create_coll(self):
+        params = {'username': 'test',
+                  'password': 'TestTest456',
+                  'external': True,
+                  'title': 'ext-test',
+                 }
+
+        res = self.testapp.post_json('/api/v1/auth/ensure_login',
+                                     params=params,
+                                     headers={'Host': 'app-host'})
+
+        assert res.json == {'username': 'test',
+                            'coll_empty': True,
+                            'coll_created': True
+                           }
+
+        coll_id = self.redis.hget('u:test:colls', 'ext-test')
+        assert coll_id
+
+        assert self.redis.exists('c:{0}:info'.format(coll_id))
+
+    def test_logged_out_ensure_relogin(self):
+        res = self.testapp.post_json('/api/v1/auth/logout',
+                                     headers={'Host': 'app-host'})
+
+        assert res.json == {'success': 'logged_out'}
+
+        params = {'username': 'test',
+                  'password': 'TestTest456',
+                  'external': True,
+                  'title': 'ext-test',
+                 }
+
+        res = self.testapp.post_json('/api/v1/auth/ensure_login',
+                                     params=params,
+                                     headers={'Host': 'app-host'})
+
+        # not valid, as size still 0
+        assert res.json == {
+                            'username': 'test',
+                            'coll_empty': True,
+                            'coll_created': False
+                           }
 
