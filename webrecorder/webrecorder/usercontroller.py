@@ -41,19 +41,16 @@ class UserController(BaseController):
         data = request.json or {}
         if 'username' in data:
             if self.access.session_user.name != data['username']:
-                result = self.user_manager.login_user(data or {})
-                if 'error' in result:
+                result = self.user_manager.login_user(data)
+                if 'success' not in result:
                     return result
-
-            user = self.access.session_user
 
         else:
             if not self.access.is_anon():
                 return {'error': 'already_logged_in'}
 
-            user = self.access.init_session_user(persist=True)
+        user = self.access.init_session_user(persist=True, reset=True)
 
-        print(data)
         title = data.get('title')
         if not title:
             return {'username': user.name,
