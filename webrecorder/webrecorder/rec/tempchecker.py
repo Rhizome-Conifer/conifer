@@ -41,8 +41,6 @@ class TempChecker(object):
         self.data_redis = redis.StrictRedis.from_url(os.environ['REDIS_BASE_URL'],
                                                      decode_responses=True)
 
-        # beaker always uses db 0, so using db 0
-        #self.redis_base_url = self.redis_base_url.rsplit('/', 1)[0] + '/0'
         self.sesh_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'],
                                                      decode_responses=True)
 
@@ -50,9 +48,6 @@ class TempChecker(object):
 
         self.temp_prefix = config['temp_prefix']
         self.record_root_dir = os.environ['RECORD_ROOT']
-        #self.glob_pattern = os.path.join(self.record_root_dir, self.temp_prefix + '*')
-        #self.temp_dir = os.path.join(self.record_root_dir, 'temp')
-
         self.sesh_key_template = config['session.key_template']
 
         logger.info('Temp Check Root: ' + self.record_root_dir)
@@ -70,7 +65,6 @@ class TempChecker(object):
 
                 logger.debug('TempChecker: Removing if empty: ' + temp_dir)
                 os.rmdir(temp_dir)
-                #shutil.rmtree(temp_dir)
                 logger.debug('TempChecker: Deleted empty dir: ' + temp_dir)
 
                 self.sesh_redis.delete(temp_key)
@@ -83,7 +77,6 @@ class TempChecker(object):
         elif self.data_redis.exists(User.INFO_KEY.format(user=temp_user)):
             # if user still active, don't remove
             if self.sesh_redis.get(self.sesh_key_template.format(sesh)):
-                #print('Skipping active temp ' + temp)
                 return False
 
             # delete user
@@ -159,8 +152,6 @@ class TempChecker(object):
             temps_to_remove.add((temp_user, warc_dir))
 
         temp_match = User.INFO_KEY.format(user=self.temp_prefix + '*')
-
-        #print('Temp Key Check')
 
         for redis_key in self.data_redis.scan_iter(match=temp_match, count=100):
             temp_user = redis_key.rsplit(':', 2)[1]
