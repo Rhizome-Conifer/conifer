@@ -66,11 +66,12 @@ class TempChecker(object):
                     logger.debug('TempChecker: Removing if empty: ' + temp_dir)
                     os.rmdir(temp_dir)
                     logger.debug('TempChecker: Deleted empty dir: ' + temp_dir)
-                except Exception as e:
+                except OSError as e:
                     if e.errno == 90:
                         logger.debug('TempChecker: Waiting for commit')
-                        return False
-                    raise
+                    elif e.errno != 2:
+                        logger.error(str(e))
+                    return False
             else:
                 logger.debug('TempChecker: Removing Session For Already Deleted Dir: ' + temp_dir)
 
@@ -116,8 +117,9 @@ class TempChecker(object):
             try:
                 logger.debug('TempChecker: Deleted expired temp dir: ' + temp_dir)
                 shutil.rmtree(temp_dir)
-            except Exception as e:
-                logger.warn(str(e))
+            except OSError as e:
+                if e.errno != 2:
+                    logger.error(str(e))
                 return False
 
         return True
@@ -131,8 +133,8 @@ class TempChecker(object):
             os.rmdir(warc_dir)
             logger.debug('TempChecker: Removed Empty User Dir: ' + warc_dir)
             return True
-        except Exception as e:
-            if e.errno != 90:
+        except OSError as e:
+            if e.errno not in [2, 90]:
                 logger.error(str(e))
             return False
 
