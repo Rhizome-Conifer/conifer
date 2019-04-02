@@ -57,21 +57,21 @@ class TempChecker(object):
         sesh = self.sesh_redis.get(temp_key)
 
         if sesh == 'commit-wait':
-            try:
-                if not os.path.isdir(temp_dir):
-                    logger.debug('TempChecker: Remove Session For Already Deleted Dir: ' + temp_dir)
-                    self.sesh_redis.delete(temp_key)
-                    return True
+            if os.path.isdir(temp_dir):
+                try:
+                    logger.debug('TempChecker: Removing if empty: ' + temp_dir)
+                    os.rmdir(temp_dir)
+                    logger.debug('TempChecker: Deleted empty dir: ' + temp_dir)
+                except Exception as e:
+                    if e.errno == 90:
+                        logger.debug('TempChecker: Waiting for commit')
+                        return False
+                    raise
+            else:
+                logger.debug('TempChecker: Removing Session For Already Deleted Dir: ' + temp_dir)
 
-                logger.debug('TempChecker: Removing if empty: ' + temp_dir)
-                os.rmdir(temp_dir)
-                logger.debug('TempChecker: Deleted empty dir: ' + temp_dir)
-
-                self.sesh_redis.delete(temp_key)
-
-            except Exception as e:
-                logger.debug('TempChecker: Waiting for commit')
-                return False
+            self.sesh_redis.delete(temp_key)
+            return True
 
         # temp user key exists
         elif self.data_redis.exists(User.INFO_KEY.format(user=temp_user)):
