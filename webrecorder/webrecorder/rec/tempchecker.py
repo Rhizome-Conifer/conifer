@@ -137,7 +137,7 @@ class TempChecker(object):
             return False
 
     def __call__(self):
-        temps_to_remove = set()
+        all_temps = set()
 
         # scan self.record_root_dir for temporary and unneeded dirs
         for dir_name in os.listdir(self.record_root_dir):
@@ -155,22 +155,20 @@ class TempChecker(object):
                 continue
 
             temp_user = warc_dir.rsplit(os.path.sep, 1)[1]
-
-            temps_to_remove.add((temp_user, warc_dir))
+            all_temps.add((temp_user, warc_dir))
 
         # include any temp users in redis that were missed during the directory scan
         temp_match = User.INFO_KEY.format(user=self.temp_prefix + '*')
-
         for redis_key in self.data_redis.scan_iter(match=temp_match, count=100):
             temp_user = redis_key.rsplit(':', 2)[1]
 
-            if temp_user not in temps_to_remove:
-                temps_to_remove.add((temp_user, os.path.join(self.record_root_dir, temp_user)))
+            if temp_user not in all_temps:
+                all_temps.add((temp_user, os.path.join(self.record_root_dir, temp_user)))
 
-        logger.debug('TempChecker: Temp Users to Remove: {0}'.format(len(temps_to_remove)))
+        logger.debug('TempChecker: Temp User Count: {0}'.format(len(all_temps)))
 
         # remove if expired
-        for temp_user, temp_dir in temps_to_remove:
+        for temp_user, temp_dir in all_temps:
             self.delete_if_expired(temp_user, temp_dir)
 
 
