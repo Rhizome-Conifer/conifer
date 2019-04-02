@@ -38,9 +38,7 @@ class TempChecker(object):
     def __init__(self, config):
         super(TempChecker, self).__init__()
 
-        self.redis_base_url = os.environ['REDIS_BASE_URL']
-
-        self.data_redis = redis.StrictRedis.from_url(self.redis_base_url,
+        self.data_redis = redis.StrictRedis.from_url(os.environ['REDIS_BASE_URL'],
                                                      decode_responses=True)
 
         # beaker always uses db 0, so using db 0
