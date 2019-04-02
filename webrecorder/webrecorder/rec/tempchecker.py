@@ -57,6 +57,10 @@ class TempChecker(object):
         sesh = self.sesh_redis.get(temp_key)
 
         if sesh == 'commit-wait':
+            # This temporary user has signed up for a permanent account and
+            # their collections will be migrated to storage.
+            # Clean up if that migration is complete (i.e. the dir is empty).
+            # Otherwise, wait.
             if os.path.isdir(temp_dir):
                 try:
                     logger.debug('TempChecker: Removing if empty: ' + temp_dir)
@@ -75,34 +79,36 @@ class TempChecker(object):
 
         # temp user key exists
         elif self.data_redis.exists(User.INFO_KEY.format(user=temp_user)):
+
             # if user still active, don't remove
             if self.sesh_redis.get(self.sesh_key_template.format(sesh)):
                 return False
 
-            # delete user
             logger.debug('TempChecker: Deleting expired user: ' + temp_user)
 
             user = User(my_id=temp_user,
                         redis=self.data_redis,
                         access=BaseAccess())
 
+            # mark the user's open recordings "closed";
+            # return (if necessary) to give time for closing logic to complete
             wait_to_delete = False
-
             for collection in user.get_collections(load=False):
                 for recording in collection.get_recordings(load=False):
                     if recording.is_open(extend=False):
                         recording.set_closed()
                         logger.debug('TempChecker: Closing temp recording: ' + recording.my_id)
                         wait_to_delete = True
-
             if wait_to_delete:
                 return False
 
+            # delete the user; signal that the user's collections should be deleted.
+            # the temp dir containing those collections will be deleted on next pass.
             user.delete_me()
 
+            # delete the session
             self.sesh_redis.delete(temp_key)
 
-            # delete temp dir on next pass
             return True
 
         # no user session, remove temp dir and everything in it
@@ -131,7 +137,7 @@ class TempChecker(object):
     def __call__(self):
         temps_to_remove = set()
 
-        # check all warc dirs
+        # scan self.record_root_dir for temporary and unneeded dirs
         for dir_name in os.listdir(self.record_root_dir):
             if dir_name.startswith('.'):
                 continue
@@ -146,11 +152,11 @@ class TempChecker(object):
                 self.remove_empty_user_dir(warc_dir)
                 continue
 
-            # not yet removed, need to delete contents
             temp_user = warc_dir.rsplit(os.path.sep, 1)[1]
 
             temps_to_remove.add((temp_user, warc_dir))
 
+        # include any temp users in redis that were missed during the directory scan
         temp_match = User.INFO_KEY.format(user=self.temp_prefix + '*')
 
         for redis_key in self.data_redis.scan_iter(match=temp_match, count=100):
