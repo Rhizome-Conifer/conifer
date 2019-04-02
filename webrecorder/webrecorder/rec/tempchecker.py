@@ -15,6 +15,24 @@ logger = logging.getLogger('wr.io')
 
 # ============================================================================
 class TempChecker(object):
+    """
+    TempChecker is responsible for deleting temporary users and for cleaning up
+    files and directories in `self.record_root_dir` when they are no longer
+    needed. It is designed to be run by uWSGI on a regular schedule.
+
+    When called, it:
+    a) Compiles a list of all temporary users, both derived from the directory
+    structure of `self.record_root_dir` and retrieved from Redis;
+    b) Deletes any temporary users whose sessions have expired, marks all
+    their recording sessions closed, and signals that their collections
+    should be deleted;
+    c) Deletes directories belonging to expired temporary users (generally
+    already emptied due to the signals emitted by b);
+    d) Deletes all other empty directories in `self.record_root_dir`, provided
+    they haven't been altered within the configured duration, including
+    temp dirs from permanent users' already-committed recording sessions; and
+    e) Cleans up any extraneous sessions.
+    """
     USER_DIR_IDLE_TIME = 1800
 
     def __init__(self, config):
