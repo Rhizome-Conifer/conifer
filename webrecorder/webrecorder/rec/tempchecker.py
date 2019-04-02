@@ -123,15 +123,17 @@ class TempChecker(object):
         return True
 
     def remove_empty_user_dir(self, warc_dir):
-        try:
-            # just in case, only remove empty  dir if it hasn't changed in a bit
-            if (time.time() - os.path.getmtime(warc_dir)) < self.USER_DIR_IDLE_TIME:
-                return False
+        # just in case, only remove empty  dir if it hasn't changed in a bit
+        if (time.time() - os.path.getmtime(warc_dir)) < self.USER_DIR_IDLE_TIME:
+            return False
 
+        try:
             os.rmdir(warc_dir)
             logger.debug('TempChecker: Removed Empty User Dir: ' + warc_dir)
             return True
         except Exception as e:
+            if e.errno != 90:
+                logger.error(str(e))
             return False
 
     def __call__(self):
