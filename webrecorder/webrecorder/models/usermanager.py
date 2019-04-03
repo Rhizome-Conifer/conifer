@@ -252,7 +252,9 @@ class UserManager(object):
 
         user.update_last_login()
 
-        return {'success': '1', 'new_coll_name': new_collection.name if new_collection else None}
+        return {'success': '1',
+                'new_coll_name': new_collection.name if new_collection else None,
+                'user': user}
 
     def logout(self):
         sesh = self.get_session()
@@ -615,10 +617,11 @@ class UserManager(object):
         return None
 
     def delete_user(self, username):
-        user = self.all_users[username]
-        if self.access.session_user != user:
-            if not self.access.is_superuser():
-                return False
+        try:
+            user = self.all_users[username]
+            self.access.assert_is_curr_user(user)
+        except Exception:
+            return False
 
         if self.mailing_list and self.remove_on_delete:
             self.remove_from_mailing_list(user['email_addr'])
@@ -626,7 +629,10 @@ class UserManager(object):
         # remove user and from all users table
         del self.all_users[username]
 
-        self.get_session().delete()
+        try:
+            self.get_session().delete()
+        except Exception:
+            pass
 
         return True
 

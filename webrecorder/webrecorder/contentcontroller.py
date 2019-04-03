@@ -5,6 +5,7 @@ import json
 from six.moves.urllib.parse import quote, unquote, urlencode
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
+import requests
 
 from pywb.utils.loaders import load_yaml_config
 from pywb.rewrite.wburl import WbUrl
@@ -296,6 +297,10 @@ class ContentController(BaseController, RewriterApp):
 
             return res
 
+        @self.app.route('/api/v1/remote/put-record', method='PUT')
+        def do_put_record():
+            return self.do_put_record()
+
         # LIVE DEBUG
         #@self.app.route('/live/<wb_url:path>', method='ANY')
         def live(wb_url):
@@ -449,7 +454,7 @@ class ContentController(BaseController, RewriterApp):
                 self._raise_error(400, 'invalid_request')
 
     def do_proxy(self, url):
-        info = self.browser_mgr.init_cont_browser_sesh()
+        info = self.browser_mgr.init_remote_browser_session()
         if not info:
             return self._raise_error(400, 'invalid_connection_source')
 
@@ -524,6 +529,47 @@ class ContentController(BaseController, RewriterApp):
         new_url = WbUrl(new_url).to_str(mod=wb_url_obj.mod)
 
         return mode, new_url
+
+    def do_put_record(self):
+        reqid = request.query.getunicode('reqid')
+        info = self.browser_mgr.init_remote_browser_session(reqid=reqid)
+        if not info:
+            return self._raise_error(400, 'invalid_connection_source')
+
+        user = info['the_user']
+        collection = info['collection']
+        recording = info['recording']
+
+        kwargs = dict(user=user.name,
+                      coll=collection.my_id,
+                      rec=recording.my_id,
+                      type='put_record')
+
+        url = request.query.getunicode('target_uri')
+
+        params = {'url': url}
+
+        upstream_url = self.get_upstream_url('', kwargs, params)
+
+        headers = {'Content-Type': request.environ.get('CONTENT_TYPE', 'text/plain')}
+
+        r = requests.put(upstream_url,
+                         data=request.body,
+                         headers=headers,
+                        )
+        try:
+            res = r.json()
+            if res['success'] != 'true':
+                print(res)
+                return {'error_message': 'put_record_failed'}
+
+            warc_date = res.get('WARC-Date')
+
+        except Exception as e:
+            print(e)
+            return {'error_message': 'put_record_failed'}
+
+        return res
 
     def do_create_new_and_redir(self, coll_name, rec_name, wb_url, mode):
         new_url, _, _2 = self.do_create_new(coll_name, rec_name, wb_url, mode)

@@ -1,13 +1,17 @@
+sudo: false
+
 matrix:
   include:
     - os: linux
+      dist: xenial
       language: python
-      python: "3.5"
+      python: "3.6"
       sudo: false
     - os: osx
       osx_image: xcode8
       language: generic
       sudo: required
+      env: PY_VER=3.6.8
 
 env:
   global:
@@ -24,8 +28,8 @@ before_install: |
       brew update;
       brew install pyenv;
       eval "$(pyenv init -)";
-      PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.5.3;
-      pyenv global 3.5.3;
+      PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PY_VER;
+      pyenv global $PY_VER;
       pip install -U setuptools;
       pip install pyopenssl;
   fi

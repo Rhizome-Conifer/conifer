@@ -50,8 +50,8 @@ class CollsController(BaseController):
                 if not self.allow_external:
                     self._raise_error(403, 'external_not_allowed')
 
-                if not is_anon:
-                    self._raise_error(400, 'not_valid_for_external')
+                #if not is_anon:
+                #    self._raise_error(400, 'not_valid_for_external')
 
             elif is_anon:
                 if coll_name != 'temp':

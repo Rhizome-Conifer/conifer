@@ -38,6 +38,8 @@ temp_prefix: 'temp-'
 #browser_list_url: 'http://shepherd:9020/api/browsers/browsers'
 browser_req_url: 'http://shepherd:9020/request_browser/{browser}'
 browser_list_url: 'http://shepherd:9020/browsers'
+browser_info_url: 'http://shepherd:9020/api/flock/{reqid}'
+
 proxy_host: 'proxy'
 
 all_archives_index: './webarchives.yaml'
@@ -63,7 +65,7 @@ url_templates:
     extract: '{record_host}/record/extract/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&param.ip={ip}&sources={sources}&inv_sources={inv_sources}&param.recorder.patch_rec={patch_rec}'
     patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&filter=!status:[45][\d][\d]&param.recorder.rec={rec}&param.rec=*&param.ip={ip}'
 
-    snapshot: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=resource'
+    put_record: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=resource'
 
     replay: '{replay_host}/replay/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}'
     replay-coll: '{replay_host}/replay-coll/resource/postreq?param.user={user}&param.coll={coll}&param.rec=*'

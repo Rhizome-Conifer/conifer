@@ -1,6 +1,7 @@
 
 import json
 import redis
+import os
 
 from bottle import request, response
 
@@ -19,6 +20,7 @@ class UserController(BaseController):
         config = kwargs['config']
 
         self.default_user_desc = config['user_desc']
+        self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
 
     def load_user(self, username=None):
         include_colls = get_bool(request.query.get('include_colls', False))
@@ -34,6 +36,53 @@ class UserController(BaseController):
         user = self.access.init_session_user(persist=True)
 
         return {'user': user.serialize()}
+
+    def ensure_login(self):
+        data = request.json or {}
+        if 'username' in data:
+            if self.access.session_user.name != data['username']:
+                result = self.user_manager.login_user(data)
+                if 'success' not in result:
+                    return result
+
+        else:
+            if not self.access.is_anon():
+                return {'error': 'already_logged_in'}
+
+        user = self.access.init_session_user(persist=True, reset=True)
+
+        title = data.get('title')
+        if not title:
+            return {'username': user.name,
+                    'coll_empty': True,
+                    'coll_created': False}
+
+        coll_name = self.sanitize_title(title)
+
+        is_external = data.get('external')
+        if is_external:
+            if not self.allow_external:
+                self._raise_error(403, 'external_not_allowed')
+
+        collection = user.get_collection_by_name(coll_name)
+        if not collection:
+            collection = user.create_collection(coll_name, title=title,
+                                                public=data.get('public'))
+
+            collection.set_external(is_external)
+
+            coll_empty = True
+            coll_created = True
+        else:
+            coll_empty = collection.size == 0
+            coll_created = False
+
+        result = {'username': user.name,
+                  'coll_empty': coll_empty,
+                  'coll_created': coll_created
+                 }
+
+        return result
 
     def get_user_or_raise(self, username=None, status=403, msg='unauthorized'):
         # ensure correct host
@@ -138,6 +187,10 @@ class UserController(BaseController):
             data = {'success': 'logged_out'}
 
             return data
+
+        @self.app.post('/api/v1/auth/ensure_login')
+        def ensure_login():
+            return self.ensure_login()
 
         # PASSWORD
         @self.app.post('/api/v1/auth/password/reset_request')

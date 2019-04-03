@@ -34,7 +34,7 @@ class SessionAccessCache(BaseAccess):
         """Read-only attribute session user."""
         return self.init_session_user(persist=False)
 
-    def init_session_user(self, persist=True):
+    def init_session_user(self, persist=True, reset=False):
         """Initialize session user.
 
         :param bool persist: whether to persist session user
@@ -42,7 +42,7 @@ class SessionAccessCache(BaseAccess):
         :returns: session user
         :rtype: SessionUser
         """
-        if not self._session_user:
+        if not self._session_user or reset:
             self._session_user = SessionUser(sesh=self.sesh,
                                              redis=self.redis,
                                              access=self,

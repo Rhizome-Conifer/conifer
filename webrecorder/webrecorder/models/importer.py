@@ -276,6 +276,10 @@ class BaseImporter(ImportStatusChecker):
                 pi.hincrby(upload_key, 'files', -1)
                 pi.hset(upload_key, 'done', 1)
 
+            if first_coll.is_external():
+                first_coll.sync_coll_index(exists=False, do_async=False)
+                first_coll.set_external_remove_on_expire()
+
     def process_pages(self, info, page_id_map):
         pages = info.get('pages')
 

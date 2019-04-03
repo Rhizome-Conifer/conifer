@@ -58,7 +58,7 @@ class SnapshotController(BaseController):
         return self.write_snapshot(user, collection, url, title, html_text, referrer, user_agent)
 
     def snapshot_cont(self):
-        info = self.browser_mgr.init_cont_browser_sesh()
+        info = self.browser_mgr.init_remote_browser_session()
         if not info:
             return {'error_message': 'conn not from valid containerized browser'}
 
@@ -106,7 +106,7 @@ class SnapshotController(BaseController):
         kwargs = dict(user=user.name,
                       coll=collection.my_id,
                       rec=quote(snap_rec_name, safe='/*'),
-                      type='snapshot')
+                      type='put_record')
 
         params = {'url': url}
 

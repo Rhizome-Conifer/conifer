@@ -31,6 +31,8 @@ class BaseController(object):
 
         self.anon_disabled = get_bool(os.environ.get('ANON_DISABLED'))
 
+        self.allow_beta_features_role = os.environ.get('ALLOW_BETA_FEATURES_ROLE', 'beta-archivist')
+
         self.init_routes()
 
     def init_routes(self):
@@ -138,10 +140,6 @@ class BaseController(object):
         if not coll_name:
             self._raise_error(400, 'no_collection_specified')
 
-        #if self.access.is_anon(user):
-        #    if coll_name != 'temp':
-        #        self._raise_error(404, 'no_such_collection')
-
         collection = user.get_collection_by_name(coll_name)
         if not collection:
             self._raise_error(404, 'no_such_collection')
@@ -154,7 +152,9 @@ class BaseController(object):
         and is also admin on the collection, if provided
         """
         try:
-            self.cork.require(role='beta-archivist')
+            if self.allow_beta_features_role:
+                self.cork.require(role=self.allow_beta_features_role)
+
             if collection:
                 self.access.assert_can_admin_coll(collection)
         except:

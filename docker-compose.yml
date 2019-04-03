@@ -102,6 +102,9 @@ services:
             - 8089:80
             - 8092:81
 
+    behaviors:
+      image: "webrecorder/behaviors:latest"
+
     shepherd:
         image: oldwebtoday/browser-shepherd
 
