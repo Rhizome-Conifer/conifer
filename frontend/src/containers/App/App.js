@@ -131,6 +131,8 @@ export class App extends Component {
     document.removeEventListener(this.visibilityChange, this.heartbeat);
   }
 
+  dismissStalledAlert = () => this.setState({ stalled: false })
+
   dismissSpaceAlert = () => this.setState({ outOfSpaceAlert: false })
 
   dismissLoginAlert = () => this.setState({ loginStateAlert: false })
@@ -227,7 +229,10 @@ export class App extends Component {
             <Panel className="stalled-alert" bsStyle="warning">
               <Panel.Heading>Oops, this request seems to be taking a long time..</Panel.Heading>
               <Panel.Body>
-                Please refresh the page and try again. If the problem persists, contact <a href={`mailto:${config.supportEmail}`}>support</a>.
+                <p>
+                  Please refresh the page and try again. If the problem persists, contact <a href={`mailto:${config.supportEmail}`}>support</a>.
+                </p>
+                <Button onClick={this.dismissStalledAlert}>dismiss</Button>
               </Panel.Body>
             </Panel>
         }
