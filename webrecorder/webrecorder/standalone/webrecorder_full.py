@@ -47,13 +47,7 @@ class WebrecorderRunner(StandaloneRunner):
         local_info=dict(browser='',
                         reqid='@INIT')
 
-        if os.name == 'nt':
-            redis_filename = 'redis-server.exe'
-        else:
-            redis_filename = 'redis-server'
-
-        self.redis_server = LocalRedisServer(redis_filename,
-                                             port=self.REDIS_PORT,
+        self.redis_server = LocalRedisServer(port=self.REDIS_PORT,
                                              redis_dir=self.redis_dir)
 
         self.browser_redis = self.redis_server.start()

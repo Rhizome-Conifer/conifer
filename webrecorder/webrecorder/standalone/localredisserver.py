@@ -59,10 +59,9 @@ DEFAULT_REDIS_SETTINGS = [
 class LocalRedisServer:
     MAIN_REDIS_CONN_NAME = '@wr-runner'
 
-    def __init__(self, server_name, port, redis_dir=None, db=0):
+    def __init__(self, port, redis_dir=None, db=0):
         self.port = port
         self.db = db
-        self.server_name = server_name
 
         if not redis_dir:
             self.temp_dir_obj = tempfile.TemporaryDirectory(prefix='redis')
@@ -79,7 +78,17 @@ class LocalRedisServer:
         else:
             curr_dir = os.getcwd()
 
-        self.redis_server_path = os.path.join(curr_dir, self.server_name)
+        if os.name == 'nt':
+            redis_filename = 'redis-server.exe'
+        else:
+            redis_filename = 'redis-server'
+
+        # use local copy only if exists
+        full_path = os.path.join(curr_dir, redis_filename)
+        if os.path.isfile(full_path):
+            self.redis_server_path = full_path
+        else:
+            self.redis_server_path = redis_filename
 
         self.process = None
         self.redis_cli = None
