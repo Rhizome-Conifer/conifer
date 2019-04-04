@@ -7,8 +7,9 @@ from webrecorder.standalone.standalone import StandaloneRunner
 from webrecorder.models.usermanager import CLIUserManager
 from webrecorder.utils import sanitize_title
 
+from webrecorder.standalone.localredisserver import LocalRedisServer
+
 import redis
-import redislite.client
 from six.moves.urllib.parse import urlsplit
 
 
@@ -18,7 +19,7 @@ class WebrecorderRunner(StandaloneRunner):
 
     def __init__(self, argres):
         self.root_dir = argres.root_dir
-        self.redis_dir = os.path.join(self.root_dir, 'redis', 'redis.db')
+        self.redis_dir = os.path.join(self.root_dir, 'redis')
 
         self.user_manager = None
 
@@ -26,29 +27,11 @@ class WebrecorderRunner(StandaloneRunner):
 
         self.default_user = argres.default_user
 
-        os.makedirs(os.path.dirname(self.redis_dir), exist_ok=True)
-
         super(WebrecorderRunner, self).__init__(argres, rec_port=0)
 
         if not argres.no_browser:
             import webbrowser
             webbrowser.open_new(os.environ['APP_HOST'] + '/')
-
-    def _init_redislite(self):
-        import redislite
-        if getattr(sys, 'frozen', False):
-            redislite.__redis_executable__ = os.path.join(os.path.dirname(sys.argv[0]), 'redis-server')
-            redislite.client.__redis_executable__ = redislite.__redis_executable__
-
-        print('Redis Server: ' + redislite.client.__redis_executable__)
-
-        redis.StrictRedis = FixedStrictRedis
-        FixedStrictRedis.WR_REDIS_DB = self.redis_dir
-
-    def _init_fakeredis(self):
-        import redis
-        import fakeredis
-        redis.StrictRedis = fakeredis.FakeStrictRedis
 
     def _runner_init(self):
         os.environ['WR_USER_CONFIG'] = 'pkg://webrecorder/config/standalone_recorder.yaml'
@@ -57,14 +40,20 @@ class WebrecorderRunner(StandaloneRunner):
         os.environ['RECORD_ROOT'] = os.path.join(self.root_dir, 'warcs', '')
         os.environ['STORAGE_ROOT'] = os.path.join(self.root_dir, 'storage', '')
 
-        self._init_redislite()
-        #self._init_fakeredis()
+        os.environ['REDIS_BROWSER_URL'] = 'redis://localhost:7679/0'
+        os.environ['REDIS_SESSION_URL'] = 'redis://localhost:7679/0'
+        os.environ['REDIS_BASE_URL'] = 'redis://localhost:7679/1'
 
         local_info=dict(browser='',
                         reqid='@INIT')
 
-        self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])
-        self.browser_redis.hmset('ip:127.0.0.1', local_info)
+        self.redis_server = LocalRedisServer('redis-server',
+                                             port=7679,
+                                             redis_dir=self.redis_dir)
+
+        self.browser_redis = self.redis_server.start()
+
+        self.browser_redis.hmset('up:127.0.0.1', local_info)
         self.browser_redis.hset('req:@INIT', 'ip', '127.0.0.1')
         self.browser_redis.client_setname(self.MAIN_REDIS_CONN_NAME)
 
@@ -81,25 +70,13 @@ class WebrecorderRunner(StandaloneRunner):
               email='{0}@localhost'.format(self.default_user),
               username=self.default_user,
               passwd='LocalUser1',
-              role='archivist',
+              role='admin',
               name=self.default_user)
 
         os.environ['AUTO_LOGIN_USER'] = self.default_user
 
     def close(self):
         super(WebrecorderRunner, self).close()
-
-        num_runners = 0
-        clients = self.browser_redis.client_list()
-        for client in clients:
-            if client.get('name') == self.MAIN_REDIS_CONN_NAME:
-                num_runners += 1
-
-        print('Total Conn: {0}'.format(len(clients)))
-        print('Total Unique Procs: {0}'.format(num_runners))
-        if num_runners == 1:
-            print('Last WR Process, Shutting Down Redis')
-            self.browser_redis.shutdown()
 
 
     @classmethod
@@ -111,22 +88,6 @@ class WebrecorderRunner(StandaloneRunner):
         parser.add_argument('-u', '--default-user',
                             default=None,
                             help='Create & Auto-Login as Default User')
-
-
-# ============================================================================
-class FixedStrictRedis(redislite.client.StrictRedis):
-    WR_REDIS_DB = ''
-
-    #def __init__(self, *args, **kwargs):
-    #    super(FixedStrictRedis, self).__init__(self.WR_REDIS_DB, **kwargs)
-
-    @classmethod
-    def from_url(cls, url, **kwargs):
-        """
-        Override to only use the db, don't care about other settings when using redislite
-        """
-        parts = urlsplit(url)
-        return cls(cls.WR_REDIS_DB, db=int(parts.path[1:]), **kwargs)
 
 
 # ============================================================================
