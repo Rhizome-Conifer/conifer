@@ -21,6 +21,7 @@ env:
 addons:
   artifacts:
     paths:
+      - webrecorder-$TRAVIS_OS_NAME
       - webrecorder-player-$TRAVIS_OS_NAME
 
 before_install: |
