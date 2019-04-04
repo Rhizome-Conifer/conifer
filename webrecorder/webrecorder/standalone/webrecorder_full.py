@@ -15,7 +15,7 @@ from six.moves.urllib.parse import urlsplit
 
 # ============================================================================
 class WebrecorderRunner(StandaloneRunner):
-    MAIN_REDIS_CONN_NAME = '@wr-runner'
+    REDIS_PORT = 7679
 
     def __init__(self, argres):
         self.root_dir = argres.root_dir
@@ -40,22 +40,26 @@ class WebrecorderRunner(StandaloneRunner):
         os.environ['RECORD_ROOT'] = os.path.join(self.root_dir, 'warcs', '')
         os.environ['STORAGE_ROOT'] = os.path.join(self.root_dir, 'storage', '')
 
-        os.environ['REDIS_BROWSER_URL'] = 'redis://localhost:7679/0'
-        os.environ['REDIS_SESSION_URL'] = 'redis://localhost:7679/0'
-        os.environ['REDIS_BASE_URL'] = 'redis://localhost:7679/1'
+        os.environ['REDIS_BROWSER_URL'] = 'redis://localhost:{0}/0'.format(self.REDIS_PORT)
+        os.environ['REDIS_SESSION_URL'] = 'redis://localhost:{0}/0'.format(self.REDIS_PORT)
+        os.environ['REDIS_BASE_URL'] = 'redis://localhost:{0}/1'.format(self.REDIS_PORT)
 
         local_info=dict(browser='',
                         reqid='@INIT')
 
-        self.redis_server = LocalRedisServer('redis-server',
-                                             port=7679,
+        if os.name == 'nt':
+            redis_filename = 'redis-server.exe'
+        else:
+            redis_filename = 'redis-server'
+
+        self.redis_server = LocalRedisServer(redis_filename,
+                                             port=self.REDIS_PORT,
                                              redis_dir=self.redis_dir)
 
         self.browser_redis = self.redis_server.start()
 
         self.browser_redis.hmset('up:127.0.0.1', local_info)
         self.browser_redis.hset('req:@INIT', 'ip', '127.0.0.1')
-        self.browser_redis.client_setname(self.MAIN_REDIS_CONN_NAME)
 
         self.user_manager = CLIUserManager()
 
