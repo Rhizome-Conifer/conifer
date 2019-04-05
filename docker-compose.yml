@@ -3,7 +3,7 @@ version: '2'
 services:
     app:
         build: ./webrecorder
-        command: uwsgi /code/apps/apiapp.ini
+        command: uwsgi --need-app /code/apps/apiapp.ini
 
         env_file:
             - ./wr.env
@@ -59,7 +59,7 @@ services:
 
     recorder:
         build: ./webrecorder
-        command: uwsgi /code/apps/rec.ini
+        command: uwsgi --need-app /code/apps/rec.ini
 
         env_file:
             - ./wr.env
@@ -74,7 +74,7 @@ services:
 
     warcserver:
         build: ./webrecorder
-        command: uwsgi /code/apps/load.ini
+        command: uwsgi --need-app /code/apps/load.ini
 
         env_file:
             - ./wr.env
