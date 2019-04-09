@@ -206,7 +206,7 @@ class UserSettingsUI extends Component {
     const canAdmin = username === auth.getIn(['user', 'username']);
     const superuser = auth.getIn(['user', 'role']) === 'admin';
 
-    if (!superuser && !canAdmin) {
+    if ((!superuser && !canAdmin) || user.getIn(['error', 'error']) === 'no_such_user') {
       return <HttpStatus />;
     }
 
