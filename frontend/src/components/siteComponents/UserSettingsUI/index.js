@@ -266,6 +266,7 @@ class UserSettingsUI extends Component {
                 <div className="admin-options">
                   <div className="admin-section">
                     <h5>Allot Space</h5>
+                    <span>Includes <SizeFormat bytes={user.get('customer_max_size')} /> paid storage.</span>
                     <FormGroup validationState={this.validateAllotment()} className="top-buffer-md">
                       <InputGroup>
                         <FormControl
@@ -322,7 +323,7 @@ class UserSettingsUI extends Component {
                 {
                   user.get('customer_id') ?
                     <React.Fragment>
-                      <p>Thakn you, your support makes Webrecorder possbile. <a href="#">Learn more about our sustainability strategy.</a></p>
+                      <p>Thank you, your support makes Webrecorder possibile. <a href="#">Learn more about our sustainability strategy.</a></p>
                       <Button className="rounded" onClick={this.goToSupporterPortal}>Manage Billing and Subscription</Button>
                     </React.Fragment> :
                     <div className="upgrade">

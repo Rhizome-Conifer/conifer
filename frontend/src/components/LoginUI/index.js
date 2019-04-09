@@ -34,7 +34,7 @@ class LoginUI extends Component {
         <Helmet>
           <title>Log in to {product}</title>
         </Helmet>
-        <div className="col-xs-10 col-xs-offset-1 col-md-8 col-md-offset-2">
+        <div className="col-xs-10 col-xs-offset-1 col-md-6 col-md-offset-3">
           <h2>{ product } Login</h2>
           <LoginForm
             auth={auth}

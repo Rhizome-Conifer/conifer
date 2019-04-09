@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Button, ControlLabel, DropdownButton, FormControl, FormGroup, MenuItem } from 'react-bootstrap';
 
-import { product } from 'config';
+import { product, supporterPortal } from 'config';
 
 import Modal from 'components/Modal';
 import SizeFormat from 'components/SizeFormat';
@@ -170,6 +170,13 @@ class UserManagementUI extends PureComponent {
           <li className="hidden-xs">
             <a href="https://guide.webrecorder.io/" target="_blank">Help</a>
           </li>
+
+          {
+            supporterPortal &&
+              <li className="hidden-xs">
+                <a href={supporterPortal} target="_blank">{user.get('customer_id') ? 'Manage Support' : 'Support Us'}</a>
+              </li>
+          }
 
           { !auth.get('loaded') || !username || (isAnon && collCount === 0) ?
             <React.Fragment>
