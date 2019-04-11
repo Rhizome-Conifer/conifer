@@ -44,6 +44,9 @@ class WebrecorderRunner(StandaloneRunner):
         os.environ['REDIS_SESSION_URL'] = 'redis://localhost:{0}/0'.format(self.REDIS_PORT)
         os.environ['REDIS_BASE_URL'] = 'redis://localhost:{0}/1'.format(self.REDIS_PORT)
 
+        os.environ['ALLOW_DAT'] = '1'
+        os.environ['DAT_SHARE_HOST'] = 'localhost'
+
         local_info=dict(browser='',
                         reqid='@INIT')
 

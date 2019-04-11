@@ -169,7 +169,7 @@ module.exports = {
 
     new webpack.EnvironmentPlugin({
       'ANNOUNCE_MAILING_LIST': null,
-      'ALLOW_DAT': false,
+      'ALLOW_DAT': true,
       'APP_HOST': 'localhost:8089',
       'CONTENT_HOST': 'localhost:8092',
       'FRONTEND_PORT': 8095,

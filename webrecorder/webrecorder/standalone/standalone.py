@@ -48,12 +48,16 @@ class StandaloneRunner(FullStackRunner):
 
         self._runner_init()
 
+        is_recording = (rec_port > -1)
+
         from webrecorder.standalone.assetsutils import patch_bundle
         patch_bundle()
 
         super(StandaloneRunner, self).__init__(app_port=app_port,
                                                rec_port=rec_port,
-                                               warc_port=warc_port)
+                                               warc_port=warc_port,
+                                               run_storagecommitter=is_recording,
+                                               run_tempchecker=is_recording)
         atexit.register(self.close)
 
     def close(self):
