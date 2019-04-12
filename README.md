@@ -76,16 +76,11 @@ Remote Browsers are optional, and can be installed as needed.
 
 Remote Browsers are just Docker images which start with `oldweb-today/`, and are part of
 [oldweb-today](https://github.com/oldweb-today/) organization on GitHub.
-Installing the browsers can be as simple as running `docker pull` on each image.
+Installing the browsers can be as simple as running `docker pull` on each browser image each as well as
+additional Docker images for the Remote Desktop system.
 
-To install all of the officially supported browsers, run [install-browsers.sh](install-browsers.sh)
+To install the Remote Desktop System and all of the officially supported Remote Browsers, run [install-browsers.sh](install-browsers.sh)
 
-For example, to install a version of Chrome 60 and Firefox 49, run:
-
-```
-docker pull oldwebtoday/chrome:60
-docker pull oldwebtoday/firefox:49
-```
 
 ### Configuration
 
