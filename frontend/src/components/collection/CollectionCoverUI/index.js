@@ -177,7 +177,7 @@ class CollectionCoverUI extends Component {
           <meta property="og:description" content={collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : tagline} />
         </Helmet>
         {
-          this.context.canAdmin && !this.context.isAnon && !collection.get('public') && collection.get('loaded') &&
+          !__DESKTOP__ && this.context.canAdmin && !this.context.isAnon && !collection.get('public') && collection.get('loaded') &&
             <div className="visibility-warning">
               Note: this collection is set to 'private' so only you can see it. <Link to={getCollectionLink(collection, true)}>If you set this collection to 'public'</Link> you can openly share the web pages you have collected.
             </div>

@@ -107,7 +107,7 @@ class Extract extends Component {
 const initialData = [
   {
     promise: ({ store: { dispatch, getState } }) => {
-      if (!isRBLoaded(getState()) && !__PLAYER__) {
+      if (!isRBLoaded(getState()) && !__DESKTOP__) {
         return dispatch(loadBrowsers());
       }
 

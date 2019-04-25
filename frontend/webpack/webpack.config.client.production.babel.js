@@ -102,6 +102,7 @@ const prodConfig = {
       __DEVELOPMENT__: false,
       __DEVTOOLS__: false,
       __PLAYER__: false,
+      __DESKTOP__: false,
       'process.env.NODE_ENV': JSON.stringify('production')
     })
   ]

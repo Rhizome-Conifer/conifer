@@ -78,7 +78,8 @@ const config = {
       __SERVER__: true,
       __DEVELOPMENT__: true,
       __DEVTOOLS__: true,
-      __PLAYER__: false
+      __PLAYER__: false,
+      __DESKTOP__: false
     }),
   ]
 };

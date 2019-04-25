@@ -180,7 +180,8 @@ module.exports = {
       __SERVER__: false,
       __DEVELOPMENT__: true,
       __DEVTOOLS__: true,
-      __PLAYER__: true
+      __PLAYER__: true,
+      __DESKTOP__: true
     })
   ]
 };

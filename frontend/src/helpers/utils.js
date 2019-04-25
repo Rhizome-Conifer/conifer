@@ -25,6 +25,23 @@ export function apiFetch(path, data, opts = {}) {
 }
 
 
+export function apiFormatUrl(path) {
+  if (__PLAYER__) {
+    return path;
+  }
+
+  const adjustedPath = path[0] !== '/' ? `/${path}` : path;
+  if (__SERVER__ || __DESKTOP__) {
+    // on the server use internal network
+    return `http://${config.internalApiHost}:${config.internalApiPort}${adjustedPath}`;
+  }
+
+  // client side use current host
+  return `${adjustedPath}`;
+}
+
+
+
 export function applyLocalTimeOffset(dt) {
   return new Date(dt.getTime() - (new Date().getTimezoneOffset() * 60000));
 }
