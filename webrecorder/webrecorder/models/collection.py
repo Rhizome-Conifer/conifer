@@ -769,7 +769,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
             return
 
         self.redis.zunionstore(coll_cdxj_key, cdxj_keys)
-        self.reset_cdxj_ttl()
+        self.reset_cdxj_ttl(coll_cdxj_key)
 
         ges = []
         for cdxj_key in cdxj_keys:
