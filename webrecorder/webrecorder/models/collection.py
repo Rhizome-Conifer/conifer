@@ -761,7 +761,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
     def sync_coll_index(self, exists=False, do_async=False):
         coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)
         if exists != self.redis.exists(coll_cdxj_key):
-            self.reset_cdxj_ttl()
+            self.reset_cdxj_ttl(coll_cdxj_key)
             return
 
         cdxj_keys = self._get_rec_keys(Recording.CDXJ_KEY)
