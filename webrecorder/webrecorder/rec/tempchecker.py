@@ -5,6 +5,7 @@ import glob
 import requests
 import shutil
 import time
+import errno
 
 from webrecorder.models import User
 from webrecorder.models.base import BaseAccess
@@ -67,9 +68,9 @@ class TempChecker(object):
                     os.rmdir(temp_dir)
                     logger.debug('TempChecker: Deleted empty dir: ' + temp_dir)
                 except OSError as e:
-                    if e.errno == 90:
+                    if e.errno == errno.ENOTEMPTY:
                         logger.debug('TempChecker: Waiting for commit')
-                    elif e.errno != 2:
+                    elif e.errno != errno.ENOENT:
                         logger.error(str(e))
                     return False
             else:
@@ -118,7 +119,7 @@ class TempChecker(object):
                 logger.debug('TempChecker: Deleted expired temp dir: ' + temp_dir)
                 shutil.rmtree(temp_dir)
             except OSError as e:
-                if e.errno != 2:
+                if e.errno != errno.ENOENT:
                     logger.error(str(e))
                 return False
 
@@ -134,7 +135,7 @@ class TempChecker(object):
             logger.debug('TempChecker: Removed Empty User Dir: ' + warc_dir)
             return True
         except OSError as e:
-            if e.errno not in [2, 90]:
+            if e.errno not in [errno.ENOENT, errno.ENOTEMPTY]:
                 logger.error(str(e))
             return False
 
