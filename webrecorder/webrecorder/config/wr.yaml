@@ -11,7 +11,7 @@ session.durations:
 
     restricted:
         total: 5400
-        extend: 0
+        extend: 3600
 
 # session settings
 session.secret: $SECRET_KEY
