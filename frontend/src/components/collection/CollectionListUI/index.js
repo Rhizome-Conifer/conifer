@@ -183,7 +183,7 @@ class CollectionListUI extends Component {
           visible={showModal}
           createCollection={this.createCollection}
           creatingCollection={collections.get('creatingCollection')}
-          error={collections.get('creationErorr')} />
+          error={collections.get('error')} />
       </React.Fragment>
     );
   }
