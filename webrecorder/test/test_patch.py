@@ -41,7 +41,7 @@ class TestPatchContent(FullStackTests):
         assert len(os.listdir(anon_dir)) == 1
 
     def test_patch_js(self):
-        res = self.testapp.get('/{user}/temp/new-patch/patch/mp_/https://www.iana.org/_js/2013.1/jquery.js'.format(user=self.anon_user))
+        res = self.testapp.get('/{user}/temp/new-patch/patch/js_/https://httpbin.org/base64/ZnVuY3Rpb24gdGVzdCgpIHsNCiAgdGVzdCgiYWJjIik7DQp9'.format(user=self.anon_user))
         assert 'let window' in res.text
 
     def test_patch_content_at_timestamp(self):
