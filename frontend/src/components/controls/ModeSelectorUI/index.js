@@ -36,7 +36,9 @@ class ModeSelectorUI extends PureComponent {
     evt.preventDefault();
     const { match: { params: { coll, rec, user } } } = this.props;
 
-    if (this.context.currMode.indexOf('replay') !== -1) {
+    if (this.context.currMode === "live") {
+      this.props.history.push('/');
+    } else if (this.context.currMode.indexOf('replay') !== -1) {
       //window.location.href = `/${user}/${coll}/index`;
       this.props.history.push(`/${user}/${coll}/manage`);
     } else {
@@ -72,14 +74,14 @@ class ModeSelectorUI extends PureComponent {
     // generate recording url
     apiFetch('/new', data, { method: 'POST' })
       .then(res => res.json())
-      .then(({ url }) => { window.location.href = url.replace(config.appHost, ''); })
+      .then(({ url }) => history.push(url.replace(config.appHost, '')))
       .catch(err => console.log('error', err));
   }
 
   onRecord = () => {
     if (this.context.currMode === 'record') return;
 
-    const { activeBrowser, match: { params: { coll } }, url } = this.props;
+    const { activeBrowser, history, match: { params: { coll } }, url } = this.props;
     const data = {
       url,
       coll,
@@ -93,7 +95,7 @@ class ModeSelectorUI extends PureComponent {
     // generate recording url
     apiFetch('/new', data, { method: 'POST' })
       .then(res => res.json())
-      .then(({ url }) => { window.location.href = url.replace(config.appHost, ''); })
+      .then(({ url }) => history.push(url.replace(config.appHost, '')))
       .catch(err => console.log('error', err));
   }
 
@@ -133,8 +135,13 @@ class ModeSelectorUI extends PureComponent {
     const isRecord = currMode === 'record';
     const isExtract = currMode.indexOf('extract') !== -1;
     const isPatch = currMode === 'patch';
+    const isLive = currMode === 'live';
 
     switch(currMode) {
+      case 'live':
+        modeMessage = 'Preparing Cookies';
+        modeMarkup = <span className="btn-content">🍪<span className="hidden-xs">{ modeMessage }</span></span>;
+        break;
       case 'record':
         modeMessage = 'Capturing';
         modeMarkup = <span className="btn-content"><Blinker /> <span className="hidden-xs">{ modeMessage }</span></span>;
@@ -173,21 +180,12 @@ class ModeSelectorUI extends PureComponent {
 
             <div className="dropdown-menu">
               <div className="wr-modes">
-                <ul className={classNames('row wr-mode', { active: isReplay })} onClick={this.onReplay} role="button" title="Access an archived version of this URL">
+                <ul className={classNames('row wr-mode', { active: isLive, disabled: !isLive })} onClick={this.onLive} role="button" title="Prepare Browser for Capture">
                   <li className="col-xs-3">
-                    <span className="glyphicon glyphicon-play-circle wr-mode-icon" aria-hidden="true" />
+                    <span className="wr-mode-icon">🍪</span>
                   </li>
                   <li className="col-xs-9">
-                    <h5>{ isReplay ? 'Currently Browsing' : 'Browse this URL' }</h5>
-                  </li>
-                </ul>
-
-                <ul className={classNames('row wr-mode', { active: isPatch, disabled: isRecord })} onClick={this.onPatch} role="button" title={isRecord ? 'Only available from replay after finishing a recording' : 'Record elements that are not yet in the collection'}>
-                  <li className="col-xs-3">
-                    <PatchIcon />
-                  </li>
-                  <li className="col-xs-9">
-                    <h5>{ isPatch ? 'Currently Patching' : 'Patch this URL' }</h5>
+                    <h5>{ isLive ? 'Preparing Cookies' : 'Prepare Cookies' }</h5>
                   </li>
                 </ul>
 
@@ -196,7 +194,25 @@ class ModeSelectorUI extends PureComponent {
                     <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
                   </li>
                   <li className="col-xs-9">
-                    <h5>{ isRecord ? 'Currently Capturing' : 'Capture this URL again' }</h5>
+                    <h5>{ isRecord ? 'Currently Capturing' : (isLive ? 'Start Capturing' : 'Capture this URL again') }</h5>
+                  </li>
+                </ul>
+
+                <ul className={classNames('row wr-mode', { active: isReplay, disabled: isLive })} onClick={this.onReplay} role="button" title="Access an archived version of this URL">
+                  <li className="col-xs-3">
+                    <span className="glyphicon glyphicon-play-circle wr-mode-icon" aria-hidden="true" />
+                  </li>
+                  <li className="col-xs-9">
+                    <h5>{ isReplay ? 'Currently Browsing' : 'Browse this URL' }</h5>
+                  </li>
+                </ul>
+
+                <ul className={classNames('row wr-mode', { active: isPatch, disabled: isRecord || isLive })} onClick={this.onPatch} role="button" title={isRecord ? 'Only available from replay after finishing a recording' : 'Record elements that are not yet in the collection'}>
+                  <li className="col-xs-3">
+                    <PatchIcon />
+                  </li>
+                  <li className="col-xs-9">
+                    <h5>{ isPatch ? 'Currently Patching' : 'Patch this URL' }</h5>
                   </li>
                 </ul>
 

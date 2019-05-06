@@ -25,6 +25,7 @@ class Webview extends Component {
     history: PropTypes.object,
     host: PropTypes.string,
     params: PropTypes.object,
+    partition: PropTypes.string,
     timestamp: PropTypes.string,
     url: PropTypes.string,
   };
@@ -44,10 +45,12 @@ class Webview extends Component {
     this.webviewHandle = null;
     this.internalUpdate = false;
     this.state = { loading: false };
+
+    const currMode = props.currMode;
   }
 
   componentDidMount() {
-    const { currMode } = this.context;
+    const { currMode, user } = this.context;
     const { dispatch, host, params } = this.props;
 
     const realHost = host || appHost;
@@ -94,6 +97,9 @@ class Webview extends Component {
 
   buildProxyUrl(url, timestamp) {
     const { user, coll, rec, currMode } = this.context;
+    if (currMode === "live") {
+      return url;
+    }
     let proxyUrl = `http://webrecorder.proxy/${user}/${coll}/`;
     if (rec) {
       proxyUrl += `${rec}/${currMode}/`;
@@ -193,19 +199,20 @@ class Webview extends Component {
 
   render() {
     const { loading } = this.state;
-    const { timestamp, url } = this.props;
+    const { partition, timestamp, url } = this.props;
+    const { user, currMode } = this.context;
 
     const classes = classNames('webview-wrapper', { loading });
 
     return (
       <div className={classes}>
-        <webview
-          id="replay"
-          ref={(obj) => { this.webviewHandle = obj; }}
-          src={this.buildProxyUrl(url, timestamp)}
-          autosize="on"
-          plugins="true"
-          partition="persist:wr" />
+      <webview
+        id="replay"
+        ref={(obj) => { this.webviewHandle = obj; }}
+        src={this.buildProxyUrl(url, timestamp)}
+        autosize="on"
+        plugins="true"
+        partition={partition} />
       </div>
     );
   }

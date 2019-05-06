@@ -19,6 +19,7 @@ export Lists from './Lists/Lists';
 export ListDetail from './ListDetail/ListDetail';
 export ListHeader from './ListHeader/ListHeader';
 export Login from './Login/Login';
+export Live from './Live/Live';
 export Logout from './Logout/Logout';
 export ModeSelector from './ModeSelector/ModeSelector';
 export NewRecording from './NewRecording/NewRecording';

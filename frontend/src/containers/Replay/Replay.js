@@ -25,6 +25,7 @@ import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer, SidebarColle
 import { IFrame, ReplayUI } from 'components/controls';
 
 
+
 let Webview;
 if (__DESKTOP__) {
   Webview = require('components/desktop/Webview');
@@ -251,6 +252,7 @@ class Replay extends Component {
                 timestamp={timestamp}
                 canGoBackward={appSettings.get('canGoBackward')}
                 canGoForward={appSettings.get('canGoForward')}
+                partition={`${params.user}-replay`}
                 url={url} />
           }
           {

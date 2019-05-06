@@ -7,11 +7,11 @@ import config from 'config';
 
 import { isLoaded, load as loadColl } from 'store/modules/collection';
 import { getArchives, updateUrl } from 'store/modules/controls';
-import { loadRecording } from 'store/modules/recordings';
-import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
+import { load as loadUser } from 'store/modules/user';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
+import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
 
 const { ipcRenderer } = window.require('electron');
 
@@ -24,7 +24,7 @@ if (__DESKTOP__) {
 
 
 
-class Record extends Component {
+class Live extends Component {
   static contextTypes = {
     product: PropTypes.string
   };
@@ -53,14 +53,14 @@ class Record extends Component {
   constructor(props) {
     super(props);
 
-    this.mode = 'record';
+    this.mode = 'live';
   }
 
   getChildContext() {
     const { auth, match: { params: { user, coll, rec } } } = this.props;
 
     return {
-      currMode: 'record',
+      currMode: 'live',
       canAdmin: auth.getIn(['user', 'username']) === user,
       user,
       coll,
@@ -81,13 +81,13 @@ class Record extends Component {
     const { activeBrowser, appSettings, dispatch, match: { params }, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
-    const appPrefix = `${config.appHost}/${user}/${coll}/${rec}/record/`;
-    const contentPrefix = `${config.contentHost}/${user}/${coll}/${rec}/record/`;
+    const appPrefix = `${config.appHost}/${user}/live/`;
+    const contentPrefix = `${config.contentHost}/${user}/live/`;
 
     return (
       <React.Fragment>
         <Helmet>
-          <title>Recording</title>
+          <title>Liveing</title>
         </Helmet>
         <ReplayUI
           activeBrowser={activeBrowser}
@@ -137,10 +137,12 @@ class Record extends Component {
 const initialData = [
   {
     promise: () => {
-      ipcRenderer.send('toggle-proxy', true);
+      ipcRenderer.send('toggle-proxy', false);
+
       return new Promise(function(resolve, reject) {
         ipcRenderer.on('toggle-proxy-done', () => { resolve(true); });
       });
+
     }
   },
   {
@@ -165,31 +167,19 @@ const initialData = [
     }
   },
   {
-    // load recording info
-    promise: ({ match: { params: { user, coll, rec } }, store: { dispatch } }) => {
-      return dispatch(loadRecording(user, coll, rec));
-    }
-  },
-  {
     promise: ({ match: { params }, store: { dispatch, getState } }) => {
       const state = getState();
       const collection = state.app.get('collection');
       const { user, coll } = params;
 
       if (!isLoaded(state) || collection.get('id') !== coll) {
-        return dispatch(loadColl(user, coll));
-      }
+        let host = '';
 
-      return undefined;
-    }
-  },
-  {
-    promise: ({ store: { dispatch, getState } }) => {
-      const { app } = getState();
+        if (__DESKTOP__) {
+          host = state.app.getIn(['appSettings', 'host']);
+        }
 
-      // TODO: determine if we need to test for stale archives
-      if (!app.getIn(['controls', 'archives']).size) {
-        return dispatch(getArchives());
+        return dispatch(loadColl(user, coll, host));
       }
 
       return undefined;
@@ -218,4 +208,4 @@ const mapStateToProps = ({ app }) => {
 export default asyncConnect(
   initialData,
   mapStateToProps
-)(Record);
+)(Live);

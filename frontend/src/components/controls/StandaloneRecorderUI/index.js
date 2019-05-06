@@ -53,9 +53,22 @@ class StandaloneRecorderUI extends Component {
     this.setState({ [evt.target.name]: evt.target.value });
   }
 
+  startPrepare = (evt) => {
+    evt.preventDefault();
+    const { history, username, activeCollection } = this.props;
+    const { url } = this.state;
+
+    if (!url) {
+      return false;
+    }
+
+    const cleanUrl = addTrailingSlash(fixMalformedUrls(url));
+    history.push('/' + username + '/' + activeCollection.id + '/live/' + cleanUrl);
+  }
+
   startRecording = (evt) => {
     evt.preventDefault();
-    const { activeCollection, extractable, history, selectedBrowser } = this.props;
+    const { activeCollection, extractable, history, selectedBrowser, username } = this.props;
     const { sessionNotes, url } = this.state;
 
     if (!url) {
@@ -166,6 +179,9 @@ class StandaloneRecorderUI extends Component {
           </Collapsible>
           <Button type="submit" aria-label="start recording" disabled={isOutOfSpace}>
             Start
+          </Button>
+          <Button type="button" id="prepare" aria-label="prepare" onClick={this.startPrepare}>
+            Prepare 🍪
           </Button>
         </div>
       </form>
