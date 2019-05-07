@@ -74,6 +74,7 @@ class UserController(BaseController):
             coll_empty = True
             coll_created = True
         else:
+            collection.reset_cdxj_ttl()
             coll_empty = collection.size == 0
             coll_created = False
 

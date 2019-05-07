@@ -661,7 +661,6 @@ class Collection(PagesMixin, RedisUniqueComponent):
             except:
                 pass
 
-        #self.redis.expire(coll_cdxj_key, self.COLL_CDXJ_TTL)
         return count
 
     def add_warcs(self, warc_map):
@@ -751,11 +750,18 @@ class Collection(PagesMixin, RedisUniqueComponent):
         coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)
         return self.redis.exists(coll_cdxj_key)
 
+    def reset_cdxj_ttl(self, key=None):
+        if not key:
+            key = self.COLL_CDXJ_KEY.format(coll=self.my_id)
+        if self.COLL_CDXJ_TTL > 0:
+            self.redis.expire(key, self.COLL_CDXJ_TTL)
+            return True
+        return False
+
     def sync_coll_index(self, exists=False, do_async=False):
         coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)
         if exists != self.redis.exists(coll_cdxj_key):
-            if self.COLL_CDXJ_TTL > 0:
-                self.redis.expire(coll_cdxj_key, self.COLL_CDXJ_TTL)
+            self.reset_cdxj_ttl(coll_cdxj_key)
             return
 
         cdxj_keys = self._get_rec_keys(Recording.CDXJ_KEY)
@@ -763,8 +769,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
             return
 
         self.redis.zunionstore(coll_cdxj_key, cdxj_keys)
-        if self.COLL_CDXJ_TTL > 0:
-            self.redis.expire(coll_cdxj_key, self.COLL_CDXJ_TTL)
+        self.reset_cdxj_ttl(coll_cdxj_key)
 
         ges = []
         for cdxj_key in cdxj_keys:
@@ -813,8 +818,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
                     if fh:
                         fh.close()
 
-            if self.COLL_CDXJ_TTL > 0:
-                self.redis.expire(output_key, self.COLL_CDXJ_TTL)
+            self.reset_cdxj_ttl(output_key)
 
         except Exception as e:
             logger.error('CDX Sync: Error downloading cache: ' + str(e))
