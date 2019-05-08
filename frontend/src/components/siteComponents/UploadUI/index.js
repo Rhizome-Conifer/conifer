@@ -188,7 +188,7 @@ class UploadUI extends PureComponent {
     const { file, isUploading, progress, status, targetColl } = this.state;
 
     const modalHeader = (
-      <h4>Upload Web Archive to { product }</h4>
+      <h4>{ __DESKTOP__ ? 'Import' : 'Upload' } Web Archive to { product }</h4>
     );
 
     const Wrapper = this.props.wrapper || Button;
@@ -196,7 +196,7 @@ class UploadUI extends PureComponent {
     const modalFooter = (
       <React.Fragment>
         <Button onClick={this.close} disabled={!this.state.canCancel}>Cancel</Button>
-        <Button onClick={this.submitUpload} disabled={isUploading} bsStyle="success">Upload</Button>
+        <Button onClick={this.submitUpload} disabled={isUploading} bsStyle="success">{ __DESKTOP__ ? 'Import' : 'Upload' }</Button>
       </React.Fragment>
     );
 

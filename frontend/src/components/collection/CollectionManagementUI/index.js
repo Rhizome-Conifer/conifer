@@ -109,12 +109,12 @@ class CollectionManagementUI extends Component {
                   <TrashIcon /> Delete Entire Collection
                 </DeleteCollection>
                 <Button onClick={this.downloadAction}>
-                  <DownloadIcon /> Download Collection as WARC
+                  <DownloadIcon /> { __DESKTOP__ ? 'Export' : 'Download' } Collection as WARC
                 </Button>
                 {
                   !this.context.isAnon &&
                     <Upload fromCollection={collection.get('id')} classes="btn btn-default">
-                      <UploadIcon /> Upload WARC to Collection
+                      <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' } WARC to Collection
                     </Upload>
                 }
               </div>

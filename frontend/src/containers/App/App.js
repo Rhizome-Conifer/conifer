@@ -288,7 +288,7 @@ export class App extends Component {
             </section>
         }
         {
-          hasFooter &&
+          hasFooter && !__DESKTOP__ &&
             <Footer />
         }
       </React.Fragment>

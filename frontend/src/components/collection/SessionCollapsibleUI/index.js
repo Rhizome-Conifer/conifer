@@ -156,7 +156,7 @@ class SessionCollapsibleUI extends PureComponent {
             <DateHeader dt={recording.get('created_at')} />
             <div className="functions">
               <Button ref={(o) => { this.expanded = o; }} onClick={this.toggleDeletePopover}><TrashIcon /> Delete</Button>
-              <Button onClick={this.downloadAction}><DownloadIcon /> Download</Button>
+              <Button onClick={this.downloadAction}><DownloadIcon /> { __DESKTOP__ ? 'Export' : 'Download' }</Button>
             </div>
           </div>
           <div className="session-notes">

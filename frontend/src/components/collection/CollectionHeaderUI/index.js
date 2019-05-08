@@ -207,9 +207,9 @@ class CollectionHeaderUI extends Component {
                   <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
                   {
                     !isAnon &&
-                      <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>Upload To Collection</Upload>
+                      <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>{ __DESKTOP__ ? 'Import' : 'Upload' } To Collection</Upload>
                   }
-                  <MenuItem onClick={this.downloadCollection}>Download Collection</MenuItem>
+                  <MenuItem onClick={this.downloadCollection}>{ __DESKTOP__ ? 'Export' : 'Download' } Collection</MenuItem>
                   <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
                   {
                     allowDat && canAdmin && !isAnon && newFeatures &&

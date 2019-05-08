@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { connect } from 'react-redux';
@@ -13,21 +13,13 @@ import { StandaloneRecorder } from 'containers';
 import './style.scss';
 
 
-class Home extends Component {
+class Home extends PureComponent {
 
   static propTypes = {
     auth: PropTypes.object,
     collections: PropTypes.array,
     showModalCB: PropTypes.func,
   };
-
-  shouldComponentUpdate(nextProps) {
-    if (this.props.auth.get('loading')) {
-      return false;
-    }
-
-    return true;
-  }
 
   render() {
     const { auth, showModalCB } = this.props;

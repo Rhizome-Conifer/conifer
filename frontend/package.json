@@ -118,6 +118,7 @@
     "analyze": "STATS=true webpack --config ./webpack/webpack.config.client.production.babel.js --profile --json > stats.json",
 
     "build-player-dev": "better-npm-run build-player-dev",
+    "build-desktop-dev": "better-npm-run build-desktop-dev",
     "build-player": "better-npm-run build-player",
     "build-desktop": "better-npm-run build-desktop",
 
@@ -149,6 +150,12 @@
       "command": "webpack --verbose --colors --display-error-details --config webpack/desktop.config.js",
       "env": {
         "NODE_ENV": "production"
+      }
+    },
+    "build-desktop-dev": {
+      "command": "webpack --config webpack/desktop.config.js --watch --progress",
+      "env": {
+        "NODE_ENV": "development"
       }
     },
     "start-docker-dev": {
