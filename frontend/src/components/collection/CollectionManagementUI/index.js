@@ -45,9 +45,7 @@ class CollectionManagementUI extends Component {
 
   downloadAction = (evt) => {
     const { collection } = this.props;
-    //window.location = `${getCollectionLink(collection)}/$download`;
-    console.log(`${config.apiHost}/${getCollectionLink(collection)}/$download`);
-    window.location.href = `${config.apiHost}/${getCollectionLink(collection)}/$download`;
+    window.location.href = `${config.appHost}/${getCollectionLink(collection)}/$download`;
   }
 
   render() {

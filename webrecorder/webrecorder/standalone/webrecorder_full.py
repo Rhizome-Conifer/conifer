@@ -1,6 +1,7 @@
 import os
 import sys
 import base64
+import shutil
 
 from webrecorder.standalone.standalone import StandaloneRunner
 
@@ -73,6 +74,15 @@ class WebrecorderRunner(StandaloneRunner):
               passwd='LocalUser1',
               role='admin',
               name=self.default_user)
+
+        # set max_size to available free space, if possible
+        try:
+            res = shutil.disk_usage(self.root_dir)
+            max_size = res[2]
+            user = self.user_manager.all_users[self.default_user]
+            user.set_prop('max_size', max_size)
+        except Exception as e:
+            print(e)
 
         os.environ['AUTO_LOGIN_USER'] = self.default_user
 
