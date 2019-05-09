@@ -179,67 +179,68 @@ class ModeSelectorUI extends PureComponent {
             </button>
 
             <div className="dropdown-menu">
-              <div className="wr-modes">
-                <ul className={classNames('row wr-mode', { active: isLive, disabled: !isLive })} onClick={this.onLive} role="button" title="Prepare Browser for Capture">
-                  <li className="col-xs-3">
-                    <span className="wr-mode-icon">🍪</span>
-                  </li>
-                  <li className="col-xs-9">
-                    <h5>{ isLive ? 'Preparing Cookies' : 'Prepare Cookies' }</h5>
-                  </li>
-                </ul>
-
-                <ul className={classNames('row wr-mode', { active: isRecord })} onClick={this.onRecord} role="button" title="Start a new recording session at the current URL">
-                  <li className="col-xs-3">
-                    <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
-                  </li>
-                  <li className="col-xs-9">
-                    <h5>{ isRecord ? 'Currently Capturing' : (isLive ? 'Start Capturing' : 'Capture this URL again') }</h5>
-                  </li>
-                </ul>
-
-                <ul className={classNames('row wr-mode', { active: isReplay, disabled: isLive })} onClick={this.onReplay} role="button" title="Access an archived version of this URL">
-                  <li className="col-xs-3">
-                    <span className="glyphicon glyphicon-play-circle wr-mode-icon" aria-hidden="true" />
-                  </li>
-                  <li className="col-xs-9">
-                    <h5>{ isReplay ? 'Currently Browsing' : 'Browse this URL' }</h5>
-                  </li>
-                </ul>
-
-                <ul className={classNames('row wr-mode', { active: isPatch, disabled: isRecord || isLive })} onClick={this.onPatch} role="button" title={isRecord ? 'Only available from replay after finishing a recording' : 'Record elements that are not yet in the collection'}>
-                  <li className="col-xs-3">
-                    <PatchIcon />
-                  </li>
-                  <li className="col-xs-9">
-                    <h5>{ isPatch ? 'Currently Patching' : 'Patch this URL' }</h5>
-                  </li>
-                </ul>
-
-                {
-                  isExtract &&
-                    <ul className={classNames('row wr-mode', { active: isExtract })} title="Start a new extraction at the current URL">
+              {
+                isLive ?
+                  <div className="wr-modes">
+                    <ul className={classNames('row wr-mode')} onClick={this.onStop} role="button" title="Finish preparing cookies and return to landing page">
                       <li className="col-xs-3">
-                        <span className="glyphicon glyphicon-save glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
+                        <span className="wr-mode-icon">🍪</span>
                       </li>
                       <li className="col-xs-9">
-                        <h5>Currently Extracting</h5>
+                        <h5>Finish Preparing Cookies</h5>
                       </li>
                     </ul>
-                }
 
-                {/*
-                  <div className="divider" role="separator" />
-                  <ul className="row wr-mode" onClick={this.onStaticCopy} role="button" title="A special recording that contains an exact, static copy of the document as currently displayed. Scripting is removed, so interaction with the copy is limited">
-                    <li className="col-xs-3">
-                      <SnapshotIcon />
-                    </li>
-                    <li className="col-xs-9">
-                      <h5>Static Copy</h5>
-                    </li>
-                  </ul>
-                */}
-              </div>
+                    <ul className={classNames('row wr-mode')} onClick={this.onRecord} role="button" title="Stop cookie prepare mode and begin capturing">
+                      <li className="col-xs-3">
+                        <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
+                      </li>
+                      <li className="col-xs-9">
+                        <h5>Finish and Start Capture</h5>
+                      </li>
+                    </ul>
+                  </div> :
+                  <div className="wr-modes">
+                    <ul className={classNames('row wr-mode', { active: isRecord })} onClick={this.onRecord} role="button" title="Start a new recording session at the current URL">
+                      <li className="col-xs-3">
+                        <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
+                      </li>
+                      <li className="col-xs-9">
+                        <h5>{ isRecord ? 'Currently Capturing' : (isLive ? 'Start Capturing' : 'Capture this URL again') }</h5>
+                      </li>
+                    </ul>
+
+                    <ul className={classNames('row wr-mode', { active: isReplay, disabled: isLive })} onClick={this.onReplay} role="button" title="Access an archived version of this URL">
+                      <li className="col-xs-3">
+                        <span className="glyphicon glyphicon-play-circle wr-mode-icon" aria-hidden="true" />
+                      </li>
+                      <li className="col-xs-9">
+                        <h5>{ isReplay ? 'Currently Browsing' : 'Browse this URL' }</h5>
+                      </li>
+                    </ul>
+
+                    <ul className={classNames('row wr-mode', { active: isPatch, disabled: isRecord || isLive })} onClick={this.onPatch} role="button" title={isRecord ? 'Only available from replay after finishing a recording' : 'Record elements that are not yet in the collection'}>
+                      <li className="col-xs-3">
+                        <PatchIcon />
+                      </li>
+                      <li className="col-xs-9">
+                        <h5>{ isPatch ? 'Currently Patching' : 'Patch this URL' }</h5>
+                      </li>
+                    </ul>
+
+                    {
+                      isExtract &&
+                        <ul className={classNames('row wr-mode', { active: isExtract })} title="Start a new extraction at the current URL">
+                          <li className="col-xs-3">
+                            <span className="glyphicon glyphicon-save glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
+                          </li>
+                          <li className="col-xs-9">
+                            <h5>Currently Extracting</h5>
+                          </li>
+                        </ul>
+                    }
+                  </div>
+              }
             </div>
           </div>
         </div>
