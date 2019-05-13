@@ -85,7 +85,7 @@ function FAQ() {
 
           <h4 className="q">Who created Webrecorder?</h4>
           <p className="a">
-            Webrecorder was developed by <a href="https://github.com/ikreymer" target="_blank">Ilya Kreymer</a>, and is a project of Rhizome under its digital preservation program led by <a href="https://github.com/despens" target="_blank">Dragan&nbsp;Espenschied</a>. It's currently developed by Kreymer with the assistance of Senior Front-End Developer <a href="https://github.com/m4rk3r" target="_blank">Mark Beasley</a>, Design Lead <a href="https://github.com/patshiu" target="_blank">Pat&nbsp;Shiu</a>, and Contract Developer <a href="https://github.com/atomotic" target="_blank">Raffaele Messuti</a>.
+            Webrecorder was developed by <a href="https://github.com/ikreymer" target="_blank">Ilya Kreymer</a>, and is a project of Rhizome under its digital preservation program led by <a href="https://github.com/despens" target="_blank">Dragan&nbsp;Espenschied</a>. It's currently developed by Kreymer with the assistance of Senior Front-End Developer <a href="https://github.com/m4rk3r" target="_blank">Mark Beasley</a>, Associate Director of Design <a href="https://github.com/patshiu" target="_blank">Pat&nbsp;Shiu</a>, Associate Director, Strategic Partnerships <a href="https://twitter.com/AnnaPerricci" target="_blank">Anna Perricci</a>, and Senior Back-End Developer <a href="https://github.com/N0taN3rd" target="_blank">John Berlin</a>.
           </p>
 
           <h4 className="q">What's Rhizome?</h4>
