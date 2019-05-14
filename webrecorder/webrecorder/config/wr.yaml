@@ -141,7 +141,7 @@ page_detect_list:
     public: true
     title: 'Pages Detected'
     desc: |
-        This list was created automatcally by guessing which URLs are web pages in this archive file.
+        This list was created automatically by guessing which URLs are web pages in this archive file.
 
 
 # WARC Paths and Names
