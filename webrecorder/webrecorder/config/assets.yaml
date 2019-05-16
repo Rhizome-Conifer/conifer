@@ -132,10 +132,10 @@ bundles:
             - pkg://pywb/static/vidrw.js
             - wrscripts.js
 
-    ww_rw-js:
-        output: bundle/ww_rw.js
+    wombatWorkers-js:
+        output: bundle/wombatWorkers.js
         contents:
-            - pkg://pywb/static/ww_rw.js
+            - pkg://pywb/static/wombatWorkers.js
 
     autoFetchWorker-js:
         output: bundle/autoFetchWorker.js
