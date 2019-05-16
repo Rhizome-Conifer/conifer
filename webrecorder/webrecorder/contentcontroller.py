@@ -29,6 +29,8 @@ class ContentController(BaseController, RewriterApp):
 
     MODIFY_MODES = ('record', 'patch', 'extract')
 
+    BUNDLE_PREFIX = '/static/bundle/'
+
     def __init__(self, *args, **kwargs):
         BaseController.__init__(self, *args, **kwargs)
 
@@ -473,6 +475,7 @@ class ContentController(BaseController, RewriterApp):
             wb_url = kwargs.get('request_ts', '') + 'bn_/' + url
 
             request.environ['webrec.template_params'] = kwargs
+            request.environ['pywb.static_prefix'] = self.BUNDLE_PREFIX
 
             remote_ip = info.get('remote_ip')
 
@@ -768,6 +771,8 @@ class ContentController(BaseController, RewriterApp):
 
         try:
             self.check_if_content(wb_url_obj, request.environ, is_top_frame)
+
+            request.environ['pywb.static_prefix'] = self.BUNDLE_PREFIX
 
             resp = self.render_content(wb_url, kwargs, request.environ)
 
