@@ -10,17 +10,16 @@ const REPORT_FAIL = 'wr/bugReport/REPORT_FAIL';
 const TOGGLE_MODAL = 'wr/bugReport/TOGGLE_MODAL';
 
 const initialState = fromJS({
-  dnlr: false,
+  reportModal: null,
   submitting: false,
   submitted: false,
-  error: null,
-  ui: false
+  error: null
 });
 
 export default function bugReport(state = initialState, action = {}) {
   switch (action.type) {
     case TOGGLE_MODAL:
-      return state.set(action.ui ? 'ui' : 'dnlr', action.bool);
+      return state.set('reportModal', action.reportType);
     case REPORT:
       return state.merge({
         submitting: true,
@@ -43,19 +42,18 @@ export default function bugReport(state = initialState, action = {}) {
   }
 }
 
-export function toggleModal(bool, ui = false) {
+export function toggleModal(reportType = 'dnlr') {
   return {
     type: TOGGLE_MODAL,
-    bool,
-    ui
+    reportType
   };
 }
 
 
-export function reportBug(postData, ui = false) {
+export function reportBug(postData, reportType = 'dnlr') {
   return {
     types: [REPORT, REPORT_SUCCESS, REPORT_FAIL],
-    promise: client => client.post(`${apiPath}/report/${ui ? 'ui' : 'dnlr'}`, {
+    promise: client => client.post(`${apiPath}/report/${reportType}`, {
       data: {
         ...postData
       }

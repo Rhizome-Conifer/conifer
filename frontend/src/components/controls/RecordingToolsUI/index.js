@@ -80,11 +80,6 @@ class RecordingToolsUI extends PureComponent {
       .catch(err => console.log('error', err));
   }
 
-  catalogView = () => {
-    const { match: { params: { user, coll } } } = this.props;
-    this.props.history.push(`/${user}/${coll}/manage`);
-  }
-
   toggleAutoscroll = () => {
     this.props.toggleAutoscroll(!this.props.autoscroll);
   }
@@ -143,16 +138,6 @@ class RecordingToolsUI extends PureComponent {
                   </React.Fragment>
               }
 
-              <MenuItem onClick={this.catalogView}>Collection Index</MenuItem>
-              {
-                currMode.includes('replay') &&
-                  <React.Fragment>
-                    <MenuItem divider />
-                    <MenuItem onClick={this.onPatch}>Patch this URL</MenuItem>
-                    <MenuItem onClick={this.onRecord}>Record this URL again</MenuItem>
-                  </React.Fragment>
-              }
-              <MenuItem divider />
               <MenuItem onClick={this.toggleAutoscroll}>{autoscroll ? 'Turn off' : 'Turn on'} autoscroll</MenuItem>
               {
                 activeBrowser &&
@@ -160,14 +145,9 @@ class RecordingToolsUI extends PureComponent {
                     <span className="glyphicon glyphicon-paste" /> Clipboard
                   </MenuItem>
               }
-              <MenuItem divider />
-              <MenuItem href="https://guide.webrecorder.io/" target="_blank">Help</MenuItem>
             </DropdownButton>
         }
-        {
-          !isNew && product !== 'player' &&
-            <BugReport />
-        }
+
         {
           !isWrite && product !== 'player' &&
             <ShareWidget />
