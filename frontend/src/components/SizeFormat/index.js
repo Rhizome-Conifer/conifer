@@ -2,8 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 
-function SizeFormat(props) {
-  const { bytes } = props;
+const SizeFormat = React.memo(({ bytes }) => {
   let display = '0 bytes';
 
   if (isFinite(bytes) && bytes > 0) {
@@ -15,7 +14,7 @@ function SizeFormat(props) {
   return (
     <span>{ display }</span>
   );
-}
+});
 
 SizeFormat.propTypes = {
   bytes: PropTypes.number

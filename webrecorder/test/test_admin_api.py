@@ -58,7 +58,10 @@ class TestAdminAPI(FullStackTests):
                                           'beta-archivist',
                                           'rate-unlimited-archivist',
                                           'public-archivist',
-                                          'archivist'}
+                                          'archivist',
+                                          'supporter',
+                                          'free-supporter'
+                                         }
 
     def test_get_api_defaults(self):
         res = self.testapp.get('/api/v1/admin/defaults')

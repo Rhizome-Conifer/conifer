@@ -120,6 +120,10 @@ class WebRecCork(Cork):
             cork.create_role('beta-archivist', 60)
         if 'public-archivist' not in roles:
             cork.create_role('public-archivist', 25)
+        if 'free-supporter' not in roles:
+            cork.create_role('free-supporter', 60)
+        if 'supporter' not in roles:
+            cork.create_role('supporter', 60)
         if 'rate-unlimited-archivist' not in roles:
             cork.create_role('rate-unlimited-archivist', 60)
 

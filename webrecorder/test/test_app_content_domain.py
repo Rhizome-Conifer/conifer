@@ -21,6 +21,7 @@ class TestAppContentDomain(FullStackTests):
     def setup_class(cls, **kwargs):
         os.environ['CONTENT_HOST'] = 'content-host'
         os.environ['APP_HOST'] = 'app-host'
+        os.environ['SESSION_SHARE_ORIGIN'] = 'http://sharedsession.example.com/'
         kwargs['init_anon'] = False
         super(TestAppContentDomain, cls).setup_class(**kwargs)
         cls.manager = CLIUserManager()
@@ -30,6 +31,7 @@ class TestAppContentDomain(FullStackTests):
         super(TestAppContentDomain, cls).teardown_class(*args, **kwargs)
         os.environ['CONTENT_HOST'] = ''
         os.environ['APP_HOST'] = ''
+        os.environ['SESSION_SHARE_ORIGIN'] = ''
 
     def app_get(self, url, status=None):
         url = url.format(user=self.anon_user)
@@ -82,6 +84,16 @@ class TestAppContentDomain(FullStackTests):
         res = self.content_get(res.headers['Location'])
 
         assert '"food": "bar"' in res.text
+
+    def test_sest_sesh_custom_redir_url(self):
+        res = self.app_get('http://app-host/_set_session?redir_back=http://sharedsession.example.com/custom/path')
+
+        assert res.headers['Location'].startswith('http://sharedsession.example.com/custom/path?redir_back=http://sharedsession.example.com/custom/path&cookie=')
+
+    def test_sest_sesh_wrong_origin(self):
+        res = self.app_get('http://app-host/_set_session?redir_back=http://otherurl.example.com/custom/path')
+
+        assert not res.headers['Location'].startswith('http://otherurl.example.com/')
 
     def test_replay_app_frame(self):
         res = self.app_get('/{user}/temp/http://httpbin.org/get?food=bar')

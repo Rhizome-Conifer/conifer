@@ -1,3 +1,4 @@
+@import 'src/vars';
 
 .pw-reset {
     .panel-title {
@@ -14,5 +15,137 @@
 .space-block {
     em {
         opacity: .65;
+    }
+}
+
+.user-settings {
+    .panel-default {
+        .panel-heading {
+            background-color: $lightBlue;
+            color: $blue;
+            border-color: $blue;
+        }
+
+        margin-bottom: 5rem;
+    }
+
+    .admin-options {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2.5rem;
+
+        h5 {
+            border-bottom: solid .1rem;
+            padding-bottom: .5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-section {
+            &.suspend {
+                p {
+                    width: 20rem;
+                }
+            }
+
+            &.update-role {
+                h5 {
+                    margin-bottom: 1rem;
+                }
+            }
+        }
+
+        .rounded {
+            svg {
+                vertical-align: middle;
+            }
+        }
+    }
+
+    .settings-block {
+        margin-bottom: 5rem;
+
+        h3 {
+            padding: 0 0 .5rem 1.5rem;
+            margin-left: -1.5rem;
+            border-bottom: solid .1rem $mgmt-gray;
+        }
+
+        .progress-bar {
+            background-color: $blue;
+        }
+
+        .upgrade {
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+
+    .profile {
+        .username {
+            margin: 1.5rem 0;
+        }
+
+        .rounded {
+            svg {
+                vertical-align: middle;
+                margin: 0 .5rem 0 -.5rem;
+            }
+        }
+    }
+
+    .security {
+        .account-email {
+            margin: 1.5rem 0;
+        }
+
+        .rounded {
+            background: $blue;
+            border: none;
+            color: #FFF;
+        }
+    }
+
+    .profile, .security {
+        form {
+            max-width: 60%;
+        }
+    }
+
+    .panel-danger {
+        border: none;
+        border-radius: 0;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+
+        & > .panel-heading {
+            background: $lightWarning;
+            color: $warning;
+            border-radius: 0;
+        }
+    }
+
+    .rounded.btn-danger {
+        color: $warning;
+        border-color: $warning;
+
+        svg {
+            vertical-align: text-top;
+            margin-right: .5rem;
+
+            path {
+                fill: $warning;
+            }
+        }
+
+        &:hover {
+            background: $warning;
+            color: #FFF;
+
+            svg {
+                path {
+                    fill: #FFF;
+                }
+            }
+        }
     }
 }

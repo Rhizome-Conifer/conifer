@@ -58,6 +58,8 @@ class ContentController(BaseController, RewriterApp):
             self.replay_host = self.live_host
         self.session_redirect_host = os.environ.get('SESSION_REDIRECT_HOST')
 
+        self.session_share_origin = os.environ.get('SESSION_SHARE_ORIGIN', '')
+
         self.wam_loader = WAMLoader()
         self._init_client_archive_info()
 
@@ -405,7 +407,12 @@ class ContentController(BaseController, RewriterApp):
                 return self.redirect(request.query.getunicode('path'))
 
             else:
-                url = request.environ['wsgi.url_scheme'] + '://' + self.content_host
+                redir_url = request.query.getunicode('redir_back')
+                if redir_url and redir_url.startswith(self.session_share_origin):
+                    url = redir_url
+                else:
+                    url = request.environ['wsgi.url_scheme'] + '://' + self.content_host
+
                 self.set_options_headers(self.content_host, self.app_host)
                 response.headers['Cache-Control'] = 'no-cache'
 
@@ -424,7 +431,10 @@ class ContentController(BaseController, RewriterApp):
                     cookie = sesh.get_cookie()
 
                 cookie = quote(cookie)
-                url += '/_set_session?{0}&cookie={1}'.format(request.environ['QUERY_STRING'], cookie)
+                if not redir_url:
+                    url += '/_set_session'
+
+                url += '?{0}&cookie={1}'.format(request.environ['QUERY_STRING'], cookie)
                 redirect(url)
 
         # OPTIONS

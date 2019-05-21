@@ -2,6 +2,7 @@ version: '2'
 
 services:
     app:
+        container_name: app
         build: ./webrecorder
         command: uwsgi --need-app /code/apps/apiapp.ini
 
@@ -24,6 +25,7 @@ services:
             - browsers
 
     frontend:
+        container_name: frontend
         build:
             context: ./frontend
 
@@ -43,6 +45,7 @@ services:
             - 8096:8096 # for HMR on dev
 
     dat:
+        container_name: dat
         image: webrecorder/dat-share
         environment:
             - PORT=3282
@@ -57,6 +60,7 @@ services:
             - ./data/dat/secret_keys:/root/.dat/secret_keys
 
     recorder:
+        container_name: recorder
         build: ./webrecorder
         command: uwsgi --need-app /code/apps/rec.ini
 
@@ -72,6 +76,7 @@ services:
             - ./data:/data
 
     warcserver:
+        container_name: warcserver
         build: ./webrecorder
         command: uwsgi --need-app /code/apps/load.ini
 
@@ -86,6 +91,7 @@ services:
             - ./data:/data
 
     nginx:
+        container_name: nginx
         build: ./nginx
         image: webrecorder/nginx
         depends_on:
@@ -105,6 +111,7 @@ services:
       image: "webrecorder/behaviors:latest"
 
     shepherd:
+        container_name: shepherd
         image: oldwebtoday/browser-shepherd
 
         env_file:
@@ -135,6 +142,7 @@ services:
 
 
     redis:
+        container_name: redis
         build: ./redis
 
         env_file:
@@ -145,6 +153,7 @@ services:
 
     # Postfix (if sending mail locally)
     mailserver:
+        container_name: mailserver
         restart: always
         image: catatnight/postfix
 

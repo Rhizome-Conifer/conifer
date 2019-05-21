@@ -1,5 +1,7 @@
 import HttpStatus from 'components/HttpStatus';
 import { FAQ, TermsAndPolicies } from 'components/siteComponents';
+import { product } from 'config';
+
 import {
   collDetailBreadcrumb,
   collList,
@@ -13,6 +15,7 @@ import {
   Extract,
   Home,
   ListDetail,
+  Login,
   Logout,
   NewPassword,
   NewRecording,
@@ -24,7 +27,6 @@ import {
   UserSignup,
   UserSettings
 } from './containers';
-
 
 const userPath = '/:user([^_][A-Za-z0-9-_]+)';
 const userRoutes = [
@@ -293,6 +295,14 @@ export default [
     exact: true,
     footer: true,
     name: 'Password Reset'
+  },
+  {
+    path: '/_login',
+    breadcrumb: `Log in to ${product}`,
+    component: Login,
+    exact: true,
+    footer: true,
+    name: 'login'
   },
   {
     path: '/_logout',

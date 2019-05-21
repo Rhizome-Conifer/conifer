@@ -6,17 +6,15 @@ import SizeFormat from 'components/SizeFormat';
 import './style.scss';
 
 
-function SizeCounterUI(props) {
-  const { bytes, classes } = props;
-
+const SizeCounterUI = React.memo(({ bytes, classes }) => {
   return (
     <span className="size-counter">
       <span className={`badge ${classes}`}>
-        <SizeFormat {...props} />
+        <SizeFormat bytes={bytes} />
       </span>
     </span>
   );
-}
+});
 
 SizeCounterUI.propTypes = {
   bytes: PropTypes.number,

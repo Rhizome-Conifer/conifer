@@ -2,7 +2,7 @@ import React from 'react';
 import { asyncConnect } from 'redux-connect';
 
 import { deleteUser, load as loadAuth, loadRoles, updatePassword } from 'store/modules/auth';
-import { load as loadUser, updateUser } from 'store/modules/user';
+import { edit, load as loadUser, resetEditState, updateUser } from 'store/modules/user';
 
 import { UserSettingsUI } from 'components/siteComponents';
 
@@ -25,6 +25,8 @@ const mapStateToProps = ({ app }) => {
     auth: app.get('auth'),
     deleting: app.getIn(['auth', 'deleting']),
     deleteError: app.getIn(['auth', 'deleteError']),
+    edited: app.getIn(['user', 'edited']),
+    editing: app.getIn(['user', 'editing']),
     user: app.get('user')
   };
 };
@@ -37,7 +39,12 @@ const mapDispatchToProps = (dispatch, props) => {
     },
     loadUserRoles: () => dispatch(loadRoles()),
     updatePass: (currPass, newPass, newPass2) => dispatch(updatePassword(currPass, newPass, newPass2)),
-    updateUser: (user, data) => dispatch(updateUser(user, data))
+    adminUpdateUser: (user, data) => dispatch(updateUser(user, data)),
+    editUser: (user, data) => {
+      dispatch(edit(user, data))
+        .then(() => setTimeout(() => dispatch(resetEditState()), 5000))
+        .then(() => dispatch(loadUser(user, false)));
+    }
   };
 };
 

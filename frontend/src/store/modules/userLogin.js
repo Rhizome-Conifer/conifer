@@ -1,5 +1,6 @@
 import { fromJS } from 'immutable';
 
+const ASSIGN_NEXT = 'wr/userLogin/ASSIGN_NEXT';
 const SHOW_MODAL = 'wr/userLogin/SHOW_MODAL';
 
 const initialState = fromJS({
@@ -10,6 +11,8 @@ const initialState = fromJS({
 
 export default function userLogin(state = initialState, action = {}) {
   switch (action.type) {
+    case ASSIGN_NEXT:
+      return state.set('next', action.next);
     case SHOW_MODAL:
       return state.merge({
         anonCTA: action.cta,
@@ -19,6 +22,13 @@ export default function userLogin(state = initialState, action = {}) {
     default:
       return state;
   }
+}
+
+export function assignNext(next) {
+  return {
+    type: ASSIGN_NEXT,
+    next
+  };
 }
 
 export function showModal(bool, cta = false, next = null) {

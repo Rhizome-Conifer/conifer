@@ -64,7 +64,7 @@ class Home extends Component {
             <h2>Web Archiving for All!</h2>
             <p>Webrecorder is a web archiving service anyone can use for free to save web pages. Making a capture is as easy as browsing a page like you normally would. Webrecorder automatically archives the page, along with any additional content triggered by interactions.</p>
             <p>This open-source project is brought to you by <a href="http://rhizome.org/" target="_blank">Rhizome</a> at the <a href="http://www.newmuseum.org/" target="_blank">New Museum</a>.</p>
-            <p>The <a href="https://mellon.org/grants/grants-database/grants/rhizome-communications-inc/41500666/" target="_blank">Andrew W. Mellon Foundation</a> is lead supporter of the Webrecorder initiative. Additional outreach and research is made possible by the <a href="https://www.knightfoundation.org/press/releases/three-projects-will-help-better-inform-the-public-through-technology-innovation-with-540-000-from-knight-foundation" target="_blank">Knight Foundation</a> and the Institute of Museum and Library Services.</p>
+            <p>The <a href="https://mellon.org/grants/grants-database/grants/rhizome-communications-inc/41500666/" target="_blank">Andrew W. Mellon Foundation</a> is lead supporter of the Webrecorder initiative.</p>
           </div>
         </div>
 
