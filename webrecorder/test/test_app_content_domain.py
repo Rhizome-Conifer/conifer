@@ -83,6 +83,11 @@ class TestAppContentDomain(FullStackTests):
 
         assert '"food": "bar"' in res.text
 
+    def test_sest_sesh_custom_redir_url(self):
+        res = self.app_get('http://app-host/_set_session?redir_back=http://otherurl.example.com/custom/path')
+
+        assert res.headers['Location'].startswith('http://otherurl.example.com/custom/path?redir_back=http://otherurl.example.com/custom/path&cookie=')
+
     def test_replay_app_frame(self):
         res = self.app_get('/{user}/temp/http://httpbin.org/get?food=bar')
         assert res.headers.get('Content-Security-Policy') == None
