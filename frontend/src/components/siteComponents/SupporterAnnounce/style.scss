@@ -20,6 +20,7 @@
             h3 {
                 margin: 0 auto;
                 color: $white;
+                text-align: center;
             }
 
             .dismiss {
@@ -50,6 +51,12 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+
+            button {
+                background: $blue;
+                border: none;
+                color: #FFF;
+            }
         }
 
         .payment-sources {
