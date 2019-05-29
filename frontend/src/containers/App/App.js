@@ -18,7 +18,7 @@ import { apiFetch, inStorage, setStorage } from 'helpers/utils';
 // direct import to prevent circular dependency
 import AppHeader from 'containers/AppHeader/AppHeader';
 
-import { Footer } from 'components/siteComponents';
+import { Footer, SupporterAnnounce } from 'components/siteComponents';
 import { InfoIcon } from 'components/icons';
 
 import 'shared/fonts/fonts.scss';
@@ -56,6 +56,7 @@ export class App extends Component {
       mobileAlert: true,
       outOfSpaceAlert: true,
       stalled: false,
+      supporterAnnounce: true
     };
   }
 
@@ -85,6 +86,10 @@ export class App extends Component {
       if (inStorage('mobileNotice', window.sessionStorage)) {
         this.setState({ mobileAlert: false });
       }
+    }
+
+    if (inStorage('supporterAnnounceDismiss')) {
+      this.setState({ supporterAnnounce: false });
     }
 
     if (typeof document.hidden !== 'undefined') {
@@ -176,6 +181,11 @@ export class App extends Component {
     window.location.reload();
   }
 
+  supporterAnnounceDismiss = () => {
+    setStorage('supporterAnnounceDismiss', '1');
+    this.setState({ supporterAnnounce: false });
+  }
+
   componentDidCatch(error, info) {
     this.setState({ error, info });
     if (config.ravenConfig) {
@@ -185,7 +195,7 @@ export class App extends Component {
 
   render() {
     const { loaded, location: { pathname }, spaceUtilization } = this.props;
-    const { error, info, lastPathname } = this.state;
+    const { error, info, lastPathname, supporterAnnounce } = this.state;
 
     const match = this.getActiveRoute(pathname);
     const lastMatch = this.getActiveRoute(lastPathname);
@@ -209,6 +219,10 @@ export class App extends Component {
     return (
       <React.Fragment>
         <Helmet {...config.app.head} />
+        {
+          match.name === 'landing' && config.supporterPortal && supporterAnnounce &&
+            <SupporterAnnounce dismiss={this.supporterAnnounceDismiss} />
+        }
         {
           !isEmbed &&
             <AppHeader routes={this.props.route.routes} />

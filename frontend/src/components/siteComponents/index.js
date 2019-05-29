@@ -6,6 +6,7 @@ export NewCollection from './NewCollection';
 export NewPasswordUI from './NewPasswordUI';
 export OnBoarding from './OnBoarding';
 export PasswordResetUI from './PasswordResetUI';
+export SupporterAnnounce from './SupporterAnnounce';
 export TempUsageUI from './TempUsageUI';
 export TempUserAlertUI from './TempUserAlertUI';
 export TermsAndPolicies from './TermsAndPolicies';
