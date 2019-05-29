@@ -19,7 +19,7 @@ const SupporterAnnounce = React.memo(({ dismiss }) => {
       <div className="banner">
         <div className="wrapper">
           <h3>Help us provide free tools and services that enable anyone to archive web resources.</h3>
-          <button className="dismiss" onClick={dismiss} type="button"><XIcon /></button>
+          <button className="dismiss" ariaLabel="Dismiss Supporter Announcement" onClick={dismiss} type="button"><XIcon /></button>
         </div>
       </div>
       <div className="info">
