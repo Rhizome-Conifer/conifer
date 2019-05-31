@@ -194,7 +194,7 @@ class TempChecker(object):
                     continue
 
                 if not collection.has_cdxj():
-                    logger.debug('TempChecker: Delete Expired External Coll: ' + collection.name)
+                    logger.debug('TempChecker: Delete Expired External Coll: ' + collection.my_id)
                     user.remove_collection(collection, delete=True)
             except Exception:
                 import traceback
