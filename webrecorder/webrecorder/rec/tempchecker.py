@@ -197,8 +197,7 @@ class TempChecker(object):
                     logger.debug('TempChecker: Delete Expired External Coll: ' + collection.my_id)
                     user.remove_collection(collection, delete=True)
             except Exception:
-                import traceback
-                traceback.print_exc()
+                logger.exception('TempChecker: Exception Removing External Coll: ' + collection.my_id)
 
 
 # =============================================================================
