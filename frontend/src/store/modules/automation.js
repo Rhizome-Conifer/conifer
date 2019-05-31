@@ -2,24 +2,28 @@ import { apiPath } from 'config';
 import { fromJS } from 'immutable';
 
 
-const NEW_AUTO = 'wr/NEW_AUTO';
-const NEW_AUTO_SUCCESS = 'wr/NEW_AUTO_SUCCESS';
-const NEW_AUTO_FAIL = 'wr/NEW_AUTO_FAIL';
+const NEW_AUTO = 'wr/automation/NEW_AUTO';
+const NEW_AUTO_SUCCESS = 'wr/automation/NEW_AUTO_SUCCESS';
+const NEW_AUTO_FAIL = 'wr/automation/NEW_AUTO_FAIL';
 
-const QUEUE_AUTO = 'wr/QUEUE_AUTO';
-const QUEUE_AUTO_SUCCESS = 'wr/QUEUE_AUTO_SUCCESS';
-const QUEUE_AUTO_FAIL = 'wr/QUEUE_AUTO_FAIL';
+const QUEUE_AUTO = 'wr/automation/QUEUE_AUTO';
+const QUEUE_AUTO_SUCCESS = 'wr/automation/QUEUE_AUTO_SUCCESS';
+const QUEUE_AUTO_FAIL = 'wr/automation/QUEUE_AUTO_FAIL';
 
-const TOGGLE_AUTOMATION = 'wr/TOGGLE_AUTOMATION';
-const TOGGLE_AUTOMATION_SUCCESS = 'wr/TOGGLE_AUTOMATION_SUCCESS';
-const TOGGLE_AUTOMATION_FAIL = 'wr/TOGGLE_AUTOMATION_FAIL';
+const TOGGLE_AUTOMATION = 'wr/automation/TOGGLE_AUTOMATION';
+const TOGGLE_AUTOMATION_SUCCESS = 'wr/automation/TOGGLE_AUTOMATION_SUCCESS';
+const TOGGLE_AUTOMATION_FAIL = 'wr/automation/TOGGLE_AUTOMATION_FAIL';
 
-const TOGGLE_MODAL = 'wr/TOGGLE_MODAL';
+const TOGGLE_INPAGE_AUTOMATION = 'wr/automation/TOGGLE_INPAGE_AUTOMATION';
+
+const TOGGLE_MODAL = 'wr/automation/TOGGLE_MODAL';
 
 
 const initialState = fromJS({
   autoId: null,
   active: false,
+  inpageAutomation: false,
+  inpageRunning: false,
   queued: false,
   show: false,
   workers: []
@@ -39,6 +43,8 @@ export default function automation(state = initialState, action = {}) {
         active: action.mode === 'start',
         workers: action.result.browsers || []
       });
+    case TOGGLE_INPAGE_AUTOMATION:
+      return state.set('inpageAutomation', action.bool);
     default:
       return state;
   }
@@ -88,5 +94,13 @@ export function toggleAutomation(mode, user, coll, aid) {
       params: { user, coll }
     }),
     mode
+  };
+}
+
+
+export function toggleInpageSidebar(bool) {
+  return {
+    type: TOGGLE_INPAGE_AUTOMATION,
+    bool
   };
 }

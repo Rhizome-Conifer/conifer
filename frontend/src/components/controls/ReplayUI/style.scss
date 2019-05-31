@@ -36,6 +36,10 @@
     flex-grow: 1;
     display: flex;
 
+    &.locked {
+        pointer-events: none;
+    }
+
     &.embed {
         flex-direction: column;
 

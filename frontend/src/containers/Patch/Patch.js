@@ -9,7 +9,7 @@ import { getArchives, updateUrlAndTimestamp } from 'store/modules/controls';
 import { resetStats } from 'store/modules/infoStats';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
 
-import { RemoteBrowser } from 'containers';
+import { InpageAutomation, RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -24,6 +24,8 @@ class Patch extends Component {
     autoscroll: PropTypes.bool,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
+    inpageAutomation: PropTypes.bool,
+    inpageAutomationRunning: PropTypes.bool,
     match: PropTypes.object,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -87,6 +89,10 @@ class Patch extends Component {
                 timestamp={timestamp}
                 url={url} />
           }
+          {
+            this.props.inpageAutomation &&
+              <InpageAutomation />
+          }
         </div>
       </React.Fragment>
     );
@@ -149,6 +155,8 @@ const mapStateToProps = ({ app }) => {
     auth: app.get('auth'),
     autoscroll: app.getIn(['controls', 'autoscroll']),
     collection: app.get('collection'),
+    inpageAutomation: app.getIn(['automation', 'inpageAutomation']),
+    inpageAutomationRunning: app.getIn(['automation', 'inpageRunning']),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

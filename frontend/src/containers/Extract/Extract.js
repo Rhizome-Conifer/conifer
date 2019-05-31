@@ -13,7 +13,7 @@ import { resetStats } from 'store/modules/infoStats';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
 import { getActiveCollection } from 'store/selectors';
 
-import { RemoteBrowser } from 'containers';
+import { InpageAutomation, RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -30,6 +30,8 @@ class Extract extends Component {
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     extractable: PropTypes.object,
+    inpageAutomation: PropTypes.bool,
+    inpageAutomationRunning: PropTypes.bool,
     match: PropTypes.object,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -97,6 +99,10 @@ class Extract extends Component {
                 params={params}
                 timestamp={timestamp}
                 url={url} />
+          }
+          {
+            this.props.inpageAutomation &&
+              <InpageAutomation />
           }
         </div>
       </React.Fragment>
@@ -173,6 +179,8 @@ const mapStateToProps = ({ app }) => {
     autoscroll: app.getIn(['controls', 'autoscroll']),
     collection: app.get('collection'),
     extractable: app.getIn(['controls', 'extractable']),
+    inpageAutomation: app.getIn(['automation', 'inpageAutomation']),
+    inpageAutomationRunning: app.getIn(['automation', 'inpageRunning']),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

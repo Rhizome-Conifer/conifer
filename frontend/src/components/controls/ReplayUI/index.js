@@ -50,11 +50,6 @@ class ReplayUI extends Component {
         }
 
         {
-          isWrite &&
-            <SizeCounter bytes={0} />
-        }
-
-        {
           isWrite ?
             <RecordURLBar {...this.props} /> :
             <ReplayURLBar {...this.props} />

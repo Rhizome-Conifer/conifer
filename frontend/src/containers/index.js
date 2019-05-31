@@ -14,6 +14,7 @@ export Extract from './Extract/Extract';
 export ExtractWidget from './ExtractWidget/ExtractWidget';
 export Home from './Home/Home';
 export InfoWidget from './InfoWidget/InfoWidget';
+export InpageAutomation from './InpageAutomation/InpageAutomation';
 export InspectorPanel from './InspectorPanel/InspectorPanel';
 export Lists from './Lists/Lists';
 export ListDetail from './ListDetail/ListDetail';

@@ -8,7 +8,7 @@ import { apiFetch, remoteBrowserMod } from 'helpers/utils';
 
 import OutsideClick from 'components/OutsideClick';
 import { PatchIcon, SnapshotIcon } from 'components/icons';
-import { Blinker } from 'containers';
+import { Blinker, SizeCounter } from 'containers';
 
 import './style.scss';
 
@@ -130,6 +130,7 @@ class ModeSelectorUI extends PureComponent {
     const isRecord = currMode === 'record';
     const isExtract = currMode.indexOf('extract') !== -1;
     const isPatch = currMode === 'patch';
+    const isWrite = ['extract', 'extract_only', 'patch', 'record'].includes(currMode);
 
     switch(currMode) {
       case 'record':
@@ -163,6 +164,7 @@ class ModeSelectorUI extends PureComponent {
             <button onClick={this.onStop} className="btn btn-default wr-mode-message content-action" aria-label={`Finish ${modeMessage} session`} type="button">
               <span className="btn-content"><span className="glyphicon glyphicon-stop" /> <span className="hidden-xs">Stop</span></span>
               { modeMarkup }
+              { isWrite && <SizeCounter /> }
             </button>
             <button onClick={this.toggle} type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <span className="glyphicon glyphicon-triangle-bottom" />

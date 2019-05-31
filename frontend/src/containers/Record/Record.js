@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
+import classNames from 'classnames';
 import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
@@ -10,7 +11,7 @@ import { getArchives, updateUrl } from 'store/modules/controls';
 import { loadRecording } from 'store/modules/recordings';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
 
-import { RemoteBrowser } from 'containers';
+import { InpageAutomation, RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -24,6 +25,8 @@ class Record extends Component {
     autoscroll: PropTypes.bool,
     auth: PropTypes.object,
     collection: PropTypes.object,
+    inpageAutomation: PropTypes.bool,
+    inpageAutomationRunning: PropTypes.bool,
     dispatch: PropTypes.func,
     match: PropTypes.object,
     timestamp: PropTypes.string,
@@ -77,7 +80,7 @@ class Record extends Component {
           params={params}
           url={url} />
 
-        <div className="iframe-container">
+        <div className={classNames('iframe-container', { locked: this.props.inpageAutomationRunning })}>
           {
             activeBrowser ?
               <RemoteBrowser
@@ -94,6 +97,10 @@ class Record extends Component {
                 params={params}
                 timestamp={timestamp}
                 url={url} />
+          }
+          {
+            this.props.inpageAutomation &&
+              <InpageAutomation />
           }
         </div>
       </React.Fragment>
@@ -162,6 +169,8 @@ const mapStateToProps = ({ app }) => {
     autoscroll: app.getIn(['controls', 'autoscroll']),
     auth: app.get('auth'),
     collection: app.get('collection'),
+    inpageAutomation: app.getIn(['automation', 'inpageAutomation']),
+    inpageAutomationRunning: app.getIn(['automation', 'inpageRunning']),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

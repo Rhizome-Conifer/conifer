@@ -1,12 +1,14 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Button, DropdownButton, MenuItem } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
 import { appHost, product } from 'config';
 import { apiFetch } from 'helpers/utils';
 
+import { ShareWidget } from 'containers';
+
 import Modal from 'components/Modal';
-import { BugReport, ShareWidget } from 'containers';
+import { WandIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -17,10 +19,12 @@ class RecordingToolsUI extends PureComponent {
     auth: PropTypes.object,
     autoscroll: PropTypes.bool,
     history: PropTypes.object,
+    inpageAutomation: PropTypes.bool,
     match: PropTypes.object,
     timestamp: PropTypes.string,
     toggleAutoscroll: PropTypes.func,
     toggleClipboard: PropTypes.func,
+    toggleInpageAutomation: PropTypes.func,
     url: PropTypes.string
   };
 
@@ -92,10 +96,6 @@ class RecordingToolsUI extends PureComponent {
     apiFetch(`/browser/behavior/stop/${this.props.reqId}`, {}, { method: 'POST' });
   }
 
-  userGuide = () => {
-    this.props.history.push('/_documentation');
-  }
-
   openClipboard = () => this.props.toggleClipboard(true)
 
   closeClipboard = () => this.props.toggleClipboard(false)
@@ -103,6 +103,10 @@ class RecordingToolsUI extends PureComponent {
   _open = () => this.setState({ clipboardOpen: true })
 
   _close = () => this.setState({ clipboardOpen: false })
+
+  toggleInpageSidebar = () => {
+    this.props.toggleInpageAutomation(!this.props.inpageAutomation);
+  }
 
   render() {
     const { canAdmin, currMode } = this.context;
@@ -125,27 +129,21 @@ class RecordingToolsUI extends PureComponent {
           <p>You can also paste text here to send to remote browser.</p>
           <textarea id="clipboard" autoFocus style={{ width: '100%', minHeight: 200 }} />
         </Modal>
+
         {
-          canAdmin && !isNew &&
-            <DropdownButton pullRight noCaret id="tool-dropdown" title={<span className="glyphicon glyphicon-option-vertical" aria-hidden="true" />}>
+          canAdmin && !isNew && activeBrowser &&
+            <button
+              type="button"
+              className="rounded clipboard-btn"
+              aria-label="Remote browser clipboard"
+              onClick={this._open}>
+              <span className="glyphicon glyphicon-paste" />
+            </button>
+        }
 
-              {
-                newFeatures &&
-                  <React.Fragment>
-                    <MenuItem onClick={this.startAuto}>Start Automation</MenuItem>
-                    <MenuItem onClick={this.stopAuto}>Stop Automation</MenuItem>
-                    <MenuItem divider />
-                  </React.Fragment>
-              }
-
-              <MenuItem onClick={this.toggleAutoscroll}>{autoscroll ? 'Turn off' : 'Turn on'} autoscroll</MenuItem>
-              {
-                activeBrowser &&
-                  <MenuItem onClick={this._open}>
-                    <span className="glyphicon glyphicon-paste" /> Clipboard
-                  </MenuItem>
-              }
-            </DropdownButton>
+        {
+          isWrite &&
+            <button className="rounded autopilot-btn" onClick={this.toggleInpageSidebar} type="button"><WandIcon /> Autopilot Options</button>
         }
 
         {
