@@ -182,17 +182,17 @@ class TempChecker(object):
         all_ext_templ = Collection.EXTERNAL_KEY.format(coll='*')
 
         for ext_key in self.data_redis.scan_iter(all_ext_templ):
+            _, coll, _2 = ext_key.split(':', 2)
+
+            collection = Collection(my_id=coll,
+                                    redis=self.data_redis,
+                                    access=BaseAccess())
+
+            user = collection.get_owner()
+            if not user or user.is_anon():
+                continue
+
             try:
-                _, coll, _2 = ext_key.split(':', 2)
-
-                collection = Collection(my_id=coll,
-                                        redis=self.data_redis,
-                                        access=BaseAccess())
-
-                user = collection.get_owner()
-                if not user or user.is_anon():
-                    continue
-
                 if not collection.has_cdxj():
                     logger.debug('TempChecker: Delete Expired External Coll: ' + collection.my_id)
                     user.remove_collection(collection, delete=True)
