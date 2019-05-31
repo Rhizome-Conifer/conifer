@@ -114,7 +114,7 @@ class RemoteBrowserUI extends Component {
 
     // autoscroll check
     if (autoscroll !== prevProps.autoscroll && this.socket) {
-      this.socket.doAutoscroll();
+      this.socket.doBehavior(url, autoscroll);
     }
 
 

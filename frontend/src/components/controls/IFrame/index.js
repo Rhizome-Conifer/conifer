@@ -80,10 +80,13 @@ class IFrame extends Component {
 
     if (autoscroll !== nextProps.autoscroll && this.contentFrame) {
       this.contentFrame.iframe.contentWindow.postMessage({
-        wb_type: 'autoscroll',
-        start: nextProps.autoscroll,
-        timeout: nextProps.autoscroll ? 25000 : 0,
-        skipCallback: autoscroll
+        wb_type: 'behavior',
+        name: 'autoscroll',
+        url,
+        start: autoscroll,
+        //start: nextProps.autoscroll,
+        //timeout: nextProps.autoscroll ? 25000 : 0,
+        //skipCallback: autoscroll
       }, '*', undefined, true);
     }
 

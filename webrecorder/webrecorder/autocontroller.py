@@ -1,11 +1,14 @@
 from webrecorder.basecontroller import BaseController
 from webrecorder.models.auto import Auto
-from bottle import request
+from bottle import request, response
+import requests
+import os
 
 
 # ============================================================================
 class AutoController(BaseController):
     def init_routes(self):
+        behavior_api = os.environ.get('BEHAVIOR_API', 'http://behaviors:3030')
 
         # CREATE AUTO
         @self.app.post('/api/v1/auto')
@@ -66,21 +69,14 @@ class AutoController(BaseController):
 
             return {'deleted_id': auto.my_id}
 
-        # START BEHAVIOR
-        @self.app.post('/api/v1/browser/behavior/start/<reqid>')
-        def start_browser(reqid):
-            self.require_admin_beta_access()
-
-            res = Auto.do_request('/api/behavior/start/' + reqid, use_pool=False)
-            return res
-
-        # STOP BEHAVIOR
-        @self.app.post('/api/v1/browser/behavior/stop/<reqid>')
-        def stop_browser(reqid):
-            self.require_admin_beta_access()
-
-            res = Auto.do_request('/api/behavior/stop/' + reqid, use_pool=False)
-            return res
+        # Load behavior from behavior server
+        # (only for proxy/standalone
+        @self.app.get('/api/v1/behavior/behavior')
+        def proxy_behavior():
+            query = dict(request.query)
+            res = requests.get(behaviors_api + '/behavior', params=query)
+            response.content_type = 'application/json'
+            return res.content
 
     def load_user_coll_auto(self, autoid, user=None, coll_name=None):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)

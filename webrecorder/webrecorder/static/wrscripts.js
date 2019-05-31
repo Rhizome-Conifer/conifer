@@ -28,89 +28,6 @@
     }
 
 
-    // Static Snapshots
-
-    (function() {
-        var counter = 0;
-
-        function process(win, topinfo, top_page) {
-            var return_url;
-            try {
-                return_url = addSnapshot(win, topinfo, top_page);
-            } catch(e) {
-                console.log("Can't snapshot: " + e);
-                return;
-            }
-
-            for (var i = 0; i < win.frames.length; i++) {
-                var url = process(win.frames[i], topinfo, false);
-
-                if (url) {
-                    try {
-                        win.frames[i].frameElement.setAttribute("data-src-target", url);
-                    } catch(e) {
-                    }
-                }
-            }
-
-            return return_url;
-
-        }
-
-        function addSnapshot(win, topinfo, top_page) {
-            if (win.WB_wombat_location && win.WB_wombat_location.href) {
-                url = win.WB_wombat_location.href;
-                //url = url.replace(/^(https?:\/\/)/, '$1snapshot:')
-
-            } else if (win.document.all.length <= 3) {
-                url = "about:blank";
-                return url;
-            } else {
-                url = "http://embed.snapshot/" + counter;
-                counter++;
-            }
-
-            var contents = new XMLSerializer().serializeToString(win.document);
-
-            var params = {prefix: topinfo.prefix,
-                          url: url,
-                          top_url: topinfo.url,
-                          top_ts: topinfo.timestamp,
-                         }
-
-            if (top_page) {
-                params['title'] = win.document.title;
-            }
-
-            var data = {params: params,
-                        wb_type: "snapshot",
-                        top_page: top_page,
-                        contents: contents}
-    
-            sendMessage(data); 
-
-            return url;
-        }
-
-        function doSnapshot(event) {
-            var message = getMessage(event);
-            if (!message) {
-                return;
-            }
-
-            if (message.wb_type == "snapshot-req") {
-                process(window, window.wbinfo, true);
-            }
-        }
-
-        function ready() {
-            addListener(doSnapshot);
-        }
-
-        window.addEventListener("DOMContentLoaded", ready);
-
-    }());
-
 
     // Password Check
 
@@ -158,71 +75,62 @@
     })();
 
 
-    // Autoscroll
+    // Custom Behavior
 
     (function() {
-        var sid = undefined;
-        var scroll_timeout = 2000;
-        var doneCallback = undefined;
-        var lastScrolled = undefined;
 
-        function scroll() {
-            if (window.scrollY + window.innerHeight < Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)) {
-                window.scrollBy(0, 200);
-                lastScrolled = Date.now();
-            } else if (!lastScrolled || (Date.now() - lastScrolled) > scroll_timeout) {
-                stop();
-            };
-        }
-        
-        function start(done, timeout) {
-            doneCallback = done;
-
-            lastScrolled = Date.now();
-            
-            if (timeout) {
-                scroll_timeout = timeout;
-            }
-            
-            sid = setInterval(scroll, 100);
-        }
-        
-        function stop(skipCallback) {
-            if (sid == undefined) {
-                return;
-            }
-            clearInterval(sid);
-            sid = undefined;
-            if (doneCallback && !skipCallback) {
-                doneCallback();
-            }
-        }
-        
-        function isDone() {
-            return sid == undefined;
-        }
-        
-        function setDoneCallback(donecb) {
-            doneCallback = donecb;
+        function doRun() {
+            window.$WBBehaviorRunner$.autoRunWithDelay();
         }
 
         function receiveEvent(event) {
+            var BEHAVIOR_API = "/api/v1/behavior/behavior?";
+
             var message = getMessage(event);
             if (!message) {
                 return;
             }
 
-            function sendDone() {
-                sendMessage({"wb_type": "autoscroll_resp",
-                             "on": false,
-                             "url": window.location.href});
-            }
+            if (message.wb_type === "behavior") {
+                // pause behavior if true
+                var pause = !message.start;
 
-            if (message.wb_type == "autoscroll") {
-                if (message.start) {
-                    start(sendDone, message.timeout);
-                } else {
-                    stop(message.skipCallback);
+                if (!pause && !window.$WBBehaviorRunner$) {
+                    var url = BEHAVIOR_API;
+
+                    // use name if specified, otherwise url if specified or just page url
+                    if (message.name) {
+                        url += "name=" + message.name;
+                    } else {
+                        url += "url=" + (message.url || wbinfo.url);
+                    }
+
+                    // full path for proxy
+                    if (wbinfo.proxy_magic) {
+                        url = window.location.protocol + "//" + wbinfo.proxy_magic + url;
+                    }
+                    var script = document.createElement("script");
+                    script.onload = function() {
+
+                        let resp = "behavior_failed";
+
+                        if (window.$WBBehaviorRunner$) {
+                          resp = "behavior_loaded";
+                          setTimeout(doRun, 100);
+                        }
+
+                        sendMessage({"wb_type": resp,
+                                     "url": window.location.href,
+                                     "name": name});
+                    }
+
+                    script._no_rewrite = true;
+                    script.setAttribute("src", url);
+                    document.head.appendChild(script);
+                } else if (!pause && window.$WBBehaviorRunner$) {
+                    window.$WBBehaviorRunner$.unpause();
+                } else if (pause && window.$WBBehaviorRunner$) {
+                    window.$WBBehaviorRunner$.pause();
                 }
             }
         }
@@ -232,9 +140,6 @@
         }
 
         window.addEventListener("DOMContentLoaded", ready);
-
-        //return {"start": start, "stop": stop, "isDone": isDone, "setDoneCallback": setDoneCallback};
-        
     })();
 
 })();

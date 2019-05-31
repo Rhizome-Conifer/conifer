@@ -204,8 +204,8 @@ class WebSocketHandler {
     return this.sendMsg({ ws_type: 'skipreq', url });
   }
 
-  doAutoscroll = () => {
-    return this.sendMsg({ ws_type: 'autoscroll' });
+  doBehavior = (url, start) => {
+    return this.sendMsg({ ws_type: 'behavior', url, start });
   }
 
   doLoadAll = () => {

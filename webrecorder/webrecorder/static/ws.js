@@ -11,8 +11,6 @@
 
     var on_openned;
 
-    var is_autoscroll = false;
-
     var json_stringify = JSON.stringify;
     var json_parse = JSON.parse;
 
@@ -191,13 +189,10 @@
                 }
                 break;
 
-            case "autoscroll":
+            case "behavior":
                 if (!document.hidden) {
-                    sendLocalMsg({"wb_type": "autoscroll",
-                                  "start": !is_autoscroll,
-                                  "timeout": 25000});
-
-                    is_autoscroll = !is_autoscroll;
+                    sendLocalMsg({"wb_type": "behavior",
+                                  "start": msg.start});
                 }
                 break;
 

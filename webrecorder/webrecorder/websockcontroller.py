@@ -233,11 +233,11 @@ class BaseWebSockHandler(object):
 
         # send to remote browser cmds
         if to_browser:
-            if msg['ws_type'] in ('set_url', 'autoscroll', 'load_all', 'switch', 'snapshot-req'):
+            if msg['ws_type'] in ('set_url', 'behavior', 'load_all', 'switch', 'snapshot-req'):
                 self._publish(to_browser, msg)
 
         elif from_browser:
-            if msg['ws_type'] in ('remote_url', 'patch_req', 'autoscroll_resp', 'snapshot'):
+            if msg['ws_type'] in ('remote_url', 'patch_req', 'behavior_resp', 'snapshot'):
                 self._publish(from_browser, msg)
 
     def get_status(self):
