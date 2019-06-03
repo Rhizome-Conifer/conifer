@@ -146,43 +146,27 @@ class BaseWebSockHandler(object):
     def run(self):
         self._init_ws(request.environ)
 
-        websocket_fd = self._get_ws_fd()
+        accum_buff = None
 
         while True:
-            self._multiplex(websocket_fd)
+            # read WS
+            buff = self._recv_ws()
+            if buff:
+                accum_buff = buff if not accum_buff else accum_buff + buff
+                accum_buff = self.handle_client_msg(accum_buff)
+
+            # read pubsub
+            if self.pubsub:
+                ps_msg = self.pubsub.get_message(ignore_subscribe_messages=True, timeout=0.1)
+                if ps_msg and ps_msg['type'] == 'message':
+                    self._send_ws(ps_msg['data'])
 
             if self.updater:
                 res = self.updater.get_update()
                 if res:
                     self._send_ws(res)
 
-            gevent.sleep(0)
-
-    def _multiplex(self, websocket_fd):
-        fd_list = [websocket_fd]
-
-        if self.pubsub:
-            fd_list.append(self.pubsub.connection._sock.fileno())
-
-        ready = gevent.select.select(fd_list, [], [], 1.0)
-
-        # send ping on timeout
-        if not ready[0]:
-            self._recv_ws()
-
-        accum_buff = None
-
-        for fd in ready[0]:
-            if fd == websocket_fd:
-                buff = self._recv_ws()
-                accum_buff = buff if not accum_buff else accum_buff + buff
-                accum_buff = self.handle_client_msg(accum_buff)
-
-            elif len(fd_list) == 2 and fd == fd_list[1]:
-
-                ps_msg = self.pubsub.get_message(ignore_subscribe_messages=True)
-                if ps_msg and ps_msg['type'] == 'message':
-                    self._send_ws(ps_msg['data'])
+            gevent.sleep(1.0)
 
     def _publish(self, channel, msg):
         self.browser_redis.publish(channel, json.dumps(msg))
@@ -293,9 +277,6 @@ class BaseWebSockHandler(object):
 
 # ============================================================================
 class UwsgiWebSockHandler(BaseWebSockHandler):
-    def _get_ws_fd(self):
-        return uwsgi.connection_fd()
-
     def _init_ws(self, env):
         uwsgi.websocket_handshake(env['HTTP_SEC_WEBSOCKET_KEY'],
                                   env.get('HTTP_ORIGIN', ''))
@@ -309,10 +290,6 @@ class UwsgiWebSockHandler(BaseWebSockHandler):
 
 # ============================================================================
 class GeventWebSockHandler(BaseWebSockHandler):
-    def _get_ws_fd(self):
-        socket = self._ws.stream.handler.socket
-        return socket
-
     def _init_ws(self, env):
         self._ws = env['wsgi.websocket']
 
