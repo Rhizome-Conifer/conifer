@@ -4,7 +4,7 @@ services:
     app:
         container_name: app
         build: ./webrecorder
-        command: uwsgi --need-app /code/apps/apiapp.ini
+        command: ulimit -n 65536; uwsgi --need-app /code/apps/apiapp.ini
 
         env_file:
             - ./wr.env
@@ -23,6 +23,8 @@ services:
         networks:
             - default
             - browsers
+
+        ulimits: { nofile: 65536 }
 
     frontend:
         container_name: frontend
@@ -62,7 +64,7 @@ services:
     recorder:
         container_name: recorder
         build: ./webrecorder
-        command: uwsgi --need-app /code/apps/rec.ini
+        command: ulimit -n 65536; uwsgi --need-app /code/apps/rec.ini
 
         env_file:
             - ./wr.env
@@ -75,10 +77,12 @@ services:
             - ./webrecorder/:/code/
             - ./data:/data
 
+        ulimits: { nofile: 65536 }
+
     warcserver:
         container_name: warcserver
         build: ./webrecorder
-        command: uwsgi --need-app /code/apps/load.ini
+        command: ulimit -n 65536; uwsgi --need-app /code/apps/load.ini
 
         env_file:
             - ./wr.env
@@ -89,6 +93,8 @@ services:
         volumes:
             - ./webrecorder/:/code/
             - ./data:/data
+
+        ulimits: { nofile: 65536 }
 
     nginx:
         container_name: nginx
