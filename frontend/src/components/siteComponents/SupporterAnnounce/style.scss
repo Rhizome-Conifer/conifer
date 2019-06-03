@@ -52,16 +52,15 @@
             flex-direction: column;
             justify-content: center;
 
-            button {
+            a {
+                border-radius: 2.7rem;
+                padding: 0.7rem 3rem;
+                font-size: 1.15rem;
                 background: $blue;
                 border: none;
                 color: #FFF;
-            }
-        }
-
-        .payment-sources {
-            img {
-                width: 3.6rem;
+                font-size: 1.8rem;
+                text-decoration: none;
             }
         }
     }

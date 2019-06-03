@@ -9,17 +9,12 @@ import './style.scss';
 
 
 const SupporterAnnounce = React.memo(({ dismiss }) => {
-
-  const launchSupporter = () => {
-    window.location.href = supporterPortal;
-  }
-
   return (
     <div className="supporter-announce">
       <div className="banner">
         <div className="wrapper">
           <h3>Help us provide free tools and services that enable anyone to archive web resources.</h3>
-          <button className="dismiss" ariaLabel="Dismiss Supporter Announcement" onClick={dismiss} type="button"><XIcon /></button>
+          <button className="dismiss" aria-label="Dismiss Supporter Announcement" onClick={dismiss} type="button"><XIcon /></button>
         </div>
       </div>
       <div className="info">
@@ -30,17 +25,15 @@ const SupporterAnnounce = React.memo(({ dismiss }) => {
           These funds will help us thrive as a sustainable open source project and continue to offer free Webrecorder.io user accounts. Free accounts will continue to have 5 GB of storage and the same full range of Webrecorder tools as before.
         </p>
         <div className="signup-link">
-          <button className="rounded" onClick={launchSupporter} type="button">Become a Supporter</button>
-          <div className="payment-sources">
-            <img src={require('shared/images/visa_36_2x.png')} alt="Visa logo" />
-            <img src={require('shared/images/mc_vrt_opt_pos_36_2x.png')} alt="Mastercard logo" />
-            <img src={require('shared/images/amex_36_2x.png')} alt="American Express logo" />
-          </div>
+          <a href={supporterPortal} target="_blank">Become a Supporter</a>
         </div>
       </div>
     </div>
   );
 });
 
+SupporterAnnounce.propTypes = {
+  dismiss: PropTypes.func
+};
 
 export default SupporterAnnounce;
