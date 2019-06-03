@@ -220,7 +220,7 @@ export class App extends Component {
       <React.Fragment>
         <Helmet {...config.app.head} />
         {
-          match.name === 'landing' && config.supporterPortal && supporterAnnounce &&
+          match.name === 'landing' && config.supporterPortal && supporterAnnounce && !this.isMobile &&
             <SupporterAnnounce dismiss={this.supporterAnnounceDismiss} />
         }
         {
