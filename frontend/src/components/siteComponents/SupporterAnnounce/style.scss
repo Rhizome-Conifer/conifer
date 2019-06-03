@@ -1,0 +1,67 @@
+@import 'src/vars';
+
+.supporter-announce {
+    border-bottom: solid .2rem $blue;
+    display: flex;
+    flex-direction: column;
+
+    .banner {
+        background: $blue;
+        height: 7.5rem;
+
+        .wrapper {
+            width: calc(100% - 3rem);
+            height: 100%;
+            margin-left: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            h3 {
+                margin: 0 auto;
+                color: $white;
+                text-align: center;
+            }
+
+            .dismiss {
+                border: none;
+                background: transparent;
+
+                path {
+                    fill: $white;
+                }
+            }
+        }
+    }
+
+    .info {
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+        margin: 1.5rem 5%;
+
+        p {
+            width: 70%;
+        }
+
+        .signup-link {
+            border-left: solid 1px;
+            margin-left: 3rem;
+            padding-left: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            a {
+                border-radius: 2.7rem;
+                padding: 0.7rem 3rem;
+                font-size: 1.15rem;
+                background: $blue;
+                border: none;
+                color: #FFF;
+                font-size: 1.8rem;
+                text-decoration: none;
+            }
+        }
+    }
+}

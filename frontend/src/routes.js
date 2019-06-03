@@ -261,6 +261,7 @@ export default [
   {
     path: '/',
     component: Home,
+    name: 'landing',
     exact: true,
     footer: true
   },
