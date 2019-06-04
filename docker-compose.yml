@@ -114,6 +114,7 @@ services:
             - 8092:81
 
     behaviors:
+      container_name: behaviors
       image: "webrecorder/behaviors:latest"
 
     shepherd:
