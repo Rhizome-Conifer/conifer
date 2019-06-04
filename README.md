@@ -132,13 +132,13 @@ The script `admin.py` provides easy low level management of users. Adding, modif
 To interactively create a user:
 
 ```sh
-docker exec -it webrecorder_app_1 python -m webrecorder.admin -c
+docker exec -it app python -m webrecorder.admin -c
 ```
 
 or programmatically add users by supplying the appropriate positional values:
 
 ```sh
-docker exec -it webrecorder_app_1  python -m webrecorder.admin \
+docker exec -it app  python -m webrecorder.admin \
                 -c <email> <username> <passwd> <role> '<full name>'
 ```
 
@@ -150,7 +150,7 @@ Other arguments:
 * `-l` list invited users
 * `-b` send backlogged invites
 
-See `docker exec -it webrecorder_app_1 python -m webrecorder.admin --help` for full details.
+See `docker exec -it app python -m webrecorder.admin --help` for full details.
 
 ### Restarting Webrecorder
 
