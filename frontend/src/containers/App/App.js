@@ -56,7 +56,7 @@ export class App extends Component {
       mobileAlert: true,
       outOfSpaceAlert: true,
       stalled: false,
-      supporterAnnounce: true
+      supporterAnnounce: false
     };
   }
 
@@ -88,8 +88,8 @@ export class App extends Component {
       }
     }
 
-    if (inStorage('supporterAnnounceDismiss')) {
-      this.setState({ supporterAnnounce: false });
+    if (!inStorage('supporterAnnounceDismiss')) {
+      this.setState({ supporterAnnounce: true });
     }
 
     if (typeof document.hidden !== 'undefined') {
