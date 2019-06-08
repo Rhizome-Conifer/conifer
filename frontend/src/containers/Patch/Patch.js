@@ -21,7 +21,7 @@ class Patch extends Component {
   static propTypes = {
     activeBrowser: PropTypes.string,
     auth: PropTypes.object,
-    autoscroll: PropTypes.bool,
+    behavior: PropTypes.bool,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     inpageAutomation: PropTypes.bool,
@@ -82,7 +82,7 @@ class Patch extends Component {
               <IFrame
                 appPrefix={appPrefix}
                 auth={this.props.auth}
-                autoscroll={this.props.autoscroll}
+                behavior={this.props.behavior}
                 contentPrefix={contentPrefix}
                 dispatch={dispatch}
                 params={params}
@@ -153,7 +153,7 @@ const mapStateToProps = ({ app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     auth: app.get('auth'),
-    autoscroll: app.getIn(['controls', 'autoscroll']),
+    behavior: app.getIn(['automation', 'behavior']),
     collection: app.get('collection'),
     inpageAutomation: app.getIn(['automation', 'inpageAutomation']),
     inpageAutomationRunning: app.getIn(['automation', 'inpageRunning']),

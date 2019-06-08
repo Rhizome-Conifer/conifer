@@ -41,7 +41,7 @@ class Replay extends Component {
     activeBookmarkId: PropTypes.string,
     activeBrowser: PropTypes.string,
     appSettings: PropTypes.object,
-    autoscroll: PropTypes.bool,
+    behavior: PropTypes.bool,
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
@@ -264,7 +264,7 @@ class Replay extends Component {
                 <IFrame
                   activeBookmarkId={activeBookmarkId}
                   auth={this.props.auth}
-                  autoscroll={this.props.autoscroll}
+                  behavior={this.props.behavior}
                   appPrefix={this.getAppPrefix}
                   contentPrefix={this.getContentPrefix}
                   dispatch={dispatch}
@@ -372,7 +372,7 @@ const mapStateToProps = (outerState) => {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     activeBookmarkId: app.getIn(['controls', 'activeBookmarkId']),
     appSettings,
-    autoscroll: app.getIn(['controls', 'autoscroll']),
+    behavior: app.getIn(['automation', 'behavior']),
     auth: app.get('auth'),
     collection: app.get('collection'),
     expanded: app.getIn(['sidebar', 'expanded']),

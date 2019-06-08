@@ -17,12 +17,10 @@ class RecordingToolsUI extends PureComponent {
   static propTypes = {
     activeBrowser: PropTypes.string,
     auth: PropTypes.object,
-    autoscroll: PropTypes.bool,
     history: PropTypes.object,
     inpageAutomation: PropTypes.bool,
     match: PropTypes.object,
     timestamp: PropTypes.string,
-    toggleAutoscroll: PropTypes.func,
     toggleClipboard: PropTypes.func,
     toggleInpageAutomation: PropTypes.func,
     url: PropTypes.string
@@ -84,10 +82,6 @@ class RecordingToolsUI extends PureComponent {
       .catch(err => console.log('error', err));
   }
 
-  toggleAutoscroll = () => {
-    this.props.toggleAutoscroll(!this.props.autoscroll);
-  }
-
   startAuto = () => {
     apiFetch(`/browser/behavior/start/${this.props.reqId}`, {}, { method: 'POST' });
   }
@@ -110,7 +104,7 @@ class RecordingToolsUI extends PureComponent {
 
   render() {
     const { canAdmin, currMode } = this.context;
-    const { activeBrowser, autoscroll } = this.props;
+    const { activeBrowser } = this.props;
 
     const isNew = currMode === 'new';
     const isWrite = ['new', 'patch', 'record', 'extract'].includes(currMode);

@@ -22,7 +22,7 @@ class Record extends Component {
 
   static propTypes = {
     activeBrowser: PropTypes.string,
-    autoscroll: PropTypes.bool,
+    behavior: PropTypes.bool,
     auth: PropTypes.object,
     collection: PropTypes.object,
     inpageAutomation: PropTypes.bool,
@@ -91,7 +91,7 @@ class Record extends Component {
               <IFrame
                 appPrefix={appPrefix}
                 auth={this.props.auth}
-                autoscroll={this.props.autoscroll}
+                behavior={this.props.behavior}
                 contentPrefix={contentPrefix}
                 dispatch={dispatch}
                 params={params}
@@ -166,8 +166,8 @@ const initialData = [
 const mapStateToProps = ({ app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
-    autoscroll: app.getIn(['controls', 'autoscroll']),
     auth: app.get('auth'),
+    behavior: app.getIn(['automation', 'behavior']),
     collection: app.get('collection'),
     inpageAutomation: app.getIn(['automation', 'inpageAutomation']),
     inpageAutomationRunning: app.getIn(['automation', 'inpageRunning']),

@@ -15,9 +15,9 @@ import './style.scss';
 class IFrame extends Component {
   static propTypes = {
     activeBookmarkId: PropTypes.string,
-    autoscroll: PropTypes.bool,
     auth: PropTypes.object,
     appPrefix: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+    behavior: PropTypes.string,
     contentPrefix: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
     dispatch: PropTypes.func,
     params: PropTypes.object,
@@ -76,17 +76,14 @@ class IFrame extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { activeBookmarkId, autoscroll, appPrefix, contentPrefix, url, timestamp } = this.props;
+    const { activeBookmarkId, appPrefix, behavior, contentPrefix, url, timestamp } = this.props;
 
-    if (autoscroll !== nextProps.autoscroll && this.contentFrame) {
+    if (behavior !== nextProps.behavior && this.contentFrame) {
       this.contentFrame.iframe.contentWindow.postMessage({
         wb_type: 'behavior',
-        name: 'autoscroll',
+        name: nextProps.behavior,
         url,
-        start: autoscroll,
-        //start: nextProps.autoscroll,
-        //timeout: nextProps.autoscroll ? 25000 : 0,
-        //skipCallback: autoscroll
+        start: nextProps.behavior !== null,
       }, '*', undefined, true);
     }
 

@@ -50,6 +50,7 @@
     }
 
     .behaviors {
+        transition: opacity .25s ease-in-out;
         list-style-type: none;
         padding: 0;
 
@@ -71,6 +72,14 @@
                 .heading {
                     font-weight: bold;
                 }
+            }
+        }
+
+        &.active {
+            opacity: .75;
+
+            li {
+                cursor: initial;
             }
         }
     }

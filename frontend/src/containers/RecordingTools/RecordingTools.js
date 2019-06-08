@@ -13,7 +13,6 @@ const mapStateToProps = ({ app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     auth: app.getIn(['auth', 'user']),
-    autoscroll: app.getIn(['controls', 'autoscroll']),
     inpageAutomation: app.getIn(['automation', 'inpageAutomation']),
     reqId: app.getIn(['remoteBrowsers', 'reqId']),
     timestamp: app.getIn(['controls', 'timestamp']),

@@ -20,7 +20,7 @@ class RemoteBrowserUI extends Component {
   };
 
   static propTypes = {
-    autoscroll: PropTypes.bool,
+    behavior: PropTypes.bool,
     clipboard: PropTypes.bool,
     contentFrameUpdate: PropTypes.bool,
     creating: PropTypes.bool,
@@ -99,7 +99,7 @@ class RemoteBrowserUI extends Component {
 
   componentDidUpdate(prevProps) {
     const {
-      autoscroll, clipboard, dispatch, inactiveTime, contentFrameUpdate,
+      behavior, clipboard, dispatch, inactiveTime, contentFrameUpdate,
       params, rb, rec, reqId, timestamp, url
     } = this.props;
 
@@ -112,9 +112,9 @@ class RemoteBrowserUI extends Component {
       }
     }
 
-    // autoscroll check
-    if (autoscroll !== prevProps.autoscroll && this.socket) {
-      this.socket.doBehavior(url, autoscroll);
+    // behavior check
+    if (behavior !== prevProps.behavior && this.socket) {
+      this.socket.doBehavior(url, behavior);
     }
 
 

@@ -2,6 +2,12 @@ import { apiPath } from 'config';
 import { fromJS } from 'immutable';
 
 
+const INPAGE_CHECK = 'wr/automation/INPAGE_CHECK';
+const INPAGE_CHECK_SUCCESS = 'wr/automation/INPAGE_CHECK_SUCCESS';
+const INPAGE_CHECK_FAIL = 'wr/automation/INPAGE_CHECK_FAIL';
+
+const INPAGE_TOGGLE_AUTOMATION = 'wr/automation/INPAGE_TOGGLE_AUTOMATION';
+
 const NEW_AUTO = 'wr/automation/NEW_AUTO';
 const NEW_AUTO_SUCCESS = 'wr/automation/NEW_AUTO_SUCCESS';
 const NEW_AUTO_FAIL = 'wr/automation/NEW_AUTO_FAIL';
@@ -14,7 +20,7 @@ const TOGGLE_AUTOMATION = 'wr/automation/TOGGLE_AUTOMATION';
 const TOGGLE_AUTOMATION_SUCCESS = 'wr/automation/TOGGLE_AUTOMATION_SUCCESS';
 const TOGGLE_AUTOMATION_FAIL = 'wr/automation/TOGGLE_AUTOMATION_FAIL';
 
-const TOGGLE_INPAGE_AUTOMATION = 'wr/automation/TOGGLE_INPAGE_AUTOMATION';
+const TOGGLE_INPAGE_SIDEBAR = 'wr/automation/TOGGLE_INPAGE_SIDEBAR';
 
 const TOGGLE_MODAL = 'wr/automation/TOGGLE_MODAL';
 
@@ -22,8 +28,10 @@ const TOGGLE_MODAL = 'wr/automation/TOGGLE_MODAL';
 const initialState = fromJS({
   autoId: null,
   active: false,
+  behavior: null,
   inpageAutomation: false,
   inpageRunning: false,
+  inpageInfo: [],
   queued: false,
   show: false,
   workers: []
@@ -43,7 +51,14 @@ export default function automation(state = initialState, action = {}) {
         active: action.mode === 'start',
         workers: action.result.browsers || []
       });
-    case TOGGLE_INPAGE_AUTOMATION:
+    case INPAGE_CHECK_SUCCESS:
+      return state.set('inpageInfo', fromJS(action.result));
+    case INPAGE_TOGGLE_AUTOMATION:
+      return state.merge({
+        behavior: action.behavior,
+        inpageRunning: action.running
+      });
+    case TOGGLE_INPAGE_SIDEBAR:
       return state.set('inpageAutomation', action.bool);
     default:
       return state;
@@ -51,10 +66,12 @@ export default function automation(state = initialState, action = {}) {
 }
 
 
-export function toggleModal(bool) {
+export function inpageCheck(url = '') {
   return {
-    type: TOGGLE_MODAL,
-    bool
+    types: [INPAGE_CHECK, INPAGE_CHECK_SUCCESS, INPAGE_CHECK_FAIL],
+    promise: client => client.get(`${apiPath}/behavior/info-list`, {
+      params: { url }
+    })
   };
 }
 
@@ -100,7 +117,24 @@ export function toggleAutomation(mode, user, coll, aid) {
 
 export function toggleInpageSidebar(bool) {
   return {
-    type: TOGGLE_INPAGE_AUTOMATION,
+    type: TOGGLE_INPAGE_SIDEBAR,
+    bool
+  };
+}
+
+
+export function toggleInpageAutomation(behavior) {
+  return {
+    type: INPAGE_TOGGLE_AUTOMATION,
+    behavior,
+    running: behavior !== null
+  };
+}
+
+
+export function toggleModal(bool) {
+  return {
+    type: TOGGLE_MODAL,
     bool
   };
 }
