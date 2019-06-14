@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Alert } from 'react-bootstrap';
 
 import WebSocketHandler from 'helpers/ws';
-import { deleteStorage, getStorage, remoteBrowserMod, setStorage } from 'helpers/utils';
+import { getStorage } from 'helpers/utils';
 
 import { createRemoteBrowser } from 'store/modules/remoteBrowsers';
 
@@ -20,7 +20,7 @@ class RemoteBrowserUI extends Component {
   };
 
   static propTypes = {
-    behavior: PropTypes.bool,
+    behavior: PropTypes.string,
     clipboard: PropTypes.bool,
     contentFrameUpdate: PropTypes.bool,
     creating: PropTypes.bool,

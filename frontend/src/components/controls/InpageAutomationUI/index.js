@@ -2,14 +2,16 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-import { WandIcon, ThinXIcon } from 'components/icons';
+import { LoaderIcon, WandIcon, ThinXIcon } from 'components/icons';
 
 import './style.scss';
 
 
 class InpageAutomationUI extends Component {
   static propTypes = {
+    activeBrowser: PropTypes.string,
     behavior: PropTypes.string,
+    browsers: PropTypes.object,
     checkAvailability: PropTypes.func,
     inpageInfo: PropTypes.object,
     open: PropTypes.bool,
@@ -23,12 +25,26 @@ class InpageAutomationUI extends Component {
     super(props);
 
     this.state = {
-      behavior: 'autoScrollBehavior'
+      behavior: 'autoScrollBehavior',
+      unsupported: false
     };
   }
 
   componentWillMount() {
     this.props.checkAvailability(this.props.url);
+  }
+
+  componentDidMount() {
+    const { activeBrowser, browsers } = this.props;
+
+    if (typeof Symbol.asyncIterator === 'undefined') {
+      // check if remote browser is active and supports autopilot
+      if (activeBrowser && browsers.getIn([activeBrowser, 'inpage'])) {
+        return;
+      }
+
+      this.setState({ unsupported: true });
+    }
   }
 
   componentDidUpdate(lastProps) {
@@ -65,35 +81,46 @@ class InpageAutomationUI extends Component {
     return (
       <div className="inpage-sidebar">
         <h2>Capture Options <button onClick={this.toggle} type="button"><ThinXIcon /></button></h2>
-        <h4><WandIcon /> Autopilot</h4>
-        <p>Capture the content on this page with a scripted behavior.</p>
-        <ul className={classNames('behaviors', { active: running })}>
+        {
+          this.state.unsupported ?
+            <React.Fragment>
+              <h4>Not Supported for this Browser</h4>
+              <p>To use autopilot, please select a different browser from the dropdown above. Only browsers with a wand icon support autopilot.</p>
+            </React.Fragment> :
+            <React.Fragment>
+              <h4><WandIcon /> Autopilot</h4>
+              <p>Capture the content on this page with a scripted behavior.</p>
+              <ul className={classNames('behaviors', { active: running })}>
+                {
+                  behaviors && behaviors.valueSeq().map((behavior) => {
+                    const name = behavior.get('name');
+                    return (
+                      <li onClick={this.selectMode.bind(this, name)} key={name}>
+                        <input type="radio" name="behavior" value={name} disabled={running} aria-labelledby="opt1" onChange={this.handleInput} checked={this.state.behavior === name} />
+                        <div className="desc" id="opt1">
+                          <div className="heading">{name}</div>
+                          {behavior.get('description')}
+                        </div>
+                      </li>
+                    );
+                  })
+                }
 
-          {
-            behaviors && behaviors.valueSeq().map((behavior) => {
-              const name = behavior.get('name');
-              return (
-                <li onClick={this.selectMode.bind(this, name)} key={name}>
-                  <input type="radio" name="behavior" value={name} disabled={running} aria-labelledby="opt1" onChange={this.handleInput} checked={this.state.behavior === name} />
-                  <div className="desc" id="opt1">
-                    <div className="heading">{name}</div>
-                    {behavior.get('description')}
+                <li onClick={this.selectMode.bind(this, 'autoScrollBehavior')} key="autoscroll">
+                  <input type="radio" name="behavior" value="autoScrollBehavior" disabled={running} aria-labelledby="opt2" onChange={this.handleInput} checked={this.state.behavior === 'autoScrollBehavior'} />
+                  <div className="desc" id="opt2">
+                    <div className="heading">AutoScroll</div>
+                    Automatially scroll to the bottom of the page. If more content loads, scrolling will continue until stopped by user.
                   </div>
                 </li>
-              );
-            })
-          }
+              </ul>
 
-          <li onClick={this.selectMode.bind(this, 'autoScrollBehavior')} key="autoscroll">
-            <input type="radio" name="behavior" value="autoScrollBehavior" disabled={running} aria-labelledby="opt2" onChange={this.handleInput} checked={this.state.behavior === 'autoScrollBehavior'} />
-            <div className="desc" id="opt2">
-              <div className="heading">AutoScroll</div>
-              Automatially scroll to the bottom of the page. If more content loads, scrolling will continue until stopped by user.
-            </div>
-          </li>
-        </ul>
-
-        <button className="rounded" onClick={this.startAutomation} type="button">{ this.props.behavior ? 'Stop' : 'Start'} Autopilot</button>
+              <button className="rounded" onClick={this.startAutomation} type="button">
+                { this.props.behavior && <LoaderIcon /> }
+                { this.props.behavior ? 'Stop' : 'Start'} Autopilot
+              </button>
+            </React.Fragment>
+        }
       </div>
     );
   }

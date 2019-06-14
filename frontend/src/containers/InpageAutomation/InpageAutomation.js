@@ -8,7 +8,9 @@ import { InpageAutomationUI } from 'components/controls';
 
 const mapStateToProps = ({ app }) => {
   return {
+    activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     behavior: app.getIn(['automation', 'behavior']),
+    browsers: app.getIn(['remoteBrowsers', 'browsers']),
     inpageInfo: app.getIn(['automation', 'inpageInfo']),
     running: app.getIn(['automation', 'inpageRunning']),
     open: app.getIn(['automation', 'inpageAutomation']),
