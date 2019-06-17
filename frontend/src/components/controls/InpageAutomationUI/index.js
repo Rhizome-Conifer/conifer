@@ -116,9 +116,13 @@ class InpageAutomationUI extends Component {
               </ul>
 
               <button className="rounded" onClick={this.startAutomation} type="button">
-                { this.props.behavior && <LoaderIcon /> }
-                { this.props.behavior ? 'Stop' : 'Start'} Autopilot
+                { running && <LoaderIcon /> }
+                { running ? 'Stop' : 'Start'} Autopilot
               </button>
+              {
+                running &&
+                  <em>The page will be noninteractive while autopilot is running</em>
+              }
             </React.Fragment>
         }
       </div>

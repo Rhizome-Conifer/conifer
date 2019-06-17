@@ -1,9 +1,10 @@
-import { updateUrlAndTimestamp } from 'store/modules/controls';
-import { setStats } from 'store/modules/infoStats';
-
 import config from 'config';
 
 import { remoteBrowserMod } from 'helpers/utils';
+
+import { toggleInpageAutomation } from 'store/modules/automation';
+import { updateUrlAndTimestamp } from 'store/modules/controls';
+import { setStats } from 'store/modules/infoStats';
 
 
 class WebSocketHandler {
@@ -97,6 +98,9 @@ class WebSocketHandler {
     const msg = JSON.parse(evt.data);
 
     switch (msg.ws_type) {
+      case 'behaviorDone': // when autopilot is done running
+        this.dispatch(toggleInpageAutomation(null));
+        break;
       case 'status':
         if (msg.stats || msg.size || msg.pending_size) {
           this.dispatch(setStats(msg.stats, msg.size || 0, msg.pending_size || 0));
@@ -120,9 +124,6 @@ class WebSocketHandler {
             // EventHandlers.switchCBPatch(getUrl());
           }
         }
-        break;
-      case 'snapshot':
-        // Snapshot.updateModal(msg);
         break;
       default:
         console.log(msg);

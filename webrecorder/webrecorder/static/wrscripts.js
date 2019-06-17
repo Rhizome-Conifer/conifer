@@ -80,7 +80,9 @@
     (function() {
 
         function doRun() {
-            window.$WBBehaviorRunner$.autoRunWithDelay();
+            window.$WBBehaviorRunner$.autoRunWithDelay().then(function() {
+                sendMessage({wb_type: "behaviorDone"});
+            });
         }
 
         function receiveEvent(event) {

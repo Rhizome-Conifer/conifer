@@ -64,7 +64,7 @@ class Record extends Component {
   // }
 
   render() {
-    const { activeBrowser, dispatch, match: { params }, timestamp, url } = this.props;
+    const { activeBrowser, dispatch, inpageAutomationRunning, match: { params }, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
     const appPrefix = `${config.appHost}/${user}/${coll}/${rec}/record/`;
@@ -80,7 +80,7 @@ class Record extends Component {
           params={params}
           url={url} />
 
-        <div className={classNames('iframe-container', { locked: this.props.inpageAutomationRunning })}>
+        <div className={classNames('iframe-container', { locked: inpageAutomationRunning })}>
           {
             activeBrowser ?
               <RemoteBrowser

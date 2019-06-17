@@ -38,6 +38,11 @@
 
     &.locked {
         pointer-events: none;
+
+        iframe {
+            cursor: not-allowed;
+            opacity: .5;
+        }
     }
 
     &.embed {
@@ -46,6 +51,10 @@
         iframe {
             width: 100%;
         }
+    }
+
+    iframe {
+        transition: opacity .3s ease-in-out;
     }
 
     .wr-sidebar {
