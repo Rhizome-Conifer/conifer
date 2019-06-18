@@ -128,5 +128,16 @@
                 fill: #FFF;
             }
         }
+
+        &.complete {
+            color: $bright-green-highlight;
+
+            svg {
+                path {
+                    fill: $bright-green-highlight;
+                }
+            }
+        }
+
     }
 }

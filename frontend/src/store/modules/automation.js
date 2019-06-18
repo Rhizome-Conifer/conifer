@@ -30,7 +30,8 @@ const initialState = fromJS({
   active: false,
   behavior: null,
   inpageAutomation: false,
-  inpageRunning: false,
+  inpageStatus: 'stopped', // stopped, running, complete
+  inpageUrl: '',
   inpageInfo: [],
   queued: false,
   show: false,
@@ -56,7 +57,8 @@ export default function automation(state = initialState, action = {}) {
     case INPAGE_TOGGLE_AUTOMATION:
       return state.merge({
         behavior: action.behavior,
-        inpageRunning: action.running
+        inpageStatus: action.status,
+        inpageUrl: action.url
       });
     case TOGGLE_INPAGE_SIDEBAR:
       return state.set('inpageAutomation', action.bool);
@@ -123,11 +125,12 @@ export function toggleInpageSidebar(bool) {
 }
 
 
-export function toggleInpageAutomation(behavior) {
+export function toggleInpageAutomation(behavior, status, url = '') {
   return {
     type: INPAGE_TOGGLE_AUTOMATION,
     behavior,
-    running: behavior !== null
+    status,
+    url
   };
 }
 

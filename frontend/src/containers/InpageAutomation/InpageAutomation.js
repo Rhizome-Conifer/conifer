@@ -12,7 +12,8 @@ const mapStateToProps = ({ app }) => {
     behavior: app.getIn(['automation', 'behavior']),
     browsers: app.getIn(['remoteBrowsers', 'browsers']),
     inpageInfo: app.getIn(['automation', 'inpageInfo']),
-    running: app.getIn(['automation', 'inpageRunning']),
+    inpageUrl: app.getIn(['automation', 'inpageUrl']),
+    status: app.getIn(['automation', 'inpageStatus']),
     open: app.getIn(['automation', 'inpageAutomation']),
     url: app.getIn(['controls', 'url'])
   };
@@ -21,7 +22,7 @@ const mapStateToProps = ({ app }) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     toggleSidebar: b => dispatch(toggleInpageSidebar(b)),
-    toggleInpageAutomation: behavior => dispatch(toggleInpageAutomation(behavior)),
+    toggleInpageAutomation: (behavior, status, url) => dispatch(toggleInpageAutomation(behavior, status, url)),
     checkAvailability: url => dispatch(inpageCheck(url))
   };
 };

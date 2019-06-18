@@ -156,7 +156,7 @@ const mapStateToProps = ({ app }) => {
     behavior: app.getIn(['automation', 'behavior']),
     collection: app.get('collection'),
     inpageAutomation: app.getIn(['automation', 'inpageAutomation']),
-    inpageAutomationRunning: app.getIn(['automation', 'inpageRunning']),
+    inpageAutomationRunning: app.getIn(['automation', 'inpageStatus']) === 'running',
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

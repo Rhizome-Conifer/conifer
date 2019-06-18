@@ -17,6 +17,7 @@ class WebSocketHandler {
     this.coll = coll;
     this.rec = rec;
     this.reqUrl = splat;
+    this.url = splat;
     this.useWS = false;
     this.dispatch = dispatch;
     this.lastPopUrl = undefined;
@@ -99,7 +100,7 @@ class WebSocketHandler {
 
     switch (msg.ws_type) {
       case 'behaviorDone': // when autopilot is done running
-        this.dispatch(toggleInpageAutomation(null));
+        this.dispatch(toggleInpageAutomation(null, 'complete', this.url));
         break;
       case 'status':
         if (msg.stats || msg.size || msg.pending_size) {
@@ -110,6 +111,7 @@ class WebSocketHandler {
         if (this.isRemoteBrowser) {
           const { page } = msg;
           this.dispatch(updateUrlAndTimestamp(page.url, page.timestamp));
+          this.url = page.url;
 
           //setTitle("Remote", page.url, page.title);
           this.replaceOuterUrl(page, "load");

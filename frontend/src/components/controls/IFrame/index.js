@@ -164,7 +164,7 @@ class IFrame extends Component {
 
     switch(state.wb_type) {
       case 'behaviorDone':
-        this.props.dispatch(toggleInpageAutomation(null));
+        this.props.dispatch(toggleInpageAutomation(null, 'complete', this.props.url));
         break;
       case 'load':
         this.addNewPage(state, true);

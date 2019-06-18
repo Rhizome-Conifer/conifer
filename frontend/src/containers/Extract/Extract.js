@@ -180,7 +180,7 @@ const mapStateToProps = ({ app }) => {
     collection: app.get('collection'),
     extractable: app.getIn(['controls', 'extractable']),
     inpageAutomation: app.getIn(['automation', 'inpageAutomation']),
-    inpageAutomationRunning: app.getIn(['automation', 'inpageRunning']),
+    inpageAutomationRunning: app.getIn(['automation', 'inpageStatus']) === 'running',
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

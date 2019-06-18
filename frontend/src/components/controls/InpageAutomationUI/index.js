@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-import { LoaderIcon, WandIcon, ThinXIcon } from 'components/icons';
+import { CheckIcon, LoaderIcon, WandIcon, ThinXIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -14,8 +14,9 @@ class InpageAutomationUI extends Component {
     browsers: PropTypes.object,
     checkAvailability: PropTypes.func,
     inpageInfo: PropTypes.object,
+    inpageUrl: PropTypes.string,
     open: PropTypes.bool,
-    running: PropTypes.bool,
+    status: PropTypes.string,
     toggleInpageAutomation: PropTypes.func,
     toggleSidebar: PropTypes.func,
     url: PropTypes.string
@@ -37,6 +38,11 @@ class InpageAutomationUI extends Component {
   componentDidMount() {
     const { activeBrowser, browsers } = this.props;
 
+    // reset status if complete
+    if (this.props.status === 'complete' && this.props.url !== this.props.inpageUrl) {
+      this.props.toggleInpageAutomation(null, 'stopped');
+    }
+
     if (typeof Symbol.asyncIterator === 'undefined') {
       // check if remote browser is active and supports autopilot
       if (activeBrowser && browsers.getIn([activeBrowser, 'inpage'])) {
@@ -48,7 +54,12 @@ class InpageAutomationUI extends Component {
   }
 
   componentDidUpdate(lastProps) {
-    if (!this.props.running && this.props.url !== lastProps.url) {
+    if (['stopped', 'complete'].includes(this.props.status) && this.props.url !== lastProps.url) {
+      // reset status on url change
+      if (this.props.status === 'complete') {
+        this.props.toggleInpageAutomation(null, 'stopped');
+      }
+
       this.props.checkAvailability(this.props.url);
     }
   }
@@ -58,15 +69,16 @@ class InpageAutomationUI extends Component {
   }
 
   selectMode = (mode) => {
-    if (!this.props.running) {
+    if (this.props.status !== 'running') {
       this.setState({ behavior: mode });
     }
   }
 
-  startAutomation = () => {
+  toggleAutomation = () => {
     const { behavior } = this.state;
-    if (behavior) {
-      this.props.toggleInpageAutomation(this.props.behavior ? null : behavior);
+    const { toggleInpageAutomation, url } = this.props;
+    if (behavior && this.props.status !== 'complete') {
+      toggleInpageAutomation(...(this.props.behavior ? [null, 'stopped', url] : [behavior, 'running', url]));
     }
   }
 
@@ -75,8 +87,10 @@ class InpageAutomationUI extends Component {
   }
 
   render() {
-    const { inpageInfo, running } = this.props;
+    const { inpageInfo, status } = this.props;
     const behaviors = inpageInfo && inpageInfo.filter(b => !b.get('defaultBehavior'));
+    const isRunning = status === 'running';
+    const isComplete = status === 'complete';
 
     return (
       <div className="inpage-sidebar">
@@ -90,13 +104,13 @@ class InpageAutomationUI extends Component {
             <React.Fragment>
               <h4><WandIcon /> Autopilot</h4>
               <p>Capture the content on this page with a scripted behavior.</p>
-              <ul className={classNames('behaviors', { active: running })}>
+              <ul className={classNames('behaviors', { active: isRunning })}>
                 {
                   behaviors && behaviors.valueSeq().map((behavior) => {
                     const name = behavior.get('name');
                     return (
                       <li onClick={this.selectMode.bind(this, name)} key={name}>
-                        <input type="radio" name="behavior" value={name} disabled={running} aria-labelledby="opt1" onChange={this.handleInput} checked={this.state.behavior === name} />
+                        <input type="radio" name="behavior" value={name} disabled={isRunning || isComplete} aria-labelledby="opt1" onChange={this.handleInput} checked={this.state.behavior === name} />
                         <div className="desc" id="opt1">
                           <div className="heading">{name}</div>
                           {behavior.get('description')}
@@ -107,7 +121,7 @@ class InpageAutomationUI extends Component {
                 }
 
                 <li onClick={this.selectMode.bind(this, 'autoScrollBehavior')} key="autoscroll">
-                  <input type="radio" name="behavior" value="autoScrollBehavior" disabled={running} aria-labelledby="opt2" onChange={this.handleInput} checked={this.state.behavior === 'autoScrollBehavior'} />
+                  <input type="radio" name="behavior" value="autoScrollBehavior" disabled={isRunning || isComplete} aria-labelledby="opt2" onChange={this.handleInput} checked={this.state.behavior === 'autoScrollBehavior'} />
                   <div className="desc" id="opt2">
                     <div className="heading">AutoScroll</div>
                     Automatially scroll to the bottom of the page. If more content loads, scrolling will continue until stopped by user.
@@ -115,12 +129,17 @@ class InpageAutomationUI extends Component {
                 </li>
               </ul>
 
-              <button className="rounded" onClick={this.startAutomation} type="button">
-                { running && <LoaderIcon /> }
-                { running ? 'Stop' : 'Start'} Autopilot
+              <button className={classNames('rounded', { complete: isComplete })} onClick={this.toggleAutomation} disabled={isComplete} type="button">
+                { isRunning && <LoaderIcon /> }
+                { isComplete && <CheckIcon /> }
+                {
+                  isComplete ?
+                    'Autopilot Finished' :
+                    `${isRunning ? 'Stop' : 'Start'} Autopilot`
+                }
               </button>
               {
-                running &&
+                isRunning &&
                   <em>The page will be noninteractive while autopilot is running</em>
               }
             </React.Fragment>
