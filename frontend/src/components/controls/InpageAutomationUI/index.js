@@ -62,6 +62,10 @@ class InpageAutomationUI extends Component {
 
       this.props.checkAvailability(this.props.url);
     }
+
+    if (this.props.inpageInfo !== lastProps.inpageInfo) {
+      this.setState({ behavior: this.props.inpageInfo.getIn([0, 'name']) });
+    }
   }
 
   handleInput = (evt) => {
