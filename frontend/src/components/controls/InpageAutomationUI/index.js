@@ -144,11 +144,11 @@ class InpageAutomationUI extends Component {
               </button>
               {
                 isRunning &&
-                  <em>The page will be noninteractive while autopilot is running</em>
+                  <em>Stop autopilot to resume manual interaction with page.</em>
               }
               {
                 isComplete &&
-                  <em>Autopilot is finished on this page, but you can continue capturing the page on your own. To run Autopilot again, please load a new page</em>
+                  <em>Autopilot actions have been completed. You may continue to capture the page manually. To run autopilot again, please refresh or load a new page.</em>
               }
             </React.Fragment>
         }
