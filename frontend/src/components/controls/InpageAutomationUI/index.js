@@ -124,13 +124,16 @@ class InpageAutomationUI extends Component {
                   })
                 }
 
-                <li onClick={this.selectMode.bind(this, 'autoScrollBehavior')} key="autoscroll">
-                  <input type="radio" name="behavior" value="autoScrollBehavior" disabled={isRunning || isComplete} aria-labelledby="opt2" onChange={this.handleInput} checked={this.state.behavior === 'autoScrollBehavior'} />
-                  <div className="desc" id="opt2">
-                    <div className="heading">AutoScroll</div>
-                    Automatially scroll to the bottom of the page. If more content loads, scrolling will continue until stopped by user.
-                  </div>
-                </li>
+                {
+                  behaviors.size === 0 &&
+                    <li onClick={this.selectMode.bind(this, 'autoScrollBehavior')} key="autoscroll">
+                      <input type="radio" name="behavior" value="autoScrollBehavior" disabled={isRunning || isComplete} aria-labelledby="opt2" onChange={this.handleInput} checked={this.state.behavior === 'autoScrollBehavior'} />
+                      <div className="desc" id="opt2">
+                        <div className="heading">AutoScroll</div>
+                        Automatially scroll to the bottom of the page. If more content loads, scrolling will continue until stopped by user.
+                      </div>
+                    </li>
+                }
               </ul>
 
               <button className={classNames('rounded', { complete: isComplete })} onClick={this.toggleAutomation} disabled={isComplete} type="button">
