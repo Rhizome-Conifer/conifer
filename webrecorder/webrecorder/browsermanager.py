@@ -127,7 +127,7 @@ class BrowserManager(object):
         data = {'browser': browser_id,
                 'browser_data': self.browsers.get(browser_id),
                 'url': container_data['url'],
-                'timestamp': container_data['request_ts'],
+                'timestamp': container_data['timestamp'],
                 'reqid': reqid,
                 'inactive_time': self.inactive_time,
                }
@@ -148,7 +148,7 @@ class BrowserManager(object):
             return {'error_message': 'Invalid Container'}
 
         if timestamp:
-            container_data['request_ts'] = timestamp
+            container_data['timestamp'] = timestamp
 
         if url:
             container_data['url'] = url

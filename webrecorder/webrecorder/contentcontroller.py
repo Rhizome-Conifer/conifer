@@ -185,7 +185,7 @@ class ContentController(BaseController, RewriterApp):
 
                           browser=browser_id,
                           url=url,
-                          request_ts=timestamp,
+                          timestamp=timestamp,
 
                           browser_can_write=browser_can_write)
 
@@ -482,7 +482,7 @@ class ContentController(BaseController, RewriterApp):
             url = self.add_query(url)
 
             kwargs['url'] = url
-            wb_url = kwargs.get('request_ts', '') + 'bn_/' + url
+            wb_url = kwargs.get('timestamp', '') + 'bn_/' + url
 
             request.environ['webrec.template_params'] = kwargs
             request.environ['pywb.static_prefix'] = self.BUNDLE_PREFIX
@@ -775,7 +775,7 @@ class ContentController(BaseController, RewriterApp):
         # top-frame replay but through a proxy, redirect to original
         if is_top_frame and 'wsgiprox.proxy_host' in request.environ:
             kwargs['url'] = wb_url_obj.url
-            kwargs['request_ts'] = wb_url_obj.timestamp
+            kwargs['timestamp'] = wb_url_obj.timestamp
             self.browser_mgr.update_local_browser(kwargs)
             return redirect(wb_url_obj.url)
 

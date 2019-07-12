@@ -119,7 +119,7 @@ services:
 
     shepherd:
         container_name: shepherd
-        image: oldwebtoday/browser-shepherd
+        image: oldwebtoday/shepherd:1.1.0-dev
 
         env_file:
             - ./wr.env

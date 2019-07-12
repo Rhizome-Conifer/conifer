@@ -13,7 +13,7 @@ function RemoteBrowserDisplay({ browser }) {
   const browserVrs = browser.get('version');
   return (
     <span>
-      <img src={`/api/browsers/browsers/${browser.get('id')}/icon`} alt={`Recorded with ${browserName} version ${browserVrs}`} />
+      <img src={browser.get('icon')} alt={`Recorded with ${browserName} version ${browserVrs}`} />
       {` ${browserName} v${browserVrs}`}
     </span>
   );
