@@ -258,7 +258,7 @@ class IFrame extends Component {
     const { passEvents } = this.props;
 
     return (
-      <iframe className="wb_iframe" style={passEvents ? { pointerEvents: 'none' } : {}} ref={(obj) => { this.iframe = obj; }} />
+      <iframe className="wb_iframe" allow="autoplay, fullscreen" style={passEvents ? { pointerEvents: 'none' } : {}} ref={(obj) => { this.iframe = obj; }} />
     );
   }
 }
