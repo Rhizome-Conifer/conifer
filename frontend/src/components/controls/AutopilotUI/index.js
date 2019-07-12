@@ -7,17 +7,17 @@ import { CheckIcon, LoaderIcon, WandIcon, ThinXIcon } from 'components/icons';
 import './style.scss';
 
 
-class InpageAutomationUI extends Component {
+class AutopilotUI extends Component {
   static propTypes = {
     activeBrowser: PropTypes.string,
     behavior: PropTypes.string,
     browsers: PropTypes.object,
     checkAvailability: PropTypes.func,
-    inpageInfo: PropTypes.object,
-    inpageUrl: PropTypes.string,
+    autopilotInfo: PropTypes.object,
+    autopilotUrl: PropTypes.string,
     open: PropTypes.bool,
     status: PropTypes.string,
-    toggleInpageAutomation: PropTypes.func,
+    toggleAutopilot: PropTypes.func,
     toggleSidebar: PropTypes.func,
     url: PropTypes.string
   };
@@ -39,16 +39,14 @@ class InpageAutomationUI extends Component {
     const { activeBrowser, browsers } = this.props;
 
     // reset status if complete
-    if (this.props.status === 'complete' && this.props.url !== this.props.inpageUrl) {
-      this.props.toggleInpageAutomation(null, 'stopped');
+    if (this.props.status === 'complete' && this.props.url !== this.props.autopilotUrl) {
+      this.props.toggleAutopilot(null, 'stopped');
     }
 
-    if (typeof Symbol.asyncIterator === 'undefined') {
-      // check if remote browser is active and supports autopilot
-      if (activeBrowser && browsers.getIn([activeBrowser, 'inpage'])) {
-        return;
-      }
-
+    if (
+      (activeBrowser && !browsers.getIn([activeBrowser, 'caps']).includes('autopilot')) ||
+      typeof Symbol.asyncIterator === 'undefined'
+    ) {
       this.setState({ unsupported: true });
     }
   }
@@ -57,14 +55,14 @@ class InpageAutomationUI extends Component {
     if (['stopped', 'complete'].includes(this.props.status) && this.props.url !== lastProps.url) {
       // reset status on url change
       if (this.props.status === 'complete') {
-        this.props.toggleInpageAutomation(null, 'stopped');
+        this.props.toggleAutopilot(null, 'stopped');
       }
 
       this.props.checkAvailability(this.props.url);
     }
 
-    if (this.props.inpageInfo !== lastProps.inpageInfo) {
-      this.setState({ behavior: this.props.inpageInfo.getIn([0, 'name']) });
+    if (this.props.autopilotInfo !== lastProps.autopilotInfo) {
+      this.setState({ behavior: this.props.autopilotInfo.getIn([0, 'name']) });
     }
   }
 
@@ -80,9 +78,9 @@ class InpageAutomationUI extends Component {
 
   toggleAutomation = () => {
     const { behavior } = this.state;
-    const { toggleInpageAutomation, url } = this.props;
+    const { toggleAutopilot, url } = this.props;
     if (behavior && this.props.status !== 'complete') {
-      toggleInpageAutomation(...(this.props.behavior ? [null, 'stopped', url] : [behavior, 'running', url]));
+      toggleAutopilot(...(this.props.behavior ? [null, 'stopped', url] : [behavior, 'running', url]));
     }
   }
 
@@ -91,13 +89,13 @@ class InpageAutomationUI extends Component {
   }
 
   render() {
-    const { inpageInfo, status } = this.props;
-    const behaviors = inpageInfo && inpageInfo.filter(b => !b.get('defaultBehavior'));
+    const { autopilotInfo, status } = this.props;
+    const behaviors = autopilotInfo && autopilotInfo.filter(b => !b.get('defaultBehavior'));
     const isRunning = status === 'running';
     const isComplete = status === 'complete';
 
     return (
-      <div className="inpage-sidebar">
+      <div className="autopilot-sidebar">
         <h2>Capture Options <button onClick={this.toggle} type="button"><ThinXIcon /></button></h2>
         {
           this.state.unsupported ?
@@ -161,4 +159,4 @@ class InpageAutomationUI extends Component {
 }
 
 
-export default InpageAutomationUI;
+export default AutopilotUI;

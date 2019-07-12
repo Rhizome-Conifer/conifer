@@ -18,11 +18,11 @@ class RecordingToolsUI extends PureComponent {
     activeBrowser: PropTypes.string,
     auth: PropTypes.object,
     history: PropTypes.object,
-    inpageAutomation: PropTypes.bool,
+    autopilot: PropTypes.bool,
     match: PropTypes.object,
     timestamp: PropTypes.string,
     toggleClipboard: PropTypes.func,
-    toggleInpageAutomation: PropTypes.func,
+    toggleAutopilotSidebar: PropTypes.func,
     url: PropTypes.string
   };
 
@@ -98,8 +98,8 @@ class RecordingToolsUI extends PureComponent {
 
   _close = () => this.setState({ clipboardOpen: false })
 
-  toggleInpageSidebar = () => {
-    this.props.toggleInpageAutomation(!this.props.inpageAutomation);
+  toggleAutopilotSidebar = () => {
+    this.props.toggleAutopilotSidebar(!this.props.autopilot);
   }
 
   render() {
@@ -137,7 +137,7 @@ class RecordingToolsUI extends PureComponent {
 
         {
           isWrite &&
-            <button className="rounded autopilot-btn" onClick={this.toggleInpageSidebar} type="button"><WandIcon /> Autopilot Options</button>
+            <button className="rounded autopilot-btn" onClick={this.toggleAutopilotSidebar} type="button"><WandIcon /> Autopilot Options</button>
         }
 
         {

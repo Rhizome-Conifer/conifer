@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
@@ -9,7 +10,7 @@ import { getArchives, updateUrlAndTimestamp } from 'store/modules/controls';
 import { resetStats } from 'store/modules/infoStats';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
 
-import { InpageAutomation, RemoteBrowser } from 'containers';
+import { Autopilot, RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -24,8 +25,8 @@ class Patch extends Component {
     behavior: PropTypes.bool,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
-    inpageAutomation: PropTypes.bool,
-    inpageAutomationRunning: PropTypes.bool,
+    autopilot: PropTypes.bool,
+    autopilotRunning: PropTypes.bool,
     match: PropTypes.object,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -58,7 +59,7 @@ class Patch extends Component {
   }
 
   render() {
-    const { activeBrowser, dispatch, match: { params }, timestamp, url } = this.props;
+    const { activeBrowser, autopilotRunning, dispatch, match: { params }, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
     const appPrefix = `${config.appHost}/${user}/${coll}/${rec}/patch/`;
@@ -70,7 +71,7 @@ class Patch extends Component {
           params={params}
           timestamp={timestamp}
           url={url} />
-        <div className="iframe-container">
+        <div className={classNames('iframe-container', { locked: autopilotRunning })}>
           {
             activeBrowser ?
               <RemoteBrowser
@@ -90,8 +91,8 @@ class Patch extends Component {
                 url={url} />
           }
           {
-            this.props.inpageAutomation &&
-              <InpageAutomation />
+            this.props.autopilot &&
+              <Autopilot />
           }
         </div>
       </React.Fragment>
@@ -155,8 +156,8 @@ const mapStateToProps = ({ app }) => {
     auth: app.get('auth'),
     behavior: app.getIn(['automation', 'behavior']),
     collection: app.get('collection'),
-    inpageAutomation: app.getIn(['automation', 'inpageAutomation']),
-    inpageAutomationRunning: app.getIn(['automation', 'inpageStatus']) === 'running',
+    autopilot: app.getIn(['automation', 'autopilot']),
+    autopilotRunning: app.getIn(['automation', 'autopilotStatus']) === 'running',
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

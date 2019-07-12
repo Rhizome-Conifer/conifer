@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import config from 'config';
 import WebSocketHandler from 'helpers/ws';
 
-import { toggleInpageAutomation } from 'store/modules/automation';
+import { toggleAutopilot } from 'store/modules/automation';
 import { updateTimestamp, updateUrl } from 'store/modules/controls';
 
 import { apiFetch, setTitle } from 'helpers/utils';
@@ -164,7 +164,7 @@ class IFrame extends Component {
 
     switch(state.wb_type) {
       case 'behaviorDone':
-        this.props.dispatch(toggleInpageAutomation(null, 'complete', this.props.url));
+        this.props.dispatch(toggleAutopilot(null, 'complete', this.props.url));
         break;
       case 'load':
         this.addNewPage(state, true);

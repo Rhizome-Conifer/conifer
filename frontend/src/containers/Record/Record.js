@@ -11,7 +11,7 @@ import { getArchives, updateUrl } from 'store/modules/controls';
 import { loadRecording } from 'store/modules/recordings';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
 
-import { InpageAutomation, RemoteBrowser } from 'containers';
+import { Autopilot, RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -25,8 +25,8 @@ class Record extends Component {
     behavior: PropTypes.bool,
     auth: PropTypes.object,
     collection: PropTypes.object,
-    inpageAutomation: PropTypes.bool,
-    inpageAutomationRunning: PropTypes.bool,
+    autopilot: PropTypes.bool,
+    autopilotRunning: PropTypes.bool,
     dispatch: PropTypes.func,
     match: PropTypes.object,
     timestamp: PropTypes.string,
@@ -64,7 +64,7 @@ class Record extends Component {
   // }
 
   render() {
-    const { activeBrowser, dispatch, inpageAutomationRunning, match: { params }, timestamp, url } = this.props;
+    const { activeBrowser, autopilotRunning, dispatch, match: { params }, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
     const appPrefix = `${config.appHost}/${user}/${coll}/${rec}/record/`;
@@ -80,7 +80,7 @@ class Record extends Component {
           params={params}
           url={url} />
 
-        <div className={classNames('iframe-container', { locked: inpageAutomationRunning })}>
+        <div className={classNames('iframe-container', { locked: autopilotRunning })}>
           {
             activeBrowser ?
               <RemoteBrowser
@@ -99,8 +99,8 @@ class Record extends Component {
                 url={url} />
           }
           {
-            this.props.inpageAutomation &&
-              <InpageAutomation />
+            this.props.autopilot &&
+              <Autopilot />
           }
         </div>
       </React.Fragment>
@@ -169,8 +169,8 @@ const mapStateToProps = ({ app }) => {
     auth: app.get('auth'),
     behavior: app.getIn(['automation', 'behavior']),
     collection: app.get('collection'),
-    inpageAutomation: app.getIn(['automation', 'inpageAutomation']),
-    inpageAutomationRunning: app.getIn(['automation', 'inpageStatus']) === 'running',
+    autopilot: app.getIn(['automation', 'autopilot']),
+    autopilotRunning: app.getIn(['automation', 'autopilotStatus']) === 'running',
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

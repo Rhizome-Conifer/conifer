@@ -2,7 +2,7 @@ import config from 'config';
 
 import { remoteBrowserMod } from 'helpers/utils';
 
-import { toggleInpageAutomation } from 'store/modules/automation';
+import { toggleAutopilot } from 'store/modules/automation';
 import { updateUrlAndTimestamp } from 'store/modules/controls';
 import { setStats } from 'store/modules/infoStats';
 
@@ -100,7 +100,7 @@ class WebSocketHandler {
 
     switch (msg.ws_type) {
       case 'behaviorDone': // when autopilot is done running
-        this.dispatch(toggleInpageAutomation(null, 'complete', this.url));
+        this.dispatch(toggleAutopilot(null, 'complete', this.url));
         break;
       case 'status':
         if (msg.stats || msg.size || msg.pending_size) {

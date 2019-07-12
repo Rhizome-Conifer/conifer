@@ -2,11 +2,11 @@ import { apiPath } from 'config';
 import { fromJS } from 'immutable';
 
 
-const INPAGE_CHECK = 'wr/automation/INPAGE_CHECK';
-const INPAGE_CHECK_SUCCESS = 'wr/automation/INPAGE_CHECK_SUCCESS';
-const INPAGE_CHECK_FAIL = 'wr/automation/INPAGE_CHECK_FAIL';
+const AUTOPILOT_CHECK = 'wr/automation/AUTOPILOT_CHECK';
+const AUTOPILOT_CHECK_SUCCESS = 'wr/automation/AUTOPILOT_CHECK_SUCCESS';
+const AUTOPILOT_CHECK_FAIL = 'wr/automation/AUTOPILOT_CHECK_FAIL';
 
-const INPAGE_TOGGLE_AUTOMATION = 'wr/automation/INPAGE_TOGGLE_AUTOMATION';
+const AUTOPILOT_TOGGLE_AUTOMATION = 'wr/automation/AUTOPILOT_TOGGLE_AUTOMATION';
 
 const NEW_AUTO = 'wr/automation/NEW_AUTO';
 const NEW_AUTO_SUCCESS = 'wr/automation/NEW_AUTO_SUCCESS';
@@ -20,7 +20,7 @@ const TOGGLE_AUTOMATION = 'wr/automation/TOGGLE_AUTOMATION';
 const TOGGLE_AUTOMATION_SUCCESS = 'wr/automation/TOGGLE_AUTOMATION_SUCCESS';
 const TOGGLE_AUTOMATION_FAIL = 'wr/automation/TOGGLE_AUTOMATION_FAIL';
 
-const TOGGLE_INPAGE_SIDEBAR = 'wr/automation/TOGGLE_INPAGE_SIDEBAR';
+const TOGGLE_AUTOPILOT_SIDEBAR = 'wr/automation/TOGGLE_AUTOPILOT_SIDEBAR';
 
 const TOGGLE_MODAL = 'wr/automation/TOGGLE_MODAL';
 
@@ -29,10 +29,10 @@ const initialState = fromJS({
   autoId: null,
   active: false,
   behavior: null,
-  inpageAutomation: false,
-  inpageStatus: 'stopped', // stopped, running, complete
-  inpageUrl: '',
-  inpageInfo: [],
+  autopilot: false,
+  autopilotStatus: 'stopped', // stopped, running, complete
+  autopilotUrl: '',
+  autopilotInfo: [],
   queued: false,
   show: false,
   workers: []
@@ -52,25 +52,25 @@ export default function automation(state = initialState, action = {}) {
         active: action.mode === 'start',
         workers: action.result.browsers || []
       });
-    case INPAGE_CHECK_SUCCESS:
-      return state.set('inpageInfo', fromJS(action.result));
-    case INPAGE_TOGGLE_AUTOMATION:
+    case AUTOPILOT_CHECK_SUCCESS:
+      return state.set('autopilotInfo', fromJS(action.result));
+    case AUTOPILOT_TOGGLE_AUTOMATION:
       return state.merge({
         behavior: action.behavior,
-        inpageStatus: action.status,
-        inpageUrl: action.url
+        autopilotStatus: action.status,
+        autopilotUrl: action.url
       });
-    case TOGGLE_INPAGE_SIDEBAR:
-      return state.set('inpageAutomation', action.bool);
+    case TOGGLE_AUTOPILOT_SIDEBAR:
+      return state.set('autopilot', action.bool);
     default:
       return state;
   }
 }
 
 
-export function inpageCheck(url = '') {
+export function autopilotCheck(url = '') {
   return {
-    types: [INPAGE_CHECK, INPAGE_CHECK_SUCCESS, INPAGE_CHECK_FAIL],
+    types: [AUTOPILOT_CHECK, AUTOPILOT_CHECK_SUCCESS, AUTOPILOT_CHECK_FAIL],
     promise: client => client.get(`${apiPath}/behavior/info-list`, {
       params: { url }
     })
@@ -117,17 +117,17 @@ export function toggleAutomation(mode, user, coll, aid) {
 }
 
 
-export function toggleInpageSidebar(bool) {
+export function toggleAutopilotSidebar(bool) {
   return {
-    type: TOGGLE_INPAGE_SIDEBAR,
+    type: TOGGLE_AUTOPILOT_SIDEBAR,
     bool
   };
 }
 
 
-export function toggleInpageAutomation(behavior, status, url = '') {
+export function toggleAutopilot(behavior, status, url = '') {
   return {
-    type: INPAGE_TOGGLE_AUTOMATION,
+    type: AUTOPILOT_TOGGLE_AUTOMATION,
     behavior,
     status,
     url

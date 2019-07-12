@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { toggleInpageSidebar } from 'store/modules/automation';
+import { toggleAutopilotSidebar } from 'store/modules/automation';
 import { setAutoscroll } from 'store/modules/controls';
 import { toggleClipboard } from 'store/modules/toolBin';
 
@@ -13,7 +13,7 @@ const mapStateToProps = ({ app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     auth: app.getIn(['auth', 'user']),
-    inpageAutomation: app.getIn(['automation', 'inpageAutomation']),
+    autopilot: app.getIn(['automation', 'autopilot']),
     reqId: app.getIn(['remoteBrowsers', 'reqId']),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
@@ -24,7 +24,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     toggleClipboard: b => dispatch(toggleClipboard(b)),
     toggleAutoscroll: b => dispatch(setAutoscroll(b)),
-    toggleInpageAutomation: b => dispatch(toggleInpageSidebar(b))
+    toggleAutopilotSidebar: b => dispatch(toggleAutopilotSidebar(b))
   };
 };
 
