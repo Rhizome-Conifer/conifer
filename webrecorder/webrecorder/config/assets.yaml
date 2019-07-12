@@ -142,11 +142,6 @@ bundles:
         contents:
             - pkg://pywb/static/autoFetchWorker.js
 
-    autoFetchWorkerProxyMode-js:
-        output: bundle/autoFetchWorkerProxyMode.js
-        contents:
-            - pkg://pywb/static/autoFetchWorkerProxyMode.js
-
     proxy-js:
         output: bundle/proxy.js
         contents:
