@@ -33,7 +33,7 @@ export function BrowserRenderer({ cellData, columnData: { browsers } }) {
     const browserVrs = browserObj.get('version');
     return (
       <span>
-        <img src={browserObj.get('icon')} alt={`Recorded with ${browserName} version ${browserVrs}`} />
+        <img src={`/api/browsers/browsers/${cellData}/icon`} alt={`Recorded with ${browserName} version ${browserVrs}`} />
         { ` ${browserName} v${browserVrs}` }
       </span>
     );
