@@ -5449,6 +5449,11 @@ lodash@^4.0.0, lodash@^4.12.0, lodash@^4.13.1, lodash@^4.15.0, lodash@^4.17.10, 
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
 
+lodash@^4.17.13:
+  version "4.17.14"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.14.tgz#9ce487ae66c96254fe20b599f21b6816028078ba"
+  integrity sha512-mmKYbW3GLuJeX+iGP+Y7Gp1AiGHGbXHCOh/jZmrawMmsE7MS4znI3RL2FsjbqOyMayHInjOeykW7PEajUk1/xw==
+
 longest-streak@^2.0.1:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/longest-streak/-/longest-streak-2.0.2.tgz#2421b6ba939a443bb9ffebf596585a50b4c38e2e"
@@ -8000,11 +8005,12 @@ shellwords@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/shellwords/-/shellwords-0.1.1.tgz#d6b9181c1a48d397324c84871efbcfc73fc0654b"
 
-"shepherd-client@github:oldweb-today/shepherd-client#new-shepherd":
-  version "1.0.0"
-  resolved "https://codeload.github.com/oldweb-today/shepherd-client/tar.gz/9316fb92bd20dc6eede90020ab63f1689b1c77cc"
+"shepherd-client@github:oldweb-today/shepherd-client#master":
+  version "1.1.0"
+  resolved "https://codeload.github.com/oldweb-today/shepherd-client/tar.gz/88b0c0fb9e37623aa9fa7489becfad98b78c1530"
   dependencies:
     "@novnc/novnc" "^1.0.0"
+    lodash "^4.17.13"
     promise-polyfill "^8.1.0"
     unfetch "^4.0.1"
 
