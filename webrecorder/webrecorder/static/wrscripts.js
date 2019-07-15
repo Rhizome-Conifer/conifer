@@ -80,7 +80,7 @@
     (function() {
 
         function doRun() {
-            window.$WBBehaviorRunner$.autoRunWithDelay().then(function() {
+            window.$WBBehaviorRunner$.autoRunWithDelay({"delayAmount": 250}).then(function() {
                 sendMessage({wb_type: "behaviorDone"});
             });
         }
