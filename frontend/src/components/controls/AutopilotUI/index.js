@@ -101,7 +101,7 @@ class AutopilotUI extends Component {
           this.state.unsupported ?
             <React.Fragment>
               <h4>Not Supported for this Browser</h4>
-              <p>To use autopilot, please select a different browser from the dropdown above. Only browsers with a wand icon support autopilot.</p>
+              <p>To use autopilot, please select a different browser from the dropdown above. Only browsers with "autopilot" listed under capabilities support autopilot.</p>
             </React.Fragment> :
             <React.Fragment>
               <h4><WandIcon /> Autopilot</h4>
