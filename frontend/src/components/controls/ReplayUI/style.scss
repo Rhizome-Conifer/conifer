@@ -39,7 +39,7 @@
     &.locked {
         pointer-events: none;
 
-        iframe {
+        iframe, .canvas {
             cursor: not-allowed;
             opacity: .5;
         }
