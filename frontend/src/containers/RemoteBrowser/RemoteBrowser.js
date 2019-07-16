@@ -8,6 +8,7 @@ import { RemoteBrowserUI } from 'components/controls';
 const mapStateToProps = ({ app }) => {
   const remoteBrowsers = app.get('remoteBrowsers');
   return {
+    autopilotStatus: app.getIn(['automation', 'autopilotStatus']),
     behavior: app.getIn(['automation', 'behavior']),
     clipboard: app.getIn(['toolBin', 'clipboard']),
     contentFrameUpdate: app.getIn(['controls', 'contentFrameUpdate']),

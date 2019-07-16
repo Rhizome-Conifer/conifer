@@ -5,6 +5,7 @@ import { Alert } from 'react-bootstrap';
 import WebSocketHandler from 'helpers/ws';
 import { getStorage } from 'helpers/utils';
 
+import { toggleAutopilot } from 'store/modules/automation';
 import { createRemoteBrowser } from 'store/modules/remoteBrowsers';
 
 import { publicIP } from 'config';
@@ -20,6 +21,7 @@ class RemoteBrowserUI extends Component {
   };
 
   static propTypes = {
+    autopilotStatus: PropTypes.string,
     behavior: PropTypes.string,
     clipboard: PropTypes.bool,
     contentFrameUpdate: PropTypes.bool,
@@ -186,7 +188,11 @@ class RemoteBrowserUI extends Component {
   }
 
   onEvent = (type, data) => {
-    const { dispatch, rb, params, rec, timestamp, url } = this.props;
+    const { autopilotStatus, dispatch, rb, params, rec, timestamp, url } = this.props;
+
+    if (autopilotStatus === 'running' && ['disconnect', 'expire', 'fail', 'error'].includes(type)) {
+      dispatch(toggleAutopilot(null, 'stopped', this.props.url));
+    }
 
     if (type === 'connect') {
       this.setState({ message: '' });
