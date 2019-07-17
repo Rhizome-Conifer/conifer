@@ -7,6 +7,7 @@ const AUTOPILOT_CHECK_SUCCESS = 'wr/automation/AUTOPILOT_CHECK_SUCCESS';
 const AUTOPILOT_CHECK_FAIL = 'wr/automation/AUTOPILOT_CHECK_FAIL';
 
 const AUTOPILOT_TOGGLE_AUTOMATION = 'wr/automation/AUTOPILOT_TOGGLE_AUTOMATION';
+const AUTOPILOT_UPDATE_BEHAVIOR_STATUS = 'wr/automation/AUTOPILOT_UPDATE_BEHAVIOR_STATUS';
 
 const NEW_AUTO = 'wr/automation/NEW_AUTO';
 const NEW_AUTO_SUCCESS = 'wr/automation/NEW_AUTO_SUCCESS';
@@ -29,6 +30,7 @@ const initialState = fromJS({
   autoId: null,
   active: false,
   behavior: null,
+  behaviorState: null,
   autopilot: false,
   autopilotStatus: 'stopped', // stopped, running, complete
   autopilotUrl: '',
@@ -59,6 +61,10 @@ export default function automation(state = initialState, action = {}) {
         behavior: action.behavior,
         autopilotStatus: action.status,
         autopilotUrl: action.url
+      });
+    case AUTOPILOT_UPDATE_BEHAVIOR_STATUS:
+      return state.merge({
+        behaviorState: action.behaviorState
       });
     case TOGGLE_AUTOPILOT_SIDEBAR:
       return state.set('autopilot', action.bool);
@@ -131,6 +137,13 @@ export function toggleAutopilot(behavior, status, url = '') {
     behavior,
     status,
     url
+  };
+}
+
+export function updateBehaviorState(behaviorState) {
+  return {
+    type: AUTOPILOT_UPDATE_BEHAVIOR_STATUS,
+    behaviorState,
   };
 }
 
