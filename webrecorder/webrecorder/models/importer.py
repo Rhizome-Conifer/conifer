@@ -629,7 +629,8 @@ class BaseImporter(ImportStatusChecker):
             params['software'] = 'unknown'
             params['datetime'] = 'unknown'
 
-        info['desc'] = info.get('desc', '').format(**params)
+        desc = info.get('desc') or ''
+        info['desc'] = desc.format(**params)
         return params
 
     @classmethod

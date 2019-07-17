@@ -1,8 +1,16 @@
 // a mini behavior script that only operates in child frames of top
 (() => {
-  if (self === self.top) return;
+  if (self === self.top) {
+    return;
+  }
+
+
   const init = () => {
     try {
+      if (self.wbinfo && !self.wbinfo.proxy_magic && self.parent === self.top) {
+        return;
+      }
+
       // autoscaler's detect_media.js by @ikreymer adapted for autobrowser
       // if we detect a special action
       const specialActions = [
