@@ -140,4 +140,20 @@
         }
 
     }
+
+    .behaviorInfo {
+        margin-top: 20px;
+        font-size: 1.8rem;
+        color: $white;
+    }
+
+    .behaviorMsg {
+        font-family: monospace;
+        padding-bottom: 20px;
+        word-break: break-all;
+    }
+
+    .behaviorStats li {
+        font-style: italic;
+    }
 }

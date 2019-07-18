@@ -237,7 +237,7 @@ class BaseWebSockHandler(object):
                 self._publish(to_browser, msg)
 
         elif from_browser:
-            if msg['ws_type'] in ('remote_url', 'patch_req', 'behaviorDone', 'snapshot'):
+            if msg['ws_type'] in ('remote_url', 'patch_req', 'behaviorDone', 'behaviorStep', 'snapshot'):
                 self._publish(from_browser, msg)
 
     def get_status(self):

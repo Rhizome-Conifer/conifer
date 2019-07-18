@@ -2,7 +2,7 @@ import config from 'config';
 
 import { remoteBrowserMod } from 'helpers/utils';
 
-import { toggleAutopilot } from 'store/modules/automation';
+import { toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
 import { updateUrlAndTimestamp } from 'store/modules/controls';
 import { setStats } from 'store/modules/infoStats';
 
@@ -101,6 +101,9 @@ class WebSocketHandler {
     switch (msg.ws_type) {
       case 'behaviorDone': // when autopilot is done running
         this.dispatch(toggleAutopilot(null, 'complete', this.url));
+        break;
+      case 'behaviorStep':
+        this.dispatch(updateBehaviorState(msg.result));
         break;
       case 'status':
         if (msg.stats || msg.size || msg.pending_size) {

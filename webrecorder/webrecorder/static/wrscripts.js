@@ -80,9 +80,18 @@
     (function() {
 
         function doRun() {
-            window.$WBBehaviorRunner$.autoRunWithDelay({"delayAmount": 250}).then(function() {
+            (async () => {
+                let state = null;
+                for await (const result of window.$WBBehaviorRunner$.autoRunIter(250)) {
+                    if (!result.state) {
+                      result.state = state;
+                    }
+                    sendMessage({wb_type: "behaviorStep", result: result});
+                    state = result.state;
+                }
+
                 sendMessage({wb_type: "behaviorDone"});
-            });
+            })();
         }
 
         function receiveEvent(event) {

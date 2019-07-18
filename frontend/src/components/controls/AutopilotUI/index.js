@@ -11,6 +11,7 @@ class AutopilotUI extends Component {
   static propTypes = {
     activeBrowser: PropTypes.string,
     behavior: PropTypes.string,
+    behaviorState: PropTypes.string,
     browsers: PropTypes.object,
     checkAvailability: PropTypes.func,
     autopilotInfo: PropTypes.object,
@@ -89,7 +90,7 @@ class AutopilotUI extends Component {
   }
 
   render() {
-    const { autopilotInfo, status } = this.props;
+    const { autopilotInfo, behaviorState, status } = this.props;
     const behaviors = autopilotInfo && autopilotInfo.filter(b => !b.get('defaultBehavior'));
     const isRunning = status === 'running';
     const isComplete = status === 'complete';
@@ -150,6 +151,24 @@ class AutopilotUI extends Component {
               {
                 isComplete &&
                   <em>Autopilot actions have been completed. You may continue to capture the page manually. To run autopilot again, please refresh or load a new page.</em>
+              }
+              {
+                behaviorState &&
+                  <div className="behaviorInfo">
+                    Last Action:
+                    <div className="behaviorMsg">{ behaviorState.msg }</div>
+                    <div className="behaviorStats">Stats
+                      <ul>
+                        {
+                          behaviorState.state && Object.keys(behaviorState.state).map((stateProp) => {
+                            return (
+                              <li>{stateProp}: <em>{behaviorState.state[stateProp]}</em></li>
+                            );
+                          })
+                        }
+                      </ul>
+                    </div>
+                  </div>
               }
             </React.Fragment>
         }
