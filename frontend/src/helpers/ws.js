@@ -103,7 +103,7 @@ class WebSocketHandler {
         this.dispatch(toggleAutopilot(null, 'complete', this.url));
         break;
       case 'behaviorStep':
-        this.props.dispatch(updateBehaviorState(msg.result));
+        this.dispatch(updateBehaviorState(msg.result));
         break;
       case 'status':
         if (msg.stats || msg.size || msg.pending_size) {

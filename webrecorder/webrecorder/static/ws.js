@@ -251,6 +251,7 @@
 
         if (message.wb_type == "skipreq" ||
             message.wb_type == "patch_req" ||
+            message.wb_type == "behaviorStep" ||
             message.wb_type == "behaviorDone") {
 
             message.ws_type = message.wb_type;
