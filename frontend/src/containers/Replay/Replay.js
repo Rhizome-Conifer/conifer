@@ -252,7 +252,7 @@ class Replay extends Component {
                 timestamp={timestamp}
                 canGoBackward={appSettings.get('canGoBackward')}
                 canGoForward={appSettings.get('canGoForward')}
-                partition={`${params.user}-replay`}
+                partition={`persist:${params.user}-replay`}
                 url={url} />
           }
           {
