@@ -68,6 +68,8 @@ class Patch extends Component {
     return (
       <React.Fragment>
         <ReplayUI
+          activeBrowser={activeBrowser}
+          autopilotRunning={autopilotRunning}
           params={params}
           timestamp={timestamp}
           url={url} />

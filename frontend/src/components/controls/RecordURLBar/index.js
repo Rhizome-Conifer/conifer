@@ -19,6 +19,7 @@ class RecordURLBar extends Component {
   static propTypes = {
     activeBrowser: PropTypes.string,
     activeCollection: PropTypes.object,
+    autopilotRunning: PropTypes.bool,
     history: PropTypes.object,
     params: PropTypes.object,
     timestamp: PropTypes.string,
@@ -69,7 +70,7 @@ class RecordURLBar extends Component {
 
   render() {
     const { currMode, canAdmin } = this.context;
-    const { activeCollection, params } = this.props;
+    const { activeCollection, autopilotRunning, params } = this.props;
     const { url } = this.state;
 
     const isNew = currMode === 'new';
@@ -85,12 +86,13 @@ class RecordURLBar extends Component {
                 canAdmin &&
                   <RemoteBrowserSelect
                     active
+                    autopilotRunning={autopilotRunning}
                     params={params} />
               }
             </div>
             {
               /* {% if not browser %}autofocus{% endif %} */
-              <input type="text" onChange={this.handleChange} onKeyPress={this.handleSubmit} className="url-input-recorder form-control" name="url" value={url} style={{ height: '3.3rem' }} autoFocus required />
+              <input type="text" disabled={autopilotRunning} onChange={this.handleChange} onKeyPress={this.handleSubmit} className="url-input-recorder form-control" name="url" value={url} style={{ height: '3.3rem' }} autoFocus required />
             }
             {
               isExtract &&

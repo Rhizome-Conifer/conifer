@@ -77,6 +77,7 @@ class Record extends Component {
         </Helmet>
         <ReplayUI
           activeBrowser={activeBrowser}
+          autopilotRunning={autopilotRunning}
           params={params}
           url={url} />
 

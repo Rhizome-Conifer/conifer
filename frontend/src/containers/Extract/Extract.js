@@ -77,7 +77,9 @@ class Extract extends Component {
     return (
       <React.Fragment>
         <ReplayUI
+          activeBrowser={activeBrowser}
           activeCollection={activeCollection}
+          autopilotRunning={autopilotRunning}
           params={params}
           timestamp={timestamp}
           url={url} />
