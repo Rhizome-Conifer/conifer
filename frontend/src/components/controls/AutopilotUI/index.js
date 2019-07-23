@@ -91,7 +91,7 @@ class AutopilotUI extends Component {
 
   render() {
     const { autopilotInfo, behaviorState, status } = this.props;
-    const behaviors = autopilotInfo && autopilotInfo.filter(b => !b.get('defaultBehavior'));
+    const behaviors = autopilotInfo && autopilotInfo.size > 1 ? autopilotInfo.filter(b => !b.get('defaultBehavior')) : autopilotInfo;
     const isRunning = status === 'running';
     const isComplete = status === 'complete';
 
@@ -111,27 +111,20 @@ class AutopilotUI extends Component {
                 {
                   behaviors && behaviors.valueSeq().map((behavior) => {
                     const name = behavior.get('name');
+                    const dt = new Date(behavior.get('updated'));
                     return (
                       <li onClick={this.selectMode.bind(this, name)} key={name}>
                         <input type="radio" name="behavior" value={name} disabled={isRunning || isComplete} aria-labelledby="opt1" onChange={this.handleInput} checked={this.state.behavior === name} />
                         <div className="desc" id="opt1">
                           <div className="heading">{name}</div>
+                          <div className="last-modified">
+                            <em>{`Updated: ${dt.toLocaleDateString()} ${dt.toLocaleTimeString()}`}</em>
+                          </div>
                           {behavior.get('description')}
                         </div>
                       </li>
                     );
                   })
-                }
-
-                {
-                  behaviors.size === 0 &&
-                    <li onClick={this.selectMode.bind(this, 'autoScrollBehavior')} key="autoscroll">
-                      <input type="radio" name="behavior" value="autoScrollBehavior" disabled={isRunning || isComplete} aria-labelledby="opt2" onChange={this.handleInput} checked={this.state.behavior === 'autoScrollBehavior'} />
-                      <div className="desc" id="opt2">
-                        <div className="heading">AutoScroll</div>
-                        Automatially scroll to the bottom of the page. If more content loads, scrolling will continue until stopped by user.
-                      </div>
-                    </li>
                 }
               </ul>
 
