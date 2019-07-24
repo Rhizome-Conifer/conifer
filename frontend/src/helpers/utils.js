@@ -41,7 +41,6 @@ export function apiFormatUrl(path) {
 }
 
 
-
 export function applyLocalTimeOffset(dt) {
   return new Date(dt.getTime() - (new Date().getTimezoneOffset() * 60000));
 }

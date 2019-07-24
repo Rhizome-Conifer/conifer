@@ -16,7 +16,6 @@ import {
   Home,
   ListDetail,
   Login,
-  Live,
   Logout,
   NewPassword,
   NewRecording,
@@ -115,16 +114,6 @@ const controllerRoutes = [
     exact: true,
     footer: false,
     name: 'new recording'
-  },
-  {
-    // live browser pepare (for desktop)
-    path: `${userPath}/:coll/live/:splat(.*)`,
-    breadcrumb: 'Live',
-    classOverride: '',
-    component: Live,
-    exact: true,
-    footer: false,
-    name: 'live prepare'
   },
   {
     // record with remote browser id
@@ -271,6 +260,22 @@ const infoRoutes = [
     name: 'Terms & Policies'
   }
 ];
+
+if (__DESKTOP__) {
+  const Live = require('containers/Live/Live');
+  // live browser pepare (for desktop)
+  controllerRoutes.push(
+    {
+      path: `${userPath}/:coll/live/:splat(.*)`,
+      breadcrumb: 'Live',
+      classOverride: '',
+      component: Live,
+      exact: true,
+      footer: false,
+      name: 'live prepare'
+    }
+  );
+}
 
 export default [
   /* core */

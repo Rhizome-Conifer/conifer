@@ -22,8 +22,6 @@ if (__DESKTOP__) {
 }
 
 
-
-
 class Live extends Component {
   static contextTypes = {
     product: PropTypes.string
@@ -139,7 +137,7 @@ const initialData = [
     promise: () => {
       ipcRenderer.send('toggle-proxy', false);
 
-      return new Promise(function(resolve, reject) {
+      return new Promise((resolve, reject) => {
         ipcRenderer.on('toggle-proxy-done', () => { resolve(true); });
       });
 

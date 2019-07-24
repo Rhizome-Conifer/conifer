@@ -23,8 +23,8 @@ try {
 
 let appHost = null;
 
-if (__DESKTOP__) {
-  let remoteProcess = window.require('electron').remote.process;
+if (process.env.__DESKTOP__) {
+  const remoteProcess = window.require('electron').remote.process;
   process.env.INTERNAL_HOST = remoteProcess.env.INTERNAL_HOST;
   process.env.INTERNAL_PORT = remoteProcess.env.INTERNAL_PORT;
   appHost = `localhost:` + remoteProcess.env.INTERNAL_PORT;

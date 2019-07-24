@@ -15,7 +15,7 @@ function _getHost() {
   if (__PLAYER__) {
     return window.sessionStorage.getItem('_wr_host')
   } else if (__DESKTOP__) {
-    let remoteProcess = window.require('electron').remote.process;
+    const remoteProcess = window.require('electron').remote.process;
     return `localhost:` + remoteProcess.env.INTERNAL_PORT;
   } else {
     return '';

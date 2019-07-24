@@ -25,7 +25,6 @@ import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer, SidebarColle
 import { IFrame, ReplayUI } from 'components/controls';
 
 
-
 let Webview;
 if (__DESKTOP__) {
   Webview = require('components/desktop/Webview');
@@ -63,8 +62,8 @@ class Replay extends Component {
     canAdmin: PropTypes.bool,
     coll: PropTypes.string,
     rec: PropTypes.string,
-    user: PropTypes.string,
-   };
+    user: PropTypes.string
+  };
 
   constructor(props) {
     super(props);

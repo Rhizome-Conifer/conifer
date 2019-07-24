@@ -121,7 +121,8 @@ class Home extends PureComponent {
           <h1>Webrecorder</h1>
         </div>
         <div className="row tagline">
-          { !__DESKTOP__ ?
+          {
+            !__DESKTOP__ ?
               <h4 className="text-center">Collect & Revisit the Web</h4> :
               <h4 className="text-center">Desktop App</h4>
           }

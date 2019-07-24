@@ -13,15 +13,14 @@ import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
-const { ipcRenderer } = window.require('electron');
-
 
 let Webview;
+let ipcRenderer;
 if (__DESKTOP__) {
+  // eslint-disable-next-line
+  ipcRenderer = window.require('electron').ipcRenderer;
   Webview = require('components/desktop/Webview');
 }
-
-
 
 
 class Record extends Component {
@@ -136,14 +135,6 @@ class Record extends Component {
 
 const initialData = [
   {
-    promise: () => {
-      ipcRenderer.send('toggle-proxy', true);
-      return new Promise(function(resolve, reject) {
-        ipcRenderer.on('toggle-proxy-done', () => { resolve(true); });
-      });
-    }
-  },
-  {
     promise: ({ store: { dispatch, getState } }) => {
       if (!isRBLoaded(getState()) && !__DESKTOP__) {
         return dispatch(loadBrowsers());
@@ -196,6 +187,19 @@ const initialData = [
     }
   }
 ];
+
+if (__DESKTOP__) {
+  initialData.push(
+    {
+      promise: () => {
+        ipcRenderer.send('toggle-proxy', true);
+        return new Promise((resolve, reject) => {
+          ipcRenderer.on('toggle-proxy-done', () => { resolve(true); });
+        });
+      }
+    },
+  );
+}
 
 const mapStateToProps = ({ app }) => {
   let appSettings = null;
