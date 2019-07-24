@@ -21,45 +21,6 @@ class Home extends PureComponent {
     showModalCB: PropTypes.func,
   };
 
-  render() {
-    const { auth, showModalCB } = this.props;
-    const user = auth.get('user');
-
-    return (
-      <React.Fragment>
-        <Helmet>
-          <title>Homepage</title>
-        </Helmet>
-        <div className="row top-buffer main-logo">
-          <h1>Webrecorder</h1>
-        </div>
-        <div className="row tagline">
-          { !__DESKTOP__ ?
-              <h4 className="text-center">Collect & Revisit the Web</h4> :
-              <h4 className="text-center">Desktop App</h4>
-          }
-        </div>
-        {
-          user.get('anon') && user.get('num_collections') > 0 &&
-            <HomepageMessage
-              auth={auth}
-              showModal={showModalCB} />
-        }
-        <div className="row top-buffer-lg bottom-buffer-lg">
-          <StandaloneRecorder />
-        </div>
-        {
-          homepageAnnouncement &&
-            <HomepageAnnouncement />
-        }
-
-        { !__DESKTOP__ &&
-            this.homepage_marketing()
-        }
-      </React.Fragment>
-    );
-  }
-
   homepage_marketing() {
     return (
       <React.Fragment>
@@ -143,6 +104,45 @@ class Home extends PureComponent {
             <p><small>We're working on a more detailed explanation of how it all works. For now, email us at <a href={`mailto:${supportEmail}`} target="_blank">{supportEmail}</a> if you have any questions. </small></p>
           </div>
         </div>
+      </React.Fragment>
+    );
+  }
+
+  render() {
+    const { auth, showModalCB } = this.props;
+    const user = auth.get('user');
+
+    return (
+      <React.Fragment>
+        <Helmet>
+          <title>Homepage</title>
+        </Helmet>
+        <div className="row top-buffer main-logo">
+          <h1>Webrecorder</h1>
+        </div>
+        <div className="row tagline">
+          { !__DESKTOP__ ?
+              <h4 className="text-center">Collect & Revisit the Web</h4> :
+              <h4 className="text-center">Desktop App</h4>
+          }
+        </div>
+        {
+          user.get('anon') && user.get('num_collections') > 0 &&
+            <HomepageMessage
+              auth={auth}
+              showModal={showModalCB} />
+        }
+        <div className="row top-buffer-lg bottom-buffer-lg">
+          <StandaloneRecorder />
+        </div>
+        {
+          homepageAnnouncement &&
+            <HomepageAnnouncement />
+        }
+
+        { !__DESKTOP__ &&
+            this.homepage_marketing()
+        }
       </React.Fragment>
     );
   }
