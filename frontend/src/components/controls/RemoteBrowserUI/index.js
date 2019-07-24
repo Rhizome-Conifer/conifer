@@ -193,7 +193,7 @@ class RemoteBrowserUI extends Component {
   onEvent = (type, data) => {
     const { autopilotStatus, dispatch, rb, params, rec, timestamp, url } = this.props;
 
-    if (autopilotStatus === 'running' && ['disconnect', 'expire', 'fail', 'error'].includes(type)) {
+    if (autopilotStatus === 'running' && ['expire', 'fail', 'error'].includes(type)) {
       dispatch(toggleAutopilot(null, 'stopped', this.props.url));
     }
 

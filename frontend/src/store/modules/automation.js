@@ -55,7 +55,7 @@ export default function automation(state = initialState, action = {}) {
         workers: action.result.browsers || []
       });
     case AUTOPILOT_CHECK_SUCCESS:
-      return state.set('autopilotInfo', fromJS(action.result));
+      return state.set('autopilotInfo', fromJS(action.result.behaviors));
     case AUTOPILOT_TOGGLE_AUTOMATION:
       return state.merge({
         behavior: action.behavior,

@@ -190,10 +190,9 @@
                 break;
 
             case "behavior":
-                if (!document.hidden) {
-                    sendLocalMsg({"wb_type": "behavior",
-                                  "start": msg.start});
-                }
+                msg.wb_type = msg.ws_type;
+                delete msg.ws_type;
+                sendLocalMsg(msg);
                 break;
 
             case "switch":

@@ -80,13 +80,8 @@
     (function() {
         function doRun() {
             (async () => {
-                let state = null;
                 for await (const result of window.$WBBehaviorRunner$.autoRunIter(250)) {
-                    if (!result.state) {
-                      result.state = state;
-                    }
                     sendMessage({wb_type: "behaviorStep", result: result});
-                    state = result.state;
                 }
 
                 sendMessage({wb_type: "behaviorDone", name: window.$WBBehaviorRunner$.metadata.name});
