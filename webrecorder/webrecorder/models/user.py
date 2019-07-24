@@ -193,8 +193,7 @@ class User(RedisUniqueComponent):
         return rem
 
     def is_out_of_space(self):
-        #TODO: review!
-        #self.access.assert_is_curr_user(self)
+        self.access.assert_is_curr_user(self)
 
         return self.get_size_remaining() <= 0
 
