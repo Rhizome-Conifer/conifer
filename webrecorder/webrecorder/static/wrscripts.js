@@ -78,7 +78,6 @@
     // Custom Behavior
 
     (function() {
-
         function doRun() {
             (async () => {
                 let state = null;
@@ -90,7 +89,7 @@
                     state = result.state;
                 }
 
-                sendMessage({wb_type: "behaviorDone"});
+                sendMessage({wb_type: "behaviorDone", name: window.$WBBehaviorRunner$.metadata.name});
             })();
         }
 
@@ -123,16 +122,13 @@
                     var script = document.createElement("script");
                     script.onload = function() {
 
-                        let resp = "behavior_failed";
-
                         if (window.$WBBehaviorRunner$) {
-                          resp = "behavior_loaded";
                           setTimeout(doRun, 100);
+                        } else {
+                          sendMessage({"wb_type": "behaviorLoadFailed",
+                                       "url": window.location.href,
+                                       "behaviorUrl": url});
                         }
-
-                        sendMessage({"wb_type": resp,
-                                     "url": window.location.href,
-                                     "name": name});
                     }
 
                     script._no_rewrite = true;

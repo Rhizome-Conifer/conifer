@@ -210,8 +210,12 @@ class WebSocketHandler {
     return this.sendMsg({ ws_type: 'skipreq', url });
   }
 
-  doBehavior = (url, start) => {
-    return this.sendMsg({ ws_type: 'behavior', url, start });
+  behaviorStat = (type, name) => {
+    return this.sendMsg({ ws_type: 'behavior-stat', name, type });
+  }
+
+  doBehavior = (url, name) => {
+    return this.sendMsg({ ws_type: 'behavior', url, name, start: !!name });
   }
 
   doLoadAll = () => {

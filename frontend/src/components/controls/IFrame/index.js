@@ -84,8 +84,12 @@ class IFrame extends Component {
         wb_type: 'behavior',
         name: nextProps.behavior,
         url,
-        start: nextProps.behavior !== null,
+        start: !!nextProps.behavior,
       }, '*', undefined, true);
+
+      if (nextProps.behavior) {
+        this.socket.behaviorStat('start', nextProps.behavior);
+      }
     }
 
     if (nextProps.url !== url || nextProps.timestamp !== timestamp ||
@@ -164,6 +168,7 @@ class IFrame extends Component {
 
     switch(state.wb_type) {
       case 'behaviorDone':
+        this.socket.behaviorStat('done', this.props.behavior);
         this.props.dispatch(toggleAutopilot(null, 'complete', this.props.url));
         break;
       case 'behaviorStep':

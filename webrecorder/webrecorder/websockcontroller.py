@@ -7,6 +7,7 @@ import gevent.queue
 
 from webrecorder.basecontroller import BaseController
 from webrecorder.models.dynstats import DynStats
+from webrecorder.models.stats import Stats
 
 
 # ============================================================================
@@ -20,6 +21,7 @@ class WebsockController(BaseController):
         self.content_app = kwargs['content_app']
 
         self.dyn_stats = DynStats(self.redis, config)
+        self.stats = Stats(self.redis)
 
     def init_routes(self):
         @self.app.get('/_client_ws')
@@ -120,6 +122,7 @@ class BaseWebSockHandler(object):
         self.access = websock_controller.access
 
         self.dyn_stats = websock_controller.dyn_stats
+        self.stats = websock_controller.stats
 
         self.sesh_id = sesh_id
         self.stats_urls = stats_urls or []
@@ -219,6 +222,15 @@ class BaseWebSockHandler(object):
 
         elif msg['ws_type'] == 'set_url':
             self.stats_urls = [msg['url']]
+
+        elif msg['ws_type'] == 'behavior-stat':
+            self.stats.incr_behavior_stat(msg.get('type'), msg.get('name'), self.browser)
+
+        elif msg['ws_type'] == 'behavior':
+            self.stats.incr_behavior_stat('start', msg.get('name'), self.browser)
+
+        elif msg['ws_type'] == 'behaviorDone':
+            self.stats.incr_behavior_stat('done', msg.get('name'), self.browser)
 
         elif msg['ws_type'] == 'switch':
             #TODO: check this
