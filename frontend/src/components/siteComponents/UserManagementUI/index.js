@@ -185,11 +185,14 @@ class UserManagementUI extends PureComponent {
             </React.Fragment> :
             <li className="navbar-text">
               <DropdownButton pullRight id="user-dropdown" title={userDropdown} onToggle={this.toggleDropdown}>
-                <li className="display login-display">
-                  <span className="sm-label">{ isAnon ? 'Active as' : 'Signed in as'}</span>
-                  <h5>{user.get('full_name') || username}</h5>
-                  <span className="username"><span className="glyphicon glyphicon-user right-buffer-sm" />{ username }</span>
-                </li>
+                {
+                  !__DESKTOP__ &&
+                    <li className="display login-display">
+                      <span className="sm-label">{ isAnon ? 'Active as' : 'Signed in as'}</span>
+                      <h5>{user.get('full_name') || username}</h5>
+                      <span className="username"><span className="glyphicon glyphicon-user right-buffer-sm" />{ username }</span>
+                    </li>
+                }
 
                 {
                   hasCollections &&
@@ -219,7 +222,7 @@ class UserManagementUI extends PureComponent {
                 <MenuItem onClick={this.goToFAQ}>About Webrecorder</MenuItem>
                 <MenuItem href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</MenuItem>
                 {
-                  !isAnon &&
+                  (!isAnon && !__DESKTOP__) &&
                     <React.Fragment>
                       <MenuItem divider />
                       <MenuItem onClick={this.goToLogout}><span className="glyphicon glyphicon-log-out" title="Logout" /> Logout</MenuItem>

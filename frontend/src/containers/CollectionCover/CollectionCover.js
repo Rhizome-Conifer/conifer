@@ -61,7 +61,7 @@ const initialData = [
     promise: ({ store: { dispatch, getState } }) => {
       const state = getState();
 
-      if (!isRBLoaded(state) && !__PLAYER__) {
+      if (!isRBLoaded(state) && !__DESKTOP__) {
         return dispatch(loadRB());
       }
 

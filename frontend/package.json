@@ -116,8 +116,12 @@
   },
   "scripts": {
     "analyze": "STATS=true webpack --config ./webpack/webpack.config.client.production.babel.js --profile --json > stats.json",
+
     "build-player-dev": "better-npm-run build-player-dev",
+    "build-desktop-dev": "better-npm-run build-desktop-dev",
     "build-player": "better-npm-run build-player",
+    "build-desktop": "better-npm-run build-desktop",
+
     "dev:server:prepare": "universal-webpack --settings ./webpack/universal-webpack-settings.json prepare",
     "docker-dev": "run-p docker-dev:client:build dev:server:prepare docker-dev:server:build docker-dev:server:start",
     "docker-prod": "run-s prod:client:build prod:server:build start-docker-prod",
@@ -126,7 +130,7 @@
     "docker-dev:server:start": "better-npm-run start-docker-dev",
     "prod:client:build": "webpack --config ./webpack/webpack.config.client.production.babel.js",
     "prod:server:build": "webpack --config ./webpack/webpack.config.server.production.babel.js",
-    "start-docker-prod": "better-npm-run start-docker-prod",
+
     "test": "jest --watch --env=jsdom"
   },
   "betterScripts": {
@@ -140,6 +144,18 @@
       "command": "webpack --verbose --colors --display-error-details --config webpack/player.config.js",
       "env": {
         "NODE_ENV": "production"
+      }
+    },
+    "build-desktop": {
+      "command": "webpack --verbose --colors --display-error-details --config webpack/desktop.config.js",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "build-desktop-dev": {
+      "command": "webpack --config webpack/desktop.config.js --watch --progress",
+      "env": {
+        "NODE_ENV": "development"
       }
     },
     "start-docker-dev": {

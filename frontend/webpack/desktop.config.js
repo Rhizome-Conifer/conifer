@@ -45,6 +45,7 @@ if (process.env.NODE_ENV === 'development') {
 
 
 module.exports = {
+  mode: process.env.NODE_ENV,
   devtool: process.env.NODE_ENV === 'production' ? 'source-map' : 'eval',
   context: path.resolve(__dirname, '..'),
   entry: {
@@ -168,7 +169,7 @@ module.exports = {
 
     new webpack.EnvironmentPlugin({
       'ANNOUNCE_MAILING_LIST': null,
-      'ALLOW_DAT': false,
+      'ALLOW_DAT': true,
       'APP_HOST': 'localhost:8089',
       'CONTENT_HOST': 'localhost:8092',
       'FRONTEND_PORT': 8095,
@@ -180,8 +181,8 @@ module.exports = {
       __SERVER__: false,
       __DEVELOPMENT__: true,
       __DEVTOOLS__: true,
-      __PLAYER__: true,
-      __DESKTOP__: true
+      __PLAYER__: false,
+      __DESKTOP__: true,
     })
   ]
 };

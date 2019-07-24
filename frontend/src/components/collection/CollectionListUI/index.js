@@ -151,7 +151,7 @@ class CollectionListUI extends Component {
                         <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
                       </Button>
                       <Upload classes="rounded">
-                        <UploadIcon /> Upload
+                        <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' }
                       </Upload>
                     </React.Fragment>
                 }

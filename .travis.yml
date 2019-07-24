@@ -8,7 +8,7 @@ matrix:
       python: "3.6"
       sudo: false
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode8.0
       language: generic
       sudo: required
       env: PY_VER=3.6.8
@@ -21,12 +21,12 @@ env:
 addons:
   artifacts:
     paths:
+      - webrecorder-$TRAVIS_OS_NAME
       - webrecorder-player-$TRAVIS_OS_NAME
 
 before_install: |
   if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
-      brew update;
-      brew install pyenv;
+      brew upgrade pyenv;
       eval "$(pyenv init -)";
       PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PY_VER;
       pyenv global $PY_VER;
@@ -47,6 +47,10 @@ script:
   - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./webrecorder_player.py
   - mv ./dist/webrecorder_player $TRAVIS_BUILD_DIR/webrecorder-player-$TRAVIS_OS_NAME
   - $TRAVIS_BUILD_DIR/webrecorder-player-$TRAVIS_OS_NAME -v
+  - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./webrecorder_full.py
+  - mv ./dist/webrecorder_full $TRAVIS_BUILD_DIR/webrecorder-$TRAVIS_OS_NAME
+  - $TRAVIS_BUILD_DIR/webrecorder-$TRAVIS_OS_NAME -v
+
 
 
 after_success:

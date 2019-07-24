@@ -119,6 +119,7 @@ const devConfig = {
       __DEVELOPMENT__: true,
       __DEVTOOLS__: true,
       __PLAYER__: false,
+      __DESKTOP__: false,
       'process.env.NODE_ENV': JSON.stringify('development')
     })
   ]

@@ -12,7 +12,8 @@ export function addTrailingSlash(url) {
 
 export function apiFetch(path, data, opts = {}) {
   const options = Object.assign({
-    credentials: 'same-origin',
+    //credentials: 'same-origin',
+    credentials: 'include',
     body: JSON.stringify(data),
     headers: new Headers({
       'Content-Type': 'application/json',
@@ -20,7 +21,23 @@ export function apiFetch(path, data, opts = {}) {
     })
   }, opts);
 
-  return fetch(`${config.apiPath}${path}`, options);
+  return fetch(`${config.appHost}${config.apiPath}${path}`, options);
+}
+
+
+export function apiFormatUrl(path) {
+  if (__PLAYER__) {
+    return path;
+  }
+
+  const adjustedPath = path[0] !== '/' ? `/${path}` : path;
+  if (__SERVER__ || __DESKTOP__) {
+    // on the server use internal network
+    return `http://${config.internalApiHost}:${config.internalApiPort}${adjustedPath}`;
+  }
+
+  // client side use current host
+  return `${adjustedPath}`;
 }
 
 

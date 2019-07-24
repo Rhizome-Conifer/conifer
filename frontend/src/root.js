@@ -8,7 +8,7 @@ import { ReduxAsyncConnect } from 'redux-connect';
 function Root(props) {
   const { client, routes } = props;
 
-  return __PLAYER__ ?
+  return __DESKTOP__ ?
     (
       <MemoryRouter>
         <ReduxAsyncConnect routes={routes} helpers={{ client }} />

@@ -2,8 +2,13 @@ from gevent.monkey import patch_all; patch_all()
 
 from pywb.utils.geventserver import GeventServer
 
+from webrecorder.rec.tempchecker import TempChecker
+from webrecorder.rec.storagecommitter import StorageCommitter
+from webrecorder.rec.worker import Worker
+
 import os
 import traceback
+import gevent
 
 try:
     from geventwebsocket.handler import WebSocketHandler
@@ -14,7 +19,8 @@ except:
 
 # ==================================================================
 class FullStackRunner(object):
-    def __init__(self, app_port=8090, rec_port=0, warc_port=0, env_params=None):
+    def __init__(self, app_port=8090, rec_port=0, warc_port=0, env_params=None,
+                 run_tempchecker=False, run_storagecommitter=False):
 
         if env_params:
             os.environ.update(env_params)
@@ -36,7 +42,23 @@ class FullStackRunner(object):
         self.rec_serv = self.init_server(rec_port, recorder, 'RECORD_HOST')
         self.app_serv = self.init_server(app_port, app, 'APP_HOST')
 
+        self.storage_worker = Worker(StorageCommitter) if run_storagecommitter else None
+        if self.storage_worker:
+            gevent.spawn(self.storage_worker.run)
+
+        self.temp_worker = Worker(TempChecker) if run_tempchecker else None
+        if self.temp_worker:
+            gevent.spawn(self.temp_worker.run)
+
     def close(self):
+        if self.temp_worker:
+            self.temp_worker.stop()
+            self.temp_worker = None
+
+        if self.storage_worker:
+            self.storage_worker.stop()
+            self.storage_worker = None
+
         self.stop_server(self.warc_serv)
         self.stop_server(self.rec_serv)
         self.stop_server(self.app_serv)

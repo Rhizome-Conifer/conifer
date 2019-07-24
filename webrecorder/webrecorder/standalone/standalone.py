@@ -18,15 +18,12 @@ import atexit
 
 # ============================================================================
 class StandaloneRunner(FullStackRunner):
-    def __init__(self, argres):
+    def __init__(self, argres, app_port=8090, rec_port=-1, warc_port=0):
         self.argres = argres
 
-        warcs_dir = self._get_prop('warcs_dir')
-        cache_dir = self._get_prop('cache_dir')
-
-        app_port = self._get_prop('port', 8090)
-        rec_port = self._get_prop('rec_port', -1)
-        warc_port = self._get_prop('warc_port', 0)
+        app_port = self._get_prop('port', app_port)
+        rec_port = self._get_prop('rec_port', rec_port)
+        warc_port = self._get_prop('warc_port', warc_port)
 
         loglevel = self._get_prop('loglevel')
         if isinstance(loglevel, str):
@@ -47,19 +44,20 @@ class StandaloneRunner(FullStackRunner):
         else:
             self.app_dir = os.getcwd()
 
-        self.warcs_dir = warcs_dir
         self.init_env()
 
-        self._patch_redis(cache_dir)
+        self._runner_init()
 
-        self.admin_init()
+        is_recording = (rec_port > -1)
 
         from webrecorder.standalone.assetsutils import patch_bundle
         patch_bundle()
 
         super(StandaloneRunner, self).__init__(app_port=app_port,
                                                rec_port=rec_port,
-                                               warc_port=warc_port)
+                                               warc_port=warc_port,
+                                               run_storagecommitter=is_recording,
+                                               run_tempchecker=is_recording)
         atexit.register(self.close)
 
     def close(self):
@@ -71,13 +69,8 @@ class StandaloneRunner(FullStackRunner):
         except:
             return default
 
-    def _patch_redis(self, cache_dir):
-        import fakeredis
-        redis.StrictRedis = fakeredis.FakeStrictRedis
-
-    def admin_init(self):
-        admin_main(['-c', 'test@localhost', 'local', 'LocalUser1', 'archivist', 'local'])
-        os.environ['AUTO_LOGIN_USER'] = 'local'
+    def _runner_init(self):
+        pass
 
     def init_env(self):
         fh = pkgutil.get_data('webrecorder', 'config/wr_sample.env')
@@ -89,8 +82,6 @@ class StandaloneRunner(FullStackRunner):
             parts = line.split('=')
             if len(parts) == 2:
                 os.environ[parts[0]] = os.path.expandvars(parts[1])
-
-        os.environ['RECORD_ROOT'] = self.warcs_dir
 
         os.environ['WR_CONFIG'] = 'pkg://webrecorder/config/wr.yaml'
 
@@ -130,5 +121,8 @@ class StandaloneRunner(FullStackRunner):
         if embed:
             return main
 
-        main.app_serv.ge.join()
+        try:
+            main.app_serv.ge.join()
+        except:
+            print('Join Interrupted, Shutting Down!')
 

@@ -37,10 +37,17 @@ after_test:
   - pyinstaller --clean --additional-hooks-dir ./hooks/ -w -y -F ./webrecorder_player.py
   - "move .\\dist\\webrecorder_player.exe %APPVEYOR_BUILD_FOLDER%\\webrecorder-player-win-x%PYTHON_ARCH%.exe"
   - "%APPVEYOR_BUILD_FOLDER%\\webrecorder-player-win-x%PYTHON_ARCH%.exe -v"
+  - pyinstaller --clean --additional-hooks-dir ./hooks/ -w -y -F ./webrecorder_full.py
+  - "move .\\dist\\webrecorder_full.exe %APPVEYOR_BUILD_FOLDER%\\webrecorder-win-x%PYTHON_ARCH%.exe"
+  - "%APPVEYOR_BUILD_FOLDER%\\webrecorder-win-x%PYTHON_ARCH%.exe -v"
+
 
 artifacts:
-  - path: webrecorder-player*.exe
-    name: webrecorder-player
+  - path: webrecorder-*.exe
+    name: webrecorder
+
+
+
 
 deploy:
   provider: S3
@@ -49,4 +56,4 @@ deploy:
   access_key_id: $(aws_access_key_id)
   secret_access_key: $(aws_secret_access_key)
   folder: "webrecorder-player/$(APPVEYOR_REPO_BRANCH)"
-  artifact: webrecorder-player
+  artifact: webrecorder

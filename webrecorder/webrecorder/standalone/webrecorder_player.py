@@ -28,7 +28,8 @@ class WebrecPlayerRunner(StandaloneRunner):
         self.inputs = argres.inputs
         self.coll_dir = argres.coll_dir
         self.serializer = None
-        self.cache_dir = None
+
+        self.cache_dir = argres.cache_dir
 
         super(WebrecPlayerRunner, self).__init__(argres)
 
@@ -39,26 +40,25 @@ class WebrecPlayerRunner(StandaloneRunner):
     def close(self):
         super(WebrecPlayerRunner, self).close()
 
-    def _patch_redis(self, cache_dir):
+    def _patch_redis(self):
         redis.StrictRedis = fakeredis.FakeStrictRedis
 
-        if not cache_dir:
+        if not self.cache_dir:
             return
 
         if self.inputs:
-            cache_dir = os.path.join(os.path.dirname(self.inputs[0]), cache_dir)
+            self.cache_dir = os.path.join(os.path.dirname(self.inputs[0]), self.cache_dir)
             try:
-                os.makedirs(cache_dir)
+                os.makedirs(self.cache_dir)
             except OSError:
                 pass
 
             name = os.path.basename(self.inputs[0]) +'-cache.json.gz'
-            cache_db = os.path.join(cache_dir, name)
+            cache_db = os.path.join(self.cache_dir, name)
 
-            self.cache_dir = cache_dir
             self.serializer = FakeRedisSerializer(cache_db, self.inputs)
 
-    def admin_init(self):
+    def _admin_init(self):
         if self.coll_dir:
             self.load_coll_dir()
 
@@ -199,10 +199,14 @@ class WebrecPlayerRunner(StandaloneRunner):
         browser_redis.hmset('up:127.0.0.1', local_info)
         browser_redis.hset('req:@INIT', 'ip', '127.0.0.1')
 
-    def init_env(self):
-        super(WebrecPlayerRunner, self).init_env()
+    def _runner_init(self):
+        #os.environ['RECORD_ROOT'] = self.warcs_dir
         os.environ['WR_USER_CONFIG'] = 'pkg://webrecorder/config/standalone_player.yaml'
         os.environ['SECRET_KEY'] = base64.b32encode(os.urandom(75)).decode('utf-8')
+
+        self._patch_redis()
+
+        self._admin_init()
 
     def get_archive_files(self, inputs, prefix=''):
         for filename in inputs:

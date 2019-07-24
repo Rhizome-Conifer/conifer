@@ -72,6 +72,13 @@
         padding: 1rem 2rem;
     }
 
+    button#prepare {
+        float: right;
+        margin-top: 1.5rem;
+        padding: 1rem 2rem;
+        margin-right: 8px;
+    }
+
     .Collapsible__trigger {
         cursor: pointer;
     }
@@ -128,4 +135,28 @@
 
 .main-bar .container {
     width: 65vw;
+}
+
+.session-settings {
+    display: flex;
+
+    & > div:not(.divider) {
+        width: 100%;
+        flex-grow: 1;
+    }
+
+    .divider {
+        margin: 0 2rem;
+        border: solid 1px #CCC;
+    }
+
+    .cookie-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        button + button {
+            margin-top: .5rem;
+        }
+    }
 }

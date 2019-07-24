@@ -6,7 +6,7 @@ import removeMd from 'remove-markdown';
 import { Button, DropdownButton, FormControl, MenuItem } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import { onboardingLink, truncSentence, truncWord } from 'config';
+import { appHost, onboardingLink, truncSentence, truncWord } from 'config';
 import { doubleRAF, getCollectionLink, truncate } from 'helpers/utils';
 
 import { DeleteCollection, Upload } from 'containers';
@@ -55,7 +55,7 @@ class CollectionHeaderUI extends Component {
 
   downloadCollection = () => {
     const { collection } = this.props;
-    window.location = `${getCollectionLink(collection)}/$download`;
+    window.location.href = `${appHost}/${getCollectionLink(collection)}/$download`;
   }
 
   copyDat = () => {
@@ -207,9 +207,9 @@ class CollectionHeaderUI extends Component {
                   <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
                   {
                     !isAnon &&
-                      <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>Upload To Collection</Upload>
+                      <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>{ __DESKTOP__ ? 'Import' : 'Upload' } To Collection</Upload>
                   }
-                  <MenuItem onClick={this.downloadCollection}>Download Collection</MenuItem>
+                  <MenuItem onClick={this.downloadCollection}>{ __DESKTOP__ ? 'Export' : 'Download' } Collection</MenuItem>
                   <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
                   {
                     allowDat && canAdmin && !isAnon && newFeatures &&

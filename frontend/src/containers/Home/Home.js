@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { connect } from 'react-redux';
@@ -13,7 +13,7 @@ import { StandaloneRecorder } from 'containers';
 import './style.scss';
 
 
-class Home extends Component {
+class Home extends PureComponent {
 
   static propTypes = {
     auth: PropTypes.object,
@@ -21,43 +21,9 @@ class Home extends Component {
     showModalCB: PropTypes.func,
   };
 
-  shouldComponentUpdate(nextProps) {
-    if (this.props.auth.get('loading')) {
-      return false;
-    }
-
-    return true;
-  }
-
-  render() {
-    const { auth, showModalCB } = this.props;
-    const user = auth.get('user');
-
+  homepage_marketing() {
     return (
       <React.Fragment>
-        <Helmet>
-          <title>Homepage</title>
-        </Helmet>
-        <div className="row top-buffer main-logo">
-          <h1>Webrecorder</h1>
-        </div>
-        <div className="row tagline">
-          <h4 className="text-center">Collect & Revisit the Web</h4>
-        </div>
-        {
-          user.get('anon') && user.get('num_collections') > 0 &&
-            <HomepageMessage
-              auth={auth}
-              showModal={showModalCB} />
-        }
-        <div className="row top-buffer-lg bottom-buffer-lg">
-          <StandaloneRecorder />
-        </div>
-        {
-          homepageAnnouncement &&
-            <HomepageAnnouncement />
-        }
-
         <div className="row intro-blurb">
           <div className="col-sm-8 col-sm-offset-2">
             <h6>Our Mission</h6>
@@ -68,7 +34,6 @@ class Home extends Component {
           </div>
         </div>
 
-        {/*  Online Forever */}
         <div className="row landing-info">
           <div>
             <div className="col-sm-6 hidden-xs">
@@ -139,6 +104,46 @@ class Home extends Component {
             <p><small>We're working on a more detailed explanation of how it all works. For now, email us at <a href={`mailto:${supportEmail}`} target="_blank">{supportEmail}</a> if you have any questions. </small></p>
           </div>
         </div>
+      </React.Fragment>
+    );
+  }
+
+  render() {
+    const { auth, showModalCB } = this.props;
+    const user = auth.get('user');
+
+    return (
+      <React.Fragment>
+        <Helmet>
+          <title>Homepage</title>
+        </Helmet>
+        <div className="row top-buffer main-logo">
+          <h1>Webrecorder</h1>
+        </div>
+        <div className="row tagline">
+          {
+            !__DESKTOP__ ?
+              <h4 className="text-center">Collect & Revisit the Web</h4> :
+              <h4 className="text-center">Desktop App</h4>
+          }
+        </div>
+        {
+          user.get('anon') && user.get('num_collections') > 0 &&
+            <HomepageMessage
+              auth={auth}
+              showModal={showModalCB} />
+        }
+        <div className="row top-buffer-lg bottom-buffer-lg">
+          <StandaloneRecorder />
+        </div>
+        {
+          homepageAnnouncement &&
+            <HomepageAnnouncement />
+        }
+
+        { !__DESKTOP__ &&
+            this.homepage_marketing()
+        }
       </React.Fragment>
     );
   }

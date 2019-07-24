@@ -5,6 +5,7 @@ import querystring from 'querystring';
 import { Button } from 'react-bootstrap';
 
 import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
+import config from 'config';
 
 import { DeleteCollection, SessionCollapsible, Upload } from 'containers';
 
@@ -44,7 +45,7 @@ class CollectionManagementUI extends Component {
 
   downloadAction = (evt) => {
     const { collection } = this.props;
-    window.location = `${getCollectionLink(collection)}/$download`;
+    window.location.href = `${config.appHost}/${getCollectionLink(collection)}/$download`;
   }
 
   render() {
@@ -106,12 +107,12 @@ class CollectionManagementUI extends Component {
                   <TrashIcon /> Delete Entire Collection
                 </DeleteCollection>
                 <Button onClick={this.downloadAction}>
-                  <DownloadIcon /> Download Collection as WARC
+                  <DownloadIcon /> { __DESKTOP__ ? 'Export' : 'Download' } Collection as WARC
                 </Button>
                 {
                   !this.context.isAnon &&
                     <Upload fromCollection={collection.get('id')} classes="btn btn-default">
-                      <UploadIcon /> Upload WARC to Collection
+                      <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' } WARC to Collection
                     </Upload>
                 }
               </div>

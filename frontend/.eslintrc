@@ -102,6 +102,7 @@
     "__DISABLE_SSR__": true,
     "__DEVTOOLS__": true,
     "__PLAYER__": true,
+    "__DESKTOP__": true,
     "socket": true,
     "expect": true,
     "ContentFrame": false,

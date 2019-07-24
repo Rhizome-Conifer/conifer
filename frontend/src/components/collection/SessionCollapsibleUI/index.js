@@ -8,7 +8,7 @@ import Collapsible from 'react-collapsible';
 import { List } from 'immutable';
 import { Button, Overlay, Popover } from 'react-bootstrap';
 
-import { defaultRecDesc } from 'config';
+import { appHost, defaultRecDesc } from 'config';
 import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
 
 import { getRecordingBookmarks } from 'store/modules/recordings';
@@ -73,7 +73,7 @@ class SessionCollapsibleUI extends PureComponent {
   downloadAction = (evt) => {
     evt.stopPropagation();
     const { collection, recording } = this.props;
-    window.location = `${getCollectionLink(collection)}/${recording.get('id')}/$download`;
+    window.location.href = `${appHost}/${getCollectionLink(collection)}/${recording.get('id')}/$download`;
   }
 
   editDescription = (txt) => {
@@ -156,7 +156,7 @@ class SessionCollapsibleUI extends PureComponent {
             <DateHeader dt={recording.get('created_at')} />
             <div className="functions">
               <Button ref={(o) => { this.expanded = o; }} onClick={this.toggleDeletePopover}><TrashIcon /> Delete</Button>
-              <Button onClick={this.downloadAction}><DownloadIcon /> Download</Button>
+              <Button onClick={this.downloadAction}><DownloadIcon /> { __DESKTOP__ ? 'Export' : 'Download' }</Button>
             </div>
           </div>
           <div className="session-notes">

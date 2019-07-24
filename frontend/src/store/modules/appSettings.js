@@ -6,10 +6,21 @@ const SET_SOURCE = 'wr/appSettings/SET_SOURCE';
 
 // see if host is stored in sessionStorage or null
 const initialState = fromJS({
-  host: __PLAYER__ ? window.sessionStorage.getItem('_wr_host') : '',
+  host: '',
   canGoForward: false,
   canGoBackward: false
 });
+
+function _getHost() {
+  if (__PLAYER__) {
+    return window.sessionStorage.getItem('_wr_host')
+  } else if (__DESKTOP__) {
+    const remoteProcess = window.require('electron').remote.process;
+    return `localhost:` + remoteProcess.env.INTERNAL_PORT;
+  } else {
+    return '';
+  }
+}
 
 export default function appSettings(state = initialState, action = {}) {
   switch(action.type) {

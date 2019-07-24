@@ -823,8 +823,10 @@ class CLIUserManager(UserManager):
         """
         if username not in self.all_users:
             print("User {username} does not exist".format(username=username))
+            return False
         else:
             print("User {username} exists".format(username=username))
+            return True
 
     def delete_user(self):
         """Remove a user from the system"""

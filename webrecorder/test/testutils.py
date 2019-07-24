@@ -24,10 +24,6 @@ from webrecorder.fullstackrunner import FullStackRunner
 from webrecorder.models import User, Collection, Recording
 from webrecorder.models.base import BaseAccess, RedisUniqueComponent
 
-from webrecorder.rec.tempchecker import TempChecker
-from webrecorder.rec.storagecommitter import StorageCommitter
-from webrecorder.rec.worker import Worker
-
 from webrecorder.utils import today_str, get_new_id
 
 
@@ -233,7 +229,9 @@ class FullStackTests(HttpBinLiveTests, BaseWRTests):
 
     @classmethod
     def custom_init(cls, kwargs):
-        cls.runner = FullStackRunner(app_port=-1, env_params=cls.runner_env_params)
+        cls.runner = FullStackRunner(app_port=-1, env_params=cls.runner_env_params,
+                                     run_tempchecker=kwargs.get('temp_worker'),
+                                     run_storagecommitter=kwargs.get('storage_worker'))
 
     @classmethod
     def _get_dechunked(cls, stream):
@@ -256,26 +254,9 @@ class FullStackTests(HttpBinLiveTests, BaseWRTests):
         cls.id_mock = patch('webrecorder.models.base.RedisUniqueComponent.get_new_id', cls.new_id_override())
         cls.id_mock.start()
 
-        storage_worker = kwargs.get('storage_worker')
-        temp_worker = kwargs.get('temp_worker')
-
-        cls.storage_worker = Worker(StorageCommitter) if storage_worker else None
-        if cls.storage_worker:
-            gevent.spawn(cls.storage_worker.run)
-
-        cls.temp_worker = Worker(TempChecker) if temp_worker else None
-        if cls.temp_worker:
-            gevent.spawn(cls.temp_worker.run)
-
     @classmethod
     def teardown_class(cls, *args, **kwargs):
         cls.id_mock.stop()
-
-        if cls.temp_worker:
-            cls.temp_worker.stop()
-
-        if cls.storage_worker:
-            cls.storage_worker.stop()
 
         cls.runner.close()
         super(FullStackTests, cls).teardown_class(*args, **kwargs)
