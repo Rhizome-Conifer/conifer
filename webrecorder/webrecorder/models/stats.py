@@ -1,4 +1,5 @@
 import os
+
 from datetime import datetime
 from webrecorder.utils import redis_pipeline, today_str
 
@@ -41,6 +42,8 @@ class Stats(object):
     BOOKMARK_ADD_KEY = 'st:bookmark-add'
     BOOKMARK_MOD_KEY = 'st:bookmark-mod'
     BOOKMARK_DEL_KEY = 'st:bookmark-del'
+
+    BEHAVIOR_KEY = 'st:behaviors:{stat}:{name}'
 
     BROWSERS_KEY = 'st:br:{0}'
 
@@ -184,3 +187,14 @@ class Stats(object):
             pi.hincrby(self.TEMP_MOVE_SIZE_KEY, today, size)
             pi.hincrby(self.ALL_CAPTURE_USER_KEY, date_str, size)
             pi.hincrby(self.ALL_CAPTURE_TEMP_KEY, date_str, -size)
+
+    def incr_behavior_stat(self, stat, behavior, browser):
+        if stat not in ('start', 'done'):
+            return
+
+        if not behavior:
+            return
+
+        key = self.BEHAVIOR_KEY.format(stat=stat, name=behavior)
+
+        self.redis.hincrby(key, today_str(), 1)

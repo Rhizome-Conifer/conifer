@@ -48,6 +48,8 @@ class WebrecorderRunner(StandaloneRunner):
         os.environ['ALLOW_DAT'] = '1'
         os.environ['DAT_SHARE_HOST'] = 'localhost'
 
+        os.environ['BEHAVIORS_DIR'] = os.path.join(self.root_dir, 'behaviors')
+
         local_info=dict(browser='',
                         reqid='@INIT')
 

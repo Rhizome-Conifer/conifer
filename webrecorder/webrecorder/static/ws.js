@@ -11,8 +11,6 @@
 
     var on_openned;
 
-    var is_autoscroll = false;
-
     var json_stringify = JSON.stringify;
     var json_parse = JSON.parse;
 
@@ -191,14 +189,10 @@
                 }
                 break;
 
-            case "autoscroll":
-                if (!document.hidden) {
-                    sendLocalMsg({"wb_type": "autoscroll",
-                                  "start": !is_autoscroll,
-                                  "timeout": 25000});
-
-                    is_autoscroll = !is_autoscroll;
-                }
+            case "behavior":
+                msg.wb_type = msg.ws_type;
+                delete msg.ws_type;
+                sendLocalMsg(msg);
                 break;
 
             case "switch":
@@ -256,7 +250,8 @@
 
         if (message.wb_type == "skipreq" ||
             message.wb_type == "patch_req" ||
-            message.wb_type == "autoscroll_resp") {
+            message.wb_type == "behaviorStep" ||
+            message.wb_type == "behaviorDone") {
 
             message.ws_type = message.wb_type;
             delete message.wb_type;

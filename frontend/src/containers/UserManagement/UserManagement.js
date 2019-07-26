@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { load, login } from 'store/modules/auth';
-import { reportBug, toggleModal } from 'store/modules/bugReport';
+import { toggleModal } from 'store/modules/bugReport';
 import { showModal } from 'store/modules/userLogin';
 
 import { UserManagementUI } from 'components/siteComponents';
@@ -15,7 +15,7 @@ const mapStateToProps = ({ app }) => {
     auth: app.get('auth'),
     next: app.getIn(['userLogin', 'next']),
     open: app.getIn(['userLogin', 'open']),
-    uiBug: app.getIn(['bugReport', 'ui'])
+    reportModal: app.getIn(['bugReport', 'reportModal'])
   };
 };
 
@@ -23,9 +23,8 @@ const mapDispatchToProps = (dispatch) => {
   return {
     loadAuth: () => dispatch(load()),
     loginFn: data => dispatch(login(data)),
-    sendUIReport: data => dispatch(reportBug(data, true)),
     showModal: b => dispatch(showModal(b)),
-    toggleBugModal: b => dispatch(toggleModal(b, true))
+    toggleBugModal: b => dispatch(toggleModal(b, 'ui'))
   };
 };
 

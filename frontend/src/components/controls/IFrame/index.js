@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import config from 'config';
 import WebSocketHandler from 'helpers/ws';
 
+import { toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
 import { updateTimestamp, updateUrl } from 'store/modules/controls';
 
 import { apiFetch, setTitle } from 'helpers/utils';
@@ -15,9 +16,9 @@ import './style.scss';
 class IFrame extends Component {
   static propTypes = {
     activeBookmarkId: PropTypes.string,
-    autoscroll: PropTypes.bool,
     auth: PropTypes.object,
     appPrefix: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+    behavior: PropTypes.string,
     contentPrefix: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
     dispatch: PropTypes.func,
     params: PropTypes.object,
@@ -76,15 +77,19 @@ class IFrame extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { activeBookmarkId, autoscroll, appPrefix, contentPrefix, url, timestamp } = this.props;
+    const { activeBookmarkId, appPrefix, behavior, contentPrefix, url, timestamp } = this.props;
 
-    if (autoscroll !== nextProps.autoscroll && this.contentFrame) {
+    if (behavior !== nextProps.behavior && this.contentFrame) {
       this.contentFrame.iframe.contentWindow.postMessage({
-        wb_type: 'autoscroll',
-        start: nextProps.autoscroll,
-        timeout: nextProps.autoscroll ? 25000 : 0,
-        skipCallback: autoscroll
+        wb_type: 'behavior',
+        name: nextProps.behavior,
+        url,
+        start: !!nextProps.behavior,
       }, '*', undefined, true);
+
+      if (nextProps.behavior) {
+        this.socket.behaviorStat('start', nextProps.behavior);
+      }
     }
 
     if (nextProps.url !== url || nextProps.timestamp !== timestamp ||
@@ -162,6 +167,13 @@ class IFrame extends Component {
     }
 
     switch(state.wb_type) {
+      case 'behaviorDone':
+        this.socket.behaviorStat('done', this.props.behavior);
+        this.props.dispatch(toggleAutopilot(null, 'complete', this.props.url));
+        break;
+      case 'behaviorStep':
+        this.props.dispatch(updateBehaviorState(state.result));
+        break;
       case 'load':
         this.addNewPage(state, true);
         break;
@@ -254,7 +266,7 @@ class IFrame extends Component {
     const { passEvents } = this.props;
 
     return (
-      <iframe className="wb_iframe" style={passEvents ? { pointerEvents: 'none' } : {}} ref={(obj) => { this.iframe = obj; }} />
+      <iframe className="wb_iframe" allow="autoplay, fullscreen" style={passEvents ? { pointerEvents: 'none' } : {}} ref={(obj) => { this.iframe = obj; }} />
     );
   }
 }

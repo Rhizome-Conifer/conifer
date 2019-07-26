@@ -34,6 +34,7 @@ from webrecorder.appcontroller import AppController
 from webrecorder.autocontroller import AutoController
 
 from webrecorder.browsermanager import BrowserManager
+from webrecorder.behaviormgr import BehaviorMgr
 
 from webrecorder.webreccork import WebRecCork
 
@@ -145,6 +146,9 @@ class MainController(BaseController):
         # Init Core app controllers
         for controller_type in self.ALL_CONTROLLERS:
             x = controller_type(**kwargs)
+
+        if os.environ.get('BEHAVIORS_DIR'):
+            self.behavior_mgr = BehaviorMgr(os.environ.get('BEHAVIORS_DIR'), bottle_app)
 
         # Set Error Handler
         bottle_app.default_error_handler = self.make_err_handler(

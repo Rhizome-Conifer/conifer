@@ -19,6 +19,7 @@ const { ipcRenderer } = window.require('electron');
 
 class Webview extends Component {
   static propTypes = {
+    behavior: PropTypes.string,
     canGoBackward: PropTypes.bool,
     canGoForward: PropTypes.bool,
     dispatch: PropTypes.func,
@@ -66,7 +67,12 @@ class Webview extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { timestamp, url } = this.props;
+    const { behavior, timestamp, url } = this.props;
+
+    // behavior check
+    if (behavior !== nextProps.behavior && this.socket) {
+      this.socket.doBehavior(nextProps.url, nextProps.behavior);
+    }
 
     if (nextProps.url !== url || nextProps.timestamp !== timestamp) {
       if (!this.internalUpdate) {

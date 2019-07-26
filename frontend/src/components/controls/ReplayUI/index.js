@@ -13,6 +13,7 @@ import './style.scss';
 class ReplayUI extends Component {
   static propTypes = {
     activeBrowser: PropTypes.string,
+    autopilotRunning: PropTypes.bool,
     params: PropTypes.object,
     sidebarExpanded: PropTypes.bool,
     timestamp: PropTypes.string,
@@ -47,11 +48,6 @@ class ReplayUI extends Component {
         {
           canAdmin && !isMobile &&
             <ModeSelector />
-        }
-
-        {
-          isWrite &&
-            <SizeCounter bytes={0} />
         }
 
         {

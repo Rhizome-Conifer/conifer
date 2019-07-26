@@ -16,7 +16,8 @@ class AppHeader extends PureComponent {
   static propTypes = {
     authUser: PropTypes.object,
     is404: PropTypes.bool,
-    location: PropTypes.object
+    location: PropTypes.object,
+    routes: PropTypes.array
   };
 
   getActiveMatch = memoize((url) => {
@@ -44,7 +45,7 @@ class AppHeader extends PureComponent {
                 <BreadcrumbsUI is404={is404} url={pathname} />
             }
           </div>
-          <UserManagement canAdmin={canAdmin} />
+          <UserManagement route={route} canAdmin={canAdmin} />
         </nav>
       </header>
     );

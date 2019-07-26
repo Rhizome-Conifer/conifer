@@ -1,12 +1,14 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Button, DropdownButton, MenuItem } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
 import { appHost, product } from 'config';
 import { apiFetch } from 'helpers/utils';
 
+import { ShareWidget } from 'containers';
+
 import Modal from 'components/Modal';
-import { BugReport, ShareWidget } from 'containers';
+import { WandIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -15,12 +17,12 @@ class RecordingToolsUI extends PureComponent {
   static propTypes = {
     activeBrowser: PropTypes.string,
     auth: PropTypes.object,
-    autoscroll: PropTypes.bool,
     history: PropTypes.object,
+    autopilot: PropTypes.bool,
     match: PropTypes.object,
     timestamp: PropTypes.string,
-    toggleAutoscroll: PropTypes.func,
     toggleClipboard: PropTypes.func,
+    toggleAutopilotSidebar: PropTypes.func,
     url: PropTypes.string
   };
 
@@ -80,25 +82,12 @@ class RecordingToolsUI extends PureComponent {
       .catch(err => console.log('error', err));
   }
 
-  catalogView = () => {
-    const { match: { params: { user, coll } } } = this.props;
-    this.props.history.push(`/${user}/${coll}/manage`);
-  }
-
-  toggleAutoscroll = () => {
-    this.props.toggleAutoscroll(!this.props.autoscroll);
-  }
-
   startAuto = () => {
     apiFetch(`/browser/behavior/start/${this.props.reqId}`, {}, { method: 'POST' });
   }
 
   stopAuto = () => {
     apiFetch(`/browser/behavior/stop/${this.props.reqId}`, {}, { method: 'POST' });
-  }
-
-  userGuide = () => {
-    this.props.history.push('/_documentation');
   }
 
   openClipboard = () => this.props.toggleClipboard(true)
@@ -109,9 +98,13 @@ class RecordingToolsUI extends PureComponent {
 
   _close = () => this.setState({ clipboardOpen: false })
 
+  toggleAutopilotSidebar = () => {
+    this.props.toggleAutopilotSidebar(!this.props.autopilot);
+  }
+
   render() {
     const { canAdmin, currMode } = this.context;
-    const { activeBrowser, autoscroll } = this.props;
+    const { activeBrowser } = this.props;
 
     const isNew = currMode === 'new';
     const isWrite = ['new', 'patch', 'record', 'extract'].includes(currMode);
@@ -130,44 +123,23 @@ class RecordingToolsUI extends PureComponent {
           <p>You can also paste text here to send to remote browser.</p>
           <textarea id="clipboard" autoFocus style={{ width: '100%', minHeight: 200 }} />
         </Modal>
-        {
-          canAdmin && !isNew &&
-            <DropdownButton pullRight noCaret id="tool-dropdown" title={<span className="glyphicon glyphicon-option-vertical" aria-hidden="true" />}>
 
-              {
-                newFeatures &&
-                  <React.Fragment>
-                    <MenuItem onClick={this.startAuto}>Start Automation</MenuItem>
-                    <MenuItem onClick={this.stopAuto}>Stop Automation</MenuItem>
-                    <MenuItem divider />
-                  </React.Fragment>
-              }
-
-              <MenuItem onClick={this.catalogView}>Collection Index</MenuItem>
-              {
-                currMode.includes('replay') &&
-                  <React.Fragment>
-                    <MenuItem divider />
-                    <MenuItem onClick={this.onPatch}>Patch this URL</MenuItem>
-                    <MenuItem onClick={this.onRecord}>Record this URL again</MenuItem>
-                  </React.Fragment>
-              }
-              <MenuItem divider />
-              <MenuItem onClick={this.toggleAutoscroll}>{autoscroll ? 'Turn off' : 'Turn on'} autoscroll</MenuItem>
-              {
-                activeBrowser &&
-                  <MenuItem onClick={this._open}>
-                    <span className="glyphicon glyphicon-paste" /> Clipboard
-                  </MenuItem>
-              }
-              <MenuItem divider />
-              <MenuItem href="https://guide.webrecorder.io/" target="_blank">Help</MenuItem>
-            </DropdownButton>
-        }
         {
-          !isNew && product !== 'player' &&
-            <BugReport />
+          canAdmin && !isNew && activeBrowser &&
+            <button
+              type="button"
+              className="rounded clipboard-btn"
+              aria-label="Remote browser clipboard"
+              onClick={this._open}>
+              <span className="glyphicon glyphicon-paste" />
+            </button>
         }
+
+        {
+          isWrite &&
+            <button className="rounded autopilot-btn" onClick={this.toggleAutopilotSidebar} type="button"><WandIcon /> Autopilot Options</button>
+        }
+
         {
           !isWrite && product !== 'player' &&
             <ShareWidget />

@@ -3,7 +3,6 @@ import { fromJS } from 'immutable';
 
 
 const ACTIVE_LIST = 'wr/ctrls/ACTIVE_LIST';
-const SET_AUTOSCROLL = 'wr/ctrls/SET_AUTOSCROLL';
 const SET_MODE = 'wr/ctrls/SET_MODE';
 const SET_EXTRACTABLE = 'wr/ctrls/SET_EXTRACTABLE';
 const SET_ALL_SOURCES = 'wr/ctrls/SET_ALL_SOURCES';
@@ -23,7 +22,6 @@ const initialState = fromJS({
   mode: null,
   activeList: null,
   activeBookmarkId: null,
-  autoscroll: false,
   extractable: null,
   archivesLoading: false,
   archivesAccessed: null,
@@ -52,8 +50,6 @@ export default function controls(state = initialState, action = {}) {
       });
     case SET_404:
       return state.set('is404', action.bool);
-    case SET_AUTOSCROLL:
-      return state.set('autoscroll', action.bool);
     case SET_BK_ID:
       return state.set('activeBookmarkId', action.id);
     case SET_MODE:
@@ -88,14 +84,6 @@ export function getArchives(host = '') {
     types: [GET_ARCHIVES, GET_ARCHIVES_SUCCESS, GET_ARCHIVES_FAIL],
     accessed: Date.now(),
     promise: client => client.get(`${host}${config.apiPath}/client_archives`)
-  };
-}
-
-
-export function setAutoscroll(bool) {
-  return {
-    type: SET_AUTOSCROLL,
-    bool
   };
 }
 
