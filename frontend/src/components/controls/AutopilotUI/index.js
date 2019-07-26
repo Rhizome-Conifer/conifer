@@ -10,6 +10,7 @@ import './style.scss';
 class AutopilotUI extends Component {
   static propTypes = {
     activeBrowser: PropTypes.string,
+    autopilotReset: PropTypes.func,
     behavior: PropTypes.string,
     behaviorState: PropTypes.string,
     browsers: PropTypes.object,
@@ -41,7 +42,7 @@ class AutopilotUI extends Component {
 
     // reset status if complete
     if (this.props.status === 'complete' && this.props.url !== this.props.autopilotUrl) {
-      this.props.toggleAutopilot(null, 'stopped');
+      this.props.autopilotReset();
     }
 
     if (
@@ -53,12 +54,11 @@ class AutopilotUI extends Component {
   }
 
   componentDidUpdate(lastProps) {
-    if (['stopped', 'complete'].includes(this.props.status) && this.props.url !== lastProps.url) {
+    if (
+      (['stopped', 'complete'].includes(this.props.status) && this.props.url !== lastProps.url) ||
+      this.props.activeBrowser !== lastProps.activeBrowser) {
       // reset status on url change
-      if (this.props.status === 'complete') {
-        this.props.toggleAutopilot(null, 'stopped');
-      }
-
+      this.props.autopilotReset();
       this.props.checkAvailability(this.props.url);
     }
 
@@ -116,7 +116,7 @@ class AutopilotUI extends Component {
                       <li onClick={this.selectMode.bind(this, name)} key={name}>
                         <input type="radio" name="behavior" value={name} disabled={isRunning || isComplete} aria-labelledby="opt1" onChange={this.handleInput} checked={this.state.behavior === name} />
                         <div className="desc" id="opt1">
-                          <div className="heading">{name}</div>
+                          <div className="heading">{behavior.get('displayName') || name}</div>
                           <div className="last-modified">
                             <em>{`Updated: ${dt.toLocaleDateString()} ${dt.toLocaleTimeString()}`}</em>
                           </div>

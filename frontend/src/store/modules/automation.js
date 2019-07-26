@@ -1,10 +1,12 @@
 import { apiPath } from 'config';
-import { fromJS } from 'immutable';
+import { fromJS, List } from 'immutable';
 
 
 const AUTOPILOT_CHECK = 'wr/automation/AUTOPILOT_CHECK';
 const AUTOPILOT_CHECK_SUCCESS = 'wr/automation/AUTOPILOT_CHECK_SUCCESS';
 const AUTOPILOT_CHECK_FAIL = 'wr/automation/AUTOPILOT_CHECK_FAIL';
+
+const AUTOPILOT_RESET = 'wr/automation/AUTOPILOT_RESET';
 
 const AUTOPILOT_TOGGLE_AUTOMATION = 'wr/automation/AUTOPILOT_TOGGLE_AUTOMATION';
 const AUTOPILOT_UPDATE_BEHAVIOR_STATUS = 'wr/automation/AUTOPILOT_UPDATE_BEHAVIOR_STATUS';
@@ -68,6 +70,14 @@ export default function automation(state = initialState, action = {}) {
       });
     case TOGGLE_AUTOPILOT_SIDEBAR:
       return state.set('autopilot', action.bool);
+    case AUTOPILOT_RESET:
+      return state.merge({
+        autopilotStatus: 'stopped',
+        autopilotInfo: List(),
+        autopilotUrl: action.url,
+        behavior: null,
+        behaviorState: null
+      });
     default:
       return state;
   }
@@ -108,6 +118,14 @@ export function queueAutomation(user, coll, aid, urls) {
         urls
       }
     })
+  };
+}
+
+
+export function autopilotReset(url = '') {
+  return {
+    type: AUTOPILOT_RESET,
+    url
   };
 }
 

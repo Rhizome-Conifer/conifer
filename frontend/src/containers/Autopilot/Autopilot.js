@@ -1,7 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { autopilotCheck, toggleAutopilot, toggleAutopilotSidebar } from 'store/modules/automation';
+import {
+  autopilotCheck,
+  autopilotReset,
+  toggleAutopilot,
+  toggleAutopilotSidebar
+} from 'store/modules/automation';
 
 import { AutopilotUI } from 'components/controls';
 
@@ -24,7 +29,8 @@ const mapDispatchToProps = (dispatch) => {
   return {
     toggleSidebar: b => dispatch(toggleAutopilotSidebar(b)),
     toggleAutopilot: (behavior, status, url) => dispatch(toggleAutopilot(behavior, status, url)),
-    checkAvailability: url => dispatch(autopilotCheck(url))
+    checkAvailability: url => dispatch(autopilotCheck(url)),
+    autopilotReset: () => dispatch(autopilotReset())
   };
 };
 

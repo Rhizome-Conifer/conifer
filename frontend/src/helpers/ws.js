@@ -2,7 +2,7 @@ import config from 'config';
 
 import { remoteBrowserMod } from 'helpers/utils';
 
-import { toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
+import { autopilotCheck, autopilotReset, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
 import { updateUrlAndTimestamp } from 'store/modules/controls';
 import { setStats } from 'store/modules/infoStats';
 
@@ -112,7 +112,7 @@ class WebSocketHandler {
         break;
       case 'page':
         if (this.isRemoteBrowser && msg.visible) {
-          this.dispatch(toggleAutopilot(null, 'stopped', msg.page.url));
+          this.dispatch(autopilotReset());
         }
         // fall through
       case 'remote_url': {
