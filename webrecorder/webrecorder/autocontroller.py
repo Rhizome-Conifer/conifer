@@ -8,8 +8,6 @@ import os
 # ============================================================================
 class AutoController(BaseController):
     def init_routes(self):
-        behaviors_api = os.environ.get('BEHAVIOR_API', 'http://behaviors:3030')
-
         # CREATE AUTO
         @self.app.post('/api/v1/auto')
         def create_auto():

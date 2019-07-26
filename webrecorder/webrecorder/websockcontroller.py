@@ -214,9 +214,6 @@ class BaseWebSockHandler(object):
                 else:
                     print('Invalid Rec for Page Data')
 
-            if from_browser and msg.get('visible'):
-                msg['ws_type'] = 'remote_url'
-
         elif msg['ws_type'] == 'config-stats':
             self.stats_urls = msg['stats_urls']
 
@@ -249,7 +246,7 @@ class BaseWebSockHandler(object):
                 self._publish(to_browser, msg)
 
         elif from_browser:
-            if msg['ws_type'] in ('remote_url', 'patch_req', 'behaviorDone', 'behaviorStep', 'snapshot'):
+            if msg['ws_type'] in ('remote_url', 'patch_req', 'behaviorDone', 'behaviorStep', 'snapshot', 'page'):
                 self._publish(from_browser, msg)
 
     def get_status(self):

@@ -1,4 +1,5 @@
-from bottle import request, static_file, HTTPResponse
+from webrecorder.basecontroller import BaseController
+from bottle import request, static_file, HTTPResponse, response
 from pkg_resources import resource_filename
 
 import os
@@ -7,26 +8,30 @@ import sys
 import tarfile
 import re
 import logging
+import requests
 import traceback
 
 
 # ============================================================================
-class BehaviorMgr(object):
-    def __init__(self, root, app):
-        self.behaviors_root = root
-        self.behaviors_data = os.path.join(self.behaviors_root, 'dist')
-        self.behaviors_metadata = os.path.join(self.behaviors_data, 'behaviorMetadata.json')
-        self.app = app
+class BehaviorMgr(BaseController):
+    def __init__(self, *args, **kwargs):
+        super(BehaviorMgr, self).__init__(*args, **kwargs)
+        self.behaviors_api = os.environ.get('BEHAVIOR_API', 'http://behaviors:3030')
+        self.behaviors_root = os.environ.get('BEHAVIORS_DIR')
 
         self.default_behavior = {}
         self.behaviors = {}
 
-        try:
-            self.unpack_behaviors()
-            self.load()
-            self.init_routes()
-        except Exception as e:
-            traceback.print_exc()
+        if self.behaviors_root:
+            self.behaviors_data = os.path.join(self.behaviors_root, 'dist')
+            self.behaviors_metadata = os.path.join(self.behaviors_data, 'behaviorMetadata.json')
+
+            try:
+                self.unpack_behaviors()
+                self.load()
+                self.init_routes()
+            except Exception as e:
+                traceback.print_exc()
 
     def unpack_behaviors(self, filename='behaviors.tar.gz'):
         if os.path.isfile(self.behaviors_metadata):
@@ -70,6 +75,13 @@ class BehaviorMgr(object):
     def init_routes(self):
         @self.app.get('/api/v1/behavior/info-list')
         def info_list():
+            # for non-desktop proxy mode, proxy to behaviors server
+            if not self.behaviors_root:
+                query = dict(request.query)
+                res = requests.get(self.behaviors_api + '/info-list', params=query)
+                response.content_type = 'application/json; charset=utf-8'
+                return res.content
+
             url = request.query.getunicode('url')
             behavior = self.find_match(url)
             behavior_list = []
@@ -81,6 +93,13 @@ class BehaviorMgr(object):
 
         @self.app.get('/api/v1/behavior/behavior')
         def get_behavior():
+            # for non-desktop proxy mode, proxy to behaviors server
+            if not self.behaviors_root:
+                query = dict(request.query)
+                res = requests.get(self.behaviors_api + '/behavior', params=query)
+                response.content_type = 'application/json; charset=utf-8'
+                return res.content
+
             url = request.query.getunicode('url')
             name = request.query.getunicode('name')
             behavior = None

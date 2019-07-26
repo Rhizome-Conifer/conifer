@@ -27,7 +27,9 @@ let isDesktop = false;
 
 try {
   isDesktop = __DESKTOP__;
-} catch (e) {}
+} catch (e) {
+  // ignore, if undefined, not desktop
+}
 
 if (isDesktop) {
   const remoteProcess = window.require('electron').remote.process;

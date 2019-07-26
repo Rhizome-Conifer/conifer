@@ -110,8 +110,13 @@ class WebSocketHandler {
           this.dispatch(setStats(msg.stats, msg.size || 0, msg.pending_size || 0));
         }
         break;
+      case 'page':
+        if (this.isRemoteBrowser && msg.visible) {
+          this.dispatch(toggleAutopilot(null, 'stopped', msg.page.url));
+        }
+        // fall through
       case 'remote_url': {
-        if (this.isRemoteBrowser) {
+        if (this.isRemoteBrowser && msg.visible) {
           const { page } = msg;
           this.dispatch(updateUrlAndTimestamp(page.url, page.timestamp));
           this.url = page.url;
