@@ -36,12 +36,25 @@
     flex-grow: 1;
     display: flex;
 
+    &.locked {
+        pointer-events: none;
+
+        iframe, .canvas {
+            cursor: not-allowed;
+            opacity: .5;
+        }
+    }
+
     &.embed {
         flex-direction: column;
 
         iframe {
             width: 100%;
         }
+    }
+
+    iframe {
+        transition: opacity .3s ease-in-out;
     }
 
     .wr-sidebar {

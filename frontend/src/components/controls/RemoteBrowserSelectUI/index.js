@@ -21,6 +21,7 @@ class RemoteBrowserSelectUI extends PureComponent {
     activeBookmarkId: PropTypes.string,
     activeBrowser: PropTypes.string,
     activeList: PropTypes.string,
+    autopilotRunning: PropTypes.bool,
     browsers: PropTypes.object,
     getBrowsers: PropTypes.func,
     history: PropTypes.object,
@@ -82,7 +83,7 @@ class RemoteBrowserSelectUI extends PureComponent {
   }
 
   render() {
-    const { active, activeBrowser, browsers, loading, loaded, selectedBrowser } = this.props;
+    const { active, activeBrowser, autopilotRunning, browsers, loading, loaded, selectedBrowser } = this.props;
     const { open } = this.state;
 
     // if this in an active instance of the widget (on replay/record interface) use activeBrowser prop
@@ -104,6 +105,7 @@ class RemoteBrowserSelectUI extends PureComponent {
         id="cnt-button"
         title={btn}
         bsStyle="default"
+        disabled={autopilotRunning}
         open={open}
         onToggle={this.getRemoteBrowsers}>
         <div className="container">

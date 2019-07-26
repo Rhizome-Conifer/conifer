@@ -7,6 +7,7 @@ import gevent.queue
 
 from webrecorder.basecontroller import BaseController
 from webrecorder.models.dynstats import DynStats
+from webrecorder.models.stats import Stats
 
 
 # ============================================================================
@@ -20,6 +21,7 @@ class WebsockController(BaseController):
         self.content_app = kwargs['content_app']
 
         self.dyn_stats = DynStats(self.redis, config)
+        self.stats = Stats(self.redis)
 
     def init_routes(self):
         @self.app.get('/_client_ws')
@@ -120,6 +122,7 @@ class BaseWebSockHandler(object):
         self.access = websock_controller.access
 
         self.dyn_stats = websock_controller.dyn_stats
+        self.stats = websock_controller.stats
 
         self.sesh_id = sesh_id
         self.stats_urls = stats_urls or []
@@ -220,6 +223,15 @@ class BaseWebSockHandler(object):
         elif msg['ws_type'] == 'set_url':
             self.stats_urls = [msg['url']]
 
+        elif msg['ws_type'] == 'behavior-stat':
+            self.stats.incr_behavior_stat(msg.get('type'), msg.get('name'), self.browser)
+
+        elif msg['ws_type'] == 'behavior':
+            self.stats.incr_behavior_stat('start', msg.get('name'), self.browser)
+
+        elif msg['ws_type'] == 'behaviorDone':
+            self.stats.incr_behavior_stat('done', msg.get('name'), self.browser)
+
         elif msg['ws_type'] == 'switch':
             #TODO: check this
             if not self.access.can_write_coll(self.collection):
@@ -233,11 +245,11 @@ class BaseWebSockHandler(object):
 
         # send to remote browser cmds
         if to_browser:
-            if msg['ws_type'] in ('set_url', 'autoscroll', 'load_all', 'switch', 'snapshot-req'):
+            if msg['ws_type'] in ('set_url', 'behavior', 'load_all', 'switch', 'snapshot-req'):
                 self._publish(to_browser, msg)
 
         elif from_browser:
-            if msg['ws_type'] in ('remote_url', 'patch_req', 'autoscroll_resp', 'snapshot'):
+            if msg['ws_type'] in ('remote_url', 'patch_req', 'behaviorDone', 'behaviorStep', 'snapshot'):
                 self._publish(from_browser, msg)
 
     def get_status(self):

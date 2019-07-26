@@ -43,6 +43,7 @@
 .recording-actions {
     display: flex;
     justify-content: center;
+    flex-shrink: 0;
 
     & > *:not(:last-child) {
         margin-right: .5rem;
@@ -52,6 +53,19 @@
         width: 1.6rem;
         height: 1.6rem;
         vertical-align: middle;
+    }
+
+    .clipboard-btn {
+        padding: .5rem 1.5rem;
+        vertical-align: middle;
+    }
+
+    .autopilot-btn {
+        svg {
+            vertical-align: middle;
+            height: 1.5rem;
+            margin-left: .5rem;
+        }
     }
 }
 

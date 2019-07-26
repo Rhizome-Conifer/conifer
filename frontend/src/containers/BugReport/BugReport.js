@@ -8,15 +8,14 @@ import { BugReportUI } from 'components/controls';
 
 const mapStateToProps = ({ app }) => {
   return {
-    showModal: app.getIn(['bugReport', 'dnlr'])
+    reportModal: app.getIn(['bugReport', 'reportModal'])
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    closeBugReport: () => dispatch(toggleModal(false)),
-    openBugReport: () => dispatch(toggleModal(true)),
-    sendBugReport: data => dispatch(reportBug(data))
+    closeBugReport: () => dispatch(toggleModal(null)),
+    sendBugReport: (data, reportType) => dispatch(reportBug(data, reportType))
   };
 };
 

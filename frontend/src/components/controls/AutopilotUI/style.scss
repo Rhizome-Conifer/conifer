@@ -1,0 +1,164 @@
+@import 'src/vars';
+
+.autopilot-sidebar {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 35rem;
+    background: rgba(0,0,0,.6);
+    color: $white;
+    padding: 1.5rem;
+    overflow: auto;
+    pointer-events: auto;
+
+    p {
+        margin-bottom: 1.5rem;
+    }
+
+    h2 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0 -1.5rem 1.5rem -1.5rem;
+
+        border-bottom: solid .1rem $white;
+        padding: 0 0 1.5rem 1.5rem;
+        font-size: 2.2rem;
+
+        button {
+            background: none;
+            border: none;
+
+            svg {
+                margin-right: 1.5rem;
+                width: 1.5rem;
+
+                path {
+                    fill: $white;
+                }
+            }
+        }
+    }
+
+    h4 {
+        svg {
+            g {
+                fill: $white;
+            }
+        }
+    }
+
+    .behaviors {
+        transition: opacity .25s ease-in-out;
+        list-style-type: none;
+        padding: 0;
+
+        li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            cursor: pointer;
+
+            input {
+                margin-right: 1rem;
+            }
+
+            .desc {
+                border: solid .1rem $white;
+                border-radius: .4rem;
+                padding: 1rem;
+
+                .heading {
+                    font-weight: bold;
+                }
+
+                .last-modified {
+                    font-size: 1.2rem;
+                    margin-bottom: .5rem;
+                }
+            }
+        }
+
+        &.active {
+            opacity: .75;
+
+            li {
+                cursor: initial;
+            }
+        }
+    }
+
+    .browser-selection {
+        margin: 1.5rem 0;
+
+        .browser-label {
+            display: block;
+            font-weight: 300;
+        }
+
+        .dropdown {
+            width: 100%;
+
+            button {
+                background: none;
+                color: $white;
+                border-color: $white;
+                width: 100%;
+                text-align: left;
+            }
+
+            .dropdown-menu {
+                width: 100%;
+            }
+
+            img {
+                vertical-align: text-top;
+                margin-right: .5rem;
+            }
+        }
+    }
+
+    .rounded {
+        margin: 1.5rem 0 .5rem 0;
+        color: $white;
+        width: 100%;
+        font-size: 1.6rem;
+        padding: 1rem 0;
+
+        svg {
+            margin-right: 1rem;
+
+            path {
+                fill: #FFF;
+            }
+        }
+
+        &.complete {
+            color: $bright-green-highlight;
+
+            svg {
+                path {
+                    fill: $bright-green-highlight;
+                }
+            }
+        }
+
+    }
+
+    .behaviorInfo {
+        margin-top: 20px;
+        font-size: 1.8rem;
+        color: $white;
+    }
+
+    .behaviorMsg {
+        font-family: monospace;
+        padding-bottom: 20px;
+        word-break: break-all;
+    }
+
+    .behaviorStats li {
+        font-style: italic;
+    }
+}

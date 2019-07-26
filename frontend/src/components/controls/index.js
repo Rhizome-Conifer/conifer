@@ -2,6 +2,7 @@ export BugReportUI from './BugReportUI';
 export ExtractWidgetUI from './ExtractWidgetUI';
 export IFrame from './IFrame';
 export InfoWidgetUI from './InfoWidgetUI';
+export AutopilotUI from './AutopilotUI';
 export ModeSelectorUI from './ModeSelectorUI';
 export NewRecordingUI from './NewRecordingUI';
 export PatchWidgetUI from './PatchWidgetUI';

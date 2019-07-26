@@ -1,9 +1,10 @@
-import { updateUrlAndTimestamp } from 'store/modules/controls';
-import { setStats } from 'store/modules/infoStats';
-
 import config from 'config';
 
 import { remoteBrowserMod } from 'helpers/utils';
+
+import { toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
+import { updateUrlAndTimestamp } from 'store/modules/controls';
+import { setStats } from 'store/modules/infoStats';
 
 
 class WebSocketHandler {
@@ -16,6 +17,7 @@ class WebSocketHandler {
     this.coll = coll;
     this.rec = rec;
     this.reqUrl = splat;
+    this.url = splat;
     this.useWS = false;
     this.dispatch = dispatch;
     this.lastPopUrl = undefined;
@@ -97,6 +99,12 @@ class WebSocketHandler {
     const msg = JSON.parse(evt.data);
 
     switch (msg.ws_type) {
+      case 'behaviorDone': // when autopilot is done running
+        this.dispatch(toggleAutopilot(null, 'complete', this.url));
+        break;
+      case 'behaviorStep':
+        this.dispatch(updateBehaviorState(msg.result));
+        break;
       case 'status':
         if (msg.stats || msg.size || msg.pending_size) {
           this.dispatch(setStats(msg.stats, msg.size || 0, msg.pending_size || 0));
@@ -106,6 +114,7 @@ class WebSocketHandler {
         if (this.isRemoteBrowser) {
           const { page } = msg;
           this.dispatch(updateUrlAndTimestamp(page.url, page.timestamp));
+          this.url = page.url;
 
           //setTitle("Remote", page.url, page.title);
           this.replaceOuterUrl(page, "load");
@@ -120,9 +129,6 @@ class WebSocketHandler {
             // EventHandlers.switchCBPatch(getUrl());
           }
         }
-        break;
-      case 'snapshot':
-        // Snapshot.updateModal(msg);
         break;
       default:
         console.log(msg);
@@ -204,8 +210,12 @@ class WebSocketHandler {
     return this.sendMsg({ ws_type: 'skipreq', url });
   }
 
-  doAutoscroll = () => {
-    return this.sendMsg({ ws_type: 'autoscroll' });
+  behaviorStat = (type, name) => {
+    return this.sendMsg({ ws_type: 'behavior-stat', name, type });
+  }
+
+  doBehavior = (url, name) => {
+    return this.sendMsg({ ws_type: 'behavior', url, name, start: !!name });
   }
 
   doLoadAll = () => {

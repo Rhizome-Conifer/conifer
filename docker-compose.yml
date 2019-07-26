@@ -103,6 +103,7 @@ services:
         depends_on:
             - app
             - frontend
+            - behaviors
 
         volumes:
             - ./data:/data
