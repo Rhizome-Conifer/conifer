@@ -30,6 +30,7 @@ datas += rename('webrecorder' + os.path.sep,
 
 datas += collect_data_files('webrecorder', subdir='static')
 datas += collect_data_files('webrecorder', subdir='config')
+datas.append((os.path.abspath(os.path.join(curr_path, '..', '..', 'config', 'behaviors.tar.gz')), 'webrecorder/config'))
 
 # generate full version
 full_version_path = os.path.abspath(os.path.join(curr_path, '..', '..', 'config', '_full_version'))

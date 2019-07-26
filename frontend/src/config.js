@@ -23,7 +23,13 @@ try {
 
 let appHost = null;
 
-if (process.env.__DESKTOP__) {
+let isDesktop = false;
+
+try {
+  isDesktop = __DESKTOP__;
+} catch (e) {}
+
+if (isDesktop) {
   const remoteProcess = window.require('electron').remote.process;
   process.env.INTERNAL_HOST = remoteProcess.env.INTERNAL_HOST;
   process.env.INTERNAL_PORT = remoteProcess.env.INTERNAL_PORT;

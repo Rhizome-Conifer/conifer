@@ -99,24 +99,17 @@ class Record extends Component {
 
         <div className={classNames('iframe-container', { locked: autopilotRunning })}>
           {
-            __DESKTOP__ ?
+            __DESKTOP__ &&
               <Webview
-                key="webview"
-                host={appSettings.get('host')}
-                params={params}
-                rb={activeBrowser}
-                rec={rec}
-                url={url} /> :
-              <IFrame
-                appPrefix={appPrefix}
-                auth={this.props.auth}
                 behavior={this.props.behavior}
-                contentPrefix={contentPrefix}
-                dispatch={dispatch}
-                timestamp={timestamp}
                 canGoBackward={appSettings.get('canGoBackward')}
                 canGoForward={appSettings.get('canGoForward')}
+                dispatch={dispatch}
+                host={appSettings.get('host')}
+                key="webview"
+                params={params}
                 partition={`persist:${params.user}`}
+                timestamp={timestamp}
                 url={url} />
           }
 
@@ -131,7 +124,7 @@ class Record extends Component {
                 <IFrame
                   appPrefix={appPrefix}
                   auth={this.props.auth}
-                  autoscroll={this.props.autoscroll}
+                  behavior={this.props.behavior}
                   contentPrefix={contentPrefix}
                   dispatch={dispatch}
                   params={params}
