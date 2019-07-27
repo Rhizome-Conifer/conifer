@@ -1,6 +1,7 @@
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 import time
 import json
+import os
 
 import gevent
 import gevent.queue
@@ -19,6 +20,8 @@ class WebsockController(BaseController):
 
         self.browser_mgr = kwargs['browser_mgr']
         self.content_app = kwargs['content_app']
+
+        self.default_reqid = os.environ.get('BROWSER_ID')
 
         self.dyn_stats = DynStats(self.redis, config)
         self.stats = Stats(self.redis)
@@ -49,6 +52,11 @@ class WebsockController(BaseController):
             self._raise_error(404, 'not_found')
 
         reqid = request.query.get('reqid')
+
+        # if '@INIT' and unique default reqid set, use that
+        if self.default_reqid and reqid == '@INIT':
+            reqid = self.default_reqid
+
         if reqid:
             sesh_id = self.browser_mgr.browser_sesh_id(reqid)
         else:

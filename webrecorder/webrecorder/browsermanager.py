@@ -23,6 +23,8 @@ class BrowserManager(object):
         self.browser_list_url = config['browser_list_url']
         self.browsers = {}
 
+        self.default_reqid = os.environ.get('BROWSER_ID')
+
         if not get_bool(os.environ.get('NO_REMOTE_BROWSERS')):
             self.load_all_browsers()
 
@@ -52,9 +54,10 @@ class BrowserManager(object):
         # init remote browser session by specified request id
         if reqid:
             container_data = self._api_reqid_to_user_params(reqid)
+            container_data['reqid'] = reqid
 
         else:
-            remote_addr = remote_ip or request.environ['REMOTE_ADDR']
+            remote_addr = remote_ip or self.default_reqid or request.environ['REMOTE_ADDR']
             user_data_key = self.BROWSER_IP_KEY.format(remote_addr)
             container_data = self.browser_redis.hgetall(user_data_key)
             container_data['ip'] = remote_addr
@@ -89,7 +92,8 @@ class BrowserManager(object):
         return container_data
 
     def update_local_browser(self, data):
-        self.browser_redis.hmset(self.BROWSER_IP_KEY.format('127.0.0.1'), data)
+        id_ = self.default_reqid or '127.0.0.1'
+        self.browser_redis.hmset(self.BROWSER_IP_KEY.format(id_), data)
 
     def browser_sesh_id(self, reqid):
         return 'reqid_' + reqid

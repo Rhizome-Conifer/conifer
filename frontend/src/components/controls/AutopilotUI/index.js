@@ -155,7 +155,7 @@ class AutopilotUI extends Component {
                         {
                           behaviorState.state && Object.keys(behaviorState.state).map((stateProp) => {
                             return (
-                              <li>{stateProp}: <em>{behaviorState.state[stateProp]}</em></li>
+                              <li>{stateProp}: <em>{behaviorState.state[stateProp].toString()}</em></li>
                             );
                           })
                         }

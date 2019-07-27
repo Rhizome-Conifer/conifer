@@ -28,6 +28,8 @@ class WebrecorderRunner(StandaloneRunner):
 
         self.default_user = argres.default_user
 
+        self.browser_id = base64.b32encode(os.urandom(15)).decode('utf-8')
+
         super(WebrecorderRunner, self).__init__(argres, rec_port=0)
 
         if not argres.no_browser:
@@ -50,16 +52,17 @@ class WebrecorderRunner(StandaloneRunner):
 
         os.environ['BEHAVIORS_DIR'] = os.path.join(self.root_dir, 'behaviors')
 
+        os.environ['BROWSER_ID'] = self.browser_id
+
         local_info=dict(browser='',
-                        reqid='@INIT')
+                        reqid=self.browser_id)
 
         self.redis_server = LocalRedisServer(port=self.REDIS_PORT,
                                              redis_dir=self.redis_dir)
 
         self.browser_redis = self.redis_server.start()
 
-        self.browser_redis.hmset('up:127.0.0.1', local_info)
-        self.browser_redis.hset('req:@INIT', 'ip', '127.0.0.1')
+        self.browser_redis.hmset('up:' + self.browser_id, local_info)
 
         self.user_manager = CLIUserManager()
 
@@ -89,6 +92,7 @@ class WebrecorderRunner(StandaloneRunner):
         os.environ['AUTO_LOGIN_USER'] = self.default_user
 
     def close(self):
+        self.browser_redis.delete('up:' + self.browser_id)
         super(WebrecorderRunner, self).close()
 
 
