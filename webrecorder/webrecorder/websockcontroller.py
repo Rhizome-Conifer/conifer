@@ -210,10 +210,13 @@ class BaseWebSockHandler(object):
             self.content_app.add_cookie(self.user, self.collection, self.recording,
                                         msg['name'], msg['value'], msg['domain'])
 
-        elif msg['ws_type'] == 'page':
+        elif msg['ws_type'] == 'load':
             if self.type_ != 'live':
                 if self.recording:
-                    page_local_store = msg['page']
+                    page_local_store = {'url': msg['url'],
+                                        'timestamp': msg['ts'],
+                                        'title': msg['title'],
+                                        'browser': msg['browser']}
 
                     check_dupes = (self.type_ == 'patch')
 
@@ -225,7 +228,7 @@ class BaseWebSockHandler(object):
         elif msg['ws_type'] == 'config-stats':
             self.stats_urls = msg['stats_urls']
 
-        elif msg['ws_type'] == 'set_url':
+        elif msg['ws_type'] == 'replace-url':
             self.stats_urls = [msg['url']]
 
         elif msg['ws_type'] == 'behavior-stat':
@@ -237,7 +240,7 @@ class BaseWebSockHandler(object):
         elif msg['ws_type'] == 'behaviorDone':
             self.stats.incr_behavior_stat('done', msg.get('name'), self.browser)
 
-        elif msg['ws_type'] == 'switch':
+        elif msg['ws_type'] == 'reload':
             #TODO: check this
             if not self.access.can_write_coll(self.collection):
                 print('No Write Access')
@@ -250,11 +253,11 @@ class BaseWebSockHandler(object):
 
         # send to remote browser cmds
         if to_browser:
-            if msg['ws_type'] in ('set_url', 'behavior', 'load_all', 'switch', 'snapshot-req'):
+            if msg['ws_type'] in ('replace-url', 'behavior', 'reload'):
                 self._publish(to_browser, msg)
 
         elif from_browser:
-            if msg['ws_type'] in ('remote_url', 'patch_req', 'behaviorDone', 'behaviorStep', 'snapshot', 'page'):
+            if msg['ws_type'] in ('replace-url', 'load', 'patch_req', 'behaviorDone', 'behaviorStep'):
                 self._publish(from_browser, msg)
 
     def get_status(self):

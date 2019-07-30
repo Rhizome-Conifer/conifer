@@ -1,23 +1,25 @@
 const { ipcRenderer } = require('electron');
 
-document.addEventListener('DOMContentLoaded', (evt) => {
-  const state = {
-    wb_type: 'load',
-    url: window.wbinfo.url,
-    ts: window.wbinfo.timestamp
-  };
+const wr_msg_handler = '___$wr_msg_handler___$$';
 
-  ipcRenderer.sendToHost('load', state);
-});
+class IPCHandler {
+    constructor() {
+      this.on_message = null;
 
-document.addEventListener('hashchange', (evt) => {
-  const state = {
-    wb_type: 'hashchange',
-    hash: window.location.hash
-  };
+      ipcRenderer.on('wr-message', (event) => {
+        if (this.on_message) {
+          this.on_message(event.data);
+        }
+      }
+    }
 
-  ipcRenderer.sendToHost('hashchange', state);
-});
+    send(msg) {
+      ipcRenderer.sendToHost('wr-message', msg);
+    }
+}
+
+window[ws_msg_handler] = new IPCHandler();
+
 
 document.addEventListener('drop', (evt) => {
   evt.preventDefault();

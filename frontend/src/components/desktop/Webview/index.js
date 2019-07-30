@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import { withRouter } from 'react-router';
 
 import { stripProtocol } from 'helpers/utils';
+import { autopilotReset, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
 
 import { setBrowserHistory } from 'store/modules/appSettings';
 import { updateUrlAndTimestamp, updateTimestamp } from 'store/modules/controls';
@@ -57,7 +58,7 @@ class Webview extends Component {
     const realHost = host || appHost;
 
     this.socket = new WebSocketHandler(params, currMode, dispatch, false, '@INIT', stripProtocol(realHost));
-    this.webviewHandle.addEventListener('ipc-message', this.handleReplayEvent);
+    this.webviewHandle.addEventListener('ipc-message', this.handleIPCEvent);
 
     window.addEventListener('wr-go-back', this.goBack);
     window.addEventListener('wr-go-forward', this.goForward);
@@ -70,8 +71,8 @@ class Webview extends Component {
     const { behavior, timestamp, url } = this.props;
 
     // behavior check
-    if (behavior !== nextProps.behavior && this.socket) {
-      this.socket.doBehavior(nextProps.url, nextProps.behavior);
+    if (behavior !== nextProps.behavior) {
+      this.doBehavior(nextProps.url, nextProps.behavior);
     }
 
     if (nextProps.url !== url || nextProps.timestamp !== timestamp) {
@@ -134,7 +135,15 @@ class Webview extends Component {
     }
   }
 
-  handleReplayEvent = (evt) => {
+  doBehavior = (url, name) => {
+    return this.sendMsg({ wb_type: 'behavior', url, name, start: !!name });
+  }
+
+  sendMsg = (msg) => {
+    ipcRenderer.sendTo(this.webviewHandle.getWebContents().id, 'wr-message', msg);
+  }
+
+  handleIPCEvent = (evt) => {
     const { canGoBackward, canGoForward, dispatch } = this.props;
     const state = evt.args[0];
 
@@ -151,6 +160,7 @@ class Webview extends Component {
         this.openDroppedFile(state.filename);
         break;
       case 'load':
+        dispatch(autopilotReset());
         this.setState({ loading: false });
         this.addNewPage(state);
         break;
@@ -162,6 +172,17 @@ class Webview extends Component {
         this.setUrl(url);
         break;
       }
+
+      case 'behaviorDone': // when autopilot is done running
+        this.internalUpdate = true;
+        dispatch(toggleAutopilot(null, 'complete', this.url));
+        break;
+
+      case 'behaviorStep':
+        this.internalUpdate = true;
+        dispatch(updateBehaviorState(state.result));
+        break;
+
       default:
         break;
     }
@@ -218,6 +239,7 @@ class Webview extends Component {
         src={this.buildProxyUrl(url, timestamp)}
         autosize="on"
         plugins="true"
+        preload="preload.js"
         partition={partition} />
       </div>
     );
