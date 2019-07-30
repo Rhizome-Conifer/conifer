@@ -188,7 +188,7 @@ class IFrame extends Component {
       case 'hashchange': {
         let url = this.props.url.split("#", 1)[0];
         if (state.hash) {
-          url = state.hash;
+          url += state.hash;
         }
         this.setUrl(url);
         break;

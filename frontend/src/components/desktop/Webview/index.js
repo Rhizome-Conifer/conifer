@@ -9,7 +9,7 @@ import { stripProtocol } from 'helpers/utils';
 import { autopilotReset, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
 
 import { setBrowserHistory } from 'store/modules/appSettings';
-import { updateUrlAndTimestamp, updateTimestamp } from 'store/modules/controls';
+import { updateUrlAndTimestamp, updateTimestamp, updateUrl } from 'store/modules/controls';
 
 import { appHost } from 'config';
 
@@ -167,7 +167,7 @@ class Webview extends Component {
       case 'hashchange': {
         let url = this.props.url.split('#', 1)[0];
         if (state.hash) {
-          url = state.hash;
+          url += state.hash;
         }
         this.setUrl(url);
         break;
@@ -185,6 +185,19 @@ class Webview extends Component {
 
       default:
         break;
+    }
+  }
+
+  setUrl = (url, noStatsUpdate = false) => {
+    const rawUrl = decodeURI(url);
+
+    if (this.props.url !== rawUrl) {
+      this.internalUpdate = true;
+      this.props.dispatch(updateUrl(rawUrl));
+    }
+
+    if (!noStatsUpdate) {
+      this.socket.setStatsUrls([rawUrl]);
     }
   }
 
