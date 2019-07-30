@@ -49,11 +49,9 @@ class Webview extends Component {
     this.state = { loading: false };
 
     // from https://gist.github.com/6174/6062387
-    this.uid =  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    this.uid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
     this.ua = `wr-${this.uid}; ${navigator.userAgent}`;
-
-    const currMode = props.currMode;
   }
 
   componentDidMount() {
@@ -278,21 +276,20 @@ class Webview extends Component {
   render() {
     const { loading } = this.state;
     const { partition, timestamp, url } = this.props;
-    const { user, currMode } = this.context;
 
     const classes = classNames('webview-wrapper', { loading });
 
     return (
       <div className={classes}>
-      <webview
-        id="replay"
-        ref={(obj) => { this.webviewHandle = obj; }}
-        src={this.buildProxyUrl(url, timestamp)}
-        autosize="on"
-        plugins="true"
-        preload="preload.js"
-        useragent={this.ua}
-        partition={partition} />
+        <webview
+          id="replay"
+          ref={(obj) => { this.webviewHandle = obj; }}
+          src={this.buildProxyUrl(url, timestamp)}
+          autosize="on"
+          plugins="true"
+          preload="preload.js"
+          useragent={this.ua}
+          partition={partition} />
       </div>
     );
   }
