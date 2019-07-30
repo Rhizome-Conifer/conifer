@@ -121,12 +121,11 @@ class WebSocketHandler {
         // fall through
       case 'replace-url': {
         if (this.isRemoteBrowser && msg.visible) {
-          const { page } = msg;
-          this.dispatch(updateUrlAndTimestamp(page.url, page.timestamp));
-          this.url = page.url;
+          this.dispatch(updateUrlAndTimestamp(msg.url, msg.ts));
+          this.url = msg.url;
 
           //setTitle("Remote", page.url, page.title);
-          this.replaceOuterUrl(page, "load");
+          this.replaceOuterUrl(msg, "load");
         }
         break;
       }
@@ -177,9 +176,8 @@ class WebSocketHandler {
   }
 
   replaceOuterUrl = (msg, change) => {
-    const ts = msg.timestamp;
+    const { ts, url } = msg;
     const mod = remoteBrowserMod(this.br, ['replay', 'replay-coll', 'patch', 'extract', 'extract_only'].includes(this.currMode) && ts ? ts : null, '/');
-    const { url } = msg;
     let prefix;
 
     if (this.currMode.includes('replay')) {

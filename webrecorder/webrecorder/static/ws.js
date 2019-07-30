@@ -2,8 +2,9 @@
     var pageLoaded = false;
     var wr_msg_handler = '___$wr_msg_handler___$$';
     var handler = null;
+    var remoteQ = [];
 
-    function WSHandler(_user, _coll, _rec, _host, _on_openned, _on_message) {
+    function WSHandler(_user, _coll, _rec, _host, _on_open, _on_message) {
         this.user = _user;
         this.coll = _coll;
         this.rec = _rec;
@@ -15,7 +16,7 @@
 
         this.errCount = 0;
 
-        this.on_openned = _on_openned;
+        this.on_open = _on_open;
         this.on_message = _on_message;
 
         if (!_host) {
@@ -41,7 +42,7 @@
         try {
             this.ws = new WebSocket(url);
 
-            this.ws.addEventListener("open", this.ws_openned.bind(this));
+            this.ws.addEventListener("open", this.ws_open.bind(this));
             this.ws.addEventListener("message", this.ws_received.bind(this));
             this.ws.addEventListener("close", this.ws_closed.bind(this));
             this.ws.addEventListener("error", this.ws_errored.bind(this));
@@ -50,12 +51,12 @@
         }
     }
 
-    WSHandler.prototype.ws_openned = function() {
+    WSHandler.prototype.ws_open = function() {
         this.useWS = true;
         this.errCount = 0;
 
-        if (this.on_openned) {
-            this.on_openned();
+        if (this.on_open) {
+            this.on_open();
         }
     }
 
@@ -93,7 +94,7 @@
     }
 
     WSHandler.prototype.ws_received = function(event) {
-        if (this.on_message) {
+        if (!this.on_message) {
             return;
         }
         var msg = JSON.parse(event.data);
@@ -108,7 +109,7 @@
                    "value": value,
                    "domain": domain}
 
-        return handler.send(msg);
+        return sendAppMsg(msg);
     }
 
     function addSkipReq(url) {
@@ -116,7 +117,7 @@
                    "url": url
                   }
 
-        return handler.send(msg);
+        return sendAppMsg(msg);
     }
 
     function sendReqPatch(url) {
@@ -124,7 +125,7 @@
                    "url": url
                   }
 
-        return handler.send(msg);
+        return sendAppMsg(msg);
     }
 
     function sendPageMsg(isAdd) {
@@ -146,10 +147,10 @@
         }
         msg.visible = !document.hidden;
 
-        return handler.send(msg);
+        return sendAppMsg(msg);
     }
 
-    function receiveRemoteMsg(msg) {
+    function receiveAppMsg(msg) {
         switch (msg.wb_type) {
             case "status":
                 break;
@@ -177,6 +178,14 @@
         }
     }
 
+    function sendAppMsg(msg) {
+        if (handler) {
+            handler.send(msg);
+        } else {
+            remoteQ.push(msg);
+        }
+    }
+
     function sendLocalMsg(data) {
         window.dispatchEvent(new CustomEvent("__wb_to_event", {"detail": data}));
     }
@@ -189,23 +198,29 @@
 
         function on_init() {
             sendPageMsg(wbinfo.is_live || wbinfo.proxy_mode == "extract");
+
+            while (remoteQ.length) {
+              sendAppMsg(remoteQ.shift());
+            }
         }
 
         if (!window[wr_msg_handler]) {
             window[wr_msg_handler] = new WSHandler(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic,
-                                                   on_init, receiveRemoteMsg);
+                                                   on_init, receiveAppMsg);
             handler = window[wr_msg_handler];
         } else {
             handler = window[wr_msg_handler];
-            handler.on_message = receiveRemoteMsg;
+            handler.on_message = receiveAppMsg;
             on_init();
         }
     });
 
     window.addEventListener('hashchange', function(event) {
-        handler.send({"wb_type": "hashchange",
-                 "hash": window.location.hash
-        });
+        var msg = {"wb_type": "hashchange",
+                   "hash": window.location.hash
+                  }
+
+        sendAppMsg(msg);
     });
 
     // VIZ CHANGE
@@ -226,7 +241,7 @@
             case "patch_req":
             case "behaviorStep":
             case "behaviorDone":
-                handler.send(message);
+                sendAppMsg(message);
                 break;
         }
     }
