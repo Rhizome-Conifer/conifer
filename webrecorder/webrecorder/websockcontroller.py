@@ -21,8 +21,6 @@ class WebsockController(BaseController):
         self.browser_mgr = kwargs['browser_mgr']
         self.content_app = kwargs['content_app']
 
-        self.default_reqid = os.environ.get('BROWSER_ID')
-
         self.dyn_stats = DynStats(self.redis, config)
         self.stats = Stats(self.redis)
 
@@ -53,11 +51,8 @@ class WebsockController(BaseController):
 
         reqid = request.query.get('reqid')
 
-        # if '@INIT' and unique default reqid set, use that
-        if self.default_reqid and reqid == '@INIT':
-            reqid = self.default_reqid
-
         if reqid:
+            reqid = self.browser_mgr.browser_resolve_reqid(reqid)
             sesh_id = self.browser_mgr.browser_sesh_id(reqid)
         else:
             sesh_id = self.get_session().get_id()
@@ -213,10 +208,10 @@ class BaseWebSockHandler(object):
         elif msg['ws_type'] == 'load':
             if self.type_ != 'live':
                 if self.recording:
-                    page_local_store = {'url': msg['url'],
-                                        'timestamp': msg['ts'],
-                                        'title': msg['title'],
-                                        'browser': msg['browser']}
+                    page_local_store = {'url': msg.get('url'),
+                                        'timestamp': msg.get('ts'),
+                                        'title': msg.get('title'),
+                                        'browser': msg.get('browser')}
 
                     check_dupes = (self.type_ == 'patch')
 

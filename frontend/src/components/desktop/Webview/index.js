@@ -5,7 +5,7 @@ import path from 'path';
 import classNames from 'classnames';
 import { withRouter } from 'react-router';
 
-import { stripProtocol } from 'helpers/utils';
+import { apiFetch, stripProtocol, setTitle } from 'helpers/utils';
 import { autopilotReset, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
 
 import { setBrowserHistory } from 'store/modules/appSettings';
@@ -48,6 +48,11 @@ class Webview extends Component {
     this.internalUpdate = false;
     this.state = { loading: false };
 
+    // from https://gist.github.com/6174/6062387
+    this.uid =  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+    this.ua = `wr-${this.uid}; ${navigator.userAgent}`;
+
     const currMode = props.currMode;
   }
 
@@ -57,7 +62,9 @@ class Webview extends Component {
 
     const realHost = host || appHost;
 
-    this.socket = new WebSocketHandler(params, currMode, dispatch, false, '@INIT', stripProtocol(realHost));
+    const browserId = __PLAYER__ ? '@INIT' : this.uid;
+
+    this.socket = new WebSocketHandler(params, currMode, dispatch, false, browserId, stripProtocol(realHost));
     this.webviewHandle.addEventListener('ipc-message', this.handleIPCEvent);
 
     window.addEventListener('wr-go-back', this.goBack);
@@ -159,11 +166,17 @@ class Webview extends Component {
       case 'open':
         this.openDroppedFile(state.filename);
         break;
+
       case 'load':
         dispatch(autopilotReset());
         this.setState({ loading: false });
-        this.addNewPage(state);
+        this.addNewPage(state, true);
         break;
+
+      case 'replace-url':
+        this.addNewPage(state, false);
+        break;
+
       case 'hashchange': {
         let url = this.props.url.split('#', 1)[0];
         if (state.hash) {
@@ -201,24 +214,49 @@ class Webview extends Component {
     }
   }
 
-  addNewPage = (state) => {
+  addNewPage = (state, doAdd = false) => {
     const { currMode } = this.context;
-    const { dispatch, timestamp, url } = this.props;
+    const { params, timestamp } = this.props;
 
-    if (!this.initialReq) {
-      const rawUrl = decodeURI(state.url);
+    // if (state && state.ts && currMode !== 'record' && currMode.indexOf('extract') === -1 && state.ts !== timestamp) {
+    //   this.props.dispatch(updateTimestamp(state.ts));
+    // }
 
-      if (state.ts !== timestamp && rawUrl !== url) {
-        this.internalUpdate = true;
-        dispatch(updateUrlAndTimestamp(rawUrl, state.ts));
-      } else if (state.ts !== timestamp) {
-        this.internalUpdate = true;
-        dispatch(updateTimestamp(state.ts));
+    if (state.is_error) {
+      this.setUrl(state.url);
+    } else if (['record', 'patch', 'extract', 'extract_only'].includes(currMode)) {
+
+      if (state.ts) {
+        if (state.ts !== timestamp) {
+          this.internalUpdate = true;
+          this.props.dispatch(updateTimestamp(state.ts));
+        }
+
+        //window.wbinfo.timestamp = state.ts;
       }
 
-      this.socket.setStatsUrls([rawUrl]);
+      this.setUrl(state.url, true);
+
+      const modeMsg = { record: 'recording', patch: 'Patching', extract: 'Extracting' };
+      setTitle(currMode in modeMsg ? modeMsg[currMode] : '', state.url, state.tittle);
+
+      if (doAdd && (state.ts || currMode !== 'patch')) {
+        if (!this.socket.addPage(state)) {
+          apiFetch(`/recording/${params.rec}/pages?user=${params.user}&coll=${params.coll}`, state, { method: 'POST' });
+        }
+      }
+    } else if (['replay', 'replay-coll'].includes(currMode)) {
+      if (!this.initialReq) {
+        if (state.ts !== timestamp) {
+          this.internalUpdate = true;
+          this.props.dispatch(updateTimestamp(state.ts));
+        }
+
+        this.setUrl(state.url);
+        setTitle('Archives', state.url, state.title);
+      }
+      this.initialReq = false;
     }
-    this.initialReq = false;
   }
 
   goBack = () => {
@@ -253,6 +291,7 @@ class Webview extends Component {
         autosize="on"
         plugins="true"
         preload="preload.js"
+        useragent={this.ua}
         partition={partition} />
       </div>
     );

@@ -210,7 +210,7 @@ class WebSocketHandler {
   }
 
   addPage = (page) => {
-    return this.sendMsg({ ws_type: 'load', page });
+    return this.sendMsg({ ws_type: 'load', ...page });
   }
 
   addSkipReq = (url) => {

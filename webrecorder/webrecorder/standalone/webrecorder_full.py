@@ -54,15 +54,15 @@ class WebrecorderRunner(StandaloneRunner):
 
         os.environ['BROWSER_ID'] = self.browser_id
 
-        local_info=dict(browser='',
-                        reqid=self.browser_id)
+        #local_info=dict(browser='',
+        #                reqid=self.browser_id)
 
         self.redis_server = LocalRedisServer(port=self.REDIS_PORT,
                                              redis_dir=self.redis_dir)
 
         self.browser_redis = self.redis_server.start()
 
-        self.browser_redis.hmset('up:' + self.browser_id, local_info)
+        #self.browser_redis.hmset('up:' + self.browser_id, local_info)
 
         self.user_manager = CLIUserManager()
 
@@ -92,7 +92,10 @@ class WebrecorderRunner(StandaloneRunner):
         os.environ['AUTO_LOGIN_USER'] = self.default_user
 
     def close(self):
-        self.browser_redis.delete('up:' + self.browser_id)
+        for key in self.browser_redis.scan_iter('up:{0}:*'.format(self.browser_id)):
+            print('Delete: ' + key)
+            self.browser_redis.delete(key)
+
         super(WebrecorderRunner, self).close()
 
 

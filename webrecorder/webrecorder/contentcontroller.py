@@ -502,9 +502,6 @@ class ContentController(BaseController, RewriterApp):
             return resp
 
         except Exception as e:
-            import traceback
-            traceback.print_exc()
-
             @self.jinja2_view('content_error.html')
             def handle_error(status_code, err_body, environ):
                 response.status = status_code
