@@ -122,8 +122,12 @@ class LocalRedisServer:
         except:
             pid = self.redis_cli.get('redis_pid')
 
-        print('Connected, Pid: ' + pid)
-        self.process = psutil.Process(int(pid))
+        if pid:
+            print('Connected, Pid: ' + pid)
+            self.process = psutil.Process(int(pid))
+        else:
+            print('Redis Pid Not Found!')
+
         return self.redis_cli
 
     def close(self):

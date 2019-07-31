@@ -51,6 +51,9 @@ class TempChecker(object):
         self.record_root_dir = os.environ['RECORD_ROOT']
         self.sesh_key_template = config['session.key_template']
 
+        # ensure record_root_dir exists here!
+        os.makedirs(self.record_root_dir, exist_ok=True)
+
         logger.info('Temp Check Root: ' + self.record_root_dir)
 
     def delete_if_expired(self, temp_user, temp_dir):
