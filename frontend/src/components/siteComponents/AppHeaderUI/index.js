@@ -36,7 +36,6 @@ class AppHeader extends PureComponent {
     const { canGoBackward, history, location: { pathname } } = this.props;
     const { route } = this.getActiveMatch(pathname);
     const isWebview = route && ['replay', 'record', 'patch', 'extract'].includes(route.name);
-    console.log(route.name);
 
     if (isWebview && canGoBackward) {
       window.dispatchEvent(new Event('wr-go-back'));
@@ -66,18 +65,23 @@ class AppHeader extends PureComponent {
     const { match, route } = this.getActiveMatch(pathname);
     const canAdmin = match && match.params.user === authUser.get('username');
 
-    const isWebview = route && ['replay', 'record', 'patch', 'extract'].includes(route.name);
-    const canGoBack = history.canGo(-2);
+    let backClass;
+    let fwdClass;
+    let refreshClass;
+    const canGoBack = __DESKTOP__ && history.canGo(-2);
+    const isWebview = __DESKTOP__ && route && ['replay', 'record', 'patch', 'extract'].includes(route.name);
 
-    const backClass = classNames('arrow', {
-      inactive: !canGoBack
-    });
-    const fwdClass = classNames('arrow', {
-      inactive: isWebview ? !canGoForward : !history.canGo(1)
-    });
-    const refreshClass = classNames('arrow', {
-      inactive: !isWebview
-    });
+    if (__DESKTOP__) {
+      backClass = classNames('arrow', {
+        inactive: !canGoBack
+      });
+      fwdClass = classNames('arrow', {
+        inactive: isWebview ? !canGoForward : !history.canGo(1)
+      });
+      refreshClass = classNames('arrow', {
+        inactive: !isWebview
+      });
+    }
 
     return (
       <header className={classNames('app-header', { dark: canAdmin })}>

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import WebSocketHandler from 'helpers/ws';
-import path from 'path';
 import classNames from 'classnames';
 import { withRouter } from 'react-router';
 
@@ -9,7 +8,7 @@ import { apiFetch, stripProtocol, setTitle } from 'helpers/utils';
 import { autopilotReset, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
 
 import { setBrowserHistory } from 'store/modules/appSettings';
-import { updateUrlAndTimestamp, updateTimestamp, updateUrl } from 'store/modules/controls';
+import { updateTimestamp, updateUrl } from 'store/modules/controls';
 
 import { appHost } from 'config';
 
