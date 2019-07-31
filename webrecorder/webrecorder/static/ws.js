@@ -129,6 +129,10 @@
     }
 
     function sendPageMsg(isAdd) {
+        if (window != window.top) {
+          return;
+        }
+
         var msg = {
             "url": window.location.href,
             "ts": wbinfo.timestamp,
@@ -145,7 +149,10 @@
         } else {
             msg.wb_type = "replace-url";
         }
-        msg.visible = !document.hidden;
+        if (document.hidden) {
+          return;
+        }
+        msg.visible = true;
 
         return sendAppMsg(msg);
     }

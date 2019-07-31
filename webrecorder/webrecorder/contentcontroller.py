@@ -774,6 +774,7 @@ class ContentController(BaseController, RewriterApp):
             kwargs['url'] = wb_url_obj.url
             kwargs['timestamp'] = wb_url_obj.timestamp
             self.browser_mgr.update_local_browser(kwargs)
+            response.headers['Cache-Control'] = 'no-cache; no-store; must-revalidate'
             return redirect(wb_url_obj.url)
 
         try:

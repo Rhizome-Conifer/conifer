@@ -47,11 +47,6 @@ class Webview extends Component {
     this.webviewHandle = null;
     this.internalUpdate = false;
     this.state = { loading: false };
-
-    // from https://gist.github.com/6174/6062387
-    this.uid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-    this.ua = `wr-${this.uid}; ${navigator.userAgent}`;
   }
 
   componentDidMount() {
@@ -60,14 +55,18 @@ class Webview extends Component {
 
     const realHost = host || appHost;
 
-    const browserId = __PLAYER__ ? '@INIT' : this.uid;
-
-    this.socket = new WebSocketHandler(params, currMode, dispatch, false, browserId, stripProtocol(realHost));
+    this.socket = new WebSocketHandler(params, currMode, dispatch, false, '@INIT', stripProtocol(realHost));
     this.webviewHandle.addEventListener('ipc-message', this.handleIPCEvent);
 
     window.addEventListener('wr-go-back', this.goBack);
     window.addEventListener('wr-go-forward', this.goForward);
     window.addEventListener('wr-refresh', this.refresh);
+
+    this.webviewHandle.addEventListener('did-navigate-in-page', (event) => {
+      if (event.isMainFrame) {
+        this.setUrl(event.url, true);
+      }
+    });
 
     ipcRenderer.on('toggle-devtools', this.toggleDevTools);
   }
@@ -169,10 +168,6 @@ class Webview extends Component {
         dispatch(autopilotReset());
         this.setState({ loading: false });
         this.addNewPage(state, true);
-        break;
-
-      case 'replace-url':
-        this.addNewPage(state, false);
         break;
 
       case 'hashchange': {
@@ -288,7 +283,6 @@ class Webview extends Component {
           autosize="on"
           plugins="true"
           preload="preload.js"
-          useragent={this.ua}
           partition={partition} />
       </div>
     );

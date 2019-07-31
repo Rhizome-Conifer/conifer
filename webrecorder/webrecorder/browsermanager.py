@@ -57,11 +57,7 @@ class BrowserManager(object):
             container_data['reqid'] = reqid
 
         else:
-            if self.default_reqid:
-                remote_addr = self._get_local_id()
-            else:
-                remote_addr = remote_ip or request.environ['REMOTE_ADDR']
-
+            remote_addr = remote_ip or self.default_reqid or request.environ['REMOTE_ADDR']
             user_data_key = self.BROWSER_IP_KEY.format(remote_addr)
             container_data = self.browser_redis.hgetall(user_data_key)
             container_data['ip'] = remote_addr
@@ -95,34 +91,18 @@ class BrowserManager(object):
         container_data['recording'] = recording
         return container_data
 
-    def _get_local_id(self):
-        ua = request.environ.get('HTTP_USER_AGENT')
-        if ua.startswith('wr-'):
-            id_, ua = ua.split('; ', 1)
-            id_ = id_[3:]
-            request.environ['HTTP_USER_AGENT'] = id_
-        else:
-            id_ = ''
-
-        return self.default_reqid + ':' + id_
-
     def update_local_browser(self, data):
-        if self.default_reqid:
-            #id_ = self.default_reqid + ':' + data.get('user', '')
-            id_ = self._get_local_id()
-        else:
-            id_ = '127.0.0.1'
-
-        data['reqid'] = id_
+        data['reqid'] = self.default_reqid or '127.0.0.1'
         data['browser'] = ''
-        self.browser_redis.hmset(self.BROWSER_IP_KEY.format(id_), data)
+        self.browser_redis.hmset(self.BROWSER_IP_KEY.format(data['reqid']), data)
 
     def browser_sesh_id(self, reqid):
         return 'reqid_' + reqid
 
     def browser_resolve_reqid(self, reqid):
-        if self.default_reqid:
-            return self.default_reqid + ':' + reqid
+        # if '@INIT' and unique default reqid set, use that
+        if self.default_reqid and reqid == '@INIT':
+            return self.default_reqid
         else:
             return reqid
 
