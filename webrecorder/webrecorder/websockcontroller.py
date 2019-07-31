@@ -21,8 +21,6 @@ class WebsockController(BaseController):
         self.browser_mgr = kwargs['browser_mgr']
         self.content_app = kwargs['content_app']
 
-        self.default_reqid = os.environ.get('BROWSER_ID')
-
         self.dyn_stats = DynStats(self.redis, config)
         self.stats = Stats(self.redis)
 
@@ -53,11 +51,8 @@ class WebsockController(BaseController):
 
         reqid = request.query.get('reqid')
 
-        # if '@INIT' and unique default reqid set, use that
-        if self.default_reqid and reqid == '@INIT':
-            reqid = self.default_reqid
-
         if reqid:
+            reqid = self.browser_mgr.browser_resolve_reqid(reqid)
             sesh_id = self.browser_mgr.browser_sesh_id(reqid)
         else:
             sesh_id = self.get_session().get_id()
@@ -210,22 +205,22 @@ class BaseWebSockHandler(object):
             self.content_app.add_cookie(self.user, self.collection, self.recording,
                                         msg['name'], msg['value'], msg['domain'])
 
-        elif msg['ws_type'] == 'page':
+        elif msg['ws_type'] == 'load':
             if self.type_ != 'live':
-                if self.recording:
-                    page_local_store = msg['page']
+                if self.recording and msg.get('newPage'):
+                    page_local_store = {'url': msg.get('url'),
+                                        'timestamp': msg.get('ts'),
+                                        'title': msg.get('title'),
+                                        'browser': msg.get('browser')}
 
                     check_dupes = (self.type_ == 'patch')
 
                     self.collection.add_page(page_local_store, self.recording)
 
-                else:
-                    print('Invalid Rec for Page Data')
-
         elif msg['ws_type'] == 'config-stats':
             self.stats_urls = msg['stats_urls']
 
-        elif msg['ws_type'] == 'set_url':
+        elif msg['ws_type'] == 'replace-url':
             self.stats_urls = [msg['url']]
 
         elif msg['ws_type'] == 'behavior-stat':
@@ -237,7 +232,7 @@ class BaseWebSockHandler(object):
         elif msg['ws_type'] == 'behaviorDone':
             self.stats.incr_behavior_stat('done', msg.get('name'), self.browser)
 
-        elif msg['ws_type'] == 'switch':
+        elif msg['ws_type'] == 'reload':
             #TODO: check this
             if not self.access.can_write_coll(self.collection):
                 print('No Write Access')
@@ -250,11 +245,11 @@ class BaseWebSockHandler(object):
 
         # send to remote browser cmds
         if to_browser:
-            if msg['ws_type'] in ('set_url', 'behavior', 'load_all', 'switch', 'snapshot-req'):
+            if msg['ws_type'] in ('replace-url', 'behavior', 'reload'):
                 self._publish(to_browser, msg)
 
         elif from_browser:
-            if msg['ws_type'] in ('remote_url', 'patch_req', 'behaviorDone', 'behaviorStep', 'snapshot', 'page'):
+            if msg['ws_type'] in ('replace-url', 'load', 'patch_req', 'behaviorDone', 'behaviorStep'):
                 self._publish(from_browser, msg)
 
     def get_status(self):

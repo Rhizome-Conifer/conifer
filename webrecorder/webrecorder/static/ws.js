@@ -1,185 +1,169 @@
 (function() {
-    var ws;
-    var useWS = false;
-    var errCount = 0;
-    var reinitWait = null;
+    var pageLoaded = false;
+    var wr_msg_handler = '___$wr_msg_handler___$$';
+    var handler = null;
+    var remoteQ = [];
 
-    var user;
-    var coll;
-    var rec;
-    var host;
+    function WSHandler(_user, _coll, _rec, _host, _on_open, _on_message) {
+        this.user = _user;
+        this.coll = _coll;
+        this.rec = _rec;
+        this.host = _host;
 
-    var on_openned;
+        this.ws = null;
+        this.reinitWait = null;
+        this.useWS = false;
 
-    var json_stringify = JSON.stringify;
-    var json_parse = JSON.parse;
+        this.errCount = 0;
 
-    var start = function(_user, _coll, _rec, _host, _on_openned) {
-        user = _user;
-        coll = _coll;
-        rec = _rec;
-        host = _host;
+        this.on_open = _on_open;
+        this.on_message = _on_message;
 
-        on_openned = _on_openned;
-
-        if (!host) {
-            host = window.location.host;
+        if (!_host) {
+            this.host = window.location.host;
         }
 
-        initWS();
+        this.initWS();
     }
 
-    var initWS = function() {
-        reinitWait = null;
+    WSHandler.prototype.initWS = function() {
+        this.reinitWait = null;
 
         var url = window.location.protocol == "https:" ? "wss://" : "ws://";
         //var url = "ws://";
-        url += host + "/_client_ws_cont?";
-        url += "user=" + user + "&coll=" + coll;
+        url += this.host + "/_client_ws_cont?";
+        url += "user=" + this.user + "&coll=" + this.coll;
 
-        if (rec && rec != "*") {
-            url += "&rec=" + rec;
+        if (this.rec && this.rec != "*") {
+            url += "&rec=" + this.rec;
         }
         url += "&cont_browser=1";
 
         try {
-            ws = new WebSocket(url);
+            this.ws = new WebSocket(url);
 
-            ws.addEventListener("open", ws_openned);
-            ws.addEventListener("message", ws_received);
-            ws.addEventListener("close", ws_closed);
-            ws.addEventListener("error", ws_errored);
+            this.ws.addEventListener("open", this.ws_open.bind(this));
+            this.ws.addEventListener("message", this.ws_received.bind(this));
+            this.ws.addEventListener("close", this.ws_closed.bind(this));
+            this.ws.addEventListener("error", this.ws_errored.bind(this));
         } catch (e) {
-            useWS = false;
+            this.useWS = false;
         }
     }
 
-    function ws_openned() {
-        useWS = true;
-        errCount = 0;
+    WSHandler.prototype.ws_open = function() {
+        this.useWS = true;
+        this.errCount = 0;
 
-        if (on_openned) {
-            on_openned();
+        if (this.on_open) {
+            this.on_open();
         }
     }
 
-    function ws_errored() {
-        useWS = false;
+    WSHandler.prototype.ws_errored = function() {
+        this.useWS = false;
 
-        if (reinitWait != null) {
-          return;
+        if (this.reinitWait != null) {
+            return;
         }
 
-        if (errCount < 5) {
-            errCount += 1;
-            reinitWait = setTimeout(initWS, 2000);
+        if (this.errCount < 5) {
+            this.errCount += 1;
+            this.reinitWait = setTimeout(this.initWS.bind(this), 2000);
         }
     }
 
-    function ws_closed() {
-        useWS = false;
+    WSHandler.prototype.ws_closed = function() {
+        this.useWS = false;
 
-        if (reinitWait != null) {
-          return;
+        if (this.reinitWait != null) {
+            return;
         }
 
-        reinitWait = setTimeout(initWS, 5000);
+        this.reinitWait = setTimeout(this.initWS.bind(this), 5000);
+    }
+
+    WSHandler.prototype.send = function(msg) {
+        if (!this.useWS) {
+            return false;
+        }
+        msg.ws_type = msg.wb_type;
+        delete msg.wb_type;
+        this.ws.send(JSON.stringify(msg));
+        return true;
+    }
+
+    WSHandler.prototype.ws_received = function(event) {
+        if (!this.on_message) {
+            return;
+        }
+        var msg = JSON.parse(event.data);
+        msg.wb_type = msg.ws_type;
+        delete msg.ws_type;
+        this.on_message(msg);
     }
 
     function addCookie(name, value, domain) {
-        var msg = {"ws_type": "addcookie",
+        var msg = {"wb_type": "addcookie",
                    "name": name,
                    "value": value,
                    "domain": domain}
 
-        return sendMsg(msg);
+        return sendAppMsg(msg);
     }
 
     function addSkipReq(url) {
-        var msg = {"ws_type": "skipreq",
+        var msg = {"wb_type": "skipreq",
                    "url": url
                   }
 
-        return sendMsg(msg);
+        return sendAppMsg(msg);
     }
 
     function sendReqPatch(url) {
-        var msg = {"ws_type": "req_switch",
+        var msg = {"wb_type": "req_switch",
                    "url": url
                   }
 
-        return sendMsg(msg);
+        return sendAppMsg(msg);
     }
 
     function sendPageMsg(isAdd) {
-        var page = {
-                 "url": window.location.href,
-                 "timestamp": wbinfo.timestamp,
-                 "title": document.title,
-                 "browser": wbinfo.curr_browser,
+        if (window != window.top) {
+          return;
+        }
+
+        var msg = {
+            "url": window.location.href,
+            "ts": wbinfo.timestamp,
+            "request_ts": wbinfo.request_ts,
+            "is_live": wbinfo.is_live,
+            "title": document.title,
+            "readyState": document.readyState,
+            "browser": wbinfo.curr_browser,
         };
 
-        var msg = {"page": page}
-
-        if (isAdd) {
-            msg["ws_type"] = "page";
-            msg["visible"] = !document.hidden;
+        if (!pageLoaded) {
+            msg.wb_type = "load";
+            msg.newPage = isAdd;
+            pageLoaded = true;
         } else {
-            msg["ws_type"] = "remote_url";
+            msg.wb_type = "replace-url";
         }
+        if (document.hidden) {
+          return;
+        }
+        msg.visible = true;
 
-        return sendMsg(msg);
+        return sendAppMsg(msg);
     }
 
-    function sendLinks(links) {
-        var msg = {"ws_type": "extract-resp"};
-
-        msg.phase = "start";
-        sendMsg(msg);
-
-        msg.phase = "url";
-
-        for (var i = 0; i < links.length; i++) {
-            msg.url = links[i];
-            sendMsg(msg);
-        }
-
-        doneLoop();
-        setInterval(doneLoop, 10000);
-    }
-
-    function doneLoop() {
-        var msg = {"ws_type": "extract-resp"};
-
-        msg.phase = "end";
-
-        if (window.wbinfo) {
-            msg.url = window.wbinfo.url;
-        } else {
-            msg.url = document.location.href;
-        }
-
-        return sendMsg(msg);
-    }
-
-    function sendMsg(msg) {
-        if (!hasWS()) {
-            return false;
-        }
-
-        ws.send(json_stringify(msg));
-        return true;
-    }
- 
-    function ws_received(event)
-    {
-        var msg = json_parse(event.data);
-        
-        switch (msg.ws_type) {
+    function receiveAppMsg(msg) {
+        switch (msg.wb_type) {
             case "status":
                 break;
 
-            case "set_url":
+            case "replace-url":
                 if (!document.hidden && msg.url != window.location.href) {
                     if (msg["new"]) {
                         window.open(msg.url);
@@ -190,23 +174,11 @@
                 break;
 
             case "behavior":
-                msg.wb_type = msg.ws_type;
-                delete msg.ws_type;
                 sendLocalMsg(msg);
                 break;
 
-            case "switch":
+            case "reload":
                 window.location.reload();
-                break;
-
-            case "snapshot-req":
-                if (!document.hidden) {
-                    sendLocalMsg({"wb_type": "snapshot-req"});
-                }
-                break;
-
-            case "extract-req":
-                sendLinks(extractLinks());
                 break;
 
             default:
@@ -214,8 +186,12 @@
         }
     }
 
-    function hasWS() {
-        return useWS;
+    function sendAppMsg(msg) {
+        if (handler) {
+            handler.send(msg);
+        } else {
+            remoteQ.push(msg);
+        }
     }
 
     function sendLocalMsg(data) {
@@ -230,9 +206,29 @@
 
         function on_init() {
             sendPageMsg(wbinfo.is_live || wbinfo.proxy_mode == "extract");
+
+            while (remoteQ.length) {
+              sendAppMsg(remoteQ.shift());
+            }
         }
 
-        start(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic, on_init);
+        if (!window[wr_msg_handler]) {
+            window[wr_msg_handler] = new WSHandler(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic,
+                                                   on_init, receiveAppMsg);
+            handler = window[wr_msg_handler];
+        } else {
+            handler = window[wr_msg_handler];
+            handler.on_message = receiveAppMsg;
+            on_init();
+        }
+    });
+
+    window.addEventListener('hashchange', function(event) {
+        var msg = {"wb_type": "hashchange",
+                   "hash": window.location.hash
+                  }
+
+        sendAppMsg(msg);
     });
 
     // VIZ CHANGE
@@ -248,88 +244,16 @@
             return;
         }
 
-        if (message.wb_type == "skipreq" ||
-            message.wb_type == "patch_req" ||
-            message.wb_type == "behaviorStep" ||
-            message.wb_type == "behaviorDone") {
-
-            message.ws_type = message.wb_type;
-            delete message.wb_type;
-
-            sendMsg(message);
-        } else if (message.wb_type == "snapshot") {
-            postSnapshot(message);
+        switch (message.wb_type) {
+            case "skipreq":
+            case "patch_req":
+            case "behaviorStep":
+            case "behaviorDone":
+                sendAppMsg(message);
+                break;
         }
-    }
-
-    function postSnapshot(message) {
-        var url = window.location.protocol + "//" + wbinfo.proxy_magic;
-        url += "/_snapshot_cont?";
-
-        for (var k in message.params) {
-            var v = message.params[k];
-            if (v) {
-                url += encodeURIComponent(k) + "=" + encodeURIComponent(v) + "&";
-            }
-        }
-
-        var xhr = new XMLHttpRequest(url);
-        xhr.open("POST", url);
-        xhr.setRequestHeader("Content-Type", "text/plain");
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                var data = json_parse(xhr.responseText);
-                var msg = data.snapshot;
-                if (msg) {
-                    msg["ws_type"] = "snapshot";
-                    sendMsg(msg);
-                }
-            }
-        };
-
-        xhr.send(message.contents);
     }
 
     window.addEventListener("__wb_from_event", localEvent);
-
-    function extractLinks(query) {
-        if (!query) {
-            query = "a[href]";
-        }
-
-        function getLinks(query, win, store) {
-            try {
-                var results = win.document.querySelectorAll(query);
-            } catch (e) {
-                console.log("skipping foreign frame");
-                return;
-            }
-
-            for (var i = 0; i < results.length; i++) {
-                var link = results[i].href;
-                if (!link) {
-                    continue;
-                }
-
-                if (link.indexOf("http:") != 0 && link.indexOf("https:") != 0) {
-                    continue;
-                }
-
-                store[link] = 1;
-            }
-
-            for (var i = 0; i < win.frames.length; i++) {
-                getLinks(query, win.frames[i], store);
-            }
-        }
-
-        var link_map = {};
-
-        getLinks(query, window, link_map);
-
-        return Object.keys(link_map);
-    }
-
-    window.extractLinks = extractLinks;
 
 })();

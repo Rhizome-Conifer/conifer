@@ -83,7 +83,7 @@ class PlayerNavUI extends Component {
         {
           isLanding ?
             <div className="landing-header">
-              <button id="help" onClick={this.goToHelp} className="button" title="Help">
+              <button id="help" onClick={this.goToHelp} className="button" title="Help" type="button">
                 <HelpIcon />
                 <span>About</span>
               </button>
@@ -95,13 +95,13 @@ class PlayerNavUI extends Component {
                 </Link>
 
                 <div className="browser-nav">
-                  <button id="back" onClick={this.triggerBack} disabled={!canGoBack} className={backClass} title="Click to go back" aria-label="navigate back">
+                  <button id="back" onClick={this.triggerBack} disabled={!canGoBack} className={backClass} title="Click to go back" aria-label="navigate back" type="button">
                     <PlayerArrowLeftIcon />
                   </button>
-                  <button id="forward" onClick={this.triggerForward} disabled={isReplay ? !canGoForward : !history.canGo(1)} className={fwdClass} title="Click to go forward" aria-label="navigate forward">
+                  <button id="forward" onClick={this.triggerForward} disabled={isReplay ? !canGoForward : !history.canGo(1)} className={fwdClass} title="Click to go forward" aria-label="navigate forward" type="button">
                     <PlayerArrowRightIcon />
                   </button>
-                  <button id="refresh" onClick={this.triggerRefresh} disabled={!isReplay} className={refreshClass} title="Refresh replay window">
+                  <button id="refresh" onClick={this.triggerRefresh} disabled={!isReplay} className={refreshClass} title="Refresh replay window" type="button">
                     <RefreshIcon />
                   </button>
                 </div>
@@ -114,16 +114,16 @@ class PlayerNavUI extends Component {
               </div>
 
               <div className="player-functions">
-                <button onClick={this.sendOpenFile} title="Open file">
+                <button onClick={this.sendOpenFile} title="Open file" type="button">
                   Open...
                 </button>
 
                 {
                   isHelp ?
-                    <button id="help" onClick={this.props.history.goBack} title="Help">
+                    <button id="help" onClick={this.props.history.goBack} title="Help" type="button">
                       <PlayerCloseIcon />
                     </button> :
-                    <button id="help" onClick={this.goToHelp} className="button grow" title="Help">
+                    <button id="help" onClick={this.goToHelp} className="button grow" title="Help" type="button">
                       Help
                     </button>
                 }

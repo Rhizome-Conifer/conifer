@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import WebSocketHandler from 'helpers/ws';
-import path from 'path';
 import classNames from 'classnames';
 import { withRouter } from 'react-router';
 
-import { stripProtocol } from 'helpers/utils';
+import { apiFetch, stripProtocol, setTitle } from 'helpers/utils';
+import { autopilotReset, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
 
 import { setBrowserHistory } from 'store/modules/appSettings';
-import { updateUrlAndTimestamp, updateTimestamp } from 'store/modules/controls';
+import { updateTimestamp, updateUrl } from 'store/modules/controls';
 
 import { appHost } from 'config';
 
@@ -46,8 +46,6 @@ class Webview extends Component {
     this.webviewHandle = null;
     this.internalUpdate = false;
     this.state = { loading: false };
-
-    const currMode = props.currMode;
   }
 
   componentDidMount() {
@@ -57,11 +55,17 @@ class Webview extends Component {
     const realHost = host || appHost;
 
     this.socket = new WebSocketHandler(params, currMode, dispatch, false, '@INIT', stripProtocol(realHost));
-    this.webviewHandle.addEventListener('ipc-message', this.handleReplayEvent);
+    this.webviewHandle.addEventListener('ipc-message', this.handleIPCEvent);
 
     window.addEventListener('wr-go-back', this.goBack);
     window.addEventListener('wr-go-forward', this.goForward);
     window.addEventListener('wr-refresh', this.refresh);
+
+    this.webviewHandle.addEventListener('did-navigate-in-page', (event) => {
+      if (event.isMainFrame) {
+        this.setUrl(event.url, true);
+      }
+    });
 
     ipcRenderer.on('toggle-devtools', this.toggleDevTools);
   }
@@ -70,8 +74,8 @@ class Webview extends Component {
     const { behavior, timestamp, url } = this.props;
 
     // behavior check
-    if (behavior !== nextProps.behavior && this.socket) {
-      this.socket.doBehavior(nextProps.url, nextProps.behavior);
+    if (behavior !== nextProps.behavior) {
+      this.doBehavior(nextProps.url, nextProps.behavior);
     }
 
     if (nextProps.url !== url || nextProps.timestamp !== timestamp) {
@@ -134,7 +138,15 @@ class Webview extends Component {
     }
   }
 
-  handleReplayEvent = (evt) => {
+  doBehavior = (url, name) => {
+    return this.sendMsg({ wb_type: 'behavior', url, name, start: !!name });
+  }
+
+  sendMsg = (msg) => {
+    ipcRenderer.sendTo(this.webviewHandle.getWebContents().id, 'wr-message', msg);
+  }
+
+  handleIPCEvent = (evt) => {
     const { canGoBackward, canGoForward, dispatch } = this.props;
     const state = evt.args[0];
 
@@ -150,41 +162,84 @@ class Webview extends Component {
       case 'open':
         this.openDroppedFile(state.filename);
         break;
+
       case 'load':
+        dispatch(autopilotReset());
         this.setState({ loading: false });
-        this.addNewPage(state);
+        this.addNewPage(state, true);
         break;
-      case 'hashchange': {
-        let url = this.props.url.split('#', 1)[0];
-        if (state.hash) {
-          url = state.hash;
-        }
-        this.setUrl(url);
+
+      case 'behaviorDone': // when autopilot is done running
+        this.internalUpdate = true;
+        dispatch(toggleAutopilot(null, 'complete', this.url));
         break;
-      }
+
+      case 'behaviorStep':
+        this.internalUpdate = true;
+        dispatch(updateBehaviorState(state.result));
+        break;
+
       default:
         break;
     }
   }
 
-  addNewPage = (state) => {
-    const { currMode } = this.context;
-    const { dispatch, timestamp, url } = this.props;
+  setUrl = (url, noStatsUpdate = false) => {
+    const rawUrl = decodeURI(url);
 
-    if (!this.initialReq) {
-      const rawUrl = decodeURI(state.url);
+    if (this.props.url !== rawUrl) {
+      this.internalUpdate = true;
+      this.props.dispatch(updateUrl(rawUrl));
+    }
 
-      if (state.ts !== timestamp && rawUrl !== url) {
-        this.internalUpdate = true;
-        dispatch(updateUrlAndTimestamp(rawUrl, state.ts));
-      } else if (state.ts !== timestamp) {
-        this.internalUpdate = true;
-        dispatch(updateTimestamp(state.ts));
-      }
-
+    if (!noStatsUpdate) {
       this.socket.setStatsUrls([rawUrl]);
     }
-    this.initialReq = false;
+  }
+
+  addNewPage = (state, doAdd = false) => {
+    const { currMode } = this.context;
+    const { params, timestamp } = this.props;
+
+    // if (state && state.ts && currMode !== 'record' && currMode.indexOf('extract') === -1 && state.ts !== timestamp) {
+    //   this.props.dispatch(updateTimestamp(state.ts));
+    // }
+
+    if (state.is_error) {
+      this.setUrl(state.url);
+    } else if (['record', 'patch', 'extract', 'extract_only'].includes(currMode)) {
+
+      if (state.ts) {
+        if (state.ts !== timestamp) {
+          this.internalUpdate = true;
+          this.props.dispatch(updateTimestamp(state.ts));
+        }
+
+        //window.wbinfo.timestamp = state.ts;
+      }
+
+      this.setUrl(state.url, true);
+
+      const modeMsg = { record: 'recording', patch: 'Patching', extract: 'Extracting' };
+      setTitle(currMode in modeMsg ? modeMsg[currMode] : '', state.url, state.tittle);
+
+      if (doAdd && state.newPage && (state.ts || currMode !== 'patch')) {
+        if (!this.socket.addPage(state)) {
+          apiFetch(`/recording/${params.rec}/pages?user=${params.user}&coll=${params.coll}`, state, { method: 'POST' });
+        }
+      }
+    } else if (['replay', 'replay-coll'].includes(currMode)) {
+      if (!this.initialReq) {
+        if (state.ts !== timestamp) {
+          this.internalUpdate = true;
+          this.props.dispatch(updateTimestamp(state.ts));
+        }
+
+        this.setUrl(state.url);
+        setTitle('Archives', state.url, state.title);
+      }
+      this.initialReq = false;
+    }
   }
 
   goBack = () => {
@@ -206,19 +261,19 @@ class Webview extends Component {
   render() {
     const { loading } = this.state;
     const { partition, timestamp, url } = this.props;
-    const { user, currMode } = this.context;
 
     const classes = classNames('webview-wrapper', { loading });
 
     return (
       <div className={classes}>
-      <webview
-        id="replay"
-        ref={(obj) => { this.webviewHandle = obj; }}
-        src={this.buildProxyUrl(url, timestamp)}
-        autosize="on"
-        plugins="true"
-        partition={partition} />
+        <webview
+          id="replay"
+          ref={(obj) => { this.webviewHandle = obj; }}
+          src={this.buildProxyUrl(url, timestamp)}
+          autosize="on"
+          plugins="true"
+          preload="preload.js"
+          partition={partition} />
       </div>
     );
   }

@@ -7,8 +7,10 @@ import AppHeaderUI from 'components/siteComponents/AppHeaderUI';
 
 const mapStateToProps = ({ app }) => {
   return {
-    is404: app.getIn(['controls', 'is404']),
-    authUser: app.getIn(['auth', 'user'])
+    authUser: app.getIn(['auth', 'user']),
+    canGoBackward: app.getIn(['appSettings', 'canGoBackward']),
+    canGoForward: app.getIn(['appSettings', 'canGoForward']),
+    is404: app.getIn(['controls', 'is404'])
   };
 };
 

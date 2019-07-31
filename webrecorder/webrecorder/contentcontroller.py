@@ -502,9 +502,6 @@ class ContentController(BaseController, RewriterApp):
             return resp
 
         except Exception as e:
-            import traceback
-            traceback.print_exc()
-
             @self.jinja2_view('content_error.html')
             def handle_error(status_code, err_body, environ):
                 response.status = status_code
@@ -777,6 +774,7 @@ class ContentController(BaseController, RewriterApp):
             kwargs['url'] = wb_url_obj.url
             kwargs['timestamp'] = wb_url_obj.timestamp
             self.browser_mgr.update_local_browser(kwargs)
+            response.headers['Cache-Control'] = 'no-cache; no-store; must-revalidate'
             return redirect(wb_url_obj.url)
 
         try:

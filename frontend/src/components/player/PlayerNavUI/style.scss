@@ -52,12 +52,12 @@ nav.topBar {
     }
 
     svg path {
-      fill: #6E6E6E;
+      fill: $gray600;
     }
 
     &.inactive {
       path {
-        fill: #CECECE;
+        fill: $gray500;
       }
     }
 

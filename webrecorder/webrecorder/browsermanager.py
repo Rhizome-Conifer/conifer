@@ -92,11 +92,19 @@ class BrowserManager(object):
         return container_data
 
     def update_local_browser(self, data):
-        id_ = self.default_reqid or '127.0.0.1'
-        self.browser_redis.hmset(self.BROWSER_IP_KEY.format(id_), data)
+        data['reqid'] = self.default_reqid or '127.0.0.1'
+        data['browser'] = ''
+        self.browser_redis.hmset(self.BROWSER_IP_KEY.format(data['reqid']), data)
 
     def browser_sesh_id(self, reqid):
         return 'reqid_' + reqid
+
+    def browser_resolve_reqid(self, reqid):
+        # if '@INIT' and unique default reqid set, use that
+        if self.default_reqid and reqid == '@INIT':
+            return self.default_reqid
+        else:
+            return reqid
 
     def _api_new_browser(self, req_url, container_data):
         r = requests.post(req_url, json=container_data)

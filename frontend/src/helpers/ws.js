@@ -100,29 +100,32 @@ class WebSocketHandler {
 
     switch (msg.ws_type) {
       case 'behaviorDone': // when autopilot is done running
-        this.dispatch(toggleAutopilot(null, 'complete', this.url));
+        if (this.remoteBrowser) {
+          this.dispatch(toggleAutopilot(null, 'complete', this.url));
+        }
         break;
       case 'behaviorStep':
-        this.dispatch(updateBehaviorState(msg.result));
+        if (this.remoteBrowser) {
+          this.dispatch(updateBehaviorState(msg.result));
+        }
         break;
       case 'status':
         if (msg.stats || msg.size || msg.pending_size) {
           this.dispatch(setStats(msg.stats, msg.size || 0, msg.pending_size || 0));
         }
         break;
-      case 'page':
+      case 'load':
         if (this.isRemoteBrowser && msg.visible) {
           this.dispatch(autopilotReset());
         }
         // fall through
-      case 'remote_url': {
+      case 'replace-url': {
         if (this.isRemoteBrowser && msg.visible) {
-          const { page } = msg;
-          this.dispatch(updateUrlAndTimestamp(page.url, page.timestamp));
-          this.url = page.url;
+          this.dispatch(updateUrlAndTimestamp(msg.url, msg.ts));
+          this.url = msg.url;
 
           //setTitle("Remote", page.url, page.title);
-          this.replaceOuterUrl(page, "load");
+          this.replaceOuterUrl(msg, "load");
         }
         break;
       }
@@ -173,9 +176,8 @@ class WebSocketHandler {
   }
 
   replaceOuterUrl = (msg, change) => {
-    const ts = msg.timestamp;
+    const { ts, url } = msg;
     const mod = remoteBrowserMod(this.br, ['replay', 'replay-coll', 'patch', 'extract', 'extract_only'].includes(this.currMode) && ts ? ts : null, '/');
-    const { url } = msg;
     let prefix;
 
     if (this.currMode.includes('replay')) {
@@ -208,7 +210,7 @@ class WebSocketHandler {
   }
 
   addPage = (page) => {
-    return this.sendMsg({ ws_type: 'page', page });
+    return this.sendMsg({ ws_type: 'load', ...page });
   }
 
   addSkipReq = (url) => {
@@ -236,7 +238,7 @@ class WebSocketHandler {
   }
 
   setRemoteUrl = (url) => {
-    return this.sendMsg({ ws_type: 'set_url', url });
+    return this.sendMsg({ ws_type: 'replace-url', url });
   }
 
   switchMode = (rec, mode, msg) => {
@@ -246,7 +248,7 @@ class WebSocketHandler {
     // replaceOuterUrl(msg, type);
 
     return this.sendMsg({
-      ws_type: 'switch',
+      ws_type: 'reload',
       type: mode,
       rec
     });
