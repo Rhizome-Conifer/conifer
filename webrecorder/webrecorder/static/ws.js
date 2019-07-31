@@ -143,8 +143,9 @@
             "browser": wbinfo.curr_browser,
         };
 
-        if (isAdd && !pageLoaded) {
+        if (!pageLoaded) {
             msg.wb_type = "load";
+            msg.newPage = isAdd;
             pageLoaded = true;
         } else {
             msg.wb_type = "replace-url";

@@ -170,15 +170,6 @@ class Webview extends Component {
         this.addNewPage(state, true);
         break;
 
-      case 'hashchange': {
-        let url = this.props.url.split('#', 1)[0];
-        if (state.hash) {
-          url += state.hash;
-        }
-        this.setUrl(url);
-        break;
-      }
-
       case 'behaviorDone': // when autopilot is done running
         this.internalUpdate = true;
         dispatch(toggleAutopilot(null, 'complete', this.url));
@@ -233,7 +224,7 @@ class Webview extends Component {
       const modeMsg = { record: 'recording', patch: 'Patching', extract: 'Extracting' };
       setTitle(currMode in modeMsg ? modeMsg[currMode] : '', state.url, state.tittle);
 
-      if (doAdd && (state.ts || currMode !== 'patch')) {
+      if (doAdd && state.newPage && (state.ts || currMode !== 'patch')) {
         if (!this.socket.addPage(state)) {
           apiFetch(`/recording/${params.rec}/pages?user=${params.user}&coll=${params.coll}`, state, { method: 'POST' });
         }

@@ -207,7 +207,7 @@ class BaseWebSockHandler(object):
 
         elif msg['ws_type'] == 'load':
             if self.type_ != 'live':
-                if self.recording:
+                if self.recording and msg.get('newPage'):
                     page_local_store = {'url': msg.get('url'),
                                         'timestamp': msg.get('ts'),
                                         'title': msg.get('title'),
@@ -216,9 +216,6 @@ class BaseWebSockHandler(object):
                     check_dupes = (self.type_ == 'patch')
 
                     self.collection.add_page(page_local_store, self.recording)
-
-                else:
-                    print('Invalid Rec for Page Data')
 
         elif msg['ws_type'] == 'config-stats':
             self.stats_urls = msg['stats_urls']
