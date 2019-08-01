@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import { homepageAnnouncement, supportEmail } from 'config';
 
@@ -21,7 +22,7 @@ class Home extends PureComponent {
     showModalCB: PropTypes.func,
   };
 
-  homepage_marketing() {
+  homepageMarketing = () => {
     return (
       <React.Fragment>
         <div className="row intro-blurb">
@@ -124,7 +125,10 @@ class Home extends PureComponent {
           {
             !__DESKTOP__ ?
               <h4 className="text-center">Collect & Revisit the Web</h4> :
-              <h4 className="text-center">Desktop App</h4>
+              <div className="desktop-subhead">
+                <h4>Desktop App</h4>
+                <p><Link to={`/${auth.getIn(['user', 'username'])}`}>View Collections ({auth.getIn(['user', 'num_collections'])})</Link></p>
+              </div>
           }
         </div>
         {
@@ -142,7 +146,7 @@ class Home extends PureComponent {
         }
 
         { !__DESKTOP__ &&
-            this.homepage_marketing()
+            this.homepageMarketing()
         }
       </React.Fragment>
     );
