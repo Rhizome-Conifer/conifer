@@ -107,7 +107,7 @@ class RecordingToolsUI extends PureComponent {
     const { activeBrowser } = this.props;
 
     const isNew = currMode === 'new';
-    const isWrite = ['new', 'patch', 'record', 'extract'].includes(currMode);
+    const isWrite = ['new', 'patch', 'record', 'extract', 'live'].includes(currMode);
     const modalFooter = <Button onClick={this._close}>Close</Button>;
     const newFeatures = canAdmin && ['admin', 'beta-archivist'].includes(this.props.auth.get('role'));
 
@@ -136,7 +136,7 @@ class RecordingToolsUI extends PureComponent {
         }
 
         {
-          isWrite &&
+          isWrite && !currMode === 'live' &&
             <button className="rounded autopilot-btn" onClick={this.toggleAutopilotSidebar} type="button"><WandIcon /> Autopilot Options</button>
         }
 
