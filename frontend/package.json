@@ -124,10 +124,11 @@
 
     "dev:server:prepare": "universal-webpack --settings ./webpack/universal-webpack-settings.json prepare",
     "docker-dev": "run-p docker-dev:client:build dev:server:prepare docker-dev:server:build docker-dev:server:start",
-    "docker-prod": "run-s prod:client:build prod:server:build start-docker-prod",
+    "docker-prod": "run-s prod:client:build prod:server:build docker-prod:server:start",
     "docker-dev:client:build": "babel-node webpack/webpack-dev-server.js",
     "docker-dev:server:build": "webpack --config ./webpack/webpack.config.server.development.babel.js --watch",
     "docker-dev:server:start": "better-npm-run start-docker-dev",
+    "docker-prod:server:start": "better-npm-run start-docker-prod",
     "prod:client:build": "webpack --config ./webpack/webpack.config.client.production.babel.js",
     "prod:server:build": "webpack --config ./webpack/webpack.config.server.production.babel.js",
 

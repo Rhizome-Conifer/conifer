@@ -105,7 +105,7 @@ const userRoutes = [
   }
 ];
 
-const controllerRoutes = [
+const captureRoutes = [
   {
     path: `${userPath}/:coll/$new`,
     breadcrumb: 'New Session',
@@ -171,7 +171,26 @@ const controllerRoutes = [
     exact: true,
     footer: false,
     name: 'extract'
-  },
+  }
+]
+
+if (__DESKTOP__) {
+  const Live = require('containers/Live/Live');
+  // live browser pepare (for desktop)
+  captureRoutes.push(
+    {
+      path: `${userPath}/:coll/live/:splat(.*)`,
+      breadcrumb: 'Live',
+      classOverride: '',
+      component: Live,
+      exact: true,
+      footer: false,
+      name: 'live prepare'
+    }
+  );
+}
+
+const replayRoutes = [
   {
     path: `/:embed(_embed|_embed_noborder)${userPath}/:coll/list/:listSlug/b:bookmarkId([0-9]+)/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
     classOverride: '',
@@ -261,22 +280,6 @@ const infoRoutes = [
   }
 ];
 
-if (__DESKTOP__) {
-  const Live = require('containers/Live/Live');
-  // live browser pepare (for desktop)
-  controllerRoutes.push(
-    {
-      path: `${userPath}/:coll/live/:splat(.*)`,
-      breadcrumb: 'Live',
-      classOverride: '',
-      component: Live,
-      exact: true,
-      footer: false,
-      name: 'live prepare'
-    }
-  );
-}
-
 export default [
   /* core */
   {
@@ -337,7 +340,8 @@ export default [
 
   ...infoRoutes,
   ...userRoutes,
-  ...controllerRoutes,
+  ...captureRoutes,
+  ...replayRoutes,
 
   {
     path: '/(.*)',
