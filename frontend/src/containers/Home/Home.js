@@ -1,10 +1,12 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
-import { connect } from 'react-redux';
+import { asyncConnect } from 'redux-connect';
+import { Link } from 'react-router-dom';
 
 import { homepageAnnouncement, supportEmail } from 'config';
 
+import { loadCollections } from 'store/modules/auth';
 import { showModal } from 'store/modules/userLogin';
 
 import { HomepageAnnouncement, HomepageMessage } from 'components/siteComponents';
@@ -21,7 +23,7 @@ class Home extends PureComponent {
     showModalCB: PropTypes.func,
   };
 
-  homepage_marketing() {
+  homepageMarketing = () => {
     return (
       <React.Fragment>
         <div className="row intro-blurb">
@@ -124,7 +126,10 @@ class Home extends PureComponent {
           {
             !__DESKTOP__ ?
               <h4 className="text-center">Collect & Revisit the Web</h4> :
-              <h4 className="text-center">Desktop App</h4>
+              <div className="desktop-subhead">
+                <h4>Desktop App</h4>
+                <p><Link to={`/${auth.getIn(['user', 'username'])}`}>View Collections ({auth.getIn(['user', 'num_collections'])})</Link></p>
+              </div>
           }
         </div>
         {
@@ -142,12 +147,24 @@ class Home extends PureComponent {
         }
 
         { !__DESKTOP__ &&
-            this.homepage_marketing()
+            this.homepageMarketing()
         }
       </React.Fragment>
     );
   }
 }
+
+
+const initalData = [
+  {
+    promise: ({ store: { dispatch, getState } }) => {
+      const { app } = getState();
+      if (!app.getIn(['auth', 'user', 'anon'])) {
+        return dispatch(loadCollections(app.getIn(['auth', 'user', 'username'])));
+      }
+    }
+  }
+];
 
 const mapStateToProps = ({ app }) => {
   return {
@@ -161,7 +178,8 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(
+export default asyncConnect(
+  initalData,
   mapStateToProps,
   mapDispatchToProps
 )(Home);

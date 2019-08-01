@@ -53,6 +53,9 @@ class RecordURLBar extends Component {
       evt.preventDefault();
 
       switch(currMode) {
+        case 'live':
+          history.push(`/${user}/${coll}/live/${url}`);
+          break;
         case 'record':
           history.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(activeBrowser, null, '/')}${url}`);
           break;

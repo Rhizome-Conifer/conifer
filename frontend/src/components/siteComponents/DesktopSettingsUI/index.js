@@ -24,7 +24,7 @@ import './style.scss';
 const { ipcRenderer } = window.require('electron');
 
 
-class UserSettingsUI extends Component {
+class DesktopSettingsUI extends Component {
   static propTypes = {
     auth: PropTypes.object,
     collSum: PropTypes.number,
@@ -187,4 +187,4 @@ class UserSettingsUI extends Component {
   }
 }
 
-export default UserSettingsUI;
+export default DesktopSettingsUI;

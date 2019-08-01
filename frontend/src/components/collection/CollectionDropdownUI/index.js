@@ -58,7 +58,7 @@ class CollectionDropdownUI extends Component {
 
   componentWillMount() {
     const { loadUserCollections, auth } = this.props;
-    if (!auth.getIn(['user', 'anon']) && Date.now() - auth.get('accessed') > 2 * 60 * 1000) {
+    if (auth.getIn(['user', 'username']) && !auth.getIn(['user', 'anon']) && Date.now() - auth.get('accessed') > 10000) {
       loadUserCollections(auth.getIn(['user', 'username']));
     }
   }

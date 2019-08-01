@@ -34,7 +34,7 @@ class ReplayUI extends Component {
   render() {
     const { canAdmin, currMode, isMobile } = this.context;
 
-    const isWrite = ['extract', 'extract_only', 'patch', 'record'].includes(currMode);
+    const isWrite = ['extract', 'extract_only', 'patch', 'record', 'live'].includes(currMode);
 
     return (
       <div role="presentation" className="container-fluid wr-controls navbar-default">

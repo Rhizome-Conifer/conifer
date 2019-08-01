@@ -137,7 +137,10 @@ export function auth(state = initialState, action = {}) {
       return state.set('loading', true);
     case USER_LOAD_COLLECTIONS_SUCCESS: {
       const s = state.setIn(['user', 'collections'], fromJS(action.result.collections));
-      return s.set('loading', false);
+      return s.merge({
+        accessed: action.accessed,
+        loading: false
+      });
     }
     case USER_PASS_SUCCESS:
       return state.merge({
@@ -212,6 +215,7 @@ export function load(include_colls = true) {
 export function loadCollections(user) {
   return {
     types: [USER_LOAD_COLLECTIONS, USER_LOAD_COLLECTIONS_SUCCESS, USER_LOAD_COLLECTIONS_FAIL],
+    accessed: Date.now(),
     promise: client => client.get(`${apiPath}/collections`, {
       params: {
         user,
