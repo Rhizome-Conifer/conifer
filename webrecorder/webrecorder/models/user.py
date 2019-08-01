@@ -279,7 +279,7 @@ class User(RedisUniqueComponent):
         if self.access.is_superuser():
             return None
 
-        if self.curr_role == 'rate-unlimited-archivist':
+        if self.curr_role in ('rate-unlimited-archivist', 'supporter', 'free-supporter'):
             return None
 
         rate_key = self.RATE_LIMIT_KEY.format(ip=ip, H='')
