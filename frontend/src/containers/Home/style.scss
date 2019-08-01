@@ -14,6 +14,16 @@
 .desktop-subhead {
     text-align: center;
     margin-bottom: 5rem;
+
+    p {
+        margin-top: 5px;
+        border: solid 1px #ccc;
+        border-width: 1px 0 0 0;
+        padding-top: 15px;
+        display: inline-block;
+        width: 20%;
+        font-size: 1.5rem;
+    }
 }
 
 .tutorial {

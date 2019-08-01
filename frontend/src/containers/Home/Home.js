@@ -1,11 +1,12 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
-import { connect } from 'react-redux';
+import { asyncConnect } from 'redux-connect';
 import { Link } from 'react-router-dom';
 
 import { homepageAnnouncement, supportEmail } from 'config';
 
+import { loadCollections } from 'store/modules/auth';
 import { showModal } from 'store/modules/userLogin';
 
 import { HomepageAnnouncement, HomepageMessage } from 'components/siteComponents';
@@ -153,6 +154,18 @@ class Home extends PureComponent {
   }
 }
 
+
+const initalData = [
+  {
+    promise: ({ store: { dispatch, getState } }) => {
+      const { app } = getState();
+      if (!app.getIn(['auth', 'user', 'anon'])) {
+        return dispatch(loadCollections(app.getIn(['auth', 'user', 'username'])));
+      }
+    }
+  }
+];
+
 const mapStateToProps = ({ app }) => {
   return {
     auth: app.get('auth')
@@ -165,7 +178,8 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(
+export default asyncConnect(
+  initalData,
   mapStateToProps,
   mapDispatchToProps
 )(Home);
