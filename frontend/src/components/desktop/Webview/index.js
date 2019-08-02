@@ -67,6 +67,12 @@ class Webview extends Component {
       }
     });
 
+    if (currMode === 'live') {
+      this.webviewHandle.addEventListener('did-navigate', (event) => {
+        this.setUrl(event.url, true);
+      });
+    }
+
     ipcRenderer.on('toggle-devtools', this.toggleDevTools);
   }
 
