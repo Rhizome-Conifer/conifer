@@ -67,7 +67,7 @@ class CollectionDropdownUI extends Component {
     const { activeCollection, collections, fromCollection, mostRecent, newCollection, setCollection } = this.props;
     const { filter } = this.state;
 
-    if (!fromCollection && !this.props.loading && prevProps.loading && activeCollection !== mostRecent) {
+    if (!fromCollection && !this.props.loading && prevProps.loading && activeCollection.id !== mostRecent) {
       setCollection(mostRecent);
     } else if (fromCollection && fromCollection !== prevProps.fromCollection) {
       setCollection(fromCollection);

@@ -136,7 +136,7 @@ class RecordingToolsUI extends PureComponent {
         }
 
         {
-          isWrite && !currMode === 'live' &&
+          isWrite && currMode !== 'live' &&
             <button className="rounded autopilot-btn" onClick={this.toggleAutopilotSidebar} type="button"><WandIcon /> Autopilot Options</button>
         }
 

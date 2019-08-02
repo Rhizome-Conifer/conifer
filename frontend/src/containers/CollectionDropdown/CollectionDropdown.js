@@ -18,7 +18,7 @@ const mapStateToProps = ({ app }) => {
     mostRecent: mostRecent ? mostRecent.getIn([0, 'id']) : '',
     creatingCollection: app.getIn(['collections', 'creatingCollection']),
     collectionError: app.getIn(['collections', 'error']),
-    loading: app.getIn(['user', 'loading']),
+    loading: app.getIn(['auth', 'loading']),
     newCollection: app.getIn(['collections', 'newCollection']),
   };
 };
