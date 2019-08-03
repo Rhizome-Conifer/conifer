@@ -75,6 +75,18 @@ class Webview extends Component {
     }
 
     ipcRenderer.on('toggle-devtools', this.toggleDevTools);
+
+    this.initUnloadBlockListener();
+  }
+
+  initUnloadBlockListener() {
+    this.props.history.block((loc, action) => {
+      if (action !== 'PUSH') {
+        return true;
+      }
+
+      return 'wait';
+    });
   }
 
   componentWillReceiveProps(nextProps) {
@@ -103,6 +115,8 @@ class Webview extends Component {
   }
 
   componentWillUnmount() {
+    this.props.history.block(null);
+
     this.socket.close();
     this.webviewHandle.removeEventListener('ipc-message', this.handleReplayEvent);
     window.removeEventListener('wr-go-back', this.goBack);
