@@ -9,6 +9,7 @@ import tarfile
 import re
 import logging
 import requests
+import shutil
 import traceback
 
 
@@ -34,9 +35,6 @@ class BehaviorMgr(BaseController):
                 traceback.print_exc()
 
     def unpack_behaviors(self, filename='behaviors.tar.gz'):
-        if os.path.isfile(self.behaviors_metadata):
-            return
-
         os.makedirs(self.behaviors_data, exist_ok=True)
 
         if getattr(sys, 'frozen', False):
@@ -44,10 +42,21 @@ class BehaviorMgr(BaseController):
         else:
             behaviors_tarfile = resource_filename('webrecorder', 'config/' + filename)
 
+        current_tarfile = os.path.join(self.behaviors_root, filename)
+
+        try:
+            if os.path.isfile(current_tarfile) and os.path.getmtime(current_tarfile) > os.path.getmtime(behaviors_tarfile):
+                logging.info('Already have latest behaviors, not unpacking')
+                return
+        except Exception as e:
+            print(e)
+
         logging.info('Unpacking behaviors {0} -> {1}'.format(behaviors_tarfile, self.behaviors_root))
         tar = tarfile.open(behaviors_tarfile, 'r')
         tar.extractall(self.behaviors_root)
         tar.close()
+
+        shutil.copyfile(behaviors_tarfile, current_tarfile)
 
     def load(self):
         logging.info('Loading behaviors from {0}'.format(self.behaviors_metadata))
