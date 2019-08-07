@@ -84,6 +84,7 @@ export default Object.assign({
     PAGE_ITEM: 'pageItem',
     TH: 'tableHeader'
   },
+  filterBrowsers: ['chrome:76', 'firefox:68', 'firefox:49'],
   guestSessionTimeout: '90mins',
   homepageAnnouncement: '',
   internalApiHost: process.env.INTERNAL_HOST,
