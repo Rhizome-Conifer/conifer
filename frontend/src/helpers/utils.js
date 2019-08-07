@@ -41,6 +41,16 @@ export function apiFormatUrl(path) {
 }
 
 
+export function appendFlashVersion(version) {
+  for (let plugin of navigator.plugins) {
+    if (plugin.name === "Shockwave Flash") {
+      return version + '<BR>' + plugin.description.toLowerCase();
+    }
+  }
+  return version;
+}
+
+
 export function applyLocalTimeOffset(dt) {
   return new Date(dt.getTime() - (new Date().getTimezoneOffset() * 60000));
 }
