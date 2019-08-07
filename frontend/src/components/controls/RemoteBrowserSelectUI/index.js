@@ -9,6 +9,7 @@ import { RemoteBrowserOption } from 'components/controls';
 
 import 'shared/scss/dropdown.scss';
 
+import { filterBrowsers } from 'config';
 
 class RemoteBrowserSelectUI extends PureComponent {
   static contextTypes = {
@@ -91,6 +92,19 @@ class RemoteBrowserSelectUI extends PureComponent {
 
     const activeBrowserEle = browsers ? browsers.find(b => b.get('id') === instanceContext) : null;
 
+    let showBrowsers = [];
+
+    if (browsers && filterBrowsers) {
+      filterBrowsers.forEach((id) => {
+        const browser = browsers.get(id);
+        if (browser) {
+          showBrowsers.push(browser);
+        }
+      });
+    } else if (browsers) {
+      showBrowsers = browsers.valueSeq();
+    }
+
     const btn = activeBrowserEle ?
       (
         <span className="btn-content">
@@ -117,8 +131,8 @@ class RemoteBrowserSelectUI extends PureComponent {
           { loading &&
             <div>loading options..</div>
           }
-          { loaded && browsers &&
-              browsers.valueSeq().map(browser => <RemoteBrowserOption browser={browser} key={browser.get('id') ? browser.get('id') : 'native'} selectBrowser={this.selectBrowser} isActive={instanceContext === browser.get('id')} />)
+          { loaded && showBrowsers &&
+              showBrowsers.map(browser => <RemoteBrowserOption browser={browser} key={browser.get('id') ? browser.get('id') : 'native'} selectBrowser={this.selectBrowser} isActive={instanceContext === browser.get('id')} />)
           }
           {
             <RemoteBrowserOption browser={fromJS({ id: null, name: 'Use Current Browser' })} selectBrowser={this.selectBrowser} isActive={instanceContext === null} />
