@@ -100,12 +100,12 @@ class WebSocketHandler {
 
     switch (msg.ws_type) {
       case 'behaviorDone': // when autopilot is done running
-        if (this.remoteBrowser) {
+        if (this.isRemoteBrowser) {
           this.dispatch(toggleAutopilot(null, 'complete', this.url));
         }
         break;
       case 'behaviorStep':
-        if (this.remoteBrowser) {
+        if (this.isRemoteBrowser) {
           this.dispatch(updateBehaviorState(msg.result));
         }
         break;
@@ -117,6 +117,7 @@ class WebSocketHandler {
       case 'load':
         if (this.isRemoteBrowser && msg.visible) {
           this.dispatch(autopilotReset());
+          this.dispatch(autopilotCheck(msg.url));
         }
         // fall through
       case 'replace-url': {
