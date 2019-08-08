@@ -1,6 +1,5 @@
 (function() {
     var pageAdded = false;
-    var wsInited = false;
     var wr_msg_handler = '___$wr_msg_handler___$$';
     var handler = null;
     var remoteQ = [];
@@ -129,7 +128,7 @@
         return sendAppMsg(msg);
     }
 
-    function sendLoadMsg(msg, isAdd) {
+    function sendLoadMsg(msg, isAdd, readyState) {
         if (window != window.top) {
           return false;
         }
@@ -140,7 +139,7 @@
             "request_ts": wbinfo.request_ts,
             "is_live": wbinfo.is_live,
             "title": document.title,
-            "readyState": document.readyState,
+            "readyState": readyState || document.readyState,
             "browser": wbinfo.curr_browser,
             "wb_type": msg,
             "newPage": isAdd,
@@ -196,21 +195,20 @@
 
     // INIT
     document.addEventListener("readystatechange", function() {
+        const readyState = document.readyState;
+
         if (window != window.top) {
             return;
         }
 
-        if (wsInited) {
-          sendLoadMsg("load", false);
+        if (readyState === "interactive") { 
+          sendLoadMsg("load", (wbinfo.is_live || wbinfo.proxy_mode == "extract"), readyState);
+        } else {
+          sendLoadMsg("load", false, readyState);
           return;
         }
 
         function on_init() {
-            var addPage = !pageAdded && (wbinfo.is_live || wbinfo.proxy_mode == "extract");
-            if (sendLoadMsg("load", addPage)) {
-              pageAdded = true;
-            }
-
             while (remoteQ.length) {
               sendAppMsg(remoteQ.shift());
             }
@@ -225,8 +223,6 @@
             handler.on_message = receiveAppMsg;
             on_init();
         }
-
-        wsInited = true;
     });
 
     window.addEventListener('hashchange', function(event) {
