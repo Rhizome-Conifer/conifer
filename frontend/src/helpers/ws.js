@@ -115,13 +115,17 @@ class WebSocketHandler {
         }
         break;
       case 'load':
-        if (this.isRemoteBrowser && msg.visible) {
+        if (this.isRemoteBrowser) {
           this.dispatch(autopilotReset());
           this.dispatch(autopilotCheck(msg.url));
+
+          if (msg.readyState === 'complete') {
+            //todo: enable autopilot start button
+          }
         }
         // fall through
       case 'replace-url': {
-        if (this.isRemoteBrowser && msg.visible) {
+        if (this.isRemoteBrowser) {
           this.dispatch(updateUrlAndTimestamp(msg.url, msg.ts));
           this.url = msg.url;
 

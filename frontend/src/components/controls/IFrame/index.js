@@ -176,6 +176,9 @@ class IFrame extends Component {
         break;
       case 'load':
         this.addNewPage(state, true);
+        if (state.readyState === "complete") {
+          //todo: enable autopilot start button
+        }
         break;
       case 'cookie':
         this.setDomainCookie(state);

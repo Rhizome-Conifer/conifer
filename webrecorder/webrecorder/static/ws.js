@@ -1,5 +1,6 @@
 (function() {
-    var pageLoaded = false;
+    var pageAdded = false;
+    var wsInited = false;
     var wr_msg_handler = '___$wr_msg_handler___$$';
     var handler = null;
     var remoteQ = [];
@@ -128,9 +129,9 @@
         return sendAppMsg(msg);
     }
 
-    function sendPageMsg(isAdd) {
+    function sendLoadMsg(msg, isAdd) {
         if (window != window.top) {
-          return;
+          return false;
         }
 
         var msg = {
@@ -141,21 +142,16 @@
             "title": document.title,
             "readyState": document.readyState,
             "browser": wbinfo.curr_browser,
+            "wb_type": msg,
+            "newPage": isAdd,
         };
 
-        if (!pageLoaded) {
-            msg.wb_type = "load";
-            msg.newPage = isAdd;
-            pageLoaded = true;
+        if (!document.hidden) {
+          sendAppMsg(msg);
+          return true;
         } else {
-            msg.wb_type = "replace-url";
+          return false;
         }
-        if (document.hidden) {
-          return;
-        }
-        msg.visible = true;
-
-        return sendAppMsg(msg);
     }
 
     function receiveAppMsg(msg) {
@@ -187,7 +183,7 @@
     }
 
     function sendAppMsg(msg) {
-        if (handler) {
+        if (handler && handler.useWS) {
             handler.send(msg);
         } else {
             remoteQ.push(msg);
@@ -199,13 +195,21 @@
     }
 
     // INIT
-    window.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("readystatechange", function() {
         if (window != window.top) {
             return;
         }
 
+        if (wsInited) {
+          sendLoadMsg("load", false);
+          return;
+        }
+
         function on_init() {
-            sendPageMsg(wbinfo.is_live || wbinfo.proxy_mode == "extract");
+            var addPage = !pageAdded && (wbinfo.is_live || wbinfo.proxy_mode == "extract");
+            if (sendLoadMsg("load", addPage)) {
+              pageAdded = true;
+            }
 
             while (remoteQ.length) {
               sendAppMsg(remoteQ.shift());
@@ -221,6 +225,8 @@
             handler.on_message = receiveAppMsg;
             on_init();
         }
+
+        wsInited = true;
     });
 
     window.addEventListener('hashchange', function(event) {
@@ -234,7 +240,7 @@
     // VIZ CHANGE
     document.addEventListener("visibilitychange", function() {
         if (!document.hidden) {
-            sendPageMsg(false);
+            sendLoadMsg("replace-url", false);
         }
     });
 

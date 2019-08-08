@@ -171,8 +171,13 @@ class Webview extends Component {
 
       case 'load':
         dispatch(autopilotReset());
+        if (state.readyState === 'complete') {
+          // todo: enable autopilot start button
+        }
         this.setState({ loading: false });
-        this.addNewPage(state, true);
+        if (state.newPage) {
+          this.addNewPage(state, true);
+        }
         break;
 
       case 'behaviorDone': // when autopilot is done running
