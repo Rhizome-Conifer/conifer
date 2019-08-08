@@ -12,7 +12,7 @@
 
         this.ws = null;
         this.reinitWait = null;
-        this.useWS = false;
+        this.ready = false;
 
         this.errCount = 0;
 
@@ -47,12 +47,12 @@
             this.ws.addEventListener("close", this.ws_closed.bind(this));
             this.ws.addEventListener("error", this.ws_errored.bind(this));
         } catch (e) {
-            this.useWS = false;
+            this.ready = false;
         }
     }
 
     WSHandler.prototype.ws_open = function() {
-        this.useWS = true;
+        this.ready = true;
         this.errCount = 0;
 
         if (this.on_open) {
@@ -61,7 +61,7 @@
     }
 
     WSHandler.prototype.ws_errored = function() {
-        this.useWS = false;
+        this.ready = false;
 
         if (this.reinitWait != null) {
             return;
@@ -74,7 +74,7 @@
     }
 
     WSHandler.prototype.ws_closed = function() {
-        this.useWS = false;
+        this.ready = false;
 
         if (this.reinitWait != null) {
             return;
@@ -84,7 +84,7 @@
     }
 
     WSHandler.prototype.send = function(msg) {
-        if (!this.useWS) {
+        if (!this.ready) {
             return false;
         }
         msg.ws_type = msg.wb_type;
@@ -182,7 +182,7 @@
     }
 
     function sendAppMsg(msg) {
-        if (handler && handler.useWS) {
+        if (handler && handler.ready) {
             handler.send(msg);
         } else {
             remoteQ.push(msg);
@@ -201,27 +201,30 @@
             return;
         }
 
-        if (readyState === "interactive") { 
-          sendLoadMsg("load", (wbinfo.is_live || wbinfo.proxy_mode == "extract"), readyState);
-        } else {
+        if (readyState === "complete") {
           sendLoadMsg("load", false, readyState);
           return;
         }
 
-        function on_init() {
-            while (remoteQ.length) {
-              sendAppMsg(remoteQ.shift());
-            }
-        }
+        var addPage = (wbinfo.is_live || wbinfo.proxy_mode == "extract");
 
         if (!window[wr_msg_handler]) {
+            function on_init() {
+                while (remoteQ.length) {
+                  sendAppMsg(remoteQ.shift());
+                }
+            }
+
+            sendLoadMsg("load", addPage, readyState);
+
             window[wr_msg_handler] = new WSHandler(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic,
                                                    on_init, receiveAppMsg);
             handler = window[wr_msg_handler];
         } else {
             handler = window[wr_msg_handler];
             handler.on_message = receiveAppMsg;
-            on_init();
+            handler.ready = true;
+            sendLoadMsg("load", addPage, readyState);
         }
     });
 

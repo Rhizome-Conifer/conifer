@@ -175,8 +175,11 @@ class IFrame extends Component {
         this.props.dispatch(updateBehaviorState(state.result));
         break;
       case 'load':
-        this.addNewPage(state, true);
-        if (state.readyState === "complete") {
+        if (state.readyState === "interactive") {
+          // for now, until wombat includes this flag
+          state.newPage = true;
+          this.addNewPage(state, true);
+        } else if (state.readyState === "complete") {
           //todo: enable autopilot start button
         }
         break;
@@ -218,11 +221,7 @@ class IFrame extends Component {
     if (state.is_error) {
       this.setUrl(state.url);
     } else if (['record', 'patch', 'extract', 'extract_only'].includes(currMode)) {
-      const attributes = {};
-
       if (state.ts) {
-        attributes.timestamp = state.ts;
-
         if (state.ts !== timestamp) {
           this.internalUpdate = true;
           this.props.dispatch(updateTimestamp(state.ts));
@@ -231,16 +230,14 @@ class IFrame extends Component {
         window.wbinfo.timestamp = state.ts;
       }
 
-      attributes.title = state.title;
-      attributes.url = state.url;
       this.setUrl(state.url, true);
 
       const modeMsg = { record: 'recording', patch: 'Patching', extract: 'Extracting' };
       setTitle(currMode in modeMsg ? modeMsg[currMode] : '', state.url, state.tittle);
 
-      if (doAdd && (attributes.timestamp || currMode !== 'patch')) {
-        if (!this.socket.addPage(attributes)) {
-          apiFetch(`/recording/${params.rec}/pages?user=${params.user}&coll=${params.coll}`, attributes, { method: 'POST' });
+      if (doAdd && state.newPage && (state.ts || currMode !== 'patch')) {
+        if (!this.socket.addPage(state)) {
+          apiFetch(`/recording/${params.rec}/pages?user=${params.user}&coll=${params.coll}`, state, { method: 'POST' });
         }
       }
     } else if (['replay', 'replay-coll'].includes(currMode)) {
