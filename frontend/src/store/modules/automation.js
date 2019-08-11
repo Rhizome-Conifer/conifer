@@ -32,11 +32,11 @@ const initialState = fromJS({
   autoId: null,
   active: false,
   behavior: null,
-  behaviorState: null,
+  behaviorState: List(),
   autopilot: false,
   autopilotStatus: 'stopped', // stopped, running, complete
   autopilotUrl: '',
-  autopilotInfo: [],
+  autopilotInfo: null,
   queued: false,
   show: false,
   workers: []
@@ -57,7 +57,7 @@ export default function automation(state = initialState, action = {}) {
         workers: action.result.browsers || []
       });
     case AUTOPILOT_CHECK_SUCCESS:
-      return state.set('autopilotInfo', fromJS(action.result.behaviors));
+      return state.set('autopilotInfo', fromJS(action.result));
     case AUTOPILOT_TOGGLE_AUTOMATION:
       return state.merge({
         behavior: action.behavior,
@@ -65,18 +65,16 @@ export default function automation(state = initialState, action = {}) {
         autopilotUrl: action.url
       });
     case AUTOPILOT_UPDATE_BEHAVIOR_STATUS:
-      return state.merge({
-        behaviorState: action.behaviorState
-      });
+      return state.set('behaviorState', state.get('behaviorState').push(fromJS(action.behaviorState)));
     case TOGGLE_AUTOPILOT_SIDEBAR:
       return state.set('autopilot', action.bool);
     case AUTOPILOT_RESET:
       return state.merge({
         autopilotStatus: 'stopped',
-        autopilotInfo: List(),
+        autopilotInfo: null,
         autopilotUrl: action.url,
         behavior: null,
-        behaviorState: null
+        behaviorState: List()
       });
     default:
       return state;
@@ -87,7 +85,7 @@ export default function automation(state = initialState, action = {}) {
 export function autopilotCheck(url = '') {
   return {
     types: [AUTOPILOT_CHECK, AUTOPILOT_CHECK_SUCCESS, AUTOPILOT_CHECK_FAIL],
-    promise: client => client.get(`${apiPath}/behavior/info-list`, {
+    promise: client => client.get(`${apiPath}/behavior/info`, {
       params: { url }
     })
   };
