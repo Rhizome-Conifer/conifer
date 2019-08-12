@@ -128,8 +128,8 @@
         return sendAppMsg(msg);
     }
 
-    function sendLoadMsg(msg, isAdd, readyState) {
-        if (window != window.top) {
+    function sendLoadMsg(isAdd, readyState) {
+        if (window != window.top || document.hidden) {
           return false;
         }
 
@@ -141,16 +141,30 @@
             "title": document.title,
             "readyState": readyState || document.readyState,
             "browser": wbinfo.curr_browser,
-            "wb_type": msg,
+            "wb_type": "load",
             "newPage": isAdd,
         };
 
-        if (!document.hidden) {
-          sendAppMsg(msg);
-          return true;
-        } else {
+        sendAppMsg(msg);
+        return true;
+    }
+
+    function sendReplaceUrlMsg(type) {
+        if (window != window.top || document.hidden) {
           return false;
         }
+
+        var msg = {
+            "changeType": type,
+            "url": window.location.href,
+            "ts": wbinfo.timestamp,
+            "request_ts": wbinfo.request_ts,
+            "title": document.title,
+            "wb_type": "replace-url",
+        };
+
+        sendAppMsg(msg);
+        return true;
     }
 
     function receiveAppMsg(msg) {
@@ -202,13 +216,13 @@
         }
 
         if (readyState === "complete") {
-          sendLoadMsg("load", false, readyState);
+          sendLoadMsg(false, readyState);
           return;
         }
 
-        if (window._wb_wombat.historyCB) {
-          window._wb_wombat.historyCB.push(function(url, title, func, state) {
-            sendLoadMsg("replace-url", false);
+        if (window._wb_wombat.setHistoryCB) {
+          window._wb_wombat.setHistoryCB(function(url, title, changeName, state) {
+            sendReplaceUrlMsg(changeName);
           });
         }
 
@@ -221,7 +235,7 @@
                 }
             }
 
-            sendLoadMsg("load", addPage, readyState);
+            sendLoadMsg(addPage, readyState);
 
             window[wr_msg_handler] = new WSHandler(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic,
                                                    on_init, receiveAppMsg);
@@ -230,7 +244,7 @@
             handler = window[wr_msg_handler];
             handler.on_message = receiveAppMsg;
             handler.ready = true;
-            sendLoadMsg("load", addPage, readyState);
+            sendLoadMsg(addPage, readyState);
         }
     });
 
@@ -245,7 +259,7 @@
     // VIZ CHANGE
     document.addEventListener("visibilitychange", function() {
         if (!document.hidden) {
-            sendLoadMsg("replace-url", false);
+            sendReplaceUrlMsg("visible");
         }
     });
 

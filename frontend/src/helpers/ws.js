@@ -29,6 +29,7 @@ class WebSocketHandler {
     this.br = br;
     this.reqId = reqId;
     this.wsEndpoint = '_client_ws';
+    this.internalUpdate = false;
 
     if (this.isRemoteBrowser) {
       window.addEventListener('popstate', this.syncOuterFrameState);
@@ -117,20 +118,17 @@ class WebSocketHandler {
       case 'load':
         if (this.isRemoteBrowser) {
           if (msg.readyState === 'interactive') {
+            this.replaceOuterUrl(msg);
             this.dispatch(autopilotReset());
             this.dispatch(autopilotCheck(msg.url));
           } else if (msg.readyState === 'complete') {
             this.dispatch(autopilotReady());
           }
         }
-        // fall through
+        break;
       case 'replace-url': {
         if (this.isRemoteBrowser) {
-          this.dispatch(updateUrlAndTimestamp(msg.url, msg.ts));
-          this.url = msg.url;
-
-          //setTitle("Remote", page.url, page.title);
-          this.replaceOuterUrl(msg, "load");
+          this.replaceOuterUrl(msg);
         }
         break;
       }
@@ -180,8 +178,13 @@ class WebSocketHandler {
     }
   }
 
-  replaceOuterUrl = (msg, change) => {
+  replaceOuterUrl = (msg) => {
     const { ts, url } = msg;
+
+    this.internalUpdate = true;
+    this.dispatch(updateUrlAndTimestamp(url, ts));
+    this.url = url;
+
     const mod = remoteBrowserMod(this.br, ['replay', 'replay-coll', 'patch', 'extract', 'extract_only'].includes(this.currMode) && ts ? ts : null, '/');
     let prefix;
 
@@ -199,14 +202,13 @@ class WebSocketHandler {
       prefix = `${config.appHost}/${this.user}/${this.coll}/${this.rec}/${this.currMode}:${archiveId}${collId || ''}/`;
     }
 
-    msg.change = change;
-
-    if (url !== this.lastPopUrl) {
-      //window.history.pushState(msg, msg.title, prefix + mod + url);
-      this.lastPopUrl = undefined;
-    } else if (change === 'load') {
-      this.lastPopUrl = undefined;
+    if (msg.ws_type === "load" && url !== this.lastPopUrl) {
+      msg.change = "load";
+      window.history.pushState(msg, msg.title, prefix + mod + url);
+    } else if (msg.ws_type !== "load") {
+      window.history.replaceState(msg, msg.title, prefix + mod + url);
     }
+    this.lastPopUrl = undefined;
   }
 
   /* actions */
@@ -243,6 +245,10 @@ class WebSocketHandler {
   }
 
   setRemoteUrl = (url) => {
+    if (this.internalUpdate) {
+      this.internalUpdate = false;
+      return true;
+    }
     return this.sendMsg({ ws_type: 'replace-url', url });
   }
 
