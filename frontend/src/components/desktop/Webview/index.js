@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import { withRouter } from 'react-router';
 
 import { apiFetch, stripProtocol, setTitle } from 'helpers/utils';
-import { autopilotReset, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
+import { autopilotCheck, autopilotReset, autopilotReady, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
 
 import { setBrowserHistory } from 'store/modules/appSettings';
 import { updateTimestamp, updateUrl } from 'store/modules/controls';
@@ -170,19 +170,21 @@ class Webview extends Component {
         break;
 
       case 'load':
-        dispatch(autopilotReset());
-        if (state.readyState === 'complete') {
-          // todo: enable autopilot start button
-        }
         this.setState({ loading: false });
         if (state.newPage) {
           this.addNewPage(state, true);
+          dispatch(autopilotReset());
+          dispatch(autopilotCheck(state.url));
+        }
+        if (state.readyState === 'complete') {
+          // todo: enable autopilot start button
+          dispatch(autopilotReady());
         }
         break;
 
       case 'behaviorDone': // when autopilot is done running
         this.internalUpdate = true;
-        dispatch(toggleAutopilot(null, 'complete', this.url));
+        dispatch(toggleAutopilot(null, 'complete', null));
         break;
 
       case 'behaviorStep':
