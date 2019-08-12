@@ -13,6 +13,14 @@ import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/
 import { Autopilot, RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
+let Webview;
+let ipcRenderer;
+if (__DESKTOP__) {
+  // eslint-disable-next-line
+  ipcRenderer = window.require('electron').ipcRenderer;
+  Webview = require('components/desktop/Webview');
+}
+
 
 class Patch extends Component {
   static contextTypes = {
@@ -21,6 +29,7 @@ class Patch extends Component {
 
   static propTypes = {
     activeBrowser: PropTypes.string,
+    appSettings: PropTypes.object,
     auth: PropTypes.object,
     behavior: PropTypes.bool,
     collection: PropTypes.object,
@@ -35,7 +44,10 @@ class Patch extends Component {
   // TODO move to HOC
   static childContextTypes = {
     currMode: PropTypes.string,
-    canAdmin: PropTypes.bool
+    canAdmin: PropTypes.bool,
+    coll: PropTypes.string,
+    rec: PropTypes.string,
+    user: PropTypes.string,
   };
 
   constructor(props) {
@@ -45,11 +57,14 @@ class Patch extends Component {
   }
 
   getChildContext() {
-    const { auth, match: { params: { user } } } = this.props;
+    const { auth, match: { params: { user, coll, rec } } } = this.props;
 
     return {
       currMode: 'patch',
-      canAdmin: auth.getIn(['user', 'username']) === user
+      canAdmin: auth.getIn(['user', 'username']) === user,
+      user,
+      coll,
+      rec
     };
   }
 
@@ -59,7 +74,7 @@ class Patch extends Component {
   }
 
   render() {
-    const { activeBrowser, autopilotRunning, dispatch, match: { params }, timestamp, url } = this.props;
+    const { activeBrowser, appSettings, autopilotRunning, dispatch, match: { params }, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
     const appPrefix = `${config.appHost}/${user}/${coll}/${rec}/patch/`;
@@ -75,28 +90,46 @@ class Patch extends Component {
           url={url} />
         <div className={classNames('iframe-container', { locked: autopilotRunning })}>
           {
-            activeBrowser ?
-              <RemoteBrowser
-                params={params}
-                rb={activeBrowser}
-                rec={rec}
-                timestamp={timestamp}
-                url={url} /> :
-              <IFrame
-                appPrefix={appPrefix}
-                auth={this.props.auth}
+            __DESKTOP__ &&
+              <Webview
                 behavior={this.props.behavior}
-                contentPrefix={contentPrefix}
+                canGoBackward={appSettings.get('canGoBackward')}
+                canGoForward={appSettings.get('canGoForward')}
                 dispatch={dispatch}
+                host={appSettings.get('host')}
+                key="webview"
                 params={params}
+                partition={`persist:${params.user}`}
                 timestamp={timestamp}
                 url={url} />
           }
+
+          {
+            !__DESKTOP__ && (
+              activeBrowser ?
+                <RemoteBrowser
+                  params={params}
+                  rb={activeBrowser}
+                  rec={rec}
+                  url={url} /> :
+                <IFrame
+                  appPrefix={appPrefix}
+                  auth={this.props.auth}
+                  behavior={this.props.behavior}
+                  contentPrefix={contentPrefix}
+                  dispatch={dispatch}
+                  params={params}
+                  timestamp={timestamp}
+                  url={url} />
+            )
+          }
+
           {
             this.props.autopilot &&
               <Autopilot />
           }
         </div>
+
       </React.Fragment>
     );
   }
@@ -152,9 +185,29 @@ const initialData = [
   }
 ];
 
+if (__DESKTOP__) {
+  initialData.push(
+    {
+      promise: () => {
+        ipcRenderer.send('toggle-proxy', true);
+        return new Promise((resolve, reject) => {
+          ipcRenderer.on('toggle-proxy-done', () => { resolve(true); });
+        });
+      }
+    },
+  );
+}
+
 const mapStateToProps = ({ app }) => {
+  let appSettings = null;
+
+  if (__DESKTOP__) {
+    appSettings = app.get('appSettings');
+  }
+
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
+    appSettings,
     auth: app.get('auth'),
     behavior: app.getIn(['automation', 'behavior']),
     collection: app.get('collection'),

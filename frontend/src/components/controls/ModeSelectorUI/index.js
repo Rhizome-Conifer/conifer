@@ -57,7 +57,7 @@ class ModeSelectorUI extends PureComponent {
   onPatch = () => {
     if (this.context.currMode === 'record') return;
 
-    const { activeBrowser, match: { params: { coll } }, timestamp, url } = this.props;
+    const { activeBrowser, history, match: { params: { coll } }, timestamp, url } = this.props;
 
     // data to create new recording
     const data = {
