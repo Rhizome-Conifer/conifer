@@ -120,6 +120,10 @@
             }
         }
 
+        &:disabled {
+            opacity: 0.5;
+        }
+
         &.complete {
             color: $bright-green-highlight;
 
@@ -137,6 +141,16 @@
         border-width: .1rem 0 0 0;
         margin-top: 5rem;
         padding-top: 2.5rem;
+
+        a {
+            color: $white;
+            text-decoration: underline;
+        }
+    }
+
+    .autopilot-message {
+        text-align: center;
+        margin: 1.5rem 0;
     }
 
     .behaviorInfo {

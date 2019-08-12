@@ -15,6 +15,7 @@ class AutopilotUI extends Component {
     behaviorState: PropTypes.object,
     browsers: PropTypes.object,
     checkAvailability: PropTypes.func,
+    autopilotReady: PropTypes.bool,
     autopilotInfo: PropTypes.object,
     autopilotUrl: PropTypes.string,
     open: PropTypes.bool,
@@ -85,7 +86,7 @@ class AutopilotUI extends Component {
   }
 
   render() {
-    const { autopilotInfo, behaviorState, status } = this.props;
+    const { autopilotInfo, autopilotReady, behaviorState, status } = this.props;
     const behavior = autopilotInfo;
     const isRunning = status === 'running';
     const isComplete = status === 'complete';
@@ -93,6 +94,9 @@ class AutopilotUI extends Component {
     const dt = behavior && new Date(behavior.get('updated'));
 
     const lastState = behaviorState.size > 0 && behaviorState.last();
+    const buttonText = isComplete ?
+      'Autopilot Finished' :
+      `${isRunning ? 'End' : 'Start'} Autopilot`;
 
     return (
       <div className="autopilot-sidebar">
@@ -143,13 +147,13 @@ class AutopilotUI extends Component {
                   </div>
               }
 
-              <button className={classNames('rounded', { complete: isComplete })} onClick={this.toggleAutomation} disabled={isComplete} type="button">
-                { isRunning && <LoaderIcon /> }
+              <button className={classNames('rounded', { complete: isComplete })} onClick={this.toggleAutomation} disabled={!autopilotReady || isComplete} type="button">
+                { (!autopilotReady || isRunning) && <LoaderIcon /> }
                 { isComplete && <CheckIcon /> }
                 {
-                  isComplete ?
-                    'Autopilot Finished' :
-                    `${isRunning ? 'Stop' : 'Start'} Autopilot`
+                  !autopilotReady ?
+                    'page loading' :
+                    buttonText
                 }
               </button>
               {
@@ -163,11 +167,11 @@ class AutopilotUI extends Component {
               }
               {
                 isRunning &&
-                  <span>End autopilot to resume manual interaction with page.</span>
+                  <div className="autopilot-message">End autopilot to resume manual interaction with page.</div>
               }
               {
                 isComplete &&
-                  <span>Autopilot actions have been completed. You may continue to capture the page manually. To run autopilot again, please refresh or load a new page.</span>
+                  <div className="autopilot-message">Manual capture has resumed.</div>
               }
             </React.Fragment>
         }

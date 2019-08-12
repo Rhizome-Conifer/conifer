@@ -17,6 +17,7 @@ const mapStateToProps = ({ app }) => {
     behavior: app.getIn(['automation', 'behavior']),
     behaviorState: app.getIn(['automation', 'behaviorState']),
     browsers: app.getIn(['remoteBrowsers', 'browsers']),
+    autopilotReady: app.getIn(['automation', 'autopilotReady']),
     autopilotInfo: app.getIn(['automation', 'autopilotInfo']),
     autopilotUrl: app.getIn(['automation', 'autopilotUrl']),
     status: app.getIn(['automation', 'autopilotStatus']),

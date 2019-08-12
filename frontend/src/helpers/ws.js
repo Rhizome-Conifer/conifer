@@ -2,7 +2,7 @@ import config from 'config';
 
 import { remoteBrowserMod } from 'helpers/utils';
 
-import { autopilotCheck, autopilotReset, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
+import { autopilotCheck, autopilotReady, autopilotReset, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
 import { updateUrlAndTimestamp } from 'store/modules/controls';
 import { setStats } from 'store/modules/infoStats';
 
@@ -120,7 +120,7 @@ class WebSocketHandler {
           this.dispatch(autopilotCheck(msg.url));
 
           if (msg.readyState === 'complete') {
-            //todo: enable autopilot start button
+            this.dispatch(autopilotReady());
           }
         }
         // fall through

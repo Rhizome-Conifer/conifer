@@ -6,6 +6,8 @@ const AUTOPILOT_CHECK = 'wr/automation/AUTOPILOT_CHECK';
 const AUTOPILOT_CHECK_SUCCESS = 'wr/automation/AUTOPILOT_CHECK_SUCCESS';
 const AUTOPILOT_CHECK_FAIL = 'wr/automation/AUTOPILOT_CHECK_FAIL';
 
+const AUTOPILOT_READY = 'wr/automation/AUTOPILOT_READY';
+
 const AUTOPILOT_RESET = 'wr/automation/AUTOPILOT_RESET';
 
 const AUTOPILOT_TOGGLE_AUTOMATION = 'wr/automation/AUTOPILOT_TOGGLE_AUTOMATION';
@@ -34,6 +36,7 @@ const initialState = fromJS({
   behavior: null,
   behaviorState: List(),
   autopilot: false,
+  autopilotReady: false,
   autopilotStatus: 'stopped', // stopped, running, complete
   autopilotUrl: '',
   autopilotInfo: null,
@@ -68,9 +71,12 @@ export default function automation(state = initialState, action = {}) {
       return state.set('behaviorState', state.get('behaviorState').push(fromJS(action.behaviorState)));
     case TOGGLE_AUTOPILOT_SIDEBAR:
       return state.set('autopilot', action.bool);
+    case AUTOPILOT_READY:
+      return state.set('autopilotReady', true);
     case AUTOPILOT_RESET:
       return state.merge({
         autopilotStatus: 'stopped',
+        autopilotReady: false,
         autopilotInfo: null,
         autopilotUrl: action.url,
         behavior: null,
@@ -116,6 +122,13 @@ export function queueAutomation(user, coll, aid, urls) {
         urls
       }
     })
+  };
+}
+
+
+export function autopilotReady() {
+  return {
+    type: AUTOPILOT_READY
   };
 }
 
