@@ -173,10 +173,11 @@ class Webview extends Component {
         this.setState({ loading: false });
         if (state.newPage) {
           this.addNewPage(state, true);
+        }
+        if (state.readyState === 'interactive') {
           dispatch(autopilotReset());
           dispatch(autopilotCheck(state.url));
-        }
-        if (state.readyState === 'complete') {
+        } else if (state.readyState === 'complete') {
           // todo: enable autopilot start button
           dispatch(autopilotReady());
         }

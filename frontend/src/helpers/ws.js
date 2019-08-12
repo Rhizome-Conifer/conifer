@@ -116,10 +116,10 @@ class WebSocketHandler {
         break;
       case 'load':
         if (this.isRemoteBrowser) {
-          this.dispatch(autopilotReset());
-          this.dispatch(autopilotCheck(msg.url));
-
-          if (msg.readyState === 'complete') {
+          if (msg.readyState === 'interactive') {
+            this.dispatch(autopilotReset());
+            this.dispatch(autopilotCheck(msg.url));
+          } else if (msg.readyState === 'complete') {
             this.dispatch(autopilotReady());
           }
         }
@@ -202,7 +202,7 @@ class WebSocketHandler {
     msg.change = change;
 
     if (url !== this.lastPopUrl) {
-      window.history.pushState(msg, msg.title, prefix + mod + url);
+      //window.history.pushState(msg, msg.title, prefix + mod + url);
       this.lastPopUrl = undefined;
     } else if (change === 'load') {
       this.lastPopUrl = undefined;

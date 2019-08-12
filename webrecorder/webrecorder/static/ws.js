@@ -208,7 +208,7 @@
 
         if (window._wb_wombat.historyCB) {
           window._wb_wombat.historyCB.push(function(url, title, func, state) {
-            //sendLoadMsg("replace-url", false);
+            sendLoadMsg("replace-url", false);
           });
         }
 
