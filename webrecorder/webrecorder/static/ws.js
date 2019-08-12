@@ -206,6 +206,12 @@
           return;
         }
 
+        if (window._wb_wombat.historyCB) {
+          window._wb_wombat.historyCB.push(function(url, title, func, state) {
+            //sendLoadMsg("replace-url", false);
+          });
+        }
+
         var addPage = (wbinfo.is_live || wbinfo.proxy_mode == "extract");
 
         if (!window[wr_msg_handler]) {
