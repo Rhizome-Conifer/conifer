@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-import { CheckIcon, LoaderIcon, WandIcon, ThinXIcon } from 'components/icons';
+import { autopilot as autopilotFields } from 'helpers/userMessaging';
+
+import { CheckIcon, LoaderIcon, WandIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -92,6 +94,7 @@ class AutopilotUI extends Component {
     const isComplete = status === 'complete';
 
     const dt = behavior && new Date(behavior.get('updated'));
+    const keyDomain = behavior && autopilotFields[behavior.get('name')];
 
     const lastState = behaviorState.size > 0 && behaviorState.last();
     const buttonText = isComplete ?
@@ -108,7 +111,13 @@ class AutopilotUI extends Component {
               <p>To use autopilot, please select a different browser from the dropdown above. Only browsers with "autopilot" listed under capabilities support autopilot.</p>
             </React.Fragment> :
             <React.Fragment>
-              <p>Capture the content on this page with a scripted behavior.</p>
+              <p>
+                {
+                  behavior && behavior.get('defaultBehavior') ?
+                    'No site-specific autopilot behavior found' :
+                    'Compatible preset detected'
+                }
+              </p>
               <ul className={classNames('behaviors', { active: isRunning })}>
                 {
                   behavior &&
@@ -139,9 +148,12 @@ class AutopilotUI extends Component {
                     Auto Captured Content:
                     <ul className="behaviorStats">
                       {
-                        lastState.get('state').entrySeq().map(([k, v]) => (
-                          <li key={k}>{k}: <em>{`${v}`}</em></li>
-                        ))
+                        lastState.get('state').entrySeq().map(([k, v]) => {
+                          if (k in keyDomain) {
+                            return <li key={k}>{`${keyDomain[k]}: ${v}`}</li>;
+                          }
+                          return null;
+                        })
                       }
                     </ul>
                   </div>

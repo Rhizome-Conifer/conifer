@@ -2,6 +2,68 @@
 import { supportEmail } from 'config';
 
 export default {
+  autopilot: {
+    autoScrollBehavior: {
+      timesScrolled: 'Times Autoscrolled'
+    },
+    deathImitatesLanguageBehavior: {
+      items: 'Works Captured'
+    },
+    slideShareBehavior: {
+      slides: 'Slides Captured',
+      decks: 'Presentations Captured'
+    },
+    youtubeVideoBehavior: {
+      loadedVideoInfo: 'Video Description Captured',
+      playedVideo: 'Video Captured',
+      viewedComments: 'Comments Captured'
+    },
+    twitterTimelineBehavior: {
+      videos: 'Videos Captured',
+      threadsOrReplies: 'Replies Captured',
+      viewedFully: 'Tweets Captured'
+    },
+    twitterHashTagsBehavior: {
+      videos: 'Videos Captured',
+      threadsOrReplies: 'Replies Captured',
+      viewedFully: 'Tweets Captured'
+    },
+    twitterTimelineBehaviorNew: {
+      videos: 'Videos Captured',
+      threadsOrReplies: 'Replies Captured',
+      viewedFully: 'Tweets Captured'
+    },
+    soundCloudArtistBehavior: {
+      tracksPlayed: 'Tracks Captured',
+      trackListsPlayed: 'Playlists Captured'
+    },
+    soundCloudEmbedBehavior: {
+      tracksPlayed: 'Tracks Captured',
+      trackListsPlayed: 'Playlists Captured'
+    },
+    instagramUserBehavior: {
+      viewedFully: 'Posts Captured',
+      viewedStories: 'Stories Captured',
+      viewedSelectedStories: 'Highlights Captured'
+    },
+    instagramOwnFeedBehavior: {
+      viewed: 'Posts Captured',
+      viewedStories: 'Stories Captured',
+      viewedSelectedStories: 'Highlights Captured'
+    },
+    instagramPostBehavior: {
+      viewed: 'Posts Captured',
+      viewedStories: 'Stories Captured'
+    },
+    facebookUserFeed: {
+      videos: 'Videos Captured',
+      posts: 'Posts Captured'
+    },
+    facebookNewsFeed: {
+      videos: 'Videos Captured',
+      posts: 'Posts Captured'
+    }
+  },
   collection: {
     duplicate_name: 'A collection with the supplied name already exists.',
     no_such_collection: 'Collection not found.',
