@@ -8,7 +8,7 @@ import { apiFetch, stripProtocol, setTitle } from 'helpers/utils';
 import { autopilotCheck, autopilotReset, autopilotReady, toggleAutopilot, updateBehaviorState, updateBehaviorMessage } from 'store/modules/automation';
 
 import { setBrowserHistory } from 'store/modules/appSettings';
-import { updateTimestamp, updateUrl } from 'store/modules/controls';
+import { setMethod, updateTimestamp, updateUrl } from 'store/modules/controls';
 
 import { appHost } from 'config';
 
@@ -63,6 +63,7 @@ class Webview extends Component {
 
     this.webviewHandle.addEventListener('did-navigate-in-page', (event) => {
       if (event.isMainFrame) {
+        dispatch(setMethod('history'));
         this.setUrl(event.url, true);
       }
     });
@@ -175,6 +176,7 @@ class Webview extends Component {
           this.addNewPage(state, true);
         }
         if (state.readyState === 'interactive') {
+          dispatch(setMethod('history'));
           dispatch(autopilotReset());
           dispatch(autopilotCheck(state.url));
         } else if (state.readyState === 'complete') {

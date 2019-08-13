@@ -2,8 +2,8 @@ import config from 'config';
 
 import { remoteBrowserMod } from 'helpers/utils';
 
-import { autopilotCheck, autopilotReady, autopilotReset, toggleAutopilot, updateBehaviorState, updateBehaviorMessage } from 'store/modules/automation';
-import { updateUrlAndTimestamp } from 'store/modules/controls';
+import { autopilotCheck, autopilotReset, autopilotReady, toggleAutopilot, updateBehaviorState, updateBehaviorMessage } from 'store/modules/automation';
+import { setMethod, updateUrlAndTimestamp } from 'store/modules/controls';
 import { setStats } from 'store/modules/infoStats';
 
 
@@ -125,9 +125,10 @@ class WebSocketHandler {
       case 'load':
         if (this.isRemoteBrowser) {
           if (msg.readyState === 'interactive') {
-            this.replaceOuterUrl(msg);
+            this.dispatch(setMethod('navigation'));
             this.dispatch(autopilotReset());
             this.dispatch(autopilotCheck(msg.url));
+            this.replaceOuterUrl(msg);
           } else if (msg.readyState === 'complete') {
             this.dispatch(autopilotReady());
           }
@@ -135,6 +136,7 @@ class WebSocketHandler {
         break;
       case 'replace-url': {
         if (this.isRemoteBrowser) {
+          this.dispatch(setMethod('history'));
           this.replaceOuterUrl(msg);
         }
         break;
@@ -169,6 +171,8 @@ class WebSocketHandler {
 
       switch (state.change) {
         case 'load':
+          // local history, but remote browser navigation here
+          this.dispatch(setMethod('navigation'));
           this.setRemoteUrl(state.url);
           break;
         case 'patch':
@@ -189,6 +193,7 @@ class WebSocketHandler {
     const { ts, url } = msg;
 
     this.internalUpdate = true;
+
     this.dispatch(updateUrlAndTimestamp(url, ts));
     this.url = url;
 
@@ -209,10 +214,10 @@ class WebSocketHandler {
       prefix = `${config.appHost}/${this.user}/${this.coll}/${this.rec}/${this.currMode}:${archiveId}${collId || ''}/`;
     }
 
-    if (msg.ws_type === "load" && url !== this.lastPopUrl) {
-      msg.change = "load";
+    if (msg.ws_type === 'load' && url !== this.lastPopUrl) {
+      msg.change = 'load';
       window.history.pushState(msg, msg.title, prefix + mod + url);
-    } else if (msg.ws_type !== "load") {
+    } else if (msg.ws_type !== 'load') {
       window.history.replaceState(msg, msg.title, prefix + mod + url);
     }
     this.lastPopUrl = undefined;

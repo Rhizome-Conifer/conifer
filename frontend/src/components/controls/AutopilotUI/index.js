@@ -60,15 +60,16 @@ class AutopilotUI extends Component {
 
   componentDidUpdate(lastProps) {
     const { autopilotInfo } = this.props;
-    if (
-      (['new', 'stopped', 'complete'].includes(this.props.status) && this.props.url !== lastProps.url) ||
-      this.props.activeBrowser !== lastProps.activeBrowser) {
-      // reset status on url change
-      if (this.props.status !== 'new') {
-        this.props.autopilotReset();
-      }
+    if ((this.props.url !== lastProps.url) || this.props.activeBrowser !== lastProps.activeBrowser) {
 
-      this.props.checkAvailability(this.props.url);
+      // if navigation always reset
+      if (this.props.urlMethod == 'navigation') {
+        this.props.autopilotReset();
+        this.props.checkAvailability(this.props.url);
+      } else if (this.props.status === 'new') {
+      // if history change, update if 'new', otherwise do nothing
+        this.props.checkAvailability(this.props.url);
+      }
     }
   }
 

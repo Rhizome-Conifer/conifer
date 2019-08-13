@@ -5,7 +5,7 @@ import config from 'config';
 import WebSocketHandler from 'helpers/ws';
 
 import { autopilotReady, toggleAutopilot, updateBehaviorState, updateBehaviorMessage } from 'store/modules/automation';
-import { updateTimestamp, updateUrl } from 'store/modules/controls';
+import { setMethod, updateTimestamp, updateUrl } from 'store/modules/controls';
 
 import { apiFetch, setTitle } from 'helpers/utils';
 import { toggleModal } from 'store/modules/bugReport';
@@ -181,6 +181,7 @@ class IFrame extends Component {
         break;
       case 'load':
         if (state.readyState === "interactive") {
+          this.props.dispatch(setMethod('navigation'));
           // for now, until wombat includes this flag
           state.newPage = true;
           this.addNewPage(state, true);
@@ -201,10 +202,12 @@ class IFrame extends Component {
         if (state.hash) {
           url += state.hash;
         }
+        this.props.dispatch(setMethod('hash'));
         this.setUrl(url);
         break;
       }
       case 'replace-url':
+        this.props.dispatch(setMethod('history'));
         this.addNewPage(state, false);
         break;
       case 'bug-report':
