@@ -18,11 +18,6 @@ export default {
       playedVideo: 'Video Captured',
       viewedComments: 'Comments Captured'
     },
-    twitterTimelineBehavior: {
-      videos: 'Videos Captured',
-      threadsOrReplies: 'Replies Captured',
-      viewedFully: 'Tweets Captured'
-    },
     twitterHashTagsBehavior: {
       videos: 'Videos Captured',
       threadsOrReplies: 'Replies Captured',
@@ -31,7 +26,7 @@ export default {
     twitterTimelineBehaviorNew: {
       videos: 'Videos Captured',
       threadsOrReplies: 'Replies Captured',
-      viewedFully: 'Tweets Captured'
+      viewed: 'Tweets Captured'
     },
     soundCloudArtistBehavior: {
       tracksPlayed: 'Tracks Captured',
