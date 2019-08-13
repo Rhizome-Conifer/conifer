@@ -6,8 +6,10 @@ import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
 
+import { autopilotReset } from 'store/modules/automation';
 import { isLoaded, load as loadColl } from 'store/modules/collection';
 import { getArchives, updateUrl } from 'store/modules/controls';
+import { resetStats } from 'store/modules/infoStats';
 import { loadRecording } from 'store/modules/recordings';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
 
@@ -68,6 +70,12 @@ class Record extends Component {
       coll,
       rec
     };
+  }
+
+  componentWillUnmount() {
+    // clear info stats
+    this.props.dispatch(resetStats());
+    this.props.dispatch(autopilotReset());
   }
 
   // shouldComponentUpdate(nextProps) {

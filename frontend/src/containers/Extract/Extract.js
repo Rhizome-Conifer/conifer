@@ -7,6 +7,7 @@ import { batchActions } from 'redux-batched-actions';
 
 import config from 'config';
 
+import { autopilotReset } from 'store/modules/automation';
 import { selectCollection } from 'store/modules/auth';
 import { isLoaded, load as loadColl } from 'store/modules/collection';
 import { getArchives, setExtractable, updateUrlAndTimestamp } from 'store/modules/controls';
@@ -63,6 +64,7 @@ class Extract extends Component {
   componentWillUnmount() {
     // clear info stats
     this.props.dispatch(resetStats());
+    this.props.dispatch(autopilotReset());
   }
 
   render() {

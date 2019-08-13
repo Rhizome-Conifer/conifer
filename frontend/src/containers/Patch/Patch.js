@@ -5,6 +5,7 @@ import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
 
+import { autopilotReset } from 'store/modules/automation';
 import { isLoaded, load as loadColl } from 'store/modules/collection';
 import { getArchives, updateUrlAndTimestamp } from 'store/modules/controls';
 import { resetStats } from 'store/modules/infoStats';
@@ -71,6 +72,7 @@ class Patch extends Component {
   componentWillUnmount() {
     // clear info stats
     this.props.dispatch(resetStats());
+    this.props.dispatch(autopilotReset());
   }
 
   render() {
