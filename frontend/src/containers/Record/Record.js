@@ -226,7 +226,7 @@ const mapStateToProps = ({ app }) => {
     auth: app.get('auth'),
     behavior: app.getIn(['automation', 'behavior']),
     collection: app.get('collection'),
-    autopilotRunning: ['running', 'stopping'].includes(app.getIn(['automation', 'autopilotStatus'])),
+    autopilotRunning: app.getIn(['automation', 'autopilotStatus']) === 'running',
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };
