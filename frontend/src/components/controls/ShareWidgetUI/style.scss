@@ -7,6 +7,10 @@
 .share-container {
     position: relative;
 
+    button {
+        border-radius: 2.7rem;
+    }
+
     &.open .dropdown-menu {
         opacity: 1;
         transform: scale(1, 1);

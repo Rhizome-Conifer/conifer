@@ -17,6 +17,10 @@
 .wr-mode-selector {
     display: flex;
 
+    button {
+        border-radius: 2.7rem;
+    }
+
     ul {
         margin: 0;
         padding: 1rem 0;
@@ -49,7 +53,6 @@
     }
 
     .wr-mode-message {
-
         & > span {
             transition: opacity $midShift ease-in-out, transform $midShift ease-in-out;
             transition-delay: .045s;
@@ -88,7 +91,7 @@
     }
 
     .dropdown-toggle .glyphicon {
-        vertical-align: middle;
+        vertical-align: sub;
     }
 
     .wr-mode:not(.disabled):not(.active) { cursor: pointer; }

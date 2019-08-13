@@ -162,7 +162,7 @@ class ShareWidgetUI extends Component {
           <div id="fb-root" />
           <button
             type="button"
-            className={`btn btn-default btn-${bsSize} dropdown-toggle sharing-widget`}
+            className={`btn btn-default btn-${bsSize} dropdown-toggle`}
             data-toggle="dropdown"
             aria-label="Sharing widget"
             onClick={this.toggle}>

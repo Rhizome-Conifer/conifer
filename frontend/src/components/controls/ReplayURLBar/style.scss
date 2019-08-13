@@ -17,6 +17,21 @@
     flex-grow: 1;
    -ms-flex: 30%;
 
+   .input-group .form-control:first-child, .input-group .form-control:last-child {
+        border-top-right-radius: 2.7rem;
+        border-bottom-right-radius: 2.7rem;
+    }
+
+    .sources-widget {
+        border-top-right-radius: 2.7rem;
+        border-bottom-right-radius: 2.7rem;
+    }
+
+   .btn {
+        border-top-left-radius: 2.7rem;
+        border-bottom-left-radius: 2.7rem;
+   }
+
    & > form > .input-group {
     width: 100%;
    }
@@ -30,7 +45,7 @@
     }
 
     .form-control {
-        border-radius:0;
+        border-radius: 2.7rem;
         float: none;
     }
 
@@ -40,6 +55,11 @@
         margin: 0;
         float: none;
     }
+}
+
+.rb-dropdown + .wr-app-url .form-control {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 .wr-replay-info {
