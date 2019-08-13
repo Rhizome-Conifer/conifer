@@ -11,22 +11,23 @@ import './style.scss';
 
 class AutopilotUI extends Component {
   static propTypes = {
-    activeBrowser: PropTypes.string,
     autopilot: PropTypes.bool,
+    activeBrowser: PropTypes.string,
+    autopilotInfo: PropTypes.object,
+    autopilotReady: PropTypes.bool,
     autopilotReset: PropTypes.func,
+    autopilotUrl: PropTypes.string,
     behavior: PropTypes.string,
     behaviorMessages: PropTypes.object,
     behaviorStats: PropTypes.object,
     browsers: PropTypes.object,
     checkAvailability: PropTypes.func,
-    autopilotReady: PropTypes.bool,
-    autopilotInfo: PropTypes.object,
-    autopilotUrl: PropTypes.string,
     open: PropTypes.bool,
     status: PropTypes.string,
     toggleAutopilot: PropTypes.func,
     toggleSidebar: PropTypes.func,
-    url: PropTypes.string
+    url: PropTypes.string,
+    urlMethod: PropTypes.string
   };
 
   constructor(props) {

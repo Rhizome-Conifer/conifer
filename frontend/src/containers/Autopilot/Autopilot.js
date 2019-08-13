@@ -24,7 +24,8 @@ const mapStateToProps = ({ app }) => {
     browsers: app.getIn(['remoteBrowsers', 'browsers']),
     status: app.getIn(['automation', 'autopilotStatus']),
     open: app.getIn(['automation', 'autopilot']),
-    url: app.getIn(['controls', 'url'])
+    url: app.getIn(['controls', 'url']),
+    urlMethod: app.getIn(['controls', 'method'])
   };
 };
 
