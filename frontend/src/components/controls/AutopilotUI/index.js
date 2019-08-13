@@ -138,13 +138,6 @@ class AutopilotUI extends Component {
               <p>To use autopilot, please select a different browser from the dropdown above. Only browsers with "autopilot" listed under capabilities support autopilot.</p>
             </React.Fragment> :
             <React.Fragment>
-              <p>
-                {
-                  behavior && behavior.get('defaultBehavior') ?
-                    'No site-specific autopilot behavior found' :
-                    'Compatible preset detected'
-                }
-              </p>
               <ul className={classNames('behaviors', { active: isRunning })}>
                 {
                   behavior &&
