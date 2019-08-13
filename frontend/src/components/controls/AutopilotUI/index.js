@@ -68,6 +68,10 @@ class AutopilotUI extends Component {
     }
   }
 
+  componentWillUnmount() {
+    this.props.autopilotReset();
+  }
+
   toggleAutomation = () => {
     const { autopilotInfo, toggleAutopilot, status, url } = this.props;
     const behavior = autopilotInfo.get('name');

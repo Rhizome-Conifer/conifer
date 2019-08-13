@@ -21,7 +21,6 @@ class RemoteBrowserUI extends Component {
   };
 
   static propTypes = {
-    autopilotStatus: PropTypes.string,
     behavior: PropTypes.string,
     clipboard: PropTypes.bool,
     contentFrameUpdate: PropTypes.bool,
@@ -172,10 +171,6 @@ class RemoteBrowserUI extends Component {
     }
   }
 
-  getAutopilotStatus = () => {
-    return this.props.autopilotStatus;
-  }
-
   onCountdown = (seconds, countdownText) => {
     if (seconds <= 300) {
       this.setState({
@@ -242,7 +237,7 @@ class RemoteBrowserUI extends Component {
     this.pywbParams.inactiveSecs = inactiveTime;
 
     // set up socket
-    this.socket = new WebSocketHandler(params, currMode, dispatch, true, reqId, '', this.getAutopilotStatus);
+    this.socket = new WebSocketHandler(params, currMode, dispatch, true, reqId, '');
 
     this.expired = false;
 
