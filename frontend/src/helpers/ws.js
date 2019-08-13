@@ -8,7 +8,7 @@ import { setStats } from 'store/modules/infoStats';
 
 
 class WebSocketHandler {
-  constructor(params, currMode, dispatch, remoteBrowser = false, reqId = null, host = '') {
+  constructor(params, currMode, dispatch, remoteBrowser = false, reqId = null, host = '', getAutopilotStatus) {
     const { user, coll, rec, splat, br } = params;
 
     this.startMsg = undefined;
@@ -24,6 +24,7 @@ class WebSocketHandler {
     this.params = params;
     this.host = host || window.location.host;
     this.retryHandle = null;
+    this.getAutopilotStatus = getAutopilotStatus;
 
     this.isRemoteBrowser = remoteBrowser;
     this.br = br;
