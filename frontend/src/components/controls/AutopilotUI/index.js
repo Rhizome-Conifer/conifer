@@ -164,7 +164,7 @@ class AutopilotUI extends Component {
                 { isComplete && <CheckIcon /> }
                 {
                   !autopilotReady ?
-                    'page loading' :
+                    'page loading... please wait' :
                     buttonText
                 }
               </button>
