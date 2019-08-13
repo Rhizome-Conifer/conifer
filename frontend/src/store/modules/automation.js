@@ -39,7 +39,7 @@ const initialState = fromJS({
   behaviorStats: Map(),
   autopilot: false,
   autopilotReady: false,
-  autopilotStatus: 'stopped', // stopped, running, complete
+  autopilotStatus: 'new', // new, running, stopping, stopped, complete
   autopilotUrl: '',
   autopilotInfo: null,
   queued: false,
@@ -82,7 +82,7 @@ export default function automation(state = initialState, action = {}) {
       return state.set('autopilotReady', true);
     case AUTOPILOT_RESET:
       return state.merge({
-        autopilotStatus: 'stopped',
+        autopilotStatus: 'new',
         autopilotReady: false,
         autopilotInfo: null,
         autopilotUrl: action.url,

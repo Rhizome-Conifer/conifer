@@ -60,10 +60,13 @@ class AutopilotUI extends Component {
   componentDidUpdate(lastProps) {
     const { autopilotInfo } = this.props;
     if (
-      (['stopped', 'complete'].includes(this.props.status) && this.props.url !== lastProps.url) ||
+      (['new', 'stopped', 'complete'].includes(this.props.status) && this.props.url !== lastProps.url) ||
       this.props.activeBrowser !== lastProps.activeBrowser) {
       // reset status on url change
-      this.props.autopilotReset();
+      if (this.props.status !== 'new') {
+        this.props.autopilotReset();
+      }
+
       this.props.checkAvailability(this.props.url);
     }
   }
@@ -76,8 +79,8 @@ class AutopilotUI extends Component {
     const { autopilotInfo, toggleAutopilot, status, url } = this.props;
     const behavior = autopilotInfo.get('name');
 
-    if (behavior && status !== 'complete') {
-      toggleAutopilot(...(status === 'running' ? [null, 'stopped', url] : [behavior, 'running', url]));
+    if (behavior && ['new', 'running'].includes(status)) {
+      toggleAutopilot(...(status === 'running' ? [null, 'stopping', url] : [behavior, 'running', url]));
     }
   }
 
@@ -96,13 +99,32 @@ class AutopilotUI extends Component {
     const behavior = autopilotInfo;
     const isRunning = status === 'running';
     const isComplete = status === 'complete';
+    const isStopping = status === 'stopping';
+    const isStopped = status === 'stopped';
 
     const dt = behavior && new Date(behavior.get('updated'));
     const keyDomain = behavior && autopilotFields[behavior.get('name')];
 
-    const buttonText = isComplete ?
-      'Autopilot Finished' :
-      `${isRunning ? 'End' : 'Start'} Autopilot`;
+    let buttonText;
+    switch (status) {
+      case 'new':
+        buttonText = 'Start Autopilot';
+        break;
+      case 'running':
+        buttonText = 'End Autopilot';
+        break;
+      case 'stopping':
+        buttonText = 'Wait while behavior is stopping...';
+        break;
+      case 'stopped':
+        buttonText = 'Autopilot Ended';
+        break;
+      case 'complete':
+        buttonText = 'Autopilot Finished';
+        break;
+      default:
+        buttonText = 'Start Autopilot';
+    }
 
     return (
       <div className="autopilot-sidebar">
@@ -146,7 +168,7 @@ class AutopilotUI extends Component {
               }
 
               {
-                !behaviorStats.isEmpty() &&
+                !behaviorStats.isEmpty() && keyDomain &&
                   <div className="behaviorInfo">
                     <h4>Auto Captured Content:</h4>
                     <ul className="behaviorStats">
@@ -162,8 +184,8 @@ class AutopilotUI extends Component {
                   </div>
               }
 
-              <button className={classNames('rounded', { complete: isComplete })} onClick={this.toggleAutomation} disabled={!autopilotReady || isComplete} type="button">
-                { (!autopilotReady || isRunning) && <LoaderIcon /> }
+              <button className={classNames('rounded', { complete: isComplete })} onClick={this.toggleAutomation} disabled={!autopilotReady || isComplete || isStopping || isStopped} type="button">
+                { (!autopilotReady || isRunning || isStopping) && <LoaderIcon /> }
                 { isComplete && <CheckIcon /> }
                 {
                   !autopilotReady ?
