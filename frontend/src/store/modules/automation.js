@@ -1,5 +1,5 @@
 import { apiPath } from 'config';
-import { fromJS, List } from 'immutable';
+import { fromJS, List, Map } from 'immutable';
 
 
 const AUTOPILOT_CHECK = 'wr/automation/AUTOPILOT_CHECK';
@@ -12,6 +12,7 @@ const AUTOPILOT_RESET = 'wr/automation/AUTOPILOT_RESET';
 
 const AUTOPILOT_TOGGLE_AUTOMATION = 'wr/automation/AUTOPILOT_TOGGLE_AUTOMATION';
 const AUTOPILOT_UPDATE_BEHAVIOR_STATUS = 'wr/automation/AUTOPILOT_UPDATE_BEHAVIOR_STATUS';
+const AUTOPILOT_UPDATE_BEHAVIOR_MESSAGE = 'wr/automation/AUTOPILOT_UPDATE_BEHAVIOR_MESSAGE';
 
 const NEW_AUTO = 'wr/automation/NEW_AUTO';
 const NEW_AUTO_SUCCESS = 'wr/automation/NEW_AUTO_SUCCESS';
@@ -34,7 +35,8 @@ const initialState = fromJS({
   autoId: null,
   active: false,
   behavior: null,
-  behaviorState: List(),
+  behaviorMessages: List(),
+  behaviorStats: Map(),
   autopilot: false,
   autopilotReady: false,
   autopilotStatus: 'stopped', // stopped, running, complete
@@ -68,7 +70,12 @@ export default function automation(state = initialState, action = {}) {
         autopilotUrl: action.url
       });
     case AUTOPILOT_UPDATE_BEHAVIOR_STATUS:
-      return state.set('behaviorState', state.get('behaviorState').push(fromJS(action.behaviorState)));
+      return state.merge({
+        behaviorStats: fromJS(action.behaviorState.state),
+        behaviorMessages: state.get('behaviorMessages').push(Map({ msg: action.behaviorState.msg }))
+      });
+    case AUTOPILOT_UPDATE_BEHAVIOR_MESSAGE:
+      return state.set('behaviorMessages', state.get('behaviorMessages').push(Map({ msg: action.msg })));
     case TOGGLE_AUTOPILOT_SIDEBAR:
       return state.set('autopilot', action.bool);
     case AUTOPILOT_READY:
@@ -80,7 +87,8 @@ export default function automation(state = initialState, action = {}) {
         autopilotInfo: null,
         autopilotUrl: action.url,
         behavior: null,
-        behaviorState: List()
+        behaviorMessages: List(),
+        behaviorStats: Map()
       });
     default:
       return state;
@@ -173,6 +181,14 @@ export function updateBehaviorState(behaviorState) {
   return {
     type: AUTOPILOT_UPDATE_BEHAVIOR_STATUS,
     behaviorState,
+  };
+}
+
+
+export function updateBehaviorMessage(msg) {
+  return {
+    type: AUTOPILOT_UPDATE_BEHAVIOR_MESSAGE,
+    msg
   };
 }
 

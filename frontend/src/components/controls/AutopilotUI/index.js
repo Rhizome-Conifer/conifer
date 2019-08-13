@@ -14,7 +14,8 @@ class AutopilotUI extends Component {
     activeBrowser: PropTypes.string,
     autopilotReset: PropTypes.func,
     behavior: PropTypes.string,
-    behaviorState: PropTypes.object,
+    behaviorMessages: PropTypes.object,
+    behaviorStats: PropTypes.object,
     browsers: PropTypes.object,
     checkAvailability: PropTypes.func,
     autopilotReady: PropTypes.bool,
@@ -88,7 +89,7 @@ class AutopilotUI extends Component {
   }
 
   render() {
-    const { autopilotInfo, autopilotReady, behaviorState, status } = this.props;
+    const { autopilotInfo, autopilotReady, behaviorMessages, behaviorStats, status } = this.props;
     const behavior = autopilotInfo;
     const isRunning = status === 'running';
     const isComplete = status === 'complete';
@@ -96,7 +97,6 @@ class AutopilotUI extends Component {
     const dt = behavior && new Date(behavior.get('updated'));
     const keyDomain = behavior && autopilotFields[behavior.get('name')];
 
-    const lastState = behaviorState.size > 0 && behaviorState.last();
     const buttonText = isComplete ?
       'Autopilot Finished' :
       `${isRunning ? 'End' : 'Start'} Autopilot`;
@@ -134,21 +134,21 @@ class AutopilotUI extends Component {
               </ul>
 
               {
-                behaviorState.size > 0 &&
+                behaviorMessages.size > 0 &&
                   <ul className="behavior-log">
                     {
-                      behaviorState.reverse().slice(0, 10).map(obj => <li>{obj.get('msg')}</li>)
+                      behaviorMessages.reverse().slice(0, 10).map(obj => <li>{obj.get('msg')}</li>)
                     }
                   </ul>
               }
 
               {
-                lastState &&
+                !behaviorStats.isEmpty() &&
                   <div className="behaviorInfo">
                     <h4>Auto Captured Content:</h4>
                     <ul className="behaviorStats">
                       {
-                        lastState.get('state').entrySeq().map(([k, v]) => {
+                        behaviorStats.entrySeq().map(([k, v]) => {
                           if (k in keyDomain) {
                             return <li key={k}>{`${keyDomain[k]}: ${v}`}</li>;
                           }
