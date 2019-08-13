@@ -35,7 +35,6 @@ class Patch extends Component {
     behavior: PropTypes.bool,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
-    autopilot: PropTypes.bool,
     autopilotRunning: PropTypes.bool,
     match: PropTypes.object,
     timestamp: PropTypes.string,
@@ -126,10 +125,7 @@ class Patch extends Component {
             )
           }
 
-          {
-            this.props.autopilot &&
-              <Autopilot />
-          }
+          <Autopilot />
         </div>
 
       </React.Fragment>
@@ -213,7 +209,6 @@ const mapStateToProps = ({ app }) => {
     auth: app.get('auth'),
     behavior: app.getIn(['automation', 'behavior']),
     collection: app.get('collection'),
-    autopilot: app.getIn(['automation', 'autopilot']),
     autopilotRunning: app.getIn(['automation', 'autopilotStatus']) === 'running',
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])

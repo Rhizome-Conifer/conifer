@@ -13,6 +13,7 @@ import { AutopilotUI } from 'components/controls';
 
 const mapStateToProps = ({ app }) => {
   return {
+    autopilot: app.getIn(['automation', 'autopilot']),
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     behavior: app.getIn(['automation', 'behavior']),
     behaviorMessages: app.getIn(['automation', 'behaviorMessages']),

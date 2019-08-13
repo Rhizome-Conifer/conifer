@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 
 import { appHost, product } from 'config';
@@ -17,6 +18,7 @@ class RecordingToolsUI extends PureComponent {
   static propTypes = {
     activeBrowser: PropTypes.string,
     auth: PropTypes.object,
+    autopilotInfo: PropTypes.object,
     history: PropTypes.object,
     autopilot: PropTypes.bool,
     match: PropTypes.object,
@@ -104,12 +106,14 @@ class RecordingToolsUI extends PureComponent {
 
   render() {
     const { canAdmin, currMode } = this.context;
-    const { activeBrowser } = this.props;
+    const { activeBrowser, autopilotInfo } = this.props;
 
     const isNew = currMode === 'new';
     const isWrite = ['new', 'patch', 'record', 'extract', 'live'].includes(currMode);
     const modalFooter = <Button onClick={this._close}>Close</Button>;
-    const newFeatures = canAdmin && ['admin', 'beta-archivist'].includes(this.props.auth.get('role'));
+    const autopilotClasses = classNames('rounded autopilot-btn', {
+      'special-behavior': autopilotInfo && autopilotInfo.get('defaultBehavior') !== true
+    });
 
     return (
       <div className="recording-actions text-center hidden-xs">
@@ -137,7 +141,7 @@ class RecordingToolsUI extends PureComponent {
 
         {
           isWrite && currMode !== 'live' &&
-            <button className="rounded autopilot-btn" onClick={this.toggleAutopilotSidebar} type="button"><WandIcon /> Autopilot Options</button>
+            <button className={autopilotClasses} onClick={this.toggleAutopilotSidebar} type="button"><WandIcon />Autopilot</button>
         }
 
         {

@@ -12,6 +12,7 @@ import './style.scss';
 class AutopilotUI extends Component {
   static propTypes = {
     activeBrowser: PropTypes.string,
+    autopilot: PropTypes.bool,
     autopilotReset: PropTypes.func,
     behavior: PropTypes.string,
     behaviorMessages: PropTypes.object,
@@ -65,14 +66,6 @@ class AutopilotUI extends Component {
       this.props.autopilotReset();
       this.props.checkAvailability(this.props.url);
     }
-
-    if (autopilotInfo && autopilotInfo !== lastProps.autopilotInfo) {
-      this.setState({ behavior: autopilotInfo.get('name') });
-    }
-  }
-
-  handleInput = (evt) => {
-    this.setState({ behavior: evt.target.value });
   }
 
   toggleAutomation = () => {
@@ -89,7 +82,13 @@ class AutopilotUI extends Component {
   }
 
   render() {
-    const { autopilotInfo, autopilotReady, behaviorMessages, behaviorStats, status } = this.props;
+    const { autopilot, autopilotInfo, autopilotReady, behaviorMessages, behaviorStats, status } = this.props;
+
+    // only render if sidebar is open
+    if (!autopilot) {
+      return null;
+    }
+
     const behavior = autopilotInfo;
     const isRunning = status === 'running';
     const isComplete = status === 'complete';
