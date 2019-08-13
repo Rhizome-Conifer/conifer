@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import { withRouter } from 'react-router';
 
 import { apiFetch, stripProtocol, setTitle } from 'helpers/utils';
-import { autopilotCheck, autopilotReset, autopilotReady, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
+import { autopilotCheck, autopilotReset, autopilotReady, toggleAutopilot, updateBehaviorState, updateBehaviorMessage } from 'store/modules/automation';
 
 import { setBrowserHistory } from 'store/modules/appSettings';
 import { updateTimestamp, updateUrl } from 'store/modules/controls';
@@ -185,7 +185,14 @@ class Webview extends Component {
 
       case 'behaviorDone': // when autopilot is done running
         this.internalUpdate = true;
-        dispatch(toggleAutopilot(null, 'complete', null));
+        dispatch(toggleAutopilot(null, 'complete', this.props.url));
+        dispatch(updateBehaviorMessage('Behavior Done'));
+        break;
+
+      case 'behaviorStop': // when autopilot is manually stopped
+        this.internalUpdate = true;
+        dispatch(toggleAutopilot(null, 'stopped', this.props.url));
+        dispatch(updateBehaviorMessage('Behavior Stopped By User'));
         break;
 
       case 'behaviorStep':

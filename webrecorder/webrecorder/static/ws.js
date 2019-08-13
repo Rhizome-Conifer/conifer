@@ -273,6 +273,7 @@
             case "skipreq":
             case "patch_req":
             case "behaviorStep":
+            case "behaviorStop":
             case "behaviorDone":
                 sendAppMsg(message);
                 break;

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import config from 'config';
 import WebSocketHandler from 'helpers/ws';
 
-import { autopilotReady, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
+import { autopilotReady, toggleAutopilot, updateBehaviorState, updateBehaviorMessage } from 'store/modules/automation';
 import { updateTimestamp, updateUrl } from 'store/modules/controls';
 
 import { apiFetch, setTitle } from 'helpers/utils';
@@ -170,6 +170,11 @@ class IFrame extends Component {
       case 'behaviorDone':
         this.socket.behaviorStat('done', this.props.behavior);
         this.props.dispatch(toggleAutopilot(null, 'complete', this.props.url));
+        this.props.dispatch(updateBehaviorMessage('Behavior Done'));
+        break;
+      case 'behaviorStop':
+        this.props.dispatch(toggleAutopilot(null, 'stopped', this.props.url));
+        this.props.dispatch(updateBehaviorMessage('Behavior Stopped By User'));
         break;
       case 'behaviorStep':
         this.props.dispatch(updateBehaviorState(state.result));
