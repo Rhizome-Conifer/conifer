@@ -145,7 +145,7 @@ class AutopilotUI extends Component {
               {
                 lastState &&
                   <div className="behaviorInfo">
-                    Auto Captured Content:
+                    <h4>Auto Captured Content:</h4>
                     <ul className="behaviorStats">
                       {
                         lastState.get('state').entrySeq().map(([k, v]) => {

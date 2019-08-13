@@ -120,15 +120,21 @@
         }
 
         &:disabled {
-            opacity: 0.5;
+            opacity: 0.85;
         }
 
         &.complete {
-            color: $bright-green-highlight;
+            color: $white;
+            background-color: $bright-green-highlight;
+            opacity: 1;
+            border: none;
 
             svg {
+                width: 1.5rem;
+                height: 1.5rem;
+
                 path {
-                    fill: $bright-green-highlight;
+                    fill: $white;
                 }
             }
         }
@@ -154,23 +160,28 @@
 
     .behaviorInfo {
         margin-top: 20px;
-        font-size: 1.8rem;
         color: $white;
+
+        h4 {
+            margin-bottom: .5rem;
+        }
+
+        .behaviorStats {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+
+            li {
+                font-weight: 300;
+                font-size: 1.6rem;
+            }
+        }
+
     }
 
     .behaviorMsg {
         font-family: monospace;
         padding-bottom: 20px;
         word-break: break-all;
-    }
-
-    .behaviorStats {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-
-        li {
-
-        }
     }
 }
