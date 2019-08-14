@@ -78,14 +78,16 @@
     // Custom Behavior
 
     (function() {
-        function doRun() {
-            (async () => {
-                for await (const result of window.$WBBehaviorRunner$.autoRunIter(250)) {
-                    sendMessage({wb_type: "behaviorStep", result: result});
+        async function doRun() {
+            for await (const result of window.$WBBehaviorRunner$.autoRunIter(250)) {
+                sendMessage({wb_type: "behaviorStep", result: result});
+                if (!result.done && window.$WBBehaviorPaused) {
+                    sendMessage({wb_type: "behaviorStop"});
+                    return;
                 }
+            }
 
-                sendMessage({wb_type: "behaviorDone", name: window.$WBBehaviorRunner$.metadata.name});
-            })();
+            sendMessage({wb_type: "behaviorDone", name: window.$WBBehaviorRunner$.metadata.name});
         }
 
         function receiveEvent(event) {

@@ -31,7 +31,6 @@ class Extract extends Component {
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     extractable: PropTypes.object,
-    autopilot: PropTypes.bool,
     autopilotRunning: PropTypes.bool,
     match: PropTypes.object,
     timestamp: PropTypes.string,
@@ -103,10 +102,7 @@ class Extract extends Component {
                 timestamp={timestamp}
                 url={url} />
           }
-          {
-            this.props.autopilot &&
-              <Autopilot />
-          }
+          <Autopilot />
         </div>
       </React.Fragment>
     );
@@ -182,7 +178,6 @@ const mapStateToProps = ({ app }) => {
     behavior: app.getIn(['automation', 'behavior']),
     collection: app.get('collection'),
     extractable: app.getIn(['controls', 'extractable']),
-    autopilot: app.getIn(['automation', 'autopilot']),
     autopilotRunning: app.getIn(['automation', 'autopilotStatus']) === 'running',
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])

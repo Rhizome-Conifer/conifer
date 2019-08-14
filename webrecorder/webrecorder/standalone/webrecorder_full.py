@@ -30,6 +30,8 @@ class WebrecorderRunner(StandaloneRunner):
 
         self.browser_id = base64.b32encode(os.urandom(15)).decode('utf-8')
 
+        self.dat_api_port = argres.dat_api_port
+
         super(WebrecorderRunner, self).__init__(argres, rec_port=0)
 
         if not argres.no_browser:
@@ -49,6 +51,9 @@ class WebrecorderRunner(StandaloneRunner):
 
         os.environ['ALLOW_DAT'] = '1'
         os.environ['DAT_SHARE_HOST'] = 'localhost'
+
+        if self.dat_api_port:
+            os.environ['DAT_SHARE_PORT'] = self.dat_api_port
 
         os.environ['BEHAVIORS_DIR'] = os.path.join(self.root_dir, 'behaviors')
 
@@ -108,6 +113,10 @@ class WebrecorderRunner(StandaloneRunner):
         parser.add_argument('-u', '--default-user',
                             default=None,
                             help='Create & Auto-Login as Default User')
+
+        parser.add_argument('--dat-api-port',
+                            default=None,
+                            help='Dat Share API server port')
 
 
 # ============================================================================

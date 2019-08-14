@@ -5,10 +5,10 @@ import classNames from 'classnames';
 import { withRouter } from 'react-router';
 
 import { apiFetch, stripProtocol, setTitle } from 'helpers/utils';
-import { autopilotReset, toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
+import { autopilotCheck, autopilotReset, autopilotReady, toggleAutopilot, updateBehaviorState, updateBehaviorMessage } from 'store/modules/automation';
 
 import { setBrowserHistory } from 'store/modules/appSettings';
-import { updateTimestamp, updateUrl } from 'store/modules/controls';
+import { setMethod, updateTimestamp, updateUrl } from 'store/modules/controls';
 
 import { appHost } from 'config';
 
@@ -63,6 +63,7 @@ class Webview extends Component {
 
     this.webviewHandle.addEventListener('did-navigate-in-page', (event) => {
       if (event.isMainFrame) {
+        dispatch(setMethod('history'));
         this.setUrl(event.url, true);
       }
     });
@@ -170,14 +171,30 @@ class Webview extends Component {
         break;
 
       case 'load':
-        dispatch(autopilotReset());
         this.setState({ loading: false });
-        this.addNewPage(state, true);
+        if (state.newPage) {
+          this.addNewPage(state, true);
+        }
+        if (state.readyState === 'interactive') {
+          dispatch(setMethod('history'));
+          dispatch(autopilotReset());
+          dispatch(autopilotCheck(state.url));
+        } else if (state.readyState === 'complete') {
+          // todo: enable autopilot start button
+          dispatch(autopilotReady());
+        }
         break;
 
       case 'behaviorDone': // when autopilot is done running
         this.internalUpdate = true;
-        dispatch(toggleAutopilot(null, 'complete', this.url));
+        dispatch(toggleAutopilot(null, 'complete', this.props.url));
+        dispatch(updateBehaviorMessage('Behavior Done'));
+        break;
+
+      case 'behaviorStop': // when autopilot is manually stopped
+        this.internalUpdate = true;
+        dispatch(toggleAutopilot(null, 'stopped', this.props.url));
+        dispatch(updateBehaviorMessage('Behavior Stopped By User'));
         break;
 
       case 'behaviorStep':

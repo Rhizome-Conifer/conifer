@@ -63,14 +63,14 @@ class ReplayURLBar extends Component {
       <div className="main-bar">
         <form className="form-group-recorder-url">
           <div className="input-group containerized">
-            <div className="input-group-btn rb-dropdown">
-              {
-                canAdmin &&
+            {
+              canAdmin &&
+                <div className="input-group-btn rb-dropdown">
                   <RemoteBrowserSelect
                     active
                     params={params} />
-              }
-            </div>
+                </div>
+            }
 
             <div className="wr-app-url">
               <input type="text" onChange={this.handleInput} onKeyPress={this.handleSubmit} style={{ height: '3.3rem' }} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />

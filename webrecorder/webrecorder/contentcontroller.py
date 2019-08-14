@@ -1008,6 +1008,23 @@ class ContentController(BaseController, RewriterApp):
             import traceback
             traceback.print_exc()
 
+    def _add_history_page(self, cdx, kwargs, page_title):
+        if kwargs.get('type') not in self.MODIFY_MODES:
+            return
+
+        collection = kwargs.get('collection')
+        recording = kwargs.get('recording')
+        if not collection or not recording:
+            return
+
+        page_data = {'url': cdx['url'],
+                     'timestamp': cdx['timestamp'],
+                     'title': page_title,
+                     'browser': kwargs.get('browser', ''),
+                    }
+
+        collection.add_page(page_data, recording)
+
     def _add_stats(self, cdx, resp_headers, kwargs, record):
         type_ = kwargs['type']
 

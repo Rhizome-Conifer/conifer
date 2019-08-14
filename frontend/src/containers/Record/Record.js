@@ -8,6 +8,7 @@ import config from 'config';
 
 import { isLoaded, load as loadColl } from 'store/modules/collection';
 import { getArchives, updateUrl } from 'store/modules/controls';
+import { resetStats } from 'store/modules/infoStats';
 import { loadRecording } from 'store/modules/recordings';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
 
@@ -35,7 +36,6 @@ class Record extends Component {
     behavior: PropTypes.bool,
     auth: PropTypes.object,
     collection: PropTypes.object,
-    autopilot: PropTypes.bool,
     autopilotRunning: PropTypes.bool,
     dispatch: PropTypes.func,
     match: PropTypes.object,
@@ -68,6 +68,11 @@ class Record extends Component {
       coll,
       rec
     };
+  }
+
+  componentWillUnmount() {
+    // clear info stats
+    this.props.dispatch(resetStats());
   }
 
   // shouldComponentUpdate(nextProps) {
@@ -133,10 +138,7 @@ class Record extends Component {
             )
           }
 
-          {
-            this.props.autopilot &&
-              <Autopilot />
-          }
+          <Autopilot />
         </div>
       </React.Fragment>
     );
@@ -224,7 +226,6 @@ const mapStateToProps = ({ app }) => {
     auth: app.get('auth'),
     behavior: app.getIn(['automation', 'behavior']),
     collection: app.get('collection'),
-    autopilot: app.getIn(['automation', 'autopilot']),
     autopilotRunning: app.getIn(['automation', 'autopilotStatus']) === 'running',
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])

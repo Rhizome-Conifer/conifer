@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 import config from 'config';
 import WebSocketHandler from 'helpers/ws';
 
-import { toggleAutopilot, updateBehaviorState } from 'store/modules/automation';
-import { updateTimestamp, updateUrl } from 'store/modules/controls';
+import { autopilotReady, toggleAutopilot, updateBehaviorState, updateBehaviorMessage } from 'store/modules/automation';
+import { setMethod, updateTimestamp, updateUrl } from 'store/modules/controls';
 
 import { apiFetch, setTitle } from 'helpers/utils';
 import { toggleModal } from 'store/modules/bugReport';
@@ -170,12 +170,24 @@ class IFrame extends Component {
       case 'behaviorDone':
         this.socket.behaviorStat('done', this.props.behavior);
         this.props.dispatch(toggleAutopilot(null, 'complete', this.props.url));
+        this.props.dispatch(updateBehaviorMessage('Behavior Done'));
+        break;
+      case 'behaviorStop':
+        this.props.dispatch(toggleAutopilot(null, 'stopped', this.props.url));
+        this.props.dispatch(updateBehaviorMessage('Behavior Stopped By User'));
         break;
       case 'behaviorStep':
         this.props.dispatch(updateBehaviorState(state.result));
         break;
       case 'load':
-        this.addNewPage(state, true);
+        if (state.readyState === "interactive") {
+          this.props.dispatch(setMethod('navigation'));
+          // for now, until wombat includes this flag
+          state.newPage = true;
+          this.addNewPage(state, true);
+        } else if (state.readyState === "complete") {
+          this.props.dispatch(autopilotReady());
+        }
         break;
       case 'cookie':
         this.setDomainCookie(state);
@@ -190,10 +202,12 @@ class IFrame extends Component {
         if (state.hash) {
           url += state.hash;
         }
+        this.props.dispatch(setMethod('hash'));
         this.setUrl(url);
         break;
       }
       case 'replace-url':
+        this.props.dispatch(setMethod('history'));
         this.addNewPage(state, false);
         break;
       case 'bug-report':
@@ -215,11 +229,7 @@ class IFrame extends Component {
     if (state.is_error) {
       this.setUrl(state.url);
     } else if (['record', 'patch', 'extract', 'extract_only'].includes(currMode)) {
-      const attributes = {};
-
       if (state.ts) {
-        attributes.timestamp = state.ts;
-
         if (state.ts !== timestamp) {
           this.internalUpdate = true;
           this.props.dispatch(updateTimestamp(state.ts));
@@ -228,16 +238,14 @@ class IFrame extends Component {
         window.wbinfo.timestamp = state.ts;
       }
 
-      attributes.title = state.title;
-      attributes.url = state.url;
       this.setUrl(state.url, true);
 
       const modeMsg = { record: 'recording', patch: 'Patching', extract: 'Extracting' };
       setTitle(currMode in modeMsg ? modeMsg[currMode] : '', state.url, state.tittle);
 
-      if (doAdd && (attributes.timestamp || currMode !== 'patch')) {
-        if (!this.socket.addPage(attributes)) {
-          apiFetch(`/recording/${params.rec}/pages?user=${params.user}&coll=${params.coll}`, attributes, { method: 'POST' });
+      if (doAdd && state.newPage && (state.ts || currMode !== 'patch')) {
+        if (!this.socket.addPage(state)) {
+          apiFetch(`/recording/${params.rec}/pages?user=${params.user}&coll=${params.coll}`, state, { method: 'POST' });
         }
       }
     } else if (['replay', 'replay-coll'].includes(currMode)) {

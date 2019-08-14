@@ -1,5 +1,5 @@
 (function() {
-    var pageLoaded = false;
+    var pageAdded = false;
     var wr_msg_handler = '___$wr_msg_handler___$$';
     var handler = null;
     var remoteQ = [];
@@ -12,7 +12,7 @@
 
         this.ws = null;
         this.reinitWait = null;
-        this.useWS = false;
+        this.ready = false;
 
         this.errCount = 0;
 
@@ -47,12 +47,12 @@
             this.ws.addEventListener("close", this.ws_closed.bind(this));
             this.ws.addEventListener("error", this.ws_errored.bind(this));
         } catch (e) {
-            this.useWS = false;
+            this.ready = false;
         }
     }
 
     WSHandler.prototype.ws_open = function() {
-        this.useWS = true;
+        this.ready = true;
         this.errCount = 0;
 
         if (this.on_open) {
@@ -61,7 +61,7 @@
     }
 
     WSHandler.prototype.ws_errored = function() {
-        this.useWS = false;
+        this.ready = false;
 
         if (this.reinitWait != null) {
             return;
@@ -74,7 +74,7 @@
     }
 
     WSHandler.prototype.ws_closed = function() {
-        this.useWS = false;
+        this.ready = false;
 
         if (this.reinitWait != null) {
             return;
@@ -84,7 +84,7 @@
     }
 
     WSHandler.prototype.send = function(msg) {
-        if (!this.useWS) {
+        if (!this.ready) {
             return false;
         }
         msg.ws_type = msg.wb_type;
@@ -128,9 +128,9 @@
         return sendAppMsg(msg);
     }
 
-    function sendPageMsg(isAdd) {
-        if (window != window.top) {
-          return;
+    function sendLoadMsg(isAdd, readyState) {
+        if (window != window.top || document.hidden) {
+          return false;
         }
 
         var msg = {
@@ -139,23 +139,32 @@
             "request_ts": wbinfo.request_ts,
             "is_live": wbinfo.is_live,
             "title": document.title,
-            "readyState": document.readyState,
+            "readyState": readyState || document.readyState,
             "browser": wbinfo.curr_browser,
+            "wb_type": "load",
+            "newPage": isAdd,
         };
 
-        if (!pageLoaded) {
-            msg.wb_type = "load";
-            msg.newPage = isAdd;
-            pageLoaded = true;
-        } else {
-            msg.wb_type = "replace-url";
-        }
-        if (document.hidden) {
-          return;
-        }
-        msg.visible = true;
+        sendAppMsg(msg);
+        return true;
+    }
 
-        return sendAppMsg(msg);
+    function sendReplaceUrlMsg(type) {
+        if (window != window.top || document.hidden) {
+          return false;
+        }
+
+        var msg = {
+            "changeType": type,
+            "url": window.location.href,
+            "ts": wbinfo.timestamp,
+            "request_ts": wbinfo.request_ts,
+            "title": document.title,
+            "wb_type": "replace-url",
+        };
+
+        sendAppMsg(msg);
+        return true;
     }
 
     function receiveAppMsg(msg) {
@@ -187,7 +196,7 @@
     }
 
     function sendAppMsg(msg) {
-        if (handler) {
+        if (handler && handler.ready) {
             handler.send(msg);
         } else {
             remoteQ.push(msg);
@@ -199,27 +208,43 @@
     }
 
     // INIT
-    window.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("readystatechange", function() {
+        const readyState = document.readyState;
+
         if (window != window.top) {
             return;
         }
 
-        function on_init() {
-            sendPageMsg(wbinfo.is_live || wbinfo.proxy_mode == "extract");
-
-            while (remoteQ.length) {
-              sendAppMsg(remoteQ.shift());
-            }
+        if (readyState === "complete") {
+          sendLoadMsg(false, readyState);
+          return;
         }
 
+        if (window._wb_wombat.setHistoryCB) {
+          window._wb_wombat.setHistoryCB(function(url, title, changeName, state) {
+            sendReplaceUrlMsg(changeName);
+          });
+        }
+
+        var addPage = (wbinfo.is_live || wbinfo.proxy_mode == "extract");
+
         if (!window[wr_msg_handler]) {
+            function on_init() {
+                while (remoteQ.length) {
+                  sendAppMsg(remoteQ.shift());
+                }
+            }
+
+            sendLoadMsg(addPage, readyState);
+
             window[wr_msg_handler] = new WSHandler(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic,
                                                    on_init, receiveAppMsg);
             handler = window[wr_msg_handler];
         } else {
             handler = window[wr_msg_handler];
             handler.on_message = receiveAppMsg;
-            on_init();
+            handler.ready = true;
+            sendLoadMsg(addPage, readyState);
         }
     });
 
@@ -234,7 +259,7 @@
     // VIZ CHANGE
     document.addEventListener("visibilitychange", function() {
         if (!document.hidden) {
-            sendPageMsg(false);
+            sendReplaceUrlMsg("visible");
         }
     });
 
@@ -248,6 +273,7 @@
             case "skipreq":
             case "patch_req":
             case "behaviorStep":
+            case "behaviorStop":
             case "behaviorDone":
                 sendAppMsg(message);
                 break;

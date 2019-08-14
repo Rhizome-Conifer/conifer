@@ -61,10 +61,26 @@
     }
 
     .autopilot-btn {
+        transition: color $quickShift ease-in-out;
+
         svg {
             vertical-align: middle;
             height: 1.5rem;
-            margin-left: .5rem;
+            margin-right: .5rem;
+
+            path {
+                transition: fill $midShift ease-in-out;
+            }
+        }
+
+        &.special-behavior {
+            color: $blue;
+
+            svg {
+                path {
+                    fill: $blue;
+                }
+            }
         }
     }
 }

@@ -2,33 +2,38 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-import { CheckIcon, LoaderIcon, WandIcon, ThinXIcon } from 'components/icons';
+import { autopilot as autopilotFields } from 'helpers/userMessaging';
+
+import { CheckIcon, LoaderIcon, WandIcon } from 'components/icons';
 
 import './style.scss';
 
 
 class AutopilotUI extends Component {
   static propTypes = {
+    autopilot: PropTypes.bool,
     activeBrowser: PropTypes.string,
+    autopilotInfo: PropTypes.object,
+    autopilotReady: PropTypes.bool,
     autopilotReset: PropTypes.func,
+    autopilotUrl: PropTypes.string,
     behavior: PropTypes.string,
-    behaviorState: PropTypes.string,
+    behaviorMessages: PropTypes.object,
+    behaviorStats: PropTypes.object,
     browsers: PropTypes.object,
     checkAvailability: PropTypes.func,
-    autopilotInfo: PropTypes.object,
-    autopilotUrl: PropTypes.string,
     open: PropTypes.bool,
     status: PropTypes.string,
     toggleAutopilot: PropTypes.func,
     toggleSidebar: PropTypes.func,
-    url: PropTypes.string
+    url: PropTypes.string,
+    urlMethod: PropTypes.string
   };
 
   constructor(props) {
     super(props);
 
     this.state = {
-      behavior: 'autoScrollBehavior',
       unsupported: false
     };
   }
@@ -54,34 +59,30 @@ class AutopilotUI extends Component {
   }
 
   componentDidUpdate(lastProps) {
-    if (
-      (['stopped', 'complete'].includes(this.props.status) && this.props.url !== lastProps.url) ||
-      this.props.activeBrowser !== lastProps.activeBrowser) {
-      // reset status on url change
-      this.props.autopilotReset();
-      this.props.checkAvailability(this.props.url);
-    }
+    const { autopilotInfo } = this.props;
+    if ((this.props.url !== lastProps.url) || this.props.activeBrowser !== lastProps.activeBrowser) {
 
-    if (this.props.autopilotInfo !== lastProps.autopilotInfo) {
-      this.setState({ behavior: this.props.autopilotInfo.getIn([0, 'name']) });
+      // if navigation always reset
+      if (this.props.urlMethod == 'navigation') {
+        this.props.autopilotReset();
+        this.props.checkAvailability(this.props.url);
+      } else if (this.props.status === 'new') {
+      // if history change, update if 'new', otherwise do nothing
+        this.props.checkAvailability(this.props.url);
+      }
     }
   }
 
-  handleInput = (evt) => {
-    this.setState({ behavior: evt.target.value });
-  }
-
-  selectMode = (mode) => {
-    if (this.props.status !== 'running') {
-      this.setState({ behavior: mode });
-    }
+  componentWillUnmount() {
+    this.props.autopilotReset();
   }
 
   toggleAutomation = () => {
-    const { behavior } = this.state;
-    const { toggleAutopilot, url } = this.props;
-    if (behavior && this.props.status !== 'complete') {
-      toggleAutopilot(...(this.props.behavior ? [null, 'stopped', url] : [behavior, 'running', url]));
+    const { autopilotInfo, toggleAutopilot, status, url } = this.props;
+    const behavior = autopilotInfo.get('name');
+
+    if (behavior && ['new', 'running'].includes(status)) {
+      toggleAutopilot(...(status === 'running' ? [null, 'stopping', url] : [behavior, 'running', url]));
     }
   }
 
@@ -90,14 +91,46 @@ class AutopilotUI extends Component {
   }
 
   render() {
-    const { autopilotInfo, behaviorState, status } = this.props;
-    const behaviors = autopilotInfo && autopilotInfo.size > 1 ? autopilotInfo.filter(b => !b.get('defaultBehavior')) : autopilotInfo;
+    const { autopilot, autopilotInfo, autopilotReady, behaviorMessages, behaviorStats, status } = this.props;
+
+    // only render if sidebar is open
+    if (!autopilot) {
+      return null;
+    }
+
+    const behavior = autopilotInfo;
     const isRunning = status === 'running';
     const isComplete = status === 'complete';
+    const isStopping = status === 'stopping';
+    const isStopped = status === 'stopped';
+
+    const dt = behavior && new Date(behavior.get('updated'));
+    const keyDomain = behavior && autopilotFields[behavior.get('name')];
+
+    let buttonText;
+    switch (status) {
+      case 'new':
+        buttonText = 'Start Autopilot';
+        break;
+      case 'running':
+        buttonText = 'End Autopilot';
+        break;
+      case 'stopping':
+        buttonText = 'Wait while behavior is stopping...';
+        break;
+      case 'stopped':
+        buttonText = 'Autopilot Ended';
+        break;
+      case 'complete':
+        buttonText = 'Autopilot Finished';
+        break;
+      default:
+        buttonText = 'Start Autopilot';
+    }
 
     return (
       <div className="autopilot-sidebar">
-        <h2>Capture Options <button onClick={this.toggle} type="button"><ThinXIcon /></button></h2>
+        <h4><WandIcon /> Autopilot</h4>
         {
           this.state.unsupported ?
             <React.Fragment>
@@ -105,63 +138,72 @@ class AutopilotUI extends Component {
               <p>To use autopilot, please select a different browser from the dropdown above. Only browsers with "autopilot" listed under capabilities support autopilot.</p>
             </React.Fragment> :
             <React.Fragment>
-              <h4><WandIcon /> Autopilot</h4>
-              <p>Capture the content on this page with a scripted behavior.</p>
               <ul className={classNames('behaviors', { active: isRunning })}>
                 {
-                  behaviors && behaviors.valueSeq().map((behavior) => {
-                    const name = behavior.get('name');
-                    const dt = new Date(behavior.get('updated'));
-                    return (
-                      <li onClick={this.selectMode.bind(this, name)} key={name}>
-                        <input type="radio" name="behavior" value={name} disabled={isRunning || isComplete} aria-labelledby="opt1" onChange={this.handleInput} checked={this.state.behavior === name} />
-                        <div className="desc" id="opt1">
-                          <div className="heading">{behavior.get('displayName') || name}</div>
-                          <div className="last-modified">
-                            <em>{`Updated: ${dt.toLocaleDateString()} ${dt.toLocaleTimeString()}`}</em>
-                          </div>
-                          {behavior.get('description')}
+                  behavior &&
+                    <li key={behavior.get('name')}>
+                      <div className="desc" id="opt1">
+                        <div className="heading">{behavior.get('displayName') || behavior.get('name')}</div>
+                        <div className="last-modified">
+                          <em>{`Updated: ${dt.toLocaleDateString()} ${dt.toLocaleTimeString()}`}</em>
                         </div>
-                      </li>
-                    );
-                  })
+                        {behavior.get('description')}
+                      </div>
+                    </li>
                 }
               </ul>
 
-              <button className={classNames('rounded', { complete: isComplete })} onClick={this.toggleAutomation} disabled={isComplete} type="button">
-                { isRunning && <LoaderIcon /> }
+              {
+                behaviorMessages.size > 0 &&
+                  <ul className="behavior-log">
+                    {
+                      behaviorMessages.reverse().slice(0, 10).map(obj => <li>{obj.get('msg')}</li>)
+                    }
+                  </ul>
+              }
+
+              {
+                !behaviorStats.isEmpty() && keyDomain &&
+                  <div className="behaviorInfo">
+                    <h4>Auto Captured Content:</h4>
+                    <ul className="behaviorStats">
+                      {
+                        behaviorStats.entrySeq().map(([k, v]) => {
+                          if (k in keyDomain) {
+                            return <li key={k}>{`${keyDomain[k]}: ${v}`}</li>;
+                          }
+                          return null;
+                        })
+                      }
+                    </ul>
+                  </div>
+              }
+
+              <button className={classNames('rounded', { complete: isComplete })} onClick={this.toggleAutomation} disabled={!autopilotReady || isComplete || isStopping || isStopped} type="button">
+                { (!autopilotReady || isRunning || isStopping) && <LoaderIcon /> }
                 { isComplete && <CheckIcon /> }
                 {
-                  isComplete ?
-                    'Autopilot Finished' :
-                    `${isRunning ? 'Stop' : 'Start'} Autopilot`
+                  !autopilotReady ?
+                    'page loading... please wait' :
+                    buttonText
                 }
               </button>
               {
+                !isRunning && !isComplete &&
+                  <div className="best-practices">
+                    <h5>Best Practices</h5>
+                    <p>
+                      Learn more about how to acheive the best results when using Autopilot capture in <a href="https://guide.webrecorder.io" target="_blank">this user guide</a>
+                    </p>
+                  </div>
+              }
+              {
                 isRunning &&
-                  <em>Stop autopilot to resume manual interaction with page.</em>
+                  <div className="autopilot-message">End autopilot to resume manual interaction with page.</div>
               }
               {
                 isComplete &&
-                  <em>Autopilot actions have been completed. You may continue to capture the page manually. To run autopilot again, please refresh or load a new page.</em>
-              }
-              {
-                behaviorState &&
-                  <div className="behaviorInfo">
-                    Last Action:
-                    <div className="behaviorMsg">{ behaviorState.msg }</div>
-                    <div className="behaviorStats">Stats
-                      <ul>
-                        {
-                          behaviorState.state && Object.keys(behaviorState.state).map((stateProp) => {
-                            return (
-                              <li>{stateProp}: <em>{behaviorState.state[stateProp].toString()}</em></li>
-                            );
-                          })
-                        }
-                      </ul>
-                    </div>
-                  </div>
+                  <div className="autopilot-message">Manual capture has resumed.</div>
               }
             </React.Fragment>
         }

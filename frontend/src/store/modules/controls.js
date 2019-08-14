@@ -3,7 +3,7 @@ import { fromJS } from 'immutable';
 
 
 const ACTIVE_LIST = 'wr/ctrls/ACTIVE_LIST';
-const SET_MODE = 'wr/ctrls/SET_MODE';
+const SET_METHOD = 'wr/ctrls/SET_METHOD';
 const SET_EXTRACTABLE = 'wr/ctrls/SET_EXTRACTABLE';
 const SET_ALL_SOURCES = 'wr/ctrls/SET_ALL_SOURCES';
 const SET_SOURCES = 'wr/ctrls/SET_SOURCES';
@@ -19,7 +19,7 @@ const GET_ARCHIVES_FAIL = 'wr/ctrls/ARCHIVES_FAIL';
 
 
 const initialState = fromJS({
-  mode: null,
+  method: 'navigation',
   activeList: null,
   activeBookmarkId: null,
   extractable: null,
@@ -52,8 +52,8 @@ export default function controls(state = initialState, action = {}) {
       return state.set('is404', action.bool);
     case SET_BK_ID:
       return state.set('activeBookmarkId', action.id);
-    case SET_MODE:
-      return state.set('mode', action.mode);
+    case SET_METHOD:
+      return state.set('method', action.method);
     case SET_EXTRACTABLE:
       return state.merge({
         extractable: fromJS(action.extractable)
@@ -96,10 +96,10 @@ export function setExtractable(extractable) {
 }
 
 
-export function setMode(mode) {
+export function setMethod(method = 'navigation') {
   return {
-    type: SET_MODE,
-    mode
+    type: SET_METHOD,
+    method
   };
 }
 

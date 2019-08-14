@@ -80,8 +80,9 @@ class DatShare(object):
             print('API Error: ' + cmd)
             if res:
                 print(res.text)
+                return {'error': res.text}
 
-            return None
+            return {'error': str(e)}
 
     def unshare(self, collection):
         if not self.dat_enabled:
@@ -101,7 +102,7 @@ class DatShare(object):
         if self.is_sharing(collection):
             res = self.dat_share_api('/unshare', collection)
 
-            if res['success'] == True:
+            if res and res['success'] == True:
                 self._mark_unshare(collection)
 
         if dat_updated_at:
