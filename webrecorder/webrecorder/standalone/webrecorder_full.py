@@ -30,7 +30,8 @@ class WebrecorderRunner(StandaloneRunner):
 
         self.browser_id = base64.b32encode(os.urandom(15)).decode('utf-8')
 
-        self.dat_api_port = argres.dat_api_port
+        self.dat_share_port = argres.dat_share_port
+        self.behaviors_tarfile = argres.behaviors_tarfile
 
         super(WebrecorderRunner, self).__init__(argres, rec_port=0)
 
@@ -52,22 +53,20 @@ class WebrecorderRunner(StandaloneRunner):
         os.environ['ALLOW_DAT'] = '1'
         os.environ['DAT_SHARE_HOST'] = 'localhost'
 
-        if self.dat_api_port:
-            os.environ['DAT_SHARE_PORT'] = self.dat_api_port
+        if self.dat_share_port:
+            os.environ['DAT_SHARE_PORT'] = self.dat_share_port
 
         os.environ['BEHAVIORS_DIR'] = os.path.join(self.root_dir, 'behaviors')
 
         os.environ['BROWSER_ID'] = self.browser_id
 
-        #local_info=dict(browser='',
-        #                reqid=self.browser_id)
+        if self.behaviors_tarfile:
+            os.environ['BEHAVIORS_TARFILE'] = self.behaviors_tarfile
 
         self.redis_server = LocalRedisServer(port=self.REDIS_PORT,
                                              redis_dir=self.redis_dir)
 
         self.browser_redis = self.redis_server.start()
-
-        #self.browser_redis.hmset('up:' + self.browser_id, local_info)
 
         self.user_manager = CLIUserManager()
 
@@ -114,9 +113,13 @@ class WebrecorderRunner(StandaloneRunner):
                             default=None,
                             help='Create & Auto-Login as Default User')
 
-        parser.add_argument('--dat-api-port',
+        parser.add_argument('--dat-share-port',
                             default=None,
                             help='Dat Share API server port')
+
+        parser.add_argument('--behaviors-tarfile',
+                            default=None,
+                            help='Behaviors Tarfile')
 
 
 # ============================================================================

@@ -1,7 +1,5 @@
 from webrecorder.basecontroller import BaseController
 from bottle import request, static_file, HTTPResponse, response
-from pkg_resources import resource_filename
-
 import os
 import json
 import sys
@@ -20,6 +18,8 @@ class BehaviorMgr(BaseController):
         self.behaviors_api = os.environ.get('BEHAVIOR_API', 'http://behaviors:3030')
         self.behaviors_root = os.environ.get('BEHAVIORS_DIR')
 
+        self.behaviors_tarfile = os.environ.get('BEHAVIORS_TARFILE')
+
         self.default_behavior = {}
         self.behaviors = {}
 
@@ -34,29 +34,27 @@ class BehaviorMgr(BaseController):
             except Exception as e:
                 traceback.print_exc()
 
-    def unpack_behaviors(self, filename='behaviors.tar.gz'):
+    def unpack_behaviors(self):
+        if not self.behaviors_tarfile:
+            logging.info('No Behaviors Tarfile specified, skipping unpack')
+
         os.makedirs(self.behaviors_data, exist_ok=True)
 
-        if getattr(sys, 'frozen', False):
-            behaviors_tarfile = os.path.join(sys._MEIPASS, 'webrecorder', 'config', filename)
-        else:
-            behaviors_tarfile = resource_filename('webrecorder', 'config/' + filename)
-
-        current_tarfile = os.path.join(self.behaviors_root, filename)
+        current_tarfile = os.path.join(self.behaviors_root, os.path.basename(self.behaviors_tarfile))
 
         try:
-            if os.path.isfile(current_tarfile) and os.path.getmtime(current_tarfile) > os.path.getmtime(behaviors_tarfile):
+            if os.path.isfile(current_tarfile) and os.path.getmtime(current_tarfile) > os.path.getmtime(self.behaviors_tarfile):
                 logging.info('Already have latest behaviors, not unpacking')
                 return
         except Exception as e:
             print(e)
 
-        logging.info('Unpacking behaviors {0} -> {1}'.format(behaviors_tarfile, self.behaviors_root))
-        tar = tarfile.open(behaviors_tarfile, 'r')
+        logging.info('Unpacking behaviors {0} -> {1}'.format(self.behaviors_tarfile, self.behaviors_root))
+        tar = tarfile.open(self.behaviors_tarfile, 'r')
         tar.extractall(self.behaviors_root)
         tar.close()
 
-        shutil.copyfile(behaviors_tarfile, current_tarfile)
+        shutil.copyfile(self.behaviors_tarfile, current_tarfile)
 
     def load(self):
         logging.info('Loading behaviors from {0}'.format(self.behaviors_metadata))
