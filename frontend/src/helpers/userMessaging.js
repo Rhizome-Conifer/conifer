@@ -18,6 +18,11 @@ export default {
       playedVideo: 'Video Captured',
       viewedComments: 'Comments Captured'
     },
+    twitterTimelineBehavior: {
+      videos: 'Videos Captured',
+      threadsOrReplies: 'Replies Captured',
+      viewedFully: 'Tweets Captured'
+    },
     twitterHashTagsBehavior: {
       videos: 'Videos Captured',
       threadsOrReplies: 'Replies Captured',
