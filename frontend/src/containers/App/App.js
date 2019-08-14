@@ -259,7 +259,7 @@ export class App extends Component {
             </Panel>
         }
         {
-          this.isMobile && this.state.mobileAlert &&
+          !isEmbed && this.isMobile && this.state.mobileAlert &&
             <Alert className="mobile-alert" onDismiss={this.dismissMobileAlert}>
               Please note: Webrecorder doesn't currently support mobile devices.
             </Alert>
