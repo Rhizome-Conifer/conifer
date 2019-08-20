@@ -25,7 +25,7 @@ addons:
       - webrecorder-player-$TRAVIS_OS_NAME
 
 before_install: |
-  if [[ $TRAVIS_OS_NAME == 'osx' ]]; the
+  if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
       brew install pyenv;
       eval "$(pyenv init -)";
       PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PY_VER;
