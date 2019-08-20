@@ -8,7 +8,7 @@ matrix:
       python: "3.6"
       sudo: false
     - os: osx
-      osx_image: xcode8.0
+      osx_image: xcode8.3
       language: generic
       sudo: required
       env: PY_VER=3.6.8
