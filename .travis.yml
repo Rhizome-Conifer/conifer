@@ -8,7 +8,7 @@ matrix:
       python: "3.6"
       sudo: false
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode8.3
       language: generic
       sudo: required
       env: PY_VER=3.6.8
@@ -26,7 +26,7 @@ addons:
 
 before_install: |
   if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
-      brew install pyenv;
+      brew upgrade pyenv;
       eval "$(pyenv init -)";
       PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PY_VER;
       pyenv global $PY_VER;
