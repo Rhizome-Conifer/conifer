@@ -119,6 +119,15 @@ class AdminController(BaseController):
             name = 'Sources ' + key[len(Stats.SOURCES_KEY.format('')):]
             self.all_stats[name] = key
 
+        for key in self.redis.scan_iter(Stats.BEHAVIOR_KEY.format(stat='*', name='*')):
+            parts = key.split(':')
+            if len(parts) < 4:
+                continue
+            name = parts[3].replace('Behavior', '')
+            name = sub("([a-z])([A-Z])","\g<1>-\g<2>", name)
+            full_name = 'Behavior ' + parts[2] + ' ' + name
+            self.all_stats[full_name.title()] = key
+
         for key in self.CUSTOM_STATS:
             self.all_stats[key] = key
 
