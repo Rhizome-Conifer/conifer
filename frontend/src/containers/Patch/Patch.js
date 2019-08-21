@@ -84,6 +84,8 @@ class Patch extends Component {
         <ReplayUI
           activeBrowser={activeBrowser}
           autopilotRunning={autopilotRunning}
+          canGoBackward={appSettings.get('canGoBackward')}
+          canGoForward={appSettings.get('canGoForward')}
           params={params}
           timestamp={timestamp}
           url={url} />

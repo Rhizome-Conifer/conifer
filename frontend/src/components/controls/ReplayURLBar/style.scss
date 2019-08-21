@@ -27,14 +27,14 @@
         border-bottom-right-radius: 2.7rem;
     }
 
-   .btn {
+    .btn, .input-group .form-control:first-child {
         border-top-left-radius: 2.7rem;
         border-bottom-left-radius: 2.7rem;
-   }
+    }
 
-   & > form > .input-group {
-    width: 100%;
-   }
+    & > form > .input-group {
+        width: 100%;
+    }
 }
 
 .wr-app-url {
