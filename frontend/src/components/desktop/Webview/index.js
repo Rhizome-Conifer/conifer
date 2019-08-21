@@ -61,6 +61,10 @@ class Webview extends Component {
     window.addEventListener('wr-go-forward', this.goForward);
     window.addEventListener('wr-refresh', this.refresh);
 
+    // ensure nav buttons disabled when new webview loads
+    dispatch(setBrowserHistory('canGoBackward', false));
+    dispatch(setBrowserHistory('canGoForward', false));
+
     this.webviewHandle.addEventListener('did-navigate-in-page', (event) => {
       if (event.isMainFrame) {
         dispatch(setMethod('history'));
@@ -155,6 +159,7 @@ class Webview extends Component {
 
   handleIPCEvent = (evt) => {
     const { canGoBackward, canGoForward, dispatch } = this.props;
+    const { currMode } = this.context;
     const state = evt.args[0];
 
     // set back & forward availability
@@ -172,6 +177,12 @@ class Webview extends Component {
 
       case 'load':
         this.setState({ loading: false });
+
+        // no autopilot on replay
+        if (currMode === 'replay-coll') {
+          break;
+        }
+
         if (state.newPage) {
           this.addNewPage(state, true);
         }
@@ -180,7 +191,6 @@ class Webview extends Component {
           dispatch(autopilotReset());
           dispatch(autopilotCheck(state.url));
         } else if (state.readyState === 'complete') {
-          // todo: enable autopilot start button
           dispatch(autopilotReady());
         }
         break;

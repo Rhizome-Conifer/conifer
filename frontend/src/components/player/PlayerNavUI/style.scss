@@ -42,39 +42,6 @@ nav.topBar {
     align-items: center;
   }
 
-  .arrow {
-    transition: background $quickShift ease-in-out;
-    border-radius: .4rem;
-    padding: .1rem .2rem;
-
-    &:not(:last-of-type) {
-      margin-right: .2rem;
-    }
-
-    svg path {
-      fill: $gray600;
-    }
-
-    &.inactive {
-      path {
-        fill: $gray500;
-      }
-    }
-
-    svg {
-      // transition: background 175ms ease-in-out;
-      // padding: .5rem;
-      // height: 2.5rem;
-      // border-radius: .5rem;
-      padding: .2rem;
-      vertical-align: middle;
-    }
-
-    &:not(.inactive):hover {
-      background: $gray300;
-    }
-  }
-
   button {
     background-color: transparent;
     background-repeat: no-repeat;
@@ -110,6 +77,7 @@ nav.topBar {
 
   .wrLogoImg {
     height: 2rem;
+    padding-right: .8rem;
   }
 
   .openFile {
@@ -120,10 +88,4 @@ nav.topBar {
     height: 2rem;
   }
 
-  .browser-nav {
-    display: flex;
-    align-items: center;
-
-    margin: 0 1.5rem;
-  }
 }

@@ -27,14 +27,19 @@
         border-bottom-right-radius: 2.7rem;
     }
 
-   .btn {
+    .btn, .form-control:first-child {
         border-top-left-radius: 2.7rem;
         border-bottom-left-radius: 2.7rem;
-   }
+    }
 
-   & > form > .input-group {
-    width: 100%;
-   }
+    .rb-dropdown + .wr-app-url .form-control:first-child {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    & > form > .input-group {
+        width: 100%;
+    }
 }
 
 .wr-app-url {
@@ -55,11 +60,6 @@
         margin: 0;
         float: none;
     }
-}
-
-.rb-dropdown + .wr-app-url .form-control {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
 }
 
 .wr-replay-info {

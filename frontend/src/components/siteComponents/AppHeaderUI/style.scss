@@ -26,48 +26,6 @@
             }
         }
 
-        .browser-nav {
-            display: flex;
-            align-items: center;
-            margin-right: 1.5rem;
-
-            button {
-              background-color: transparent;
-              background-repeat: no-repeat;
-              border: none;
-              color: #000;
-
-              &.arrow {
-                transition: background $quickShift ease-in-out;
-                border-radius: .4rem;
-                padding: .1rem .2rem;
-
-                &:not(:last-of-type) {
-                  margin-right: .2rem;
-                }
-
-                svg path {
-                  fill: #6E6E6E;
-                }
-
-                &.inactive {
-                  path {
-                    fill: #CECECE;
-                  }
-                }
-
-                svg {
-                  padding: .2rem;
-                  vertical-align: middle;
-                }
-
-                &:not(.inactive):hover {
-                  background: $gray300;
-                }
-              }
-            }
-        }
-
         .navbar-user-links>li>button {
             color: $gray600;
         }
