@@ -54,12 +54,12 @@
         }
 
         svg path {
-          fill: $gray500;
+          fill: $gray600;
         }
 
         &.inactive {
           path {
-            fill: $gray600;
+            fill: $gray500;
           }
         }
 

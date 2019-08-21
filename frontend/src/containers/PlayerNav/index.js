@@ -8,8 +8,6 @@ import PlayerNavUI from 'components/player/PlayerNavUI';
 const mapStateToProps = ({ app }) => {
   return {
     collectionLoaded: app.getIn(['collection', 'loaded']),
-    canGoBackward: app.getIn(['appSettings', 'canGoBackward']),
-    canGoForward: app.getIn(['appSettings', 'canGoForward']),
     source: app.getIn(['appSettings', 'source'])
   };
 };

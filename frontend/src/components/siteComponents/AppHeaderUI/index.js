@@ -7,7 +7,7 @@ import { matchPath, NavLink } from 'react-router-dom';
 import { AdminHeader, UserManagement } from 'containers';
 
 import BreadcrumbsUI from 'components/siteComponents/BreadcrumbsUI';
-import { PlayerArrowLeftIcon, PlayerArrowRightIcon, LogoIcon, RefreshIcon } from 'components/icons';
+import { LogoIcon } from 'components/icons';
 
 import './style.scss';
 
