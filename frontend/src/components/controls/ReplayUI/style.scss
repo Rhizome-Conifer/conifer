@@ -1,3 +1,5 @@
+@import 'src/vars';
+
 .wr-controls {
     display: flex;
     align-items: center;
@@ -30,6 +32,29 @@
         margin-right: 1.5rem;
     }
 }
+
+.browser-nav {
+    button {
+
+      &.arrow {
+        svg path {
+          fill: $gray500;
+        }
+
+        &.inactive {
+          path {
+            fill: $gray600;
+          }
+        }
+
+        &:not(.inactive):hover {
+          background: $gray600;
+        }
+      }
+    }
+}
+
+
 
 .iframe-container {
     position: relative;

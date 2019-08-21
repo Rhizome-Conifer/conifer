@@ -205,6 +205,8 @@ class Replay extends Component {
           !isEmbed &&
             <ReplayUI
               activeBrowser={activeBrowser}
+              canGoBackward={appSettings.get('canGoBackward')}
+              canGoForward={appSettings.get('canGoForward')}
               params={params}
               timestamp={timestamp}
               sidebarExpanded={this.props.expanded}

@@ -99,6 +99,8 @@ class Record extends Component {
         <ReplayUI
           activeBrowser={activeBrowser}
           autopilotRunning={autopilotRunning}
+          canGoBackward={appSettings.get('canGoBackward')}
+          canGoForward={appSettings.get('canGoForward')}
           params={params}
           url={url} />
 
