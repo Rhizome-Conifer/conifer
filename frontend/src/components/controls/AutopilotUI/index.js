@@ -33,13 +33,11 @@ class AutopilotUI extends Component {
   constructor(props) {
     super(props);
 
+    this.props.checkAvailability(this.props.url);
+
     this.state = {
       unsupported: false
     };
-  }
-
-  componentWillMount() {
-    this.props.checkAvailability(this.props.url);
   }
 
   componentDidMount() {

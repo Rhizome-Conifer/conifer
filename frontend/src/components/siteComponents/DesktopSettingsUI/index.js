@@ -3,17 +3,14 @@ import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import {
   Button,
-  Col,
   ControlLabel,
   FormControl,
   FormGroup,
-  InputGroup,
   Panel,
-  ProgressBar,
-  Row
+  ProgressBar
 } from 'react-bootstrap';
 
-import { supportEmail } from 'config';
+
 import { appendFlashVersion } from 'helpers/utils';
 
 import Modal from 'components/Modal';
@@ -41,18 +38,15 @@ class DesktopSettingsUI extends Component {
   constructor(props) {
     super(props);
 
+    ipcRenderer.on('async-response', this.handleVersionResponse);
+    ipcRenderer.send('async-call');
+
     this.state = {
-      allotment: '',
       confirmUser: '',
       dataPath: '',
       showModal: false,
       version: ''
     };
-  }
-
-  componentWillMount() {
-    ipcRenderer.on('async-response', this.handleVersionResponse);
-    ipcRenderer.send('async-call');
   }
 
   componentWillUnmount() {

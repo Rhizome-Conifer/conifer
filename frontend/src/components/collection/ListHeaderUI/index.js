@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Collapsible from 'react-collapsible';
 
+import { AccessContext } from 'store/contexts';
+
 import EditModal from 'components/collection/EditModal';
 import WYSIWYG from 'components/WYSIWYG';
 import { CarotIcon, ListIcon } from 'components/icons';
@@ -11,9 +13,7 @@ import './style.scss';
 
 
 class ListHeaderUI extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool
-  };
+  static contextType = AccessContext;
 
   static propTypes = {
     clearSort: PropTypes.func,

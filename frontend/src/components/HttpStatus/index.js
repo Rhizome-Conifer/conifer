@@ -20,8 +20,10 @@ class HttpStatus extends PureComponent {
     status: 404,
   };
 
-  componentWillMount() {
-    this.props.dispatch(set404(true));
+  constructor(props) {
+    super(props);
+
+    props.dispatch(set404(true));
   }
 
   componentWillUnmount() {

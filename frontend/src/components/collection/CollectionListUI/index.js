@@ -6,6 +6,7 @@ import { fromJS } from 'immutable';
 import { Button, Col, Row } from 'react-bootstrap';
 
 import { stopPropagation } from 'helpers/utils';
+import { AccessContext, AppContext } from 'store/contexts';
 
 import { StandaloneRecorder } from 'containers';
 
@@ -22,9 +23,7 @@ import './style.scss';
 
 
 class CollectionListUI extends Component {
-  static contextTypes = {
-    isAnon: PropTypes.bool
-  };
+  static contextType = AppContext;
 
   static propTypes = {
     auth: PropTypes.object,
@@ -103,7 +102,7 @@ class CollectionListUI extends Component {
     }
 
     return (
-      <React.Fragment>
+      <AccessContext.Provider value={{ canAdmin }}>
         <Helmet>
           <title>{`${displayName}'s Collections`}</title>
         </Helmet>
@@ -197,7 +196,7 @@ class CollectionListUI extends Component {
           createCollection={this.createCollection}
           creatingCollection={collections.get('creatingCollection')}
           error={collections.get('error')} />
-      </React.Fragment>
+      </AccessContext.Provider>
     );
   }
 }

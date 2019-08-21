@@ -6,6 +6,7 @@ import { Button } from 'react-bootstrap';
 
 import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
 import config from 'config';
+import { AppContext } from 'store/contexts';
 
 import { DeleteCollection, SessionCollapsible, Upload } from 'containers';
 
@@ -18,15 +19,13 @@ import './style.scss';
 
 
 class CollectionManagementUI extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
-  };
+  static contextType = AppContext;
 
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
     location: PropTypes.object,
+    match: PropTypes.object,
     recordings: PropTypes.object,
     totalDuration: PropTypes.number
   };
@@ -49,8 +48,16 @@ class CollectionManagementUI extends Component {
   }
 
   render() {
-    const { collection, recordings, location: { search } } = this.props;
+    const {
+      auth,
+      collection,
+      recordings,
+      location: { search },
+      match: { params: { user } }
+    } = this.props;
     const { expandAll } = this.state;
+
+    const canAdmin = auth.getIn(['user', 'username']) === user;
 
     let activeSession = null;
     if (search) {
@@ -58,7 +65,7 @@ class CollectionManagementUI extends Component {
       activeSession = qs.session;
     }
 
-    if (!this.context.canAdmin) {
+    if (!canAdmin) {
       return <HttpStatus status={401} />;
     }
 

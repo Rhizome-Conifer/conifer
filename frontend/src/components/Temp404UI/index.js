@@ -9,7 +9,6 @@ import SetStatus from 'components/SetStatus';
 
 class Temp404UI extends PureComponent {
   static propTypes = {
-    children: PropTypes.node,
     showLoginModal: PropTypes.func,
     set404: PropTypes.func,
     status: PropTypes.number
@@ -19,8 +18,10 @@ class Temp404UI extends PureComponent {
     status: 404,
   };
 
-  componentWillMount() {
-    this.props.set404(true);
+  constructor(props) {
+    super(props);
+
+    props.set404(true);
   }
 
   componentWillUnmount() {
@@ -28,7 +29,7 @@ class Temp404UI extends PureComponent {
   }
 
   render() {
-    const { children, status, showLoginModal } = this.props;
+    const { status, showLoginModal } = this.props;
 
     return (
       <SetStatus code={status}>

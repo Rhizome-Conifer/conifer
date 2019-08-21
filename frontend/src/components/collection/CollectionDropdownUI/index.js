@@ -54,10 +54,8 @@ class CollectionDropdownUI extends Component {
       filter: '',
       showModal: false
     };
-  }
 
-  componentWillMount() {
-    const { loadUserCollections, auth } = this.props;
+    const { loadUserCollections, auth } = props;
     if (auth.getIn(['user', 'username']) && !auth.getIn(['user', 'anon']) && Date.now() - auth.get('accessed') > 10000) {
       loadUserCollections(auth.getIn(['user', 'username']));
     }
@@ -137,6 +135,13 @@ class CollectionDropdownUI extends Component {
     });
   }
 
+  keydown = (evt) => {
+    // block spacebar from triggering dropdown
+    if (evt.keyCode === 32) {
+      evt.stopPropagation();
+    }
+  }
+
   toggle = () => {
     this.setState({ showModal: !this.state.showModal });
   }
@@ -174,6 +179,7 @@ class CollectionDropdownUI extends Component {
                         autoComplete="off"
                         className="form-control"
                         name="filter"
+                        onKeyDown={this.keydown}
                         onChange={this.filterCollections}
                         onClick={this.captureClick}
                         placeholder="Filter collections..."

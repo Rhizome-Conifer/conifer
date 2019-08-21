@@ -12,6 +12,8 @@ import { Button } from 'react-bootstrap';
 import config from 'config';
 import { getCollectionLink, getStorage, inStorage, setStorage } from 'helpers/utils';
 
+import { AccessContext } from 'store/contexts';
+
 import { CollectionFilters, ListHeader } from 'containers';
 
 import Modal from 'components/Modal';
@@ -34,10 +36,7 @@ import './style.scss';
 
 
 class TableRenderer extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isMobile: PropTypes.bool
-  };
+  static contextType = AccessContext;
 
   static propTypes = {
     activeList: PropTypes.bool,
@@ -46,6 +45,7 @@ class TableRenderer extends Component {
     deselect: PropTypes.func,
     displayObjects: PropTypes.object,
     list: PropTypes.object,
+    isMobile: PropTypes.bool,
     removeBookmark: PropTypes.func,
     onKeyNavigate: PropTypes.func,
     onSelectRow: PropTypes.func,
@@ -59,19 +59,19 @@ class TableRenderer extends Component {
     super(props);
 
     this.state = {
-      columns: context.isMobile ? ['timestamp', 'url'] : config.defaultColumns,
+      columns: props.isMobile ? ['timestamp', 'url'] : config.defaultColumns,
       headerEditor: false
     };
 
-    if (props.activeList && !context.isMobile) {
+    if (props.activeList && context.canAdmin && !isMobile) {
       const pageColumns = context.canAdmin ? ['remove', 'rowIndex'] : ['rowIndex'];
       this.state.columns = [...pageColumns, ...config.defaultColumns];
     }
   }
 
   componentDidMount() {
-    const { canAdmin, isMobile } = this.context;
-    const { activeList } = this.props;
+    const { canAdmin } = this.context;
+    const { activeList, isMobile } = this.props;
 
     if (isMobile) {
       return false;

@@ -13,12 +13,9 @@ import { Blinker, SizeCounter } from 'containers';
 import './style.scss';
 
 class ModeSelectorUI extends PureComponent {
-  static contextTypes = {
-    currMode: PropTypes.string,
-  };
-
   static propTypes = {
     activeBrowser: PropTypes.string,
+    currMode: PropTypes.string,
     match: PropTypes.object,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -36,9 +33,9 @@ class ModeSelectorUI extends PureComponent {
     evt.preventDefault();
     const { match: { params: { coll, rec, user } } } = this.props;
 
-    if (this.context.currMode === "live") {
+    if (this.props.currMode === "live") {
       this.props.history.push('/');
-    } else if (this.context.currMode.indexOf('replay') !== -1) {
+    } else if (this.props.currMode.indexOf('replay') !== -1) {
       //window.location.href = `/${user}/${coll}/index`;
       this.props.history.push(`/${user}/${coll}/manage`);
     } else {
@@ -55,7 +52,7 @@ class ModeSelectorUI extends PureComponent {
   }
 
   onPatch = () => {
-    if (this.context.currMode === 'record') return;
+    if (this.props.currMode === 'record') return;
 
     const { activeBrowser, history, match: { params: { coll } }, timestamp, url } = this.props;
 
@@ -79,7 +76,7 @@ class ModeSelectorUI extends PureComponent {
   }
 
   onRecord = () => {
-    if (this.context.currMode === 'record') return;
+    if (this.props.currMode === 'record') return;
 
     const { activeBrowser, history, match: { params: { coll } }, url } = this.props;
     const data = {
@@ -126,7 +123,7 @@ class ModeSelectorUI extends PureComponent {
   }
 
   render() {
-    const { currMode } = this.context;
+    const { currMode } = this.props;
     const { open } = this.state;
     let modeMessage;
     let modeMarkup;

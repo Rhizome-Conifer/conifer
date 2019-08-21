@@ -44,15 +44,15 @@ class UserManagementUI extends PureComponent {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.auth.get('loggingIn') && !nextProps.auth.get('loggingIn')) {
-      if (!nextProps.auth.get('loginError')) {
+  componentDidUpdate(prevProps) {
+    if (prevProps.auth.get('loggingIn') && !this.props.auth.get('loggingIn')) {
+      if (!this.props.auth.get('loginError')) {
         //this.closeLogin();
         if (this.state.formError) {
           this.setState({ formError: false });
         }
 
-        const next = this.props.next !== null ? this.props.next : `/${nextProps.auth.getIn(['user', 'username'])}`;
+        const next = prevProps.next !== null ? prevProps.next : `/${this.props.auth.getIn(['user', 'username'])}`;
         if (next.startsWith('http')) {
           window.location.href = next;
         } else {

@@ -9,6 +9,7 @@ import config from 'config';
 import { setSort as collSetSort } from 'store/modules/collection';
 import { setSort as listSetSort } from 'store/modules/list';
 import { getCollectionLink, getListLink, range, truncate } from 'helpers/utils';
+import { AppContext } from 'store/contexts';
 
 import {
   Automation,
@@ -32,11 +33,7 @@ import './style.scss';
 
 
 class CollectionDetailUI extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool,
-    isMobile: PropTypes.bool
-  };
+  static contextType = AppContext;
 
   static propTypes = {
     auth: PropTypes.object,
@@ -85,9 +82,7 @@ class CollectionDetailUI extends Component {
       overrideHeight: null,
       selectedPageIdx: null
     };
-  }
 
-  componentWillMount() {
     this.props.clearInspector();
   }
 
@@ -97,16 +92,9 @@ class CollectionDetailUI extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.list !== this.props.list) {
-      const { bookmarks } = nextProps;
-      this.setState({ listBookmarks: bookmarks, sortedBookmarks: bookmarks });
-    }
-  }
-
   shouldComponentUpdate(nextProps) {
     // don't rerender for loading changes
-    if (!nextProps.loaded) {
+    if (!nextProps.loaded && this.props.list === nextProps.list) {
       return false;
     }
 
@@ -118,6 +106,16 @@ class CollectionDetailUI extends Component {
       if (this.props.searchText) {
         this.props.clearSearch();
       }
+    }
+
+    if (this.props.list !== prevProps.list) {
+      const bookmarks = this.props.list.get('bookmarks');
+      this.setState({ listBookmarks: bookmarks, sortedBookmarks: bookmarks });
+    }
+
+    // clear querybox if removed from url
+    if (prevProps.location.search.includes('query') && !this.props.location.search.includes('query')) {
+      this.props.clearQuery();
     }
   }
 
@@ -284,10 +282,11 @@ class CollectionDetailUI extends Component {
   }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
-    const { pages, browsers, collection, list, match: { params }, publicIndex, removeBookmark } = this.props;
+    const { isAnon } = this.context;
+    const { auth, pages, browsers, collection, list, match: { params }, publicIndex, removeBookmark } = this.props;
     const { listBookmarks, selectedPageIdx, sortedBookmarks } = this.state;
     const activeList = Boolean(params.list);
+    const canAdmin = auth.getIn(['user', 'username']) === params.user;
 
     const collRedirect = collection.get('loaded') && !collection.get('slug_matched') && params.coll !== collection.get('slug');
 
@@ -385,7 +384,7 @@ class CollectionDetailUI extends Component {
                 pages={objects}
                 pageSelection={selectedPageIdx} />
             </Resizable>
-            <InspectorPanel />
+            <InspectorPanel canAdmin={canAdmin} />
           </div>
         </Sidebar>
 
@@ -395,6 +394,7 @@ class CollectionDetailUI extends Component {
           collection,
           deselect: this.deselect,
           displayObjects,
+          isMobile: this.context.isMobile,
           list,
           onKeyNavigate: this.onKeyNavigate,
           onSelectRow: this.onSelectRow,

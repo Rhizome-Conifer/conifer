@@ -5,7 +5,9 @@ import Collapsible from 'react-collapsible';
 import { Button, ControlLabel, FormControl, FormGroup, HelpBlock, Row } from 'react-bootstrap';
 
 import { appHost, defaultRecDesc } from 'config';
+
 import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
+import { AppContext } from 'store/contexts';
 
 import { CollectionDropdown, ExtractWidget, RemoteBrowserSelect } from 'containers';
 
@@ -15,9 +17,7 @@ const ipcRenderer = __DESKTOP__ ? window.require('electron').ipcRenderer : null;
 
 
 class StandaloneRecorderUI extends Component {
-  static contextTypes = {
-    isAnon: PropTypes.bool
-  };
+  static contextType = AppContext;
 
   static propTypes = {
     activeCollection: PropTypes.object,

@@ -1,14 +1,34 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-
-import { saveDelay } from 'config';
 
 import { loadCollections } from 'store/modules/auth';
 import { toggleAutomation, toggleModal } from 'store/modules/automation';
 import { resetEditState as resetCollEditState, edit as editCollDesc, shareToDat, unshareFromDat } from 'store/modules/collection';
+import { AccessContext, AppContext } from 'store/contexts';
 
 import CollectionHeaderUI from 'components/collection/CollectionHeaderUI';
+
+
+class CollectionHeader extends Component {
+  render() {
+    return (
+      <AppContext.Consumer>
+        {
+          ({ isAnon, isMobile }) => (
+            <AccessContext.Consumer>
+              {
+                ({ canAdmin }) => (
+                  <CollectionHeaderUI canAdmin={canAdmin} isAnon={isAnon} isMobile={isMobile} {...this.props} />
+                )
+              }
+            </AccessContext.Consumer>
+          )
+        }
+      </AppContext.Consumer>
+    );
+  }
+}
 
 
 const mapStateToProps = ({ app }) => {
@@ -47,4 +67,4 @@ const mapDispatchToProps = (dispatch, { history }) => {
 export default withRouter(connect(
   mapStateToProps,
   mapDispatchToProps
-)(CollectionHeaderUI));
+)(CollectionHeader));

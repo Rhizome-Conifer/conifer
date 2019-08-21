@@ -5,6 +5,8 @@ import Toggle from 'react-toggle';
 import { fromJS } from 'immutable';
 import { Link } from 'react-router-dom';
 
+import { AppContext } from 'store/contexts';
+
 import OutsideClick from 'components/OutsideClick';
 import { ShareIcon } from 'components/icons';
 
@@ -13,14 +15,11 @@ import './style.scss';
 
 
 class ShareWidgetUI extends Component {
-
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
-  };
+  static contextType = AppContext;
 
   static propTypes = {
     bsSize: PropTypes.string,
+    canAdmin: PropTypes.bool,
     collection: PropTypes.object,
     embedUrl: PropTypes.string,
     isPublic: PropTypes.bool,
@@ -52,15 +51,13 @@ class ShareWidgetUI extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps, nextState) {
-    if (nextProps.isPublic && nextProps.collection !== this.props.collection) {
+  componentDidUpdate(prevProps, prevState) {
+    if (!prevState.open && this.state.open) {
       this.thirdPartyJS();
       this.buildSocialWidgets();
     }
-  }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (!prevState.open && this.state.open) {
+    if (this.props.isPublic && this.props.collection !== prevProps.collection) {
       this.thirdPartyJS();
       this.buildSocialWidgets();
     }
@@ -148,8 +145,8 @@ class ShareWidgetUI extends Component {
   }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
-    const { bsSize, collection, embedUrl, isPublic, shareUrl, showLoginModal } = this.props;
+    const { isAnon } = this.context;
+    const { bsSize, canAdmin, collection, embedUrl, isPublic, shareUrl, showLoginModal } = this.props;
     const { open, sizeSet, widgetHeight } = this.state;
 
     const shareClasses = classNames('share-container', { open });

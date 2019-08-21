@@ -18,17 +18,15 @@ class Help extends Component {
   constructor(props) {
     super(props);
 
+    ipcRenderer.on('async-response', this.handleVersionResponse);
+    ipcRenderer.send('async-call');
+
     this.state = {
       version: null,
       stdout: null,
       showDebug: true,
       debugHeight: null,
     };
-  }
-
-  componentWillMount() {
-    ipcRenderer.on('async-response', this.handleVersionResponse);
-    ipcRenderer.send('async-call');
   }
 
   componentWillUnmount() {

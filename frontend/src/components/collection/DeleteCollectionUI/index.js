@@ -4,6 +4,7 @@ import { Button, ControlLabel, FormControl, FormGroup, HelpBlock } from 'react-b
 
 import { getCollectionLink } from 'helpers/utils';
 import { collection as collectionErr } from 'helpers/userMessaging';
+import { AppContext } from 'store/contexts';
 
 import Modal from 'components/Modal';
 import { LoaderIcon } from 'components/icons';
@@ -12,9 +13,7 @@ import './style.scss';
 
 
 class DeleteCollectionUI extends Component {
-  static contextTypes = {
-    isAnon: PropTypes.bool
-  };
+  static contextType = AppContext;
 
   static propTypes = {
     children: PropTypes.node,

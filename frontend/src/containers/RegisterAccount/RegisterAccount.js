@@ -13,11 +13,6 @@ import './style.scss';
 
 
 class RegisterAccount extends Component {
-
-  static contextTypes = {
-    router: PropTypes.object
-  };
-
   static propTypes = {
     history: PropTypes.object,
     location: PropTypes.object,

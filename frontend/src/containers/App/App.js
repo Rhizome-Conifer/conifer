@@ -12,6 +12,7 @@ import { asyncConnect } from 'redux-connect';
 import { DragDropContext } from 'react-dnd';
 
 import { isLoaded as isAuthLoaded, load as loadAuth } from 'store/modules/auth';
+import { AppContext } from 'store/contexts';
 import config from 'config';
 import { apiFetch, inStorage, setStorage } from 'helpers/utils';
 
@@ -35,12 +36,6 @@ export class App extends Component {
     location: PropTypes.object,
     route: PropTypes.object,
     spaceUtilization: PropTypes.object
-  };
-
-  static childContextTypes = {
-    isAnon: PropTypes.bool,
-    isEmbed: PropTypes.bool,
-    isMobile: PropTypes.bool
   };
 
   constructor(props) {
@@ -67,17 +62,6 @@ export class App extends Component {
     }
 
     return null;
-  }
-
-  getChildContext() {
-    const { auth, location: { pathname } } = this.props;
-    const match = this.getActiveRoute(pathname);
-
-    return {
-      isAnon: auth.getIn(['user', 'anon']),
-      isEmbed: match.embed || false,
-      isMobile: this.isMobile,
-    };
   }
 
   componentDidMount() {
@@ -189,10 +173,16 @@ export class App extends Component {
   }
 
   render() {
-    const { loaded, location: { pathname }, spaceUtilization } = this.props;
+    const { auth,loaded, location: { pathname }, spaceUtilization } = this.props;
     const { error, info, lastPathname } = this.state;
 
     const match = this.getActiveRoute(pathname);
+    const contextValues = {
+      isAnon: auth.getIn(['user', 'anon']),
+      isEmbed: match.embed || false,
+      isMobile: this.isMobile,
+    };
+
     const lastMatch = this.getActiveRoute(lastPathname);
 
     const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
@@ -256,30 +246,32 @@ export class App extends Component {
               Please <button className="button-link" onClick={this.refresh} type="button">reload the page</button>. Session has ended.
             </Alert>
         }
-        {
-          error ?
-            <div>
-              <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
-                <Panel bsStyle="danger" className="error-panel">
-                  <Panel.Heading><InfoIcon /> Oops!</Panel.Heading>
-                  <Panel.Body>
-                    <p>Oops, the page encountered an error.</p>
-                    {
-                      config.ravenConfig &&
-                        <Button onClick={() => Raven.lastEventId() && Raven.showReportDialog()}>Submit a bug report</Button>
-                    }
-                  </Panel.Body>
-                </Panel>
-              </div>
-            </div> :
-            <section role="main" className={containerClasses}>
-              {renderRoutes(this.props.route.routes)}
-            </section>
-        }
-        {
-          hasFooter && !__DESKTOP__ &&
-            <Footer />
-        }
+        <AppContext.Provider value={contextValues}>
+          {
+            error ?
+              <div>
+                <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
+                  <Panel bsStyle="danger" className="error-panel">
+                    <Panel.Heading><InfoIcon /> Oops!</Panel.Heading>
+                    <Panel.Body>
+                      <p>Oops, the page encountered an error.</p>
+                      {
+                        config.ravenConfig &&
+                          <Button onClick={() => Raven.lastEventId() && Raven.showReportDialog()}>Submit a bug report</Button>
+                      }
+                    </Panel.Body>
+                  </Panel>
+                </div>
+              </div> :
+              <section role="main" className={containerClasses}>
+                {renderRoutes(this.props.route.routes)}
+              </section>
+          }
+          {
+            hasFooter && !__DESKTOP__ &&
+              <Footer />
+          }
+        </AppContext.Provider>
       </React.Fragment>
     );
   }

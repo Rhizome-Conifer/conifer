@@ -6,7 +6,7 @@ import { Panel } from 'react-bootstrap';
 
 import config from 'config';
 
-import { addTrailingSlash, apiFetch, fixMalformedUrls, remoteBrowserMod } from 'helpers/utils';
+import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
 
 import { ExtractWidget, RemoteBrowserSelect } from 'containers';
 
@@ -14,11 +14,6 @@ import './style.scss';
 
 
 class NewRecordingUI extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    currMode: PropTypes.string
-  };
-
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,

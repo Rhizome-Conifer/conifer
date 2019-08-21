@@ -26,10 +26,6 @@ if (__DESKTOP__) {
 
 
 class Record extends Component {
-  static contextTypes = {
-    product: PropTypes.string
-  };
-
   static propTypes = {
     activeBrowser: PropTypes.string,
     appSettings: PropTypes.object,
@@ -43,31 +39,10 @@ class Record extends Component {
     url: PropTypes.string
   };
 
-  // TODO move to HOC
-  static childContextTypes = {
-    currMode: PropTypes.string,
-    canAdmin: PropTypes.bool,
-    coll: PropTypes.string,
-    rec: PropTypes.string,
-    user: PropTypes.string,
-  };
-
   constructor(props) {
     super(props);
 
     this.mode = 'record';
-  }
-
-  getChildContext() {
-    const { auth, match: { params: { user, coll, rec } } } = this.props;
-
-    return {
-      currMode: 'record',
-      canAdmin: auth.getIn(['user', 'username']) === user,
-      user,
-      coll,
-      rec
-    };
   }
 
   componentWillUnmount() {
@@ -85,9 +60,10 @@ class Record extends Component {
   // }
 
   render() {
-    const { activeBrowser, appSettings, autopilotRunning, dispatch, match: { params }, timestamp, url } = this.props;
+    const { activeBrowser, auth, appSettings, autopilotRunning, dispatch, match: { params }, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
+    const canAdmin = auth.getIn(['user', 'username']) === params.user;
     const appPrefix = `${config.appHost}/${user}/${coll}/${rec}/record/`;
     const contentPrefix = `${config.contentHost}/${user}/${coll}/${rec}/record/`;
 
@@ -99,8 +75,10 @@ class Record extends Component {
         <ReplayUI
           activeBrowser={activeBrowser}
           autopilotRunning={autopilotRunning}
+          canAdmin={canAdmin}
           canGoBackward={__DESKTOP__ ? appSettings.get('canGoBackward') : false}
           canGoForward={__DESKTOP__ ? appSettings.get('canGoForward') : false}
+          currMode={this.mode}
           params={params}
           url={url} />
 
@@ -111,19 +89,22 @@ class Record extends Component {
                 behavior={this.props.behavior}
                 canGoBackward={appSettings.get('canGoBackward')}
                 canGoForward={appSettings.get('canGoForward')}
+                currMode={this.mode}
                 dispatch={dispatch}
                 host={appSettings.get('host')}
                 key="webview"
                 params={params}
                 partition={`persist:${params.user}`}
                 timestamp={timestamp}
-                url={url} />
+                url={url}
+                {...{ coll, user, rec }} />
           }
 
           {
             !__DESKTOP__ && (
               activeBrowser ?
                 <RemoteBrowser
+                  currMode={this.mode}
                   params={params}
                   rb={activeBrowser}
                   rec={rec}
@@ -133,6 +114,7 @@ class Record extends Component {
                   auth={this.props.auth}
                   behavior={this.props.behavior}
                   contentPrefix={contentPrefix}
+                  currMode={this.mode}
                   dispatch={dispatch}
                   params={params}
                   timestamp={timestamp}

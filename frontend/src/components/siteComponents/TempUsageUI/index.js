@@ -16,11 +16,13 @@ class TempUsageUI extends Component {
     toColl: PropTypes.string
   };
 
-  componentWillMount() {
-    const { tempUser } = this.props;
+  constructor(props) {
+    super(props);
+
+    const { tempUser } = props;
     if (tempUser) {
       // get latest stats
-      this.props.loadUsage();
+      props.loadUsage();
     }
   }
 

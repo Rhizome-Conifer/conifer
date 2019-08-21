@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { appHost, onboardingLink, truncSentence, truncWord } from 'config';
 import { doubleRAF, getCollectionLink, truncate } from 'helpers/utils';
 
+
 import { DeleteCollection, Upload } from 'containers';
 import Modal from 'components/Modal';
 import Capstone from 'components/collection/Capstone';
@@ -21,16 +22,10 @@ import './style.scss';
 
 
 class CollectionHeaderUI extends Component {
-
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool,
-    isMobile: PropTypes.bool
-  };
-
   static propTypes = {
     auth: PropTypes.object,
     autoId: PropTypes.string,
+    canAdmin: PropTypes.bool,
     collection: PropTypes.object,
     collEdited: PropTypes.bool,
     collEditing: PropTypes.bool,
@@ -38,6 +33,8 @@ class CollectionHeaderUI extends Component {
     deleteColl: PropTypes.func,
     editCollection: PropTypes.func,
     history: PropTypes.object,
+    isAdmin: PropTypes.bool,
+    isMobile: PropTypes.bool,
     shareToDat: PropTypes.func,
     stopAutomation: PropTypes.func,
     unshareFromDat: PropTypes.func
@@ -125,8 +122,7 @@ class CollectionHeaderUI extends Component {
   }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
-    const { collection } = this.props;
+    const { canAdmin, collection, isAnon, isMobile } = this.props;
     const { onBoarding } = this.state;
 
     const containerClasses = classNames('wr-collection-header');
@@ -141,7 +137,7 @@ class CollectionHeaderUI extends Component {
     return (
       <header className={containerClasses}>
         {
-          onboardingLink && !this.context.isMobile &&
+          onboardingLink && !isMobile &&
             <OnBoarding open={onBoarding} />
         }
         {
@@ -157,7 +153,7 @@ class CollectionHeaderUI extends Component {
               label="Collection"
               name={collection.get('title')}
               open={this.state.editModal}
-              readOnlyName={this.context.isAnon} />
+              readOnlyName={isAnon} />
         }
         <div className="overview" key="collOverview">
           <div className={classNames('heading-row', { 'is-public': !canAdmin })}>
@@ -201,7 +197,7 @@ class CollectionHeaderUI extends Component {
                       </React.Fragment>
                   }
                   {
-                    onboardingLink && !this.context.isMobile &&
+                    onboardingLink && !isMobile &&
                       <React.Fragment>
                         <MenuItem divider />
                         <MenuItem onClick={this.showOnboarding}><span role="img" aria-label="tada emoji">&#127881;</span> Tour New Features</MenuItem>

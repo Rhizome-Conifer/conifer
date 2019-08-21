@@ -5,10 +5,6 @@ import Searchbox from 'components/Searchbox';
 
 
 class CollectionFiltersUI extends PureComponent {
-  static contextTypes = {
-    canAdmin: PropTypes.bool
-  };
-
   static propTypes = {
     clearSearch: PropTypes.func,
     collection: PropTypes.object,

@@ -1,11 +1,25 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { saveDelay } from 'config';
 
 import { editBookmark, load, resetBookmarkEdit } from 'store/modules/list';
+import { AccessContext } from 'store/contexts';
 
 import InspectorPanelUI from 'components/collection/InspectorPanelUI';
+
+
+class InspectorPanel extends Component {
+
+  render() {
+    const { canAdmin } = this.props;
+    return (
+      <AccessContext.Provider value={{ canAdmin }}>
+        <InspectorPanelUI {...this.props} />
+      </AccessContext.Provider>
+    );
+  }
+}
 
 
 const mapStateToProps = ({ app }) => {
@@ -35,4 +49,4 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(InspectorPanelUI);
+)(InspectorPanel);

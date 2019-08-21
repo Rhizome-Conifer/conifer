@@ -16,13 +16,10 @@ import './style.scss';
 
 
 class InspectorPanelUI extends PureComponent {
-  static contextTypes = {
-    canAdmin: PropTypes.bool
-  };
-
   static propTypes = {
     bkEdited: PropTypes.bool,
     browsers: PropTypes.object,
+    canAdmin: PropTypes.bool,
     collection: PropTypes.object,
     list: PropTypes.object,
     multiSelect: PropTypes.number,
@@ -53,10 +50,10 @@ class InspectorPanelUI extends PureComponent {
   editBookmarkDesc = desc => this.saveEdit({ desc })
 
   render() {
-    const { canAdmin } = this.context;
     const {
       bkEdited,
       browsers,
+      canAdmin,
       collection,
       list,
       multiSelect,
@@ -135,7 +132,7 @@ class InspectorPanelUI extends PureComponent {
                               {
                                 canAdmin ?
                                   <Link to={`${getCollectionLink(collection)}/management?session=${pg.get('rec')}`}>{pg.get('rec')}</Link> :
-                                  <Link to={`${getCollectionLink(collection, true)}?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
+                                  <Link to={`${getCollectionLink(collection)}?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
                               }
                             </span>
                           </li>

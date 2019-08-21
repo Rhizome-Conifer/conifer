@@ -16,9 +16,6 @@ const CBrowser = !__DESKTOP__ && !__PLAYER__ && __CLIENT__ && require('shepherd-
 
 
 class RemoteBrowserUI extends Component {
-  static contextTypes = {
-    currMode: PropTypes.string
-  };
 
   static propTypes = {
     behavior: PropTypes.string,
@@ -119,7 +116,7 @@ class RemoteBrowserUI extends Component {
       this.socket.doBehavior(url, behavior);
     }
 
-    if (url != prevProps.url) {
+    if (url !== prevProps.url && this.socket) {
       this.socket.setRemoteUrl(url);
     }
 
@@ -232,8 +229,7 @@ class RemoteBrowserUI extends Component {
   connectToRemoteBrowser = (reqId, inactiveTime) => {
     /* Connect to the initialized remote browser session and open the websocket
     */
-    const { dispatch, params } = this.props;
-    const { currMode } = this.context;
+    const { currMode, dispatch, params } = this.props;
 
     this.pywbParams.inactiveSecs = inactiveTime;
 
@@ -248,8 +244,7 @@ class RemoteBrowserUI extends Component {
   }
 
   onExpire = () => {
-    const { currMode } = this.context;
-    const { params: { user, coll, rec }, rb, timestamp, url } = this.props;
+    const { currMode, params: { user, coll, rec }, rb, timestamp, url } = this.props;
     let message;
 
     if (!currMode.includes('replay')) {

@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { draggableTypes } from 'config';
 import { getCollectionLink, keyIn } from 'helpers/utils';
 
+import { AccessContext } from 'store/contexts';
+
 import Modal from 'components/Modal';
 import VisibilityLamp from 'components/collection/VisibilityLamp';
 import { AllPagesIcon, CheckIcon, PlusIcon, XIcon } from 'components/icons';
@@ -19,10 +21,7 @@ import './style.scss';
 
 class ListsUI extends Component {
 
-  static contextTypes = {
-    asPublic: PropTypes.bool,
-    canAdmin: PropTypes.bool
-  };
+  static contextType = AccessContext;
 
   static propTypes = {
     activeListSlug: PropTypes.string,
@@ -53,12 +52,11 @@ class ListsUI extends Component {
     sortLists: PropTypes.func
   };
 
-  constructor(props, { asPublic }) {
+  constructor(props) {
     super(props);
 
     this.createHandle = null;
     this.editHandle = null;
-    const lists = asPublic ? props.lists.filter(l => l.get('public')) : props.lists;
     this.state = {
       editModal: false,
       title: '',
@@ -66,25 +64,25 @@ class ListsUI extends Component {
       created: false,
       isEditing: false,
       edited: false,
-      lists
+      lists: props.lists
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     const { isCreating, created, isEditing, edited } = this.state;
 
-    if (isCreating && !created && this.props.lists !== nextProps.lists) {
+    if (isCreating && !created && prevProps.lists !== this.props.lists) {
       this.setState({ title: '', isCreating: false, created: true });
       this.createHandle = setTimeout(() => { this.setState({ created: false, isCreating: false }); }, 3000);
     }
 
-    if (isEditing && !edited && this.props.lists !== nextProps.lists) {
+    if (isEditing && !edited && prevProps.lists !== this.props.lists) {
       this.setState({ isEditing: false, edited: true });
       this.editHandle = setTimeout(() => { this.setState({ edited: false, isEditing: false, editId: null }); }, 5000);
     }
 
-    if (nextProps.lists !== this.props.lists) {
-      this.setState({ lists: nextProps.lists });
+    if (this.props.lists !== prevProps.lists) {
+      this.setState({ lists: this.props.lists });
     }
   }
 

@@ -119,6 +119,21 @@
                         &:hover {
                             background-color: $pine;
                         }
+
+                        &:focus {
+                            background-color: $white;
+                            color: $black;
+
+                            svg {
+                                path, polyline, polygon {
+                                    stroke: $black;
+                                }
+
+                                .w-letter {
+                                    fill: $black;
+                                }
+                            }
+                        }
                     }
                 }
 

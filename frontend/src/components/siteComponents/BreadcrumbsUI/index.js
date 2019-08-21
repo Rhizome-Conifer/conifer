@@ -9,9 +9,6 @@ import './style.scss';
 
 
 class BreadcrumbsUI extends PureComponent {
-  static contextTypes = {
-    isMobile: PropTypes.bool
-  };
 
   static propTypes = {
     breadcrumbs: PropTypes.array,

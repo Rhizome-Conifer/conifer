@@ -6,7 +6,9 @@ import ButtonGroup from 'react-rte/lib/ui/ButtonGroup';
 import IconButton from 'react-rte/lib/ui/IconButton';
 import remark from 'remark';
 import remark2react from 'remark-react';
-import { Button } from 'react-bootstrap'
+import { Button } from 'react-bootstrap';
+
+import { AccessContext } from 'store/contexts';
 
 import { PencilIcon, XIcon } from 'components/icons';
 
@@ -14,9 +16,7 @@ import './style.scss';
 
 
 class WYSIWYG extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool
-  };
+  static contextType = AccessContext;
 
   static propTypes = {
     active: PropTypes.bool,
@@ -92,31 +92,6 @@ class WYSIWYG extends Component {
     this.setState({ renderable: true });
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (!this.props.externalEditButton) {
-      // if change in success state from on to off, reset edit mode
-      if (this.props.success && !nextProps.success && this.state.localEditMode) {
-        this.toggleEditMode();
-      }
-    }
-
-    // non-save related inital value changed, update editor
-    if (this.props.initial !== nextProps.initial && !nextProps.success) {
-      if (!this.props.externalEditButton && this.state.localEditMode) {
-        this.toggleEditMode();
-      }
-
-      const text = nextProps.readOnly ? nextProps.initial : nextProps.initial || nextProps.placeholder;
-      this.setState({ editorState: createValueFromString(text, this.method) });
-    }
-
-    // readOnly state changed
-    if (this.props.readOnly && !nextProps.readOnly) {
-      const text = nextProps.initial || nextProps.placeholder;
-      this.setState({ editorState: createValueFromString(text, this.method) });
-    }
-  }
-
   shouldComponentUpdate(nextProps) {
     if (this.state.renderable && this.props.readOnly && this.props.initial === nextProps.initial) {
       return false;
@@ -128,6 +103,29 @@ class WYSIWYG extends Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.props.renderCallback && this.state.renderable && !prevState.renderable) {
       this.props.renderCallback();
+    }
+
+    if (!prevProps.externalEditButton) {
+      // if change in success state from on to off, reset edit mode
+      if (prevProps.success && !this.props.success && this.state.localEditMode) {
+        this.toggleEditMode();
+      }
+    }
+
+    // non-save related inital value changed, update editor
+    if (prevProps.initial !== this.props.initial && !this.props.success) {
+      if (!this.props.externalEditButton && this.state.localEditMode) {
+        this.toggleEditMode();
+      }
+
+      const text = this.props.readOnly ? this.props.initial : this.props.initial || this.props.placeholder;
+      this.setState({ editorState: createValueFromString(text, this.method) });
+    }
+
+    // readOnly state changed
+    if (prevProps.readOnly && !this.props.readOnly) {
+      const text = this.props.initial || this.props.placeholder;
+      this.setState({ editorState: createValueFromString(text, this.method) });
     }
   }
 

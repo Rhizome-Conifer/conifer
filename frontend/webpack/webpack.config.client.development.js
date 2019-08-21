@@ -104,6 +104,13 @@ const devConfig = {
     ]
   },
 
+  resolve: {
+    alias: {
+      'react-dom$': 'react-dom/profiling',
+      'scheduler/tracing': 'scheduler/tracing-profiling'
+    }
+  },
+
   output: {
     publicPath: `http://${host}:${port}${baseConfig.output.publicPath}`
   },

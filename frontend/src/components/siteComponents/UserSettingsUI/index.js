@@ -17,6 +17,7 @@ import {
 
 import { defaultCollDesc, product, supporterPortal } from 'config';
 import { passwordPassRegex } from 'helpers/utils';
+import { AccessContext } from 'store/contexts';
 
 import HttpStatus from 'components/HttpStatus';
 import Modal from 'components/Modal';
@@ -247,219 +248,221 @@ class UserSettingsUI extends Component {
     );
 
     return (
-      <div className="row top-buffer col-xs-10 col-xs-push-1 col-md-8 col-md-push-2 space-block user-settings">
-        <Helmet>
-          <title>{`${username}'s Account Settings`}</title>
-        </Helmet>
-        {
-          superuser &&
-            <Panel>
-              <Panel.Heading>
-                <Panel.Title>Administrator Settings</Panel.Title>
-              </Panel.Heading>
-              <Panel.Body>
-                Only administrators of {product} can access this section.
-                <div className="admin-options">
-                  <div className="admin-section">
-                    <h5>Allot Space</h5>
-                    <span>Includes <SizeFormat bytes={user.get('customer_max_size')} /> paid storage.</span>
-                    <FormGroup validationState={this.validateAllotment()} className="top-buffer-md">
-                      <InputGroup>
-                        <FormControl
-                          id="increaseSpace"
-                          name="allotment"
-                          onChange={this.handleChange}
-                          placeholder={totalSpace / 1000000000}
-                          type="text"
-                          value={this.state.allotment} />
-                        <InputGroup.Addon>GB</InputGroup.Addon>
-                      </InputGroup>
-                      <Button className="top-buffer-md rounded" bsSize="sm" onClick={this.updateUserAllotment}>Update Allotment</Button>
-                    </FormGroup>
-                  </div>
-
-                  <div className="admin-section update-role">
-                    <h5>Update Role</h5>
-                    <p>Current Role: {user.get('role')}</p>
-                    <div>
-                      <Dropdown id="roleDropdown" onSelect={this.setRole}>
-                        <Dropdown.Toggle>{this.state.role ? this.state.role : 'Change Role'}</Dropdown.Toggle>
-                        <Dropdown.Menu>
-                          {
-                            auth.get('roles').map(role => <MenuItem key={role} eventKey={role}>{role}</MenuItem>)
-                          }
-                        </Dropdown.Menu>
-                      </Dropdown>
+      <AccessContext.Provider value={{ canAdmin }}>
+        <div className="row top-buffer col-xs-10 col-xs-push-1 col-md-8 col-md-push-2 space-block user-settings">
+          <Helmet>
+            <title>{`${username}'s Account Settings`}</title>
+          </Helmet>
+          {
+            superuser &&
+              <Panel>
+                <Panel.Heading>
+                  <Panel.Title>Administrator Settings</Panel.Title>
+                </Panel.Heading>
+                <Panel.Body>
+                  Only administrators of {product} can access this section.
+                  <div className="admin-options">
+                    <div className="admin-section">
+                      <h5>Allot Space</h5>
+                      <span>Includes <SizeFormat bytes={user.get('customer_max_size')} /> paid storage.</span>
+                      <FormGroup validationState={this.validateAllotment()} className="top-buffer-md">
+                        <InputGroup>
+                          <FormControl
+                            id="increaseSpace"
+                            name="allotment"
+                            onChange={this.handleChange}
+                            placeholder={totalSpace / 1000000000}
+                            type="text"
+                            value={this.state.allotment} />
+                          <InputGroup.Addon>GB</InputGroup.Addon>
+                        </InputGroup>
+                        <Button className="top-buffer-md rounded" bsSize="sm" onClick={this.updateUserAllotment}>Update Allotment</Button>
+                      </FormGroup>
                     </div>
-                    <Button className="top-buffer-md rounded" bsSize="sm" onClick={this.saveRole}>Update Role</Button>
-                  </div>
 
-                  <div className="admin-section suspend">
-                    <h5>Suspend Account</h5>
-                    <p>User will be suspended and a notification will be sent via email.</p>
-                    <Button className="rounded" disabled><DisabledIcon /> Suspend Account</Button>
-                  </div>
-                </div>
-              </Panel.Body>
-            </Panel>
-        }
-
-        <div className="settings-block">
-          <h3>Storage</h3>
-          {
-            supporterPortal && user.get('customer_id') &&
-              <h4>Contributing Supporter Account</h4>
-          }
-          <span>Space Used: </span>
-          <SizeFormat bytes={usedSpace} /> <em>of <SizeFormat bytes={totalSpace} /></em>
-          <ProgressBar now={(usedSpace / totalSpace) * 100} />
-          {
-            supporterPortal &&
-              <React.Fragment>
-                {
-                  user.get('customer_id') ?
-                    <React.Fragment>
-                      <p>Thank you, your support makes Webrecorder possibile. <a href="#">Learn more about our sustainability strategy.</a></p>
-                      <Button className="rounded" onClick={this.goToSupporterPortal}>Manage Billing and Subscription</Button>
-                    </React.Fragment> :
-                    <div className="upgrade">
+                    <div className="admin-section update-role">
+                      <h5>Update Role</h5>
+                      <p>Current Role: {user.get('role')}</p>
                       <div>
-                        <a href={supporterPortal} target="_blank">Upgrade for more storage.</a><br />
-                        <span>Supporter plans starting at $20/month</span>
+                        <Dropdown id="roleDropdown" onSelect={this.setRole}>
+                          <Dropdown.Toggle>{this.state.role ? this.state.role : 'Change Role'}</Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            {
+                              auth.get('roles').map(role => <MenuItem key={role} eventKey={role}>{role}</MenuItem>)
+                            }
+                          </Dropdown.Menu>
+                        </Dropdown>
                       </div>
-                      <Button className="rounded" onClick={this.goToSupporterPortal}>See Available Plans</Button>
+                      <Button className="top-buffer-md rounded" bsSize="sm" onClick={this.saveRole}>Update Role</Button>
                     </div>
-                }
-              </React.Fragment>
-          }
-        </div>
 
-        <div className="settings-block profile">
-          <h3>Public Profile</h3>
-          <div className="username">
-            <UserIcon /> {user.get('username')}
+                    <div className="admin-section suspend">
+                      <h5>Suspend Account</h5>
+                      <p>User will be suspended and a notification will be sent via email.</p>
+                      <Button className="rounded" disabled><DisabledIcon /> Suspend Account</Button>
+                    </div>
+                  </div>
+                </Panel.Body>
+              </Panel>
+          }
+
+          <div className="settings-block">
+            <h3>Storage</h3>
+            {
+              supporterPortal && user.get('customer_id') &&
+                <h4>Contributing Supporter Account</h4>
+            }
+            <span>Space Used: </span>
+            <SizeFormat bytes={usedSpace} /> <em>of <SizeFormat bytes={totalSpace} /></em>
+            <ProgressBar now={(usedSpace / totalSpace) * 100} />
+            {
+              supporterPortal &&
+                <React.Fragment>
+                  {
+                    user.get('customer_id') ?
+                      <React.Fragment>
+                        <p>Thank you, your support makes Webrecorder possibile. <a href="#">Learn more about our sustainability strategy.</a></p>
+                        <Button className="rounded" onClick={this.goToSupporterPortal}>Manage Billing and Subscription</Button>
+                      </React.Fragment> :
+                      <div className="upgrade">
+                        <div>
+                          <a href={supporterPortal} target="_blank">Upgrade for more storage.</a><br />
+                          <span>Supporter plans starting at $20/month</span>
+                        </div>
+                        <Button className="rounded" onClick={this.goToSupporterPortal}>See Available Plans</Button>
+                      </div>
+                  }
+                </React.Fragment>
+            }
           </div>
-          <form id="update-user" onSubmit={this.updateUserDetails}>
-            <div className="form-group">
-              <label htmlFor="display-name">Display Name</label>
-              <input
-                id="display-name"
-                className="form-control input-sm"
-                onChange={this.handleChange}
-                name="full_name"
-                value={this.state.full_name} />
-              <div className="help-block with-errors" />
+
+          <div className="settings-block profile">
+            <h3>Public Profile</h3>
+            <div className="username">
+              <UserIcon /> {user.get('username')}
             </div>
-
-            <div className="form-group">
-              <label htmlFor="display-url">URL</label>
-              <input
-                id="display-url"
-                className="form-control input-sm"
-                onChange={this.handleChange}
-                name="display_url"
-                value={this.state.display_url} />
-              <div className="help-block with-errors" />
-            </div>
-
-            <div className="form-group">
-              <label>About</label>
-              <WYSIWYG
-                editMode
-                externalEditButton
-                contentSync={this.editDesc}
-                initial={user.get('desc') || ''}
-                placeholder={defaultCollDesc} />
-            </div>
-            <Button className="rounded" type="submit" disabled={editing}>{(editing || edited) && (edited ? <CheckIcon success /> : <LoaderIcon />)}Update Profile</Button>
-          </form>
-        </div>
-
-        <div className="settings-block security">
-          <h3>Security</h3>
-          <div className="account-email">
-            <h5>Account Email</h5>
-            {user.get('email_addr')}
-          </div>
-          {
-            passUpdateFail &&
-              <Alert bsStyle="danger">
-                {passUpdateFail}
-              </Alert>
-          }
-          {
-            passUpdate &&
-              <Alert bsStyle="success">
-                Password successfully updated
-              </Alert>
-          }
-          <form id="changepassword" onSubmit={this.send}>
-            <div className="form-group">
-              <label htmlFor="curr_password">Current Password</label>
-              <input
-                type="password"
-                id="curr_password"
-                name="currPassword"
-                className="form-control input-sm"
-                onChange={this.handleChange}
-                value={currPassword}
-                required />
-              <div className="help-block with-errors" />
-            </div>
-
-            <FormGroup validationState={this.validatePassword()}>
-              <ControlLabel>New Password</ControlLabel>
-              <FormControl
-                aria-label="password"
-                type="password"
-                name="password"
-                value={password}
-                onChange={this.handleChange} />
-              {
-                password && !passwordPassRegex(password) &&
-                  <HelpBlock>Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols</HelpBlock>
-              }
-            </FormGroup>
-
-            <FormGroup validationState={this.validatePassword()}>
-              <ControlLabel>Confirm New Password</ControlLabel>
-              <FormControl
-                aria-label="confirm password"
-                type="password"
-                name="password2"
-                value={password2}
-                onChange={this.handleChange} />
-              {
-                password && password2 && password !== password2 &&
-                  <HelpBlock>Password confirmation does not match</HelpBlock>
-              }
-            </FormGroup>
-            <Button className="rounded" bsSize="sm" disabled={!canAdmin} type="submit">Update Password</Button>
-          </form>
-        </div>
-
-        <Panel className="buffer-top" bsStyle="danger">
-          <Panel.Heading>
-            <Panel.Title>Delete Account</Panel.Title>
-          </Panel.Heading>
-          <Panel.Body>
-            <div className="row col-md-12">
-              <div>
-                <b>Permanently delete this account and all archived data for this user</b>
-                <p>This action <u>can not</u> be undone!</p>
-                <Button bsStyle="danger" className="rounded" bsSize="sm" disabled={!canAdmin} onClick={this.toggleDelete}><TrashIcon /> Delete Account</Button>
+            <form id="update-user" onSubmit={this.updateUserDetails}>
+              <div className="form-group">
+                <label htmlFor="display-name">Display Name</label>
+                <input
+                  id="display-name"
+                  className="form-control input-sm"
+                  onChange={this.handleChange}
+                  name="full_name"
+                  value={this.state.full_name} />
+                <div className="help-block with-errors" />
               </div>
+
+              <div className="form-group">
+                <label htmlFor="display-url">URL</label>
+                <input
+                  id="display-url"
+                  className="form-control input-sm"
+                  onChange={this.handleChange}
+                  name="display_url"
+                  value={this.state.display_url} />
+                <div className="help-block with-errors" />
+              </div>
+
+              <div className="form-group">
+                <label>About</label>
+                <WYSIWYG
+                  editMode
+                  externalEditButton
+                  contentSync={this.editDesc}
+                  initial={user.get('desc') || ''}
+                  placeholder={defaultCollDesc} />
+              </div>
+              <Button className="rounded" type="submit" disabled={editing}>{(editing || edited) && (edited ? <CheckIcon success /> : <LoaderIcon />)}Update Profile</Button>
+            </form>
+          </div>
+
+          <div className="settings-block security">
+            <h3>Security</h3>
+            <div className="account-email">
+              <h5>Account Email</h5>
+              {user.get('email_addr')}
             </div>
-          </Panel.Body>
-        </Panel>
-        <Modal
-          body={confirmDeleteBody}
-          closeCb={this.closeDeleteModal}
-          dialogClassName="wr-delete-modal"
-          footer={confirmDeleteFooter}
-          header="Confirm Delete Account?"
-          visible={showModal} />
-      </div>
+            {
+              passUpdateFail &&
+                <Alert bsStyle="danger">
+                  {passUpdateFail}
+                </Alert>
+            }
+            {
+              passUpdate &&
+                <Alert bsStyle="success">
+                  Password successfully updated
+                </Alert>
+            }
+            <form id="changepassword" onSubmit={this.send}>
+              <div className="form-group">
+                <label htmlFor="curr_password">Current Password</label>
+                <input
+                  type="password"
+                  id="curr_password"
+                  name="currPassword"
+                  className="form-control input-sm"
+                  onChange={this.handleChange}
+                  value={currPassword}
+                  required />
+                <div className="help-block with-errors" />
+              </div>
+
+              <FormGroup validationState={this.validatePassword()}>
+                <ControlLabel>New Password</ControlLabel>
+                <FormControl
+                  aria-label="password"
+                  type="password"
+                  name="password"
+                  value={password}
+                  onChange={this.handleChange} />
+                {
+                  password && !passwordPassRegex(password) &&
+                    <HelpBlock>Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols</HelpBlock>
+                }
+              </FormGroup>
+
+              <FormGroup validationState={this.validatePassword()}>
+                <ControlLabel>Confirm New Password</ControlLabel>
+                <FormControl
+                  aria-label="confirm password"
+                  type="password"
+                  name="password2"
+                  value={password2}
+                  onChange={this.handleChange} />
+                {
+                  password && password2 && password !== password2 &&
+                    <HelpBlock>Password confirmation does not match</HelpBlock>
+                }
+              </FormGroup>
+              <Button className="rounded" bsSize="sm" disabled={!canAdmin} type="submit">Update Password</Button>
+            </form>
+          </div>
+
+          <Panel className="buffer-top" bsStyle="danger">
+            <Panel.Heading>
+              <Panel.Title>Delete Account</Panel.Title>
+            </Panel.Heading>
+            <Panel.Body>
+              <div className="row col-md-12">
+                <div>
+                  <b>Permanently delete this account and all archived data for this user</b>
+                  <p>This action <u>can not</u> be undone!</p>
+                  <Button bsStyle="danger" className="rounded" bsSize="sm" disabled={!canAdmin} onClick={this.toggleDelete}><TrashIcon /> Delete Account</Button>
+                </div>
+              </div>
+            </Panel.Body>
+          </Panel>
+          <Modal
+            body={confirmDeleteBody}
+            closeCb={this.closeDeleteModal}
+            dialogClassName="wr-delete-modal"
+            footer={confirmDeleteFooter}
+            header="Confirm Delete Account?"
+            visible={showModal} />
+        </div>
+      </AccessContext.Provider>
     );
   }
 }

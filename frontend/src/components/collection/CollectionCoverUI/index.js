@@ -11,6 +11,7 @@ import { doubleRAF, getCollectionLink, truncate } from 'helpers/utils';
 import { collection as collectionErr } from 'helpers/userMessaging';
 
 import { setSort } from 'store/modules/collection';
+import { AccessContext, AppContext } from 'store/contexts';
 
 import { CollectionFilters, Temp404 } from 'containers';
 
@@ -27,12 +28,6 @@ import './style.scss';
 
 
 class CollectionCoverUI extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool,
-    isMobile: PropTypes.bool
-  };
-
   static propTypes = {
     browsers: PropTypes.object,
     collection: PropTypes.object,
@@ -44,7 +39,7 @@ class CollectionCoverUI extends Component {
   constructor(options, { collection }) {
     super(options);
 
-    this.frameHandle = null
+    this.frameHandle = null;
     this.waypoints = [];
     this.halfWidth = 0;
     this.scrollable = React.createRef();
@@ -146,7 +141,6 @@ class CollectionCoverUI extends Component {
   }
 
   render() {
-    const { isMobile } = this.context;
     const { browsers, collection, match: { params: { user, coll } }, pages } = this.props;
 
     if (collection.get('error')) {
@@ -164,76 +158,89 @@ class CollectionCoverUI extends Component {
     const lists = collection.get('loaded') && this.getLists(collection);
 
     return (
-      <div className="coll-cover">
-        <Helmet>
-          {
-            !__PLAYER__ ?
-              <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title> :
-              <title>{collection.get('title')}</title>
-          }
-          <meta property="og:url" content={`${appHost}${getCollectionLink(collection)}`} />
-          <meta property="og:type" content="website" />
-          <meta property="og:title" content={collection.get('title')} />
-          <meta property="og:description" content={collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : tagline} />
-        </Helmet>
+      <AppContext.Consumer>
         {
-          !__DESKTOP__ && this.context.canAdmin && !this.context.isAnon && !collection.get('public') && collection.get('loaded') &&
-            <div className="visibility-warning">
-              Note: this collection is set to 'private' so only you can see it. <Link to={getCollectionLink(collection, true)}>If you set this collection to 'public'</Link> you can openly share the web pages you have collected.
-            </div>
-        }
-        <Capstone title={collection.get('title')} user={collection.get('owner')} />
-        <Tabs>
-          <TabList>
-            <Tab>Overview</Tab>
-            <Tab><span className={classNames({ 'private-index': !collection.get('public_index') })}>Browse All</span></Tab>
-          </TabList>
+          ({ isMobile, isAnon }) => (
+            <AccessContext.Consumer>
+              {
+                ({ canAdmin }) => (
+                  <div className="coll-cover">
+                    <Helmet>
+                      {
+                        !__PLAYER__ ?
+                          <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title> :
+                          <title>{collection.get('title')}</title>
+                      }
+                      <meta property="og:url" content={`${appHost}${getCollectionLink(collection)}`} />
+                      <meta property="og:type" content="website" />
+                      <meta property="og:title" content={collection.get('title')} />
+                      <meta property="og:description" content={collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : tagline} />
+                    </Helmet>
+                    {
+                      !__DESKTOP__ && canAdmin && !isAnon && !collection.get('public') && collection.get('loaded') &&
+                        <div className="visibility-warning">
+                          Note: this collection is set to 'private' so only you can see it. <Link to={getCollectionLink(collection, true)}>If you set this collection to 'public'</Link> you can openly share the web pages you have collected.
+                        </div>
+                    }
+                    <Capstone title={collection.get('title')} user={collection.get('owner')} />
+                    <Tabs>
+                      <TabList>
+                        <Tab>Overview</Tab>
+                        <Tab><span className={classNames({ 'private-index': !collection.get('public_index') })}>Browse All</span></Tab>
+                      </TabList>
 
-          <TabPanel className="react-tabs__tab-panel overview-tab">
-            <div className="scroll-wrapper scrollspy-scrollable hidden-xs">
-              <ul className="scrollspy" ref={(obj) => { this.scrollSpy = obj; }}>
-                {
-                  !isMobile && lists && lists.map((list, idx) => {
-                    return (
-                      <ScrollspyEntry
-                        key={list.get('id')}
-                        index={idx}
-                        onSelect={this.goToList}
-                        selected={idx === this.state.activeList}
-                        title={list.get('title')} />
-                    );
-                  })
-                }
-              </ul>
-            </div>
+                      <TabPanel className="react-tabs__tab-panel overview-tab">
+                        <div className="scroll-wrapper scrollspy-scrollable hidden-xs">
+                          <ul className="scrollspy" ref={(obj) => { this.scrollSpy = obj; }}>
+                            {
+                              !isMobile && lists && lists.map((list, idx) => {
+                                return (
+                                  <ScrollspyEntry
+                                    key={list.get('id')}
+                                    index={idx}
+                                    onSelect={this.goToList}
+                                    selected={idx === this.state.activeList}
+                                    title={list.get('title')} />
+                                );
+                              })
+                            }
+                          </ul>
+                        </div>
 
-            <ListsScrollable
-              collection={collection}
-              lists={lists}
-              ref={this.scrollable}
-              scrollHandler={this.scrollHandler} />
-          </TabPanel>
+                        <ListsScrollable
+                          collection={collection}
+                          lists={lists}
+                          ref={this.scrollable}
+                          scrollHandler={this.scrollHandler} />
+                      </TabPanel>
 
-          <TabPanel className="react-tabs__tab-panel browse-all-tab">
-            {
-              collection.get('public_index') ?
-                <TableRenderer {...{
-                  browsers,
-                  collection,
-                  displayObjects: pages,
-                  sort: this.sort
-                }} /> :
-                <div className="table-container">
-                  <div className="collection-header">
-                    <h2>Pages</h2>
-                    <CollectionFilters disabled />
+                      <TabPanel className="react-tabs__tab-panel browse-all-tab">
+                        {
+                          collection.get('public_index') ?
+                            <TableRenderer {...{
+                              browsers,
+                              collection,
+                              displayObjects: pages,
+                              isMobile,
+                              sort: this.sort
+                            }} /> :
+                            <div className="table-container">
+                              <div className="collection-header">
+                                <h2>Pages</h2>
+                                <CollectionFilters disabled />
+                              </div>
+                              <div className="private-index">This collection does not have a public index.</div>
+                            </div>
+                        }
+                      </TabPanel>
+                    </Tabs>
                   </div>
-                  <div className="private-index">This collection does not have a public index.</div>
-                </div>
-            }
-          </TabPanel>
-        </Tabs>
-      </div>
+                )
+              }
+            </AccessContext.Consumer>
+          )
+        }
+      </AppContext.Consumer>
     );
   }
 }
