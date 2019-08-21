@@ -85,14 +85,13 @@ class RecordURLBar extends Component {
         <form className={classNames('form-group-recorder-url', { 'start-recording': isNew, 'content-form': !isNew, 'remote-archive': isPatch || isExtract })}>
           <div className="input-group containerized">
             {
-              !__DESKTOP__ &&
+              !__DESKTOP__ && canAdmin &&
                 <div className="input-group-btn rb-dropdown">
                   {
-                    canAdmin &&
-                      <RemoteBrowserSelect
-                        active
-                        autopilotRunning={autopilotRunning}
-                        params={params} />
+                    <RemoteBrowserSelect
+                      active
+                      autopilotRunning={autopilotRunning}
+                      params={params} />
                   }
                 </div>
             }
