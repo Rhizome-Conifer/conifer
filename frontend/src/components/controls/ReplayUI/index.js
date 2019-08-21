@@ -54,8 +54,6 @@ class ReplayUI extends Component {
     window.dispatchEvent(new Event('wr-refresh'));
   }
 
-
-
   render() {
     const { canAdmin, currMode, isMobile } = this.context;
     const { canGoBackward, canGoForward } = this.props;
