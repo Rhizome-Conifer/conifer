@@ -138,9 +138,12 @@ class UserManagementUI extends PureComponent {
               </li>
           }
 
-          <li className="navbar-text hidden-xs">
-            <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
-          </li>
+          {
+            !__DESKTOP__ &&
+              <li className="navbar-text hidden-xs">
+                <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
+              </li>
+          }
 
           <li className="hidden-xs">
             <a href="https://guide.webrecorder.io/" target="_blank">Help</a>

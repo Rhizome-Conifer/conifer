@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button } from 'react-bootstrap';
 
-import { ModeSelector, RecordingTools, SizeCounter } from 'containers';
+import { ModeSelector, RecordingTools } from 'containers';
 
 import { ReplayURLBar, RecordURLBar } from 'components/controls';
 import { InfoIcon, PlayerArrowLeftIcon, PlayerArrowRightIcon, RefreshIcon } from 'components/icons';

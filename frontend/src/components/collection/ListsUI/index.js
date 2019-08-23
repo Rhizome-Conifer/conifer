@@ -235,7 +235,7 @@ class ListsUI extends Component {
                     <div className={classNames('wrapper', { editable: canAdmin })}>
                       <span className="title" title="All pages"><AllPagesIcon /> Pages ({collection.get('pages').size})</span>
                       {
-                        canAdmin &&
+                        canAdmin && !__DESKTOP__ &&
                           <VisibilityLamp
                             callback={this.toggleIndexVisibility}
                             collPublic={collection.get('public')}

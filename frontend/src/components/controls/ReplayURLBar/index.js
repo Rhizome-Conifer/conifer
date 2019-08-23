@@ -64,7 +64,7 @@ class ReplayURLBar extends Component {
         <form className="form-group-recorder-url">
           <div className="input-group containerized">
             {
-              canAdmin &&
+              canAdmin && !__DESKTOP__ &&
                 <div className="input-group-btn rb-dropdown">
                   <RemoteBrowserSelect
                     active
