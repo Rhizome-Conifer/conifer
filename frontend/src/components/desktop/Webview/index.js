@@ -54,6 +54,8 @@ class Webview extends Component {
 
     const realHost = host || appHost;
 
+    this.clearCookies();
+
     this.socket = new WebSocketHandler(params, currMode, dispatch, false, '@INIT', stripProtocol(realHost));
     this.webviewHandle.addEventListener('ipc-message', this.handleIPCEvent);
 
@@ -72,9 +74,15 @@ class Webview extends Component {
       }
     });
 
+    this.webviewHandle.addEventListener('will-navigate', (event) => {
+      this.clearCookies();
+    });
+
     if (currMode === 'live') {
       this.webviewHandle.addEventListener('did-navigate', (event) => {
         this.setUrl(event.url, true);
+        dispatch(setBrowserHistory('canGoBackward', this.webviewHandle.canGoBack()));
+        dispatch(setBrowserHistory('canGoForward', this.webviewHandle.canGoForward()));
       });
     }
 
@@ -92,6 +100,7 @@ class Webview extends Component {
     if (nextProps.url !== url || nextProps.timestamp !== timestamp) {
       if (!this.internalUpdate) {
         this.setState({ loading: true });
+        this.clearCookies();
         this.webviewHandle.loadURL(this.buildProxyUrl(nextProps.url, nextProps.timestamp));
       }
       this.internalUpdate = false;
@@ -130,6 +139,14 @@ class Webview extends Component {
     }
     proxyUrl += url;
     return proxyUrl;
+  }
+
+  clearCookies() {
+    const { currMode } = this.context;
+
+    if (currMode === 'replay-coll') {
+      ipcRenderer.send('clear-cookies', true);
+    }
   }
 
   openDroppedFile = (filename) => {
@@ -187,7 +204,7 @@ class Webview extends Component {
           this.addNewPage(state, true);
         }
         if (state.readyState === 'interactive') {
-          dispatch(setMethod('history'));
+          dispatch(setMethod('navigation'));
           dispatch(autopilotReset());
           dispatch(autopilotCheck(state.url));
         } else if (state.readyState === 'complete') {
@@ -288,6 +305,7 @@ class Webview extends Component {
   }
 
   refresh = () => {
+    this.clearCookies();
     this.webviewHandle.reload();
   }
 
