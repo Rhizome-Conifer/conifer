@@ -6,13 +6,15 @@ import { Button, Col, Row } from 'react-bootstrap';
 
 import { stopPropagation } from 'helpers/utils';
 
+import { StandaloneRecorder } from 'containers';
+
 import HttpStatus from 'components/HttpStatus';
 import InlineEditor from 'components/InlineEditor';
 import RedirectWithStatus from 'components/RedirectWithStatus';
 import WYSIWYG from 'components/WYSIWYG';
 import { NewCollection } from 'components/siteComponents';
 import { Upload } from 'containers';
-import { LinkIcon, UploadIcon, UserIcon } from 'components/icons';
+import { LinkIcon, UploadIcon } from 'components/icons';
 
 import CollectionItem from './CollectionItem';
 import './style.scss';
@@ -104,6 +106,10 @@ class CollectionListUI extends Component {
         <Helmet>
           <title>{`${displayName}'s Collections`}</title>
         </Helmet>
+        <Row className="collection-start-form">
+          <h4>New Capture</h4>
+          <StandaloneRecorder />
+        </Row>
         <Row>
           {
             !__DESKTOP__ &&
@@ -150,6 +156,7 @@ class CollectionListUI extends Component {
                 {
                   !isAnon && canAdmin &&
                     <React.Fragment>
+                      <h4>My Collections</h4>
                       <Button onClick={this.toggle} className="rounded">
                         <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
                       </Button>

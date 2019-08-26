@@ -140,14 +140,15 @@ class UserManagementUI extends PureComponent {
 
           {
             !__DESKTOP__ &&
-              <li className="navbar-text hidden-xs">
-                <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
-              </li>
+              <React.Fragment>
+                <li className="navbar-text hidden-xs">
+                  <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
+                </li>
+                <li className="hidden-xs">
+                  <a href="https://guide.webrecorder.io/" target="_blank">Help</a>
+                </li>
+              </React.Fragment>
           }
-
-          <li className="hidden-xs">
-            <a href="https://guide.webrecorder.io/" target="_blank">Help</a>
-          </li>
 
           {
             supporterPortal &&
@@ -189,16 +190,27 @@ class UserManagementUI extends PureComponent {
                 }
 
                 {
-                  !isAnon &&
-                    <MenuItem onClick={this.goToSettings}><span className="glyphicon glyphicon-wrench" /> Account Settings</MenuItem>
+                  __DESKTOP__ &&
+                    <MenuItem divider />
                 }
 
-                <MenuItem divider />
-                <MenuItem href="https://guide.webrecorder.io/" target="_blank">User Guide</MenuItem>
-                <MenuItem href="mailto:support@webrecorder.io" target="_blank">Contact Support</MenuItem>
-                <MenuItem divider />
-                <MenuItem onClick={this.goToFAQ}>About Webrecorder</MenuItem>
-                <MenuItem href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</MenuItem>
+                {
+                  !isAnon &&
+                    <MenuItem onClick={this.goToSettings}><span className="glyphicon glyphicon-wrench" /> { __DESKTOP__ ? 'App' : 'Account' } Settings</MenuItem>
+                }
+
+                {
+                  !__DESKTOP__ &&
+                    <React.Fragment>
+                      <MenuItem divider />
+                      <MenuItem href="https://guide.webrecorder.io/" target="_blank">User Guide</MenuItem>
+                      <MenuItem href="mailto:support@webrecorder.io" target="_blank">Contact Support</MenuItem>
+                      <MenuItem divider />
+                      <MenuItem onClick={this.goToFAQ}>About Webrecorder</MenuItem>
+                      <MenuItem href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</MenuItem>
+                    </React.Fragment>
+                }
+
                 {
                   (!isAnon && !__DESKTOP__) &&
                     <React.Fragment>

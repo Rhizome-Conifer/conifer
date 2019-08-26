@@ -5,7 +5,7 @@ import Collapsible from 'react-collapsible';
 import { Button, ControlLabel, FormControl, FormGroup, HelpBlock, Row } from 'react-bootstrap';
 
 import { appHost, defaultRecDesc } from 'config';
-import { addTrailingSlash, apiFetch, fixMalformedUrls, getStorage, inStorage, setStorage } from 'helpers/utils';
+import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
 
 import { CollectionDropdown, ExtractWidget, RemoteBrowserSelect } from 'containers';
 
@@ -41,18 +41,8 @@ class StandaloneRecorderUI extends Component {
       sessionNotes: '',
       setColl: false,
       url: '',
-      validation: null,
-      cookiesCleared: false
+      validation: null
     };
-  }
-
-  clearCookies = () => {
-    if (ipcRenderer) {
-      ipcRenderer.send('clear-cookies');
-    }
-
-    setStorage('cookieSet', '0');
-    this.setState({ cookiesCleared: true });
   }
 
   handleFocus = (evt) => {
@@ -67,7 +57,7 @@ class StandaloneRecorderUI extends Component {
     this.setState({ [evt.target.name]: evt.target.value });
   }
 
-  startPrepare = (evt) => {
+  startPreview = (evt) => {
     evt.preventDefault();
     const { history, username, activeCollection } = this.props;
     const { url } = this.state;
@@ -81,9 +71,7 @@ class StandaloneRecorderUI extends Component {
       return false;
     }
 
-    this.setState({ validation: null, cookiesCleared: false });
-
-    setStorage('cookieSet', '1');
+    this.setState({ validation: null });
 
     const cleanUrl = addTrailingSlash(fixMalformedUrls(url));
     history.push(`/${username}/${activeCollection.id}/live/${cleanUrl}`);
@@ -179,12 +167,13 @@ class StandaloneRecorderUI extends Component {
           </Row>
         </div>
 
-        { !__DESKTOP__ &&
-          <div className="col-md-8 col-md-offset-2 top-buffer rb-dropdown">
-            <Row>
-              <p className="col-md-2 standalone-dropdown-label">Select browser</p><div className="col-md-10"><RemoteBrowserSelect /></div>
-            </Row>
-          </div>
+        {
+          !__DESKTOP__ &&
+            <div className="col-md-8 col-md-offset-2 top-buffer rb-dropdown">
+              <Row>
+                <p className="col-md-2 standalone-dropdown-label">Select browser</p><div className="col-md-10"><RemoteBrowserSelect /></div>
+              </Row>
+            </div>
         }
 
         <div className="col-md-8 col-md-offset-2 top-buffer">
@@ -202,29 +191,15 @@ class StandaloneRecorderUI extends Component {
                 <h4>Session Notes</h4>
                 <textarea rows={5} ref={(o) => { this.textarea = o; }} onFocus={this.handleFocus} name="sessionNotes" placeholder={defaultRecDesc} value={this.state.sessionNotes} onChange={this.handleInput} />
               </div>
-              {
-                __DESKTOP__ &&
-                  <React.Fragment>
-                    <div className="divider" />
-                    <div>
-                      <h4>Preload Cookies</h4>
-                      <p>Log in to sites beforehand and gather cookies to bypass capturing local login pages.</p>
-                      {
-                        !this.state.cookiesCleared && getStorage('cookieSet') === '1' ?
-                          <div className="cookie-buttons">
-                            <button className="rounded" type="button" onClick={this.clearCookies}>Clear All Cookies</button>
-                            <button className="rounded" type="button" onClick={this.startPrepare}>Add More Cookies</button>
-                          </div> :
-                          <button className="rounded" type="button" onClick={this.startPrepare}>Configure Cookies</button>
-                      }
-                    </div>
-                  </React.Fragment>
-              }
             </div>
           </Collapsible>
-          <Button type="submit" aria-label="start recording" disabled={isOutOfSpace}>
-            Start
+          <Button type="submit" className="rounded" aria-label="start recording" disabled={isOutOfSpace}>
+            Start Capture
           </Button>
+          {
+            __DESKTOP__ &&
+              <button onClick={this.startPreview} type="button" className="rounded" aria-label="start preview">Preview</button>
+          }
         </div>
       </form>
     );

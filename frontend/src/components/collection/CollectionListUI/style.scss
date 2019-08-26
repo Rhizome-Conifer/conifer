@@ -8,6 +8,28 @@
     }
 }
 
+.collection-start-form {
+    margin-top: 3.5rem;
+
+    & > h4 {
+        padding-left: 1.5rem;
+    }
+
+    .start-recording-homepage > div {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    &:after {
+        content: '';
+        display: block;
+        width: 100%;
+        border: solid .1rem $black;
+        border-width: 0 0 .1rem 0;
+        padding-top: 5rem;
+    }
+}
+
 .collection-time {
     font-size:1.2rem;
     color: $gray550;
@@ -30,6 +52,18 @@ a.collection-title:hover {
 
 .collections-index-nav {
     margin: 1rem 0;
+
+    h4 {
+        display: inline-block;
+    }
+
+    button {
+        float: right;
+    }
+
+    button + button {
+        margin-right: .5rem;
+    }
 
     .btn-default:hover {
         background: rgba(0,0,0,0);

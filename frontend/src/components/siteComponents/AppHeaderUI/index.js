@@ -39,7 +39,13 @@ class AppHeader extends PureComponent {
       <header className={classNames('app-header', { dark: canAdmin })}>
         <nav className="header-webrecorder" role="navigation">
           <div className="navbar-tools">
-            <NavLink to="/" className="wr-logomark"><LogoIcon darkMode={canAdmin} /></NavLink>
+            <NavLink to="/" className={classNames('wr-logomark', { desktop: __DESKTOP__ })}>
+              {
+                __DESKTOP__ ?
+                  'Webrecorder' :
+                  <LogoIcon darkMode={canAdmin} />
+              }
+            </NavLink>
             {
               canAdmin ?
                 match.params.coll && <AdminHeader managing={route.managementView} /> :
