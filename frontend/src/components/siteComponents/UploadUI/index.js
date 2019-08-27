@@ -83,7 +83,7 @@ class UploadUI extends PureComponent {
     this.xhr.addEventListener('loadend', this.uploadComplete);
 
     this.xhr.open('PUT', url, true);
-
+    this.xhr.setRequestHeader('x-requested-with', 'XMLHttpRequest');
 
     this.setState({
       isUploading: true,
