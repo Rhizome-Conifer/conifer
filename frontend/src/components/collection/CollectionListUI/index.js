@@ -108,8 +108,10 @@ class CollectionListUI extends Component {
           <title>{`${displayName}'s Collections`}</title>
         </Helmet>
         <Row className="collection-start-form">
-          <h4>New Capture</h4>
-          <StandaloneRecorder />
+          <Col xs={12} sm={__DESKTOP__ ? 10 : 9} smOffset={__DESKTOP__ ? 1 : 0}>
+            <h4>New Capture</h4>
+            <StandaloneRecorder />
+          </Col>
         </Row>
         <Row>
           {
@@ -150,7 +152,7 @@ class CollectionListUI extends Component {
                   success={this.props.edited} />
               </Col>
           }
-          <Col xs={12} sm={__DESKTOP__ ? 12 : 9} className="wr-coll-meta">
+          <Col xs={12} sm={__DESKTOP__ ? 10 : 9} smOffset={__DESKTOP__ ? 1 : 0} className="wr-coll-meta">
 
             <Row>
               <Col xs={12} className={classNames('collections-index-nav', { desktop: __DESKTOP__ })}>

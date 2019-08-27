@@ -185,21 +185,12 @@ class ModeSelectorUI extends PureComponent {
               {
                 isLive &&
                   <div className="wr-modes">
-                    <ul className={classNames('row wr-mode')} onClick={this.onStop} role="button" title="Finish previewing and return to landing page">
-                      <li className="col-xs-3">
-                        <span className="wr-mode-icon preview-mode" aria-label="Preview mode icon" />
-                      </li>
-                      <li className="col-xs-9">
-                        <h5>Finish previewing</h5>
-                      </li>
-                    </ul>
-
-                    <ul className={classNames('row wr-mode')} onClick={this.onRecord} role="button" title="Stop cookie prepare mode and begin capturing">
+                    <ul className={classNames('row wr-mode')} onClick={this.onRecord} role="button" title="Stop preview mode and begin capturing">
                       <li className="col-xs-3">
                         <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
                       </li>
                       <li className="col-xs-9">
-                        <h5>Finish and Start Capture</h5>
+                        <h5>Start Capture</h5>
                       </li>
                     </ul>
                   </div>

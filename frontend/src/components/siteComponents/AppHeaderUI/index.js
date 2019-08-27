@@ -39,7 +39,7 @@ class AppHeader extends PureComponent {
       <header className={classNames('app-header', { dark: canAdmin })}>
         <nav className="header-webrecorder" role="navigation">
           <div className="navbar-tools">
-            <NavLink to="/" className={classNames('wr-logomark', { desktop: __DESKTOP__ })}>
+            <NavLink to={__DESKTOP__ ? `/${authUser.get('username')}` : '/'} className={classNames('wr-logomark', { desktop: __DESKTOP__ })}>
               {
                 __DESKTOP__ ?
                   'Webrecorder' :
