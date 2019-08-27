@@ -140,7 +140,7 @@ class ModeSelectorUI extends PureComponent {
 
     switch(currMode) {
       case 'live':
-        modeMessage = 'Preparing Cookies';
+        modeMessage = 'Finish Previewing';
         modeMarkup = <span className="btn-content"><span className="preview-mode" aria-label="Preview icon" /><span className="hidden-xs">{ modeMessage }</span></span>;
         break;
       case 'record':
@@ -185,12 +185,12 @@ class ModeSelectorUI extends PureComponent {
               {
                 isLive &&
                   <div className="wr-modes">
-                    <ul className={classNames('row wr-mode')} onClick={this.onStop} role="button" title="Finish preparing cookies and return to landing page">
+                    <ul className={classNames('row wr-mode')} onClick={this.onStop} role="button" title="Finish previewing and return to landing page">
                       <li className="col-xs-3">
                         <span className="wr-mode-icon preview-mode" aria-label="Preview mode icon" />
                       </li>
                       <li className="col-xs-9">
-                        <h5>Finish Preparing Cookies</h5>
+                        <h5>Finish previewing</h5>
                       </li>
                     </ul>
 
