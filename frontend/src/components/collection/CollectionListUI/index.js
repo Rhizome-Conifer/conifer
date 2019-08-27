@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
+import classNames from 'classnames';
 import { fromJS } from 'immutable';
 import { Button, Col, Row } from 'react-bootstrap';
 
@@ -152,11 +153,11 @@ class CollectionListUI extends Component {
           <Col xs={12} sm={__DESKTOP__ ? 12 : 9} className="wr-coll-meta">
 
             <Row>
-              <Col xs={12} className="collections-index-nav">
+              <Col xs={12} className={classNames('collections-index-nav', { desktop: __DESKTOP__ })}>
                 {
                   !isAnon && canAdmin &&
                     <React.Fragment>
-                      <h4>My Collections</h4>
+                      { __DESKTOP__ && <h4>My Collections</h4> }
                       <Button onClick={this.toggle} className="rounded">
                         <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
                       </Button>

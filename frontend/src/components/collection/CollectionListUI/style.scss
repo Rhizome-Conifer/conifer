@@ -57,8 +57,10 @@ a.collection-title:hover {
         display: inline-block;
     }
 
-    button {
-        float: right;
+    &.desktop {
+        button {
+            float: right;
+        }
     }
 
     button + button {
