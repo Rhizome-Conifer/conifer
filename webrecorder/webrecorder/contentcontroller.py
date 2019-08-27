@@ -495,6 +495,11 @@ class ContentController(BaseController, RewriterApp):
 
             resp = self.render_content(wb_url, kwargs, request.environ)
 
+            if self.should_force_cache(resp.status_headers):
+                resp.status_headers.headers.append(
+                    ('Cache-Control', 'public, max-age=54000, immutable')
+                )
+
             resp = HTTPResponse(body=resp.body,
                                 status=resp.status_headers.statusline,
                                 headers=resp.status_headers.headers)
@@ -524,6 +529,18 @@ class ContentController(BaseController, RewriterApp):
                 err_body = ''
 
             return handle_error(status_code, err_body, request.environ)
+
+    def should_force_cache(self, status_headers):
+        if not request.environ.get('HTTP_REFERER'):
+            return False
+
+        if not status_headers.statusline.startswith('200'):
+            return False
+
+        if 'no-store' in status_headers.get_header('X-Archive-Orig-Cache-Control', ''):
+            return False
+
+        return True
 
     def check_remote_archive(self, wb_url, mode, wb_url_obj=None):
         wb_url_obj = wb_url_obj or WbUrl(wb_url)

@@ -30,7 +30,6 @@ class Live extends Component {
   static propTypes = {
     activeBrowser: PropTypes.string,
     appSettings: PropTypes.object,
-    autoscroll: PropTypes.bool,
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
@@ -89,6 +88,8 @@ class Live extends Component {
         </Helmet>
         <ReplayUI
           activeBrowser={activeBrowser}
+          canGoBackward={__DESKTOP__ ? appSettings.get('canGoBackward') : false}
+          canGoForward={__DESKTOP__ ? appSettings.get('canGoForward') : false}
           params={params}
           url={url} />
 
@@ -118,7 +119,6 @@ class Live extends Component {
                 <IFrame
                   appPrefix={appPrefix}
                   auth={this.props.auth}
-                  autoscroll={this.props.autoscroll}
                   contentPrefix={contentPrefix}
                   dispatch={dispatch}
                   params={params}
@@ -195,7 +195,6 @@ const mapStateToProps = ({ app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     appSettings,
-    autoscroll: app.getIn(['controls', 'autoscroll']),
     auth: app.get('auth'),
     collection: app.get('collection'),
     timestamp: app.getIn(['controls', 'timestamp']),
