@@ -140,7 +140,7 @@ class ModeSelectorUI extends PureComponent {
 
     switch(currMode) {
       case 'live':
-        modeMessage = 'Finish Previewing';
+        modeMessage = 'Previewing';
         modeMarkup = <span className="btn-content"><span className="preview-mode" aria-label="Preview icon" /><span className="hidden-xs">{ modeMessage }</span></span>;
         break;
       case 'record':
