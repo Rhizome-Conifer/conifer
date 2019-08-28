@@ -17,7 +17,7 @@
     flex-grow: 1;
    -ms-flex: 30%;
 
-   .input-group .form-control:first-child, .input-group .form-control:last-child {
+    .input-group .form-control:first-child, .input-group .form-control:last-child {
         border-top-right-radius: 2.7rem;
         border-bottom-right-radius: 2.7rem;
     }
@@ -39,6 +39,13 @@
 
     & > form > .input-group {
         width: 100%;
+    }
+}
+
+.has-widget .main-bar {
+    .input-group .form-control:first-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
     }
 }
 

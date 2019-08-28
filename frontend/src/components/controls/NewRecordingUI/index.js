@@ -119,7 +119,7 @@ class NewRecordingUI extends Component {
                   disabled={isOutOfSpace}
                   name="url"
                   onChange={this.handleChange}
-                  style={{ height: '3.3rem' }}
+                  style={{ height: '3.2rem' }}
                   title={isOutOfSpace ? 'Out of space' : 'Enter URL to capture'}
                   type="text"
                   value={url} />
