@@ -140,15 +140,14 @@ class UserManagementUI extends PureComponent {
 
           {
             !__DESKTOP__ &&
-              <React.Fragment>
-                <li className="navbar-text hidden-xs">
-                  <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
-                </li>
-                <li className="hidden-xs">
-                  <a href="https://guide.webrecorder.io/" target="_blank">Help</a>
-                </li>
-              </React.Fragment>
+              <li className="navbar-text hidden-xs">
+                <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
+              </li>
           }
+
+          <li className="hidden-xs">
+            <a href={__DESKTOP__ ? 'https://github.com/webrecorder/webrecorder-desktop#webrecorder-desktop-app' : 'https://guide.webrecorder.io/'} target="_blank">Help</a>
+          </li>
 
           {
             supporterPortal &&
