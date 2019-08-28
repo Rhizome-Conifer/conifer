@@ -94,7 +94,7 @@ class Record extends Component {
     return (
       <React.Fragment>
         <Helmet>
-          <title>Recording</title>
+          <title>Capturing</title>
         </Helmet>
         <ReplayUI
           activeBrowser={activeBrowser}

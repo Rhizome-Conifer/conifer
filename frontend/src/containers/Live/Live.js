@@ -84,7 +84,7 @@ class Live extends Component {
     return (
       <React.Fragment>
         <Helmet>
-          <title>Liveing</title>
+          <title>Previewing</title>
         </Helmet>
         <ReplayUI
           activeBrowser={activeBrowser}
