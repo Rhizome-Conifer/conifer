@@ -90,7 +90,7 @@ class CollectionListUI extends Component {
     const userLink = user.get('display_url') && (!user.get('display_url').match(/^[a-zA-Z]+:\/\//) ? `http://${user.get('display_url')}` : user.get('display_url'));
 
 
-    if (collections.get('error')) {
+    if (collections.get('error') && !collections.get('creatingCollection')) {
       return (
         <HttpStatus>
           {collections.getIn(['error', 'error_message'])}
