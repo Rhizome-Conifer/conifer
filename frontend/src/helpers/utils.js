@@ -44,7 +44,7 @@ export function apiFormatUrl(path) {
 export function appendFlashVersion(version) {
   for (let plugin of navigator.plugins) {
     if (plugin.name === "Shockwave Flash") {
-      return version + '<BR>' + plugin.description.toLowerCase();
+      return `${version}<BR>${plugin.description.toLowerCase()}`;
     }
   }
   return version;

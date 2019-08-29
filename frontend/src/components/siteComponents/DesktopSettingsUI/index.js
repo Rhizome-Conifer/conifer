@@ -14,7 +14,7 @@ import {
 } from 'react-bootstrap';
 
 import { supportEmail } from 'config';
-import { appendFlashVersion } from 'helpers/utils.js';
+import { appendFlashVersion } from 'helpers/utils';
 
 import Modal from 'components/Modal';
 import SizeFormat from 'components/SizeFormat';
