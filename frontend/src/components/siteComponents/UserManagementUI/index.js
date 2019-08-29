@@ -158,7 +158,7 @@ class UserManagementUI extends PureComponent {
           <li className="hidden-xs">
             {
               __DESKTOP__ ?
-                <a href="#" onClick={this.openDesktopHelp}>Help</a> :
+                <button className="button-link" onClick={this.openDesktopHelp} type="button">Help</button> :
                 <a href="https://guide.webrecorder.io/" target="_blank">Help</a>
             }
           </li>
