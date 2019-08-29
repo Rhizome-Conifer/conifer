@@ -42,7 +42,7 @@ const renderApp = (renderProps) => {
 // render app
 renderApp({ routes: __PLAYER__ ? require('./playerRoutes') : baseRoute, client });
 
-if (module.hot && !__PLAYER__) {
+if (module.hot && !__DESKTOP__) {
   module.hot.accept('./baseRoute', () => {
     const nextRoutes = require('./baseRoute');
 

@@ -83,7 +83,7 @@
     &.locked {
         pointer-events: none;
 
-        iframe, .canvas {
+        iframe, .canvas, webview {
             cursor: not-allowed;
             opacity: .5;
         }

@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
+import classNames from 'classnames';
 import { fromJS } from 'immutable';
 import { Button, Col, Row } from 'react-bootstrap';
 
 import { stopPropagation } from 'helpers/utils';
+
+import { StandaloneRecorder } from 'containers';
 
 import HttpStatus from 'components/HttpStatus';
 import InlineEditor from 'components/InlineEditor';
@@ -12,7 +15,7 @@ import RedirectWithStatus from 'components/RedirectWithStatus';
 import WYSIWYG from 'components/WYSIWYG';
 import { NewCollection } from 'components/siteComponents';
 import { Upload } from 'containers';
-import { LinkIcon, UploadIcon, UserIcon } from 'components/icons';
+import { LinkIcon, UploadIcon } from 'components/icons';
 
 import CollectionItem from './CollectionItem';
 import './style.scss';
@@ -87,7 +90,7 @@ class CollectionListUI extends Component {
     const userLink = user.get('display_url') && (!user.get('display_url').match(/^[a-zA-Z]+:\/\//) ? `http://${user.get('display_url')}` : user.get('display_url'));
 
 
-    if (collections.get('error')) {
+    if (collections.get('error') && !collections.get('creatingCollection')) {
       return (
         <HttpStatus>
           {collections.getIn(['error', 'error_message'])}
@@ -104,49 +107,59 @@ class CollectionListUI extends Component {
         <Helmet>
           <title>{`${displayName}'s Collections`}</title>
         </Helmet>
+        <Row className="collection-start-form">
+          <Col xs={12} sm={__DESKTOP__ ? 10 : 9} smOffset={__DESKTOP__ ? 1 : 0}>
+            <h4>New Capture</h4>
+            <StandaloneRecorder />
+          </Col>
+        </Row>
         <Row>
-          <Col xs={12} sm={3} className="collection-description">
-            <InlineEditor
-              canAdmin={canAdmin}
-              initial={displayName}
-              onSave={this.editName}
-              readOnly={isAnon || !canAdmin}
-              success={this.props.edited}>
-              <h2>{displayName}</h2>
-            </InlineEditor>
-            <p className="collection-username"><span className="glyphicon glyphicon-user right-buffer-sm" />{ userParam }</p>
-            {
-              (user.get('display_url') || canAdmin) &&
+          {
+            !__DESKTOP__ &&
+              <Col xs={12} sm={3} className="collection-description">
                 <InlineEditor
                   canAdmin={canAdmin}
-                  initial={user.get('display_url') || 'Add website...'}
-                  placeholder="Add website..."
-                  onSave={this.editURL}
+                  initial={displayName}
+                  onSave={this.editName}
                   readOnly={isAnon || !canAdmin}
                   success={this.props.edited}>
-                  <div className="user-link">
-                    <a target="_blank" onClick={stopPropagation} href={userLink}><LinkIcon />
-                      <span>{user.get('display_url') || 'Add website...'}</span>
-                    </a>
-                  </div>
+                  <h2>{displayName}</h2>
                 </InlineEditor>
-            }
-            <WYSIWYG
-              key={user.get('id')}
-              initial={user.get('desc') || ''}
-              onSave={this.updateUser}
-              placeholder="Add a description..."
-              clickToEdit
-              readOnly={isAnon || !canAdmin}
-              success={this.props.edited} />
-          </Col>
-          <Col xs={12} sm={9} className="wr-coll-meta">
+                <p className="collection-username"><span className="glyphicon glyphicon-user right-buffer-sm" />{ userParam }</p>
+                {
+                  (user.get('display_url') || canAdmin) &&
+                    <InlineEditor
+                      canAdmin={canAdmin}
+                      initial={user.get('display_url') || 'Add website...'}
+                      placeholder="Add website..."
+                      onSave={this.editURL}
+                      readOnly={isAnon || !canAdmin}
+                      success={this.props.edited}>
+                      <div className="user-link">
+                        <a target="_blank" onClick={stopPropagation} href={userLink}><LinkIcon />
+                          <span>{user.get('display_url') || 'Add website...'}</span>
+                        </a>
+                      </div>
+                    </InlineEditor>
+                }
+                <WYSIWYG
+                  key={user.get('id')}
+                  initial={user.get('desc') || ''}
+                  onSave={this.updateUser}
+                  placeholder="Add a description..."
+                  clickToEdit
+                  readOnly={isAnon || !canAdmin}
+                  success={this.props.edited} />
+              </Col>
+          }
+          <Col xs={12} sm={__DESKTOP__ ? 10 : 9} smOffset={__DESKTOP__ ? 1 : 0} className="wr-coll-meta">
 
             <Row>
-              <Col xs={12} className="collections-index-nav">
+              <Col xs={12} className={classNames('collections-index-nav', { desktop: __DESKTOP__ })}>
                 {
                   !isAnon && canAdmin &&
                     <React.Fragment>
+                      { __DESKTOP__ && <h4>My Collections</h4> }
                       <Button onClick={this.toggle} className="rounded">
                         <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
                       </Button>

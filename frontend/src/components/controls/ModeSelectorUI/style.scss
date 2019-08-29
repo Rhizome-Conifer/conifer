@@ -4,6 +4,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
+
+    .wr-mode-message .preview-mode {
+        width: 1rem;
+        height: 1rem;
+        margin-right: .5rem;
+    }
 }
 
 
@@ -117,6 +123,15 @@
         height: 2.8rem;
     }
 }
+
+.preview-mode {
+    display: inline-block;
+    border: solid .1rem $warning;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+}
+
 
 .wr-mode {
     position: relative;

@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button } from 'react-bootstrap';
 
-import { ModeSelector, RecordingTools, SizeCounter } from 'containers';
+import { ModeSelector, RecordingTools } from 'containers';
 
 import { ReplayURLBar, RecordURLBar } from 'components/controls';
 import { InfoIcon, PlayerArrowLeftIcon, PlayerArrowRightIcon, RefreshIcon } from 'components/icons';
@@ -77,7 +77,7 @@ class ReplayUI extends Component {
     }
 
     return (
-      <div role="presentation" className="container-fluid wr-controls navbar-default">
+      <div role="presentation" className={classNames('container-fluid wr-controls navbar-default', { 'has-widget': ['extract', 'extract_only', 'patch'].includes(currMode) })}>
         {
           currMode.includes('replay') && !isMobile &&
             <Button className="sidebar-toggle" onClick={this.toggleSidebar}>

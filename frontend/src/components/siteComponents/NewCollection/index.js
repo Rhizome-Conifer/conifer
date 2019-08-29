@@ -73,13 +73,16 @@ class NewCollection extends Component {
             <FormControl type="text" inputRef={(obj) => { this.input = obj; }} id="title" name="title" onFocus={this.focusInput} onChange={this.handleInput} value={collTitle} />
           </FormGroup>
 
-          <span className="col-xs-6 col-xs-offset-1">
-            <div><label htmlFor="public-switch"><span className="glyphicon glyphicon-globe" style={{ marginRight: '4px' }} />Make public (visible to all)?</label></div>
-            <Toggle
-              id="public-switch"
-              defaultChecked={isPublic}
-              onChange={this.togglePublic} />
-          </span>
+          {
+            !__DESKTOP__ &&
+              <span className="col-xs-6 col-xs-offset-1">
+                <div><label htmlFor="public-switch"><span className="glyphicon glyphicon-globe" style={{ marginRight: '4px' }} />Make public (visible to all)?</label></div>
+                <Toggle
+                  id="public-switch"
+                  defaultChecked={isPublic}
+                  onChange={this.togglePublic} />
+              </span>
+          }
 
           <button className="btn btn-lg btn-primary btn-block" onClick={this.submit} disabled={creatingCollection && !error} type="button">Create</button>
         </form>

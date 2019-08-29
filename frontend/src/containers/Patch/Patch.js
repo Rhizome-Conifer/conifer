@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
@@ -81,6 +82,9 @@ class Patch extends Component {
 
     return (
       <React.Fragment>
+        <Helmet>
+          <title>Patching</title>
+        </Helmet>
         <ReplayUI
           activeBrowser={activeBrowser}
           autopilotRunning={autopilotRunning}

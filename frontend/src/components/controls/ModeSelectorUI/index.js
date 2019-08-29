@@ -140,8 +140,8 @@ class ModeSelectorUI extends PureComponent {
 
     switch(currMode) {
       case 'live':
-        modeMessage = 'Preparing Cookies';
-        modeMarkup = <span className="btn-content"><span role="img" aria-label="Cookie icon">🍪</span><span className="hidden-xs">{ modeMessage }</span></span>;
+        modeMessage = 'Previewing';
+        modeMarkup = <span className="btn-content"><span className="preview-mode" aria-label="Preview icon" /><span className="hidden-xs">{ modeMessage }</span></span>;
         break;
       case 'record':
         modeMessage = 'Capturing';
@@ -185,21 +185,12 @@ class ModeSelectorUI extends PureComponent {
               {
                 isLive &&
                   <div className="wr-modes">
-                    <ul className={classNames('row wr-mode')} onClick={this.onStop} role="button" title="Finish preparing cookies and return to landing page">
-                      <li className="col-xs-3">
-                        <span className="wr-mode-icon" role="img" aria-label="Cookie icon">🍪</span>
-                      </li>
-                      <li className="col-xs-9">
-                        <h5>Finish Preparing Cookies</h5>
-                      </li>
-                    </ul>
-
-                    <ul className={classNames('row wr-mode')} onClick={this.onRecord} role="button" title="Stop cookie prepare mode and begin capturing">
+                    <ul className={classNames('row wr-mode')} onClick={this.onRecord} role="button" title="Stop preview mode and begin capturing">
                       <li className="col-xs-3">
                         <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
                       </li>
                       <li className="col-xs-9">
-                        <h5>Finish and Start Capture</h5>
+                        <h5>Start Capture</h5>
                       </li>
                     </ul>
                   </div>

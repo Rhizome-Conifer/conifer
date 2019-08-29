@@ -51,7 +51,6 @@ class AdminHeaderUI extends PureComponent {
     return (
       <React.Fragment>
         <button className="rounded collection-manager" onClick={this.goToManager} type="button">
-          <span className="caret" />
           Collection Manager
         </button>
         <span className="active-collection" title={collection.get('title')}>{truncate(collection.get('title'), 10, truncWord)}</span>

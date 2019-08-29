@@ -74,9 +74,12 @@ class CollectionItem extends PureComponent {
             {
               canAdmin &&
                 <React.Fragment>
-                  <span className={classNames('visibility-button', { 'is-public': collection.get('public') })}>
-                    { collection.get('public') ? 'PUBLIC' : 'PRIVATE' }
-                  </span>
+                  {
+                    !__DESKTOP__ &&
+                      <span className={classNames('visibility-button', { 'is-public': collection.get('public') })}>
+                        { collection.get('public') ? 'PUBLIC' : 'PRIVATE' }
+                      </span>
+                  }
                   <DeleteCollection collection={collection}>
                     <TrashIcon />
                     <Tooltip placement="top" className="in" id="tooltip-top">

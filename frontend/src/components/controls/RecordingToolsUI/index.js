@@ -145,7 +145,7 @@ class RecordingToolsUI extends PureComponent {
         }
 
         {
-          !isWrite && product !== 'player' &&
+          !isWrite && !__DESKTOP__ &&
             <ShareWidget />
         }
       </div>

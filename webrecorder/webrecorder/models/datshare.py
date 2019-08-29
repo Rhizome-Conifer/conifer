@@ -102,7 +102,7 @@ class DatShare(object):
         if self.is_sharing(collection):
             res = self.dat_share_api('/unshare', collection)
 
-            if res and res['success'] == True:
+            if res and res.get('success') == True:
                 self._mark_unshare(collection)
 
         if dat_updated_at:

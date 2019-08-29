@@ -135,10 +135,18 @@ class DesktopSettingsUI extends Component {
     );
 
     return (
-      <div className="row top-buffer col-xs-10 col-xs-push-1 space-block">
+      <div className="row col-xs-10 col-xs-push-1 space-block desktop-settings">
         <Helmet>
           <title>{`${username}'s Account Settings`}</title>
         </Helmet>
+
+        <div className="row top-buffer main-logo">
+          <h1>Webrecorder</h1>
+        </div>
+        <div className="row tagline">
+          <h4 className="text-center">Desktop App</h4>
+        </div>
+
         <Panel>
           <Panel.Heading>
             <Panel.Title>Version Info</Panel.Title>

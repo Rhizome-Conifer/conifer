@@ -9,6 +9,7 @@ import { homepageAnnouncement, supportEmail } from 'config';
 import { loadCollections } from 'store/modules/auth';
 import { showModal } from 'store/modules/userLogin';
 
+import RedirectWithStatus from 'components/RedirectWithStatus';
 import { HomepageAnnouncement, HomepageMessage } from 'components/siteComponents';
 import { StandaloneRecorder } from 'containers';
 
@@ -114,6 +115,10 @@ class Home extends PureComponent {
     const { auth, showModalCB } = this.props;
     const user = auth.get('user');
 
+    if (__DESKTOP__) {
+      return <RedirectWithStatus to={`/${user.get('username')}`} />;
+    }
+
     return (
       <React.Fragment>
         <Helmet>
@@ -123,14 +128,7 @@ class Home extends PureComponent {
           <h1>Webrecorder</h1>
         </div>
         <div className="row tagline">
-          {
-            !__DESKTOP__ ?
-              <h4 className="text-center">Collect & Revisit the Web</h4> :
-              <div className="desktop-subhead">
-                <h4>Desktop App</h4>
-                <p><Link to={`/${auth.getIn(['user', 'username'])}`}>View Collections ({auth.getIn(['user', 'num_collections'])})</Link></p>
-              </div>
-          }
+          <h4 className="text-center">Collect & Revisit the Web</h4>
         </div>
         {
           user.get('anon') && user.get('num_collections') > 0 &&
@@ -141,14 +139,13 @@ class Home extends PureComponent {
         <div className="row top-buffer-lg bottom-buffer-lg">
           <StandaloneRecorder />
         </div>
+
         {
           homepageAnnouncement &&
             <HomepageAnnouncement />
         }
 
-        { !__DESKTOP__ &&
-            this.homepageMarketing()
-        }
+        this.homepageMarketing()
       </React.Fragment>
     );
   }

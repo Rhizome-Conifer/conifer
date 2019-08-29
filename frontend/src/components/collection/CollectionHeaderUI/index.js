@@ -188,21 +188,6 @@ class CollectionHeaderUI extends Component {
                   <MenuItem onClick={this.newSession}>New Session</MenuItem>
                   <MenuItem divider />
                   <MenuItem onClick={this.togglePublicView}>Cover</MenuItem>
-
-                  {
-                    newFeatures &&
-                      <MenuItem divider />
-                  }
-
-                  {
-                    newFeatures &&
-                      <MenuItem onClick={this.props.toggleAutomationModal}>Automation <sup>beta</sup></MenuItem>
-                  }
-
-                  {
-                    newFeatures && this.props.active &&
-                      <MenuItem onClick={this.stopAutomation}>Stop Automation</MenuItem>
-                  }
                   <MenuItem divider />
                   <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
                   {
@@ -272,7 +257,7 @@ class CollectionHeaderUI extends Component {
           <div className="access-row">
             <Link to={getCollectionLink(collection)}>Collection Cover</Link>
             {
-              !isAnon && canAdmin &&
+              !isAnon && canAdmin && !__DESKTOP__ &&
                 <PublicSwitch
                   callback={this.setPublic}
                   isPublic={isPublic}

@@ -66,12 +66,17 @@
 }
 
 .start-recording-homepage {
-    button[type='submit'] {
+    button {
         float: right;
-        margin-top: 1.5rem;
+    }
+
+    button + button {
+        margin-right: .5rem;
+    }
+
+    button[type='submit'] {
         background: $blue;
         color: #FFF;
-        padding: 1rem 2rem;
     }
 
     button#prepare {

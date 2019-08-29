@@ -14,6 +14,11 @@ import { UserIcon } from 'components/icons';
 import LoginForm from './loginForm';
 import './style.scss';
 
+let shell;
+if (__DESKTOP__) {
+  shell = window.require('electron').shell; // eslint-disable-line
+}
+
 
 class UserManagementUI extends PureComponent {
   static propTypes = {
@@ -90,6 +95,11 @@ class UserManagementUI extends PureComponent {
     this.props.history.push('/_register');
   }
 
+  openDesktopHelp = (evt) => {
+    evt.preventDefault();
+    shell.openExternal('https://github.com/webrecorder/webrecorder-desktop#webrecorder-desktop-app');
+  }
+
   save = (data) => {
     this.setState({ formError: false });
     this.props.loginFn(data);
@@ -138,12 +148,19 @@ class UserManagementUI extends PureComponent {
               </li>
           }
 
-          <li className="navbar-text hidden-xs">
-            <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
-          </li>
+          {
+            !__DESKTOP__ &&
+              <li className="navbar-text hidden-xs">
+                <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
+              </li>
+          }
 
           <li className="hidden-xs">
-            <a href="https://guide.webrecorder.io/" target="_blank">Help</a>
+            {
+              __DESKTOP__ ?
+                <button className="button-link" onClick={this.openDesktopHelp} type="button">Help</button> :
+                <a href="https://guide.webrecorder.io/" target="_blank">Help</a>
+            }
           </li>
 
           {
@@ -186,16 +203,27 @@ class UserManagementUI extends PureComponent {
                 }
 
                 {
-                  !isAnon &&
-                    <MenuItem onClick={this.goToSettings}><span className="glyphicon glyphicon-wrench" /> Account Settings</MenuItem>
+                  __DESKTOP__ &&
+                    <MenuItem divider />
                 }
 
-                <MenuItem divider />
-                <MenuItem href="https://guide.webrecorder.io/" target="_blank">User Guide</MenuItem>
-                <MenuItem href="mailto:support@webrecorder.io" target="_blank">Contact Support</MenuItem>
-                <MenuItem divider />
-                <MenuItem onClick={this.goToFAQ}>About Webrecorder</MenuItem>
-                <MenuItem href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</MenuItem>
+                {
+                  !isAnon &&
+                    <MenuItem onClick={this.goToSettings}><span className="glyphicon glyphicon-wrench" /> { __DESKTOP__ ? 'App' : 'Account' } Settings</MenuItem>
+                }
+
+                {
+                  !__DESKTOP__ &&
+                    <React.Fragment>
+                      <MenuItem divider />
+                      <MenuItem href="https://guide.webrecorder.io/" target="_blank">User Guide</MenuItem>
+                      <MenuItem href="mailto:support@webrecorder.io" target="_blank">Contact Support</MenuItem>
+                      <MenuItem divider />
+                      <MenuItem onClick={this.goToFAQ}>About Webrecorder</MenuItem>
+                      <MenuItem href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</MenuItem>
+                    </React.Fragment>
+                }
+
                 {
                   (!isAnon && !__DESKTOP__) &&
                     <React.Fragment>

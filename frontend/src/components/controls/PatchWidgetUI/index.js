@@ -43,7 +43,7 @@ class PatchWidgetUI extends Component {
     const archiveName = (
       stats && stats.length ?
         `Patched from ${stats.length} source${stats.length === 1 ? '' : 's'}` :
-        'Nothing Patched Yet'
+        'Patching'
     );
 
     return (
