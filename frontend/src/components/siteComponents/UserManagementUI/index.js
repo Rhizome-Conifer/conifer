@@ -14,6 +14,11 @@ import { UserIcon } from 'components/icons';
 import LoginForm from './loginForm';
 import './style.scss';
 
+let shell;
+if (__DESKTOP__) {
+  shell = window.require('electron').shell; // eslint-disable-line
+}
+
 
 class UserManagementUI extends PureComponent {
   static propTypes = {
@@ -90,6 +95,11 @@ class UserManagementUI extends PureComponent {
     this.props.history.push('/_register');
   }
 
+  openDesktopHelp = (evt) => {
+    evt.preventDefault();
+    shell.openExternal('https://github.com/webrecorder/webrecorder-desktop#webrecorder-desktop-app');
+  }
+
   save = (data) => {
     this.setState({ formError: false });
     this.props.loginFn(data);
@@ -146,7 +156,11 @@ class UserManagementUI extends PureComponent {
           }
 
           <li className="hidden-xs">
-            <a href={__DESKTOP__ ? 'https://github.com/webrecorder/webrecorder-desktop#webrecorder-desktop-app' : 'https://guide.webrecorder.io/'} target="_blank">Help</a>
+            {
+              __DESKTOP__ ?
+                <a href="#" onClick={this.openDesktopHelp}>Help</a> :
+                <a href="https://guide.webrecorder.io/" target="_blank">Help</a>
+            }
           </li>
 
           {
