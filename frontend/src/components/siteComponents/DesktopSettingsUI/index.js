@@ -22,7 +22,7 @@ import { LoaderIcon } from 'components/icons';
 
 import './style.scss';
 
-const { ipcRenderer } = window.require('electron');
+const { ipcRenderer, shell } = window.require('electron');
 
 
 class DesktopSettingsUI extends Component {
@@ -64,6 +64,10 @@ class DesktopSettingsUI extends Component {
   handleVersionResponse = (evt, arg) => {
     const { dataPath, version } = arg.config;
     this.setState({ dataPath, version: appendFlashVersion(version) });
+  }
+
+  openDataDir = () => {
+    shell.openItem(this.state.dataPath);
   }
 
   sendDelete = (evt) => {
@@ -163,34 +167,38 @@ class DesktopSettingsUI extends Component {
           </Panel.Heading>
           <Panel.Body>
             <span><b>Data Directory:</b></span>
-            <p>{this.state.dataPath}</p>
+            <p>
+              <button onClick={this.openDataDir} className="button-link" type="button">{this.state.dataPath}</button>
+            </p>
             <span><b>Space Used:</b> </span>
             <SizeFormat bytes={usedSpace} /> <em>of <SizeFormat bytes={totalSpace} /></em>
             <ProgressBar now={(usedSpace / totalSpace) * 100} bsStyle="success" />
           </Panel.Body>
         </Panel>
 
-        <Panel className="buffer-top" bsStyle="danger">
-          <Panel.Heading>
-            <Panel.Title>Remove Local Data</Panel.Title>
-          </Panel.Heading>
-          <Panel.Body>
-            <div className="row col-md-12">
-              <div>
-                <b>Permanently remove all local archived data for this user</b>
-                <p>This action can not be undone!</p>
-                <Button bsStyle="danger" bsSize="sm" onClick={this.toggleDelete}>Clear Local Data</Button>
+        {/*
+          <Panel className="buffer-top" bsStyle="danger">
+            <Panel.Heading>
+              <Panel.Title>Remove Local Data</Panel.Title>
+            </Panel.Heading>
+            <Panel.Body>
+              <div className="row col-md-12">
+                <div>
+                  <b>Permanently remove all local archived data for this user</b>
+                  <p>This action can not be undone!</p>
+                  <Button bsStyle="danger" bsSize="sm" onClick={this.toggleDelete}>Clear Local Data</Button>
+                </div>
               </div>
-            </div>
-          </Panel.Body>
-        </Panel>
-        <Modal
-          body={confirmDeleteBody}
-          closeCb={this.closeDeleteModal}
-          dialogClassName="wr-delete-modal"
-          footer={confirmDeleteFooter}
-          header="Confirm Delete Account?"
-          visible={showModal} />
+            </Panel.Body>
+          </Panel>
+          <Modal
+            body={confirmDeleteBody}
+            closeCb={this.closeDeleteModal}
+            dialogClassName="wr-delete-modal"
+            footer={confirmDeleteFooter}
+            header="Confirm Delete Account?"
+            visible={showModal} />
+          */}
       </div>
     );
   }
