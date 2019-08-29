@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
+import { appendFlashVersion } from 'helpers/utils';
+
 import './style.scss';
 
 const { ipcRenderer } = window.require('electron');
@@ -36,7 +38,8 @@ class Help extends Component {
   handleVersionResponse = (evt, arg) => {
     const { version } = arg.config;
     const { stdout } = arg;
-    this.setState({ version, stdout });
+
+    this.setState({ version: appendFlashVersion(version), stdout });
 
     setTimeout(this.update, 100);
   }

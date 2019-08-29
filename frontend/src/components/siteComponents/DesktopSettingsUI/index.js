@@ -14,6 +14,7 @@ import {
 } from 'react-bootstrap';
 
 import { supportEmail } from 'config';
+import { appendFlashVersion } from 'helpers/utils';
 
 import Modal from 'components/Modal';
 import SizeFormat from 'components/SizeFormat';
@@ -62,7 +63,7 @@ class DesktopSettingsUI extends Component {
 
   handleVersionResponse = (evt, arg) => {
     const { dataPath, version } = arg.config;
-    this.setState({ dataPath, version });
+    this.setState({ dataPath, version: appendFlashVersion(version) });
   }
 
   sendDelete = (evt) => {
