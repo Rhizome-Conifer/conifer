@@ -42,11 +42,11 @@ export function apiFormatUrl(path) {
 
 
 export function appendFlashVersion(version) {
-  for (let plugin of navigator.plugins) {
+  navigator.plugins.forEach((plugin) => {
     if (plugin.name === "Shockwave Flash") {
       return `${version}<BR>${plugin.description.toLowerCase()}`;
     }
-  }
+  });
   return version;
 }
 
