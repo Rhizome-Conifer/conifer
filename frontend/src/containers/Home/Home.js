@@ -145,7 +145,9 @@ class Home extends PureComponent {
             <HomepageAnnouncement />
         }
 
-        this.homepageMarketing()
+        {
+          this.homepageMarketing()
+        }
       </React.Fragment>
     );
   }
