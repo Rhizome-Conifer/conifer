@@ -1,7 +1,6 @@
 @import 'src/vars';
 
 .wr-coll-meta {
-    margin-top: 5rem;
 
     button + button {
         margin-left: 1.6rem;
@@ -20,13 +19,14 @@
         margin-left: 0;
     }
 
-    &:after {
+    .start-form:after {
         content: '';
         display: block;
         width: 100%;
         border: solid .1rem $black;
         border-width: 0 0 .1rem 0;
-        padding-top: 5rem;
+        padding-top: 3.5rem;
+        margin-bottom: 3.5rem;
     }
 }
 
@@ -84,7 +84,6 @@ a.collection-title:hover {
 }
 
 .collection-description {
-    margin-top:4.5rem;
 
     .collection-username {
         font-size: 1.8rem;
@@ -124,6 +123,7 @@ a.collection-title:hover {
     }
 
     .wr-inline-editor {
+        margin-top: 0;
         line-height: 1;
         color: $gray550;
         width: 100%;
