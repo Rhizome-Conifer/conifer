@@ -9,8 +9,6 @@ import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
 
 import { CollectionDropdown, ExtractWidget, RemoteBrowserSelect } from 'containers';
 
-import WYSIWYG from 'components/WYSIWYG';
-
 import './style.scss';
 
 const ipcRenderer = __DESKTOP__ ? window.require('electron').ipcRenderer : null;
@@ -201,6 +199,7 @@ class StandaloneRecorderUI extends Component {
               <button onClick={this.startPreview} type="button" className="rounded" aria-label="start preview">Preview</button>
           }
         </div>
+        <div className="clearfix" />
       </form>
     );
   }
