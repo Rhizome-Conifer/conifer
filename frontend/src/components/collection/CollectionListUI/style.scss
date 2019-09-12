@@ -1,6 +1,7 @@
 @import 'src/vars';
 
 .wr-coll-meta {
+    margin-top: 3.5rem;
 
     button + button {
         margin-left: 1.6rem;
@@ -8,9 +9,9 @@
 }
 
 .collection-start-form {
-    margin-top: 3.5rem;
 
     & > h4 {
+        margin-top: 0;
         padding-left: 1.5rem;
     }
 
@@ -84,6 +85,7 @@ a.collection-title:hover {
 }
 
 .collection-description {
+    margin-top: 3.5rem;
 
     .collection-username {
         font-size: 1.8rem;
@@ -123,10 +125,14 @@ a.collection-title:hover {
     }
 
     .wr-inline-editor {
-        margin-top: 0;
+        margin-top: 0 !important;
         line-height: 1;
         color: $gray550;
         width: 100%;
+
+        h2 {
+            margin-top: 0;
+        }
 
         .glyphicon {
             color: $gray500;
@@ -287,10 +293,6 @@ a.collection-title:hover {
         }
     }
 
-
-    .collection-description .wr-coll-meta {
-        margin-top: 3.5rem;
-    }
     .collection-list li.has-description {
         .collection-list-size span {
             padding: 0.7rem 0;

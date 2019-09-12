@@ -107,7 +107,7 @@ class CollectionListUI extends Component {
         <Helmet>
           <title>{`${displayName}'s Collections`}</title>
         </Helmet>
-        <Row className="collection-start-form">
+        <Row>
           {
             !__DESKTOP__ &&
               <Col xs={12} sm={3} className="collection-description">
@@ -146,30 +146,30 @@ class CollectionListUI extends Component {
                   success={this.props.edited} />
               </Col>
           }
-          <Col className="start-form" xs={12} sm={__DESKTOP__ ? 10 : 9} smOffset={__DESKTOP__ ? 1 : 0}>
-            <h4>New Capture</h4>
-            <StandaloneRecorder />
-          </Col>
-        </Row>
-        <Row>
-          <Col xs={12} sm={__DESKTOP__ ? 10 : 9} smOffset={__DESKTOP__ ? 1 : 3} className="wr-coll-meta">
-
-            <Row>
-              <Col xs={12} className={classNames('collections-index-nav', { desktop: __DESKTOP__ })}>
-                {
-                  !isAnon && canAdmin &&
-                    <React.Fragment>
-                      { __DESKTOP__ && <h4>My Collections</h4> }
-                      <Button onClick={this.toggle} className="rounded">
-                        <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
-                      </Button>
-                      <Upload classes="rounded">
-                        <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' }
-                      </Upload>
-                    </React.Fragment>
-                }
-              </Col>
-            </Row>
+          <Col xs={12} sm={__DESKTOP__ ? 10 : 9} smOffset={__DESKTOP__ ? 1 : 0} className="wr-coll-meta">
+            {
+              canAdmin &&
+                <Row className="collection-start-form">
+                  <Col className="start-form" xs={12}>
+                    <h4>New Capture</h4>
+                    <StandaloneRecorder />
+                  </Col>
+                </Row>
+            }
+            {
+              !isAnon && canAdmin &&
+                <Row>
+                  <Col xs={12} className={classNames('collections-index-nav', { desktop: __DESKTOP__ })}>
+                    { __DESKTOP__ && <h4>My Collections</h4> }
+                    <Button onClick={this.toggle} className="rounded">
+                      <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
+                    </Button>
+                    <Upload classes="rounded">
+                      <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' }
+                    </Upload>
+                  </Col>
+                </Row>
+            }
             {
               collections && collections.get('loaded') &&
                 <Row>
