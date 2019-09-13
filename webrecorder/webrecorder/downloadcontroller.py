@@ -9,7 +9,7 @@ from webrecorder import __version__
 
 from webrecorder.models.stats import Stats
 
-from bottle import response
+from bottle import response, request
 from six.moves.urllib.parse import quote
 from six import iteritems
 from collections import OrderedDict
@@ -43,6 +43,14 @@ class DownloadController(BaseController):
             self.redir_host()
 
             return self.handle_download(user, coll, '*')
+
+        @self.app.get('/api/v1/download/webdata')
+        def wasapi_list_api():
+            return self.wasapi_list()
+
+        @self.app.get('/api/v1/download/<user>/<coll>/<filename>')
+        def wasapi_download_api(user, coll, filename):
+            return self.wasapi_download(user, coll, filename)
 
     def create_warcinfo(self, creator, name, metadata, source, serialized, filename):
         for key, value in iteritems(serialized):
@@ -173,3 +181,78 @@ class DownloadController(BaseController):
             response.headers['Transfer-Encoding'] = 'chunked'
 
             return read_all(iter_infos())
+
+    def wasapi_list(self):
+        username = request.query.getunicode('user')
+        coll_name = request.query.getunicode('coll_name')
+        user, collection = self.user_manager.get_user_coll(username, coll_name)
+        if not user:
+            self._raise_error(404, 'no_such_user')
+
+        # todo: double check this
+        self.access.assert_is_curr_user(user)
+
+        if coll_name:
+            if collection:
+                colls = [collection]
+            else:
+                self._raise_error(404, 'no_such_collection')
+
+        else:
+            colls = user.get_collections()
+
+        files = []
+        download_path = self.get_origin() + '/api/v1/download/{user}/{coll}/{filename}'
+
+        for collection in colls:
+            for recording in collection.get_recordings():
+                if not recording.is_fully_committed():
+                    continue
+
+                for name, path in recording.iter_all_files(include_index=False):
+                    path = download_path.format(user=username,
+                                                coll=collection.name,
+                                                filename=name)
+
+                    files.append({'content-type': 'application/warc',
+                                  'filename': name,
+                                  'rec_id': recording.my_id,
+                                  'coll_name': collection.name,
+                                  'locations': [path]})
+
+        return {'files': files, 'include-extra': True}
+
+    def wasapi_download(self, user, coll_name, filename):
+        user, collection = self.user_manager.get_user_coll(user, coll_name)
+
+        if not user:
+            self._raise_error(404, 'no_such_user')
+
+        if not collection:
+            self._raise_error(404, 'no_such_collection')
+
+        # only users with write access can use wasapi
+        self.access.assert_can_write_coll(collection)
+
+        warc_key = collection.get_warc_key()
+        warc_path = self.redis.hget(warc_key, filename)
+
+        if not warc_path:
+            self._raise_error(404, 'file_not_found')
+
+        response.headers['Content-Type'] = 'application/octet-stream'
+        response.headers['Content-Disposition'] = "attachment; filename*=UTF-8''" + filename
+        response.headers['Transfer-Encoding'] = 'chunked'
+
+        loader = BlockLoader()
+
+        try:
+            fh = loader.load(warc_path)
+        except Exception:
+            self._raise_error(400, 'file_load_error')
+
+        def read_all(fh):
+            for chunk in StreamIter(fh):
+                yield chunk
+
+        return read_all(fh)

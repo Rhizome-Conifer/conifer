@@ -54,6 +54,11 @@ class BaseController(object):
         url += path
         return bottle_redirect(url, code=status)
 
+    def get_origin(self):
+        origin = request.environ['wsgi.url_scheme'] + '://'
+        origin += self.app_host if self.app_host else request.environ.get('HTTP_HOST')
+        return origin
+
     def is_content_request(self):
         if not self.content_host:
             return False
