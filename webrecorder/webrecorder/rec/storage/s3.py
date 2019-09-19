@@ -1,8 +1,8 @@
-import boto3
-import os
 import logging
+import os
 
-from six.moves.urllib.parse import urlsplit, quote_plus
+import boto3
+from six.moves.urllib.parse import urlsplit
 
 from webrecorder.rec.storage.base import BaseStorage
 
@@ -16,15 +16,16 @@ class S3Storage(BaseStorage):
     :ivar str bucket_name: name of S3 bucket
     :ivar s3: service client
     """
+
     def __init__(self):
         """Initialize Webrecorder storage."""
-        super(S3Storage, self).__init__()
-        self.storage_root = os.environ['S3_ROOT']
+        super(S3Storage, self).__init__(os.environ['S3_ROOT'])
 
         res = self._split_bucket_path(self.storage_root)
         self.bucket_name, self.storage_root = res
 
         self.s3 = boto3.client('s3')
+        self.is_local_storage = False
 
     def _split_bucket_path(self, url):
         """Split S3 bucket URL into network location and path.
@@ -128,3 +129,35 @@ class S3Storage(BaseStorage):
         except Exception as e:
             logger.debug(str(e))
             return False
+
+    def create_presigned_url(self, url, expires=3600):
+        """
+
+        :param url:
+        :param expires:
+        :return:
+        """
+        _, path = self._split_bucket_path(url)
+        params = {'Bucket': self.bucket_name, 'Key': path}
+        try:
+            return self.s3.generate_presigned_url('get_object', Params=params, ExpiresIn=expires)
+        except Exception:
+            return None
+
+    def get_checksum(self, filename):
+        """
+
+        :param str filename:
+        :return:
+        :rtype: str|None
+        """
+        _, path = self._split_bucket_path(filename)
+        try:
+
+            res = self.s3.head_object(Bucket=self.bucket_name,
+                                      Key=path)
+            # strip off quotes and return md5
+            # NOTE: the ETag is
+            return 'md5:' + res['ETag'][1:-1]
+        except Exception:
+            return None

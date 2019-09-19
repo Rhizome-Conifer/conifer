@@ -6,9 +6,11 @@ class BaseStorage(object):
     :ivar str storage_root: root directory
     """
 
-    def __init__(self):
+    def __init__(self, storage_root=None):
         """Initialize Webrecorder storage."""
         self.cache = {}
+        self.storage_root = storage_root
+        self.is_local_storage = True
 
     def get_collection_url(self, collection):
         """Return collection URL.
@@ -117,4 +119,17 @@ class BaseStorage(object):
             return False
 
         return self.do_delete(target_url, filename)
+
+    def get_checksum(self, filename):
+        return ''
+
+    def do_delete(self, target_url, client_url):
+        """Delete file from storage.
+
+        :param str target_url: target URL
+        :param str client_url: client URL
+        :returns: whether successful or not
+        :rtype: bool
+        """
+        return True
 

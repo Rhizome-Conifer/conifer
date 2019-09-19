@@ -62,12 +62,12 @@ class DownloadController(BaseController):
             metadata['auto_title'] = True
 
         info = OrderedDict([
-                ('software', 'Webrecorder Platform v' + __version__),
-                ('format', 'WARC File Format 1.0'),
-                ('creator', creator.name),
-                ('isPartOf', name),
-                ('json-metadata', json.dumps(metadata)),
-               ])
+            ('software', 'Webrecorder Platform v' + __version__),
+            ('format', 'WARC File Format 1.0'),
+            ('creator', creator.name),
+            ('isPartOf', name),
+            ('json-metadata', json.dumps(metadata)),
+        ])
 
         wi_writer = BufferWARCWriter()
         wi_writer.write_record(wi_writer.create_warcinfo_record(filename, info))
@@ -89,9 +89,9 @@ class DownloadController(BaseController):
 
     def create_rec_warcinfo(self, user, collection, recording, filename=''):
         metadata = {}
-        #metadata['pages'] = collection.list_rec_pages(recording)
+        # metadata['pages'] = collection.list_rec_pages(recording)
         metadata['type'] = 'recording'
-        #metadata['id'] = recording.my_id
+        # metadata['id'] = recording.my_id
         rec_type = recording.get_prop('rec_type')
         if rec_type:
             metadata['rec_type'] = rec_type
@@ -111,7 +111,7 @@ class DownloadController(BaseController):
 
         self.access.assert_can_write_coll(collection)
 
-        #collection['uid'] = coll
+        # collection['uid'] = coll
         collection.load()
 
         Stats(self.redis).incr_download(collection)
@@ -157,7 +157,7 @@ class DownloadController(BaseController):
                 for n, warc_path in recording.iter_all_files():
                     try:
                         fh = loader.load(warc_path)
-                    except:
+                    except Exception:
                         print('Skipping invalid ' + warc_path)
                         continue
 
@@ -177,7 +177,7 @@ class DownloadController(BaseController):
             return read_all(infos)
 
         else:
-        # stream everything
+            # stream everything
             response.headers['Transfer-Encoding'] = 'chunked'
 
             return read_all(iter_infos())
@@ -190,8 +190,15 @@ class DownloadController(BaseController):
             self._raise_error(404, 'no_such_user')
 
         # todo: double check this
-        self.access.assert_is_curr_user(user)
+        basic_auth = request.auth
+        if basic_auth:
+            authed_user = self.user_manager.get_authenticated_user(basic_auth[0], basic_auth[1])
+            if not authed_user or authed_user.my_id != user.my_id:
+                self._raise_error(404, 'Only Valid for Current User')
+        else:
+            self.access.assert_is_curr_user(user)
 
+        colls = None
         if coll_name:
             if collection:
                 colls = [collection]
@@ -205,19 +212,23 @@ class DownloadController(BaseController):
         download_path = self.get_origin() + '/api/v1/download/{user}/{coll}/{filename}'
 
         for collection in colls:
+            storage = collection.get_storage()
             for recording in collection.get_recordings():
                 if not recording.is_fully_committed():
                     continue
 
                 for name, path in recording.iter_all_files(include_index=False):
-                    path = download_path.format(user=username,
-                                                coll=collection.name,
-                                                filename=name)
+                    full_warc_path = collection.get_warc_path(name)
+                    if storage.is_local_storage:
+                        path = download_path.format(user=username, coll=collection.name, filename=name)
+                    else:
+                        path = storage.create_presigned_url(full_warc_path)
 
                     files.append({'content-type': 'application/warc',
                                   'filename': name,
                                   'rec_id': recording.my_id,
                                   'coll_name': collection.name,
+                                  'checksum': storage.get_checksum(full_warc_path),
                                   'locations': [path]})
 
         return {'files': files, 'include-extra': True}
@@ -245,7 +256,7 @@ class DownloadController(BaseController):
         response.headers['Transfer-Encoding'] = 'chunked'
 
         loader = BlockLoader()
-
+        fh = None
         try:
             fh = loader.load(warc_path)
         except Exception:

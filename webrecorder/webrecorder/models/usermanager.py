@@ -210,6 +210,23 @@ class UserManager(object):
 
         return new_username
 
+    def get_authenticated_user(self, username, password):
+        """Returns the user matching the supplied username and password otherwise
+        returns None
+
+        :param str username: The username of the user
+        :param str password: The users password
+        :return: The authenticated user
+        :rtype: User|None
+        """
+        # first, authenticate the user
+        # if failing, see if case-insensitive username and try that
+        if not self.cork.is_authenticate(username, password):
+            username = self.find_case_insensitive_username(username)
+            if not username or not self.cork.is_authenticate(username, password):
+                return None
+        return self.all_users[username]
+
     def login_user(self, input_data):
         """Authenticate users"""
         username = input_data.get('username', '')
@@ -220,22 +237,20 @@ class UserManager(object):
         except ValidationException as ve:
             return {'error': str(ve)}
 
+        user = self.get_authenticated_user(username, password)
         # first, authenticate the user
         # if failing, see if case-insensitive username and try that
-        if not self.cork.is_authenticate(username, password):
-            username = self.find_case_insensitive_username(username)
-            if not username or not self.cork.is_authenticate(username, password):
-                return {'error': 'invalid_login'}
+        if not user:
+            return {'error': 'invalid_login'}
 
         # if not enough space, don't continue with login
         if move_info:
-            if not self.has_space_for_new_collection(username,
+            if not self.has_space_for_new_collection(user.my_id,
                                                      move_info['from_user'],
                                                     'temp'):
                 #return {'error': 'Sorry, not enough space to import this Temporary Collection into your account.'}
                 return {'error': 'out_of_space'}
 
-        user = self.all_users[username]
         new_collection = None
 
         try:
@@ -248,7 +263,7 @@ class UserManager(object):
         remember_me = get_bool(input_data.get('remember_me'))
 
         # login session and access system
-        self.access.log_in(username, remember_me)
+        self.access.log_in(user.my_id, remember_me)
 
         user.update_last_login()
 
@@ -568,6 +583,7 @@ class UserManager(object):
 
         return None, self.create_new_user(username, {'email': email,
                                                      'name': name})
+
     def create_user_from_reg(self, reg, username):
         user, init_info = self.cork.validate_registration(reg, username)
 
