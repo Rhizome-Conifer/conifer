@@ -8,11 +8,13 @@ from webrecorder.basecontroller import BaseController
 from webrecorder import __version__
 
 from webrecorder.models.stats import Stats
+from webrecorder.utils import get_bool
 
 from bottle import response, request
 from six.moves.urllib.parse import quote
 from six import iteritems
 from collections import OrderedDict
+import gevent
 import json
 
 
@@ -185,6 +187,7 @@ class DownloadController(BaseController):
     def wasapi_list(self):
         username = request.query.getunicode('user')
         coll_name = request.query.getunicode('coll_name')
+        commit = get_bool(request.query.getunicode('commit'))
         user, collection = self.user_manager.get_user_coll(username, coll_name)
         if not user:
             self._raise_error(404, 'no_such_user')
@@ -212,6 +215,12 @@ class DownloadController(BaseController):
         download_path = self.get_origin() + '/api/v1/download/{user}/{coll}/{filename}'
 
         for collection in colls:
+            if commit:
+                commit_id = collection.commit_all()
+                while commit_id:
+                   gevent.sleep(10)
+                   commit_id = collection.commit_all(commit_id)
+
             storage = collection.get_storage()
             for recording in collection.get_recordings():
                 if not recording.is_fully_committed():
