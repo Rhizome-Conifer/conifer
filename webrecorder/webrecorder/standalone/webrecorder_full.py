@@ -20,7 +20,9 @@ class WebrecorderRunner(StandaloneRunner):
 
     def __init__(self, argres):
         self.root_dir = argres.root_dir
-        self.redis_dir = os.path.join(self.root_dir, 'redis')
+        self.redis_dir = os.path.join(self.root_dir, argres.redis_dir) if argres.redis_dir else self.root_dir
+        self.redis_db = argres.redis_db
+        self.redis_aof = argres.redis_aof
 
         self.user_manager = None
 
@@ -64,7 +66,9 @@ class WebrecorderRunner(StandaloneRunner):
             os.environ['BEHAVIORS_TARFILE'] = self.behaviors_tarfile
 
         self.redis_server = LocalRedisServer(port=self.REDIS_PORT,
-                                             redis_dir=self.redis_dir)
+                                             redis_dir=self.redis_dir,
+                                             redis_db=self.redis_db,
+                                             redis_aof=self.redis_aof)
 
         self.browser_redis = self.redis_server.start()
 
@@ -120,6 +124,17 @@ class WebrecorderRunner(StandaloneRunner):
         parser.add_argument('--behaviors-tarfile',
                             default=None,
                             help='Behaviors Tarfile')
+
+        parser.add_argument('--redis-dir',
+                            default=None,
+                            help='Redis Dir Name')
+
+        parser.add_argument('--redis-db',
+                            default='dump.rdb',
+                            help='Redis DB Name')
+
+        parser.add_argument('--redis-aof', action='store_true')
+
 
 
 # ============================================================================

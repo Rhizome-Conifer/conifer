@@ -13,13 +13,11 @@ DEFAULT_REDIS_SETTINGS = [
     ('aof-rewrite-incremental-fsync', 'yes'),
     ('appendfilename', 'appendonly.aof'),
     ('appendfsync', 'everysec'),
-    ('appendonly', 'yes'),
     ('auto-aof-rewrite-min-size', '64mb'),
     ('auto-aof-rewrite-percentage', '100'),
     ('bind', '127.0.0.1'),
     ('daemonize', 'no'),
     ('databases', '16'),
-    ('dbfilename', 'redis.db'),
     ('hash-max-ziplist-entries', '512'),
     ('hash-max-ziplist-value', '64'),
     ('hll-sparse-max-bytes', '3000'),
@@ -59,9 +57,11 @@ DEFAULT_REDIS_SETTINGS = [
 class LocalRedisServer:
     MAIN_REDIS_CONN_NAME = '@wr-runner'
 
-    def __init__(self, port, redis_dir=None, db=0):
+    def __init__(self, port, redis_dir=None, db=0, redis_db=None, redis_aof=True):
         self.port = port
         self.db = db
+        self.redis_db = redis_db
+        self.redis_aof = redis_aof
 
         if not redis_dir:
             self.temp_dir_obj = tempfile.TemporaryDirectory(prefix='redis')
@@ -70,6 +70,8 @@ class LocalRedisServer:
             self.redis_dir = redis_dir
             os.makedirs(redis_dir, exist_ok=True)
             self.temp_dir_obj = None
+
+        self.redis_dir = os.path.abspath(self.redis_dir)
 
         self.pidfile = os.path.abspath(os.path.join(self.redis_dir, 'redis.pid'))
 
@@ -158,9 +160,13 @@ class LocalRedisServer:
     def create_redis_server(self):
         self.redis_conf_path = os.path.join(self.redis_dir, 'redis.conf')
 
+        redis_db = self.redis_db or 'redis.db'
+
         config = DEFAULT_REDIS_SETTINGS.copy()
         config.append(('dir', self.redis_dir))
         config.append(('pidfile', self.pidfile))
+        config.append(('dbfilename', redis_db))
+        config.append(('appendonly', 'yes' if self.redis_aof else 'no'))
 
         with open(self.redis_conf_path, 'wt') as fh:
             for key, value in config:

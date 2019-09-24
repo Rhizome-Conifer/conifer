@@ -23,7 +23,7 @@ class BehaviorMgr(BaseController):
         self.default_behavior = {}
         self.behaviors = {}
 
-        if self.behaviors_root:
+        if self.behaviors_root and self.behaviors_tarfile:
             self.behaviors_data = os.path.join(self.behaviors_root, 'dist')
             self.behaviors_metadata = os.path.join(self.behaviors_data, 'behaviorMetadata.json')
 
