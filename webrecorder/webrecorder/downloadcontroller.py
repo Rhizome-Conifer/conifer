@@ -218,8 +218,8 @@ class DownloadController(BaseController):
             if commit:
                 commit_id = collection.commit_all()
                 while commit_id:
-                   gevent.sleep(10)
-                   commit_id = collection.commit_all(commit_id)
+                    gevent.sleep(10)
+                    commit_id = collection.commit_all(commit_id)
 
             storage = collection.get_storage()
             for recording in collection.get_recordings():

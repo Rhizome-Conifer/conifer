@@ -120,6 +120,13 @@ class BaseStorageCommit(FullStackTests):
 
         assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''default-collection-")
 
+    def test_waspi_list(self):
+        assert self.redis.hget(REC_INFO, '@index_file') is not None
+        params = {'user': 'test'}
+        res = self.testapp.get('/api/v1/download/webdata', params=params)
+        result = self.redis.hgetall('c:{coll}:warc'.format(coll=COLL_ID))
+        assert res.json['files'][0].get('filename') == list(result.keys())[0]
+
     def test_create_new_coll(self):
         # Collection
         params = {'title': 'Another Coll'}

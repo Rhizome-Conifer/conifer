@@ -11,10 +11,16 @@ from pywb.utils.loaders import BlockLoader
 logger = logging.getLogger('wr.io')
 
 
-def md5_checksum(filename):
+def md5_checksum(full_file_path):
+    """Returns the md5 checksum of the supplied file path
+
+    :param str full_file_path: The file to
+    :return: the md5 checksum of the file
+    :rtype: str
+    """
     m = hashlib.md5()
     amount = 1024 * 1024
-    with BlockLoader().load(filename) as f:
+    with BlockLoader().load(full_file_path) as f:
         while 1:
             data = f.read(amount)
             if len(data) == 0:
@@ -168,5 +174,11 @@ class LocalFileStorage(DirectLocalFileStorage):
         return self.redis.publish('handle_delete_file', target_url) > 0
 
     def get_checksum(self, full_file_path):
+        """Returns the md5 checksum of the supplied file path
+
+        :param str full_file_path: The file to
+        :return: the md5 checksum of the file
+        :rtype: str
+        """
         return 'md5:' + md5_checksum(full_file_path)
 

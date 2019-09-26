@@ -131,33 +131,33 @@ class S3Storage(BaseStorage):
             return False
 
     def create_presigned_url(self, url, expires=3600):
-        """
+        """Returns a presigned URL for access to the supplied resource URL on s3
 
-        :param url:
-        :param expires:
-        :return:
+        :param str url: The URL to the resource on s3
+        :param int expires: The number of seconds the presigned url is valid for
+        :return: A presigned url for downloading the supplied URL straight from s3
+        :rtype: str|None
         """
-        _, path = self._split_bucket_path(url)
+        path = self.client_url_to_target_url(url)
         params = {'Bucket': self.bucket_name, 'Key': path}
         try:
             return self.s3.generate_presigned_url('get_object', Params=params, ExpiresIn=expires)
         except Exception:
             return None
 
-    def get_checksum(self, filename):
-        """
+    def get_checksum(self, url):
+        """Returns the checksum of the supplied URL on s3.
 
-        :param str filename:
-        :return:
+        :param str url: The URL to the resource on s3 that the checksum is desired for
+        :return: The checksum
         :rtype: str|None
         """
-        _, path = self._split_bucket_path(filename)
+        path = self.client_url_to_target_url(url)
         try:
 
             res = self.s3.head_object(Bucket=self.bucket_name,
                                       Key=path)
             # strip off quotes and return md5
-            # NOTE: the ETag is
             return 'md5:' + res['ETag'][1:-1]
         except Exception:
             return None
