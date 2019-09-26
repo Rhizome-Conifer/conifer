@@ -127,6 +127,21 @@ class BaseStorageCommit(FullStackTests):
         result = self.redis.hgetall('c:{coll}:warc'.format(coll=COLL_ID))
         assert res.json['files'][0].get('filename') == list(result.keys())[0]
 
+    def test_waspi_download(self):
+        if not isinstance(self, TestLocalStorageCommit):
+            pytest.skip('waspi download is skipped for S3 storage')
+            return
+
+        assert self.redis.hget(REC_INFO, '@index_file') is not None
+        params = {'user': 'test'}
+        list_result = self.testapp.get('/api/v1/download/webdata', params=params)
+        locations = list_result.json['files'][0].get('locations', [])
+        assert len(locations) == 1
+        downloaded = self.testapp.get(locations[0])
+        assert len(downloaded.body) == int(downloaded.headers['Content-Length'])
+        result = self.redis.hgetall('c:{coll}:warc'.format(coll=COLL_ID))
+        assert downloaded.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''" + list(result.keys())[0])
+
     def test_create_new_coll(self):
         # Collection
         params = {'title': 'Another Coll'}
