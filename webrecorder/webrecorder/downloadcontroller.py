@@ -186,14 +186,21 @@ class DownloadController(BaseController):
 
     def wasapi_list(self):
         username = request.query.getunicode('user')
-        coll_name = request.query.getunicode('coll_name')
+        # some clients use collection rather than coll_name so we must check for both
+        coll_name = request.query.getunicode('coll_name') or request.query.getunicode('collection')
         commit = get_bool(request.query.getunicode('commit'))
+
+        basic_auth = request.auth
+        # if the username was not supplied as a query param it should be
+        # supplied via basic authentication
+        if username is None and basic_auth:
+            username = basic_auth[0]
+
         user, collection = self.user_manager.get_user_coll(username, coll_name)
+
         if not user:
             self._raise_error(404, 'no_such_user')
 
-        # todo: double check this
-        basic_auth = request.auth
         if basic_auth:
             authed_user = self.user_manager.get_authenticated_user(basic_auth[0], basic_auth[1])
             if not authed_user or authed_user.my_id != user.my_id:
@@ -232,13 +239,18 @@ class DownloadController(BaseController):
                         path = download_path.format(user=username, coll=collection.name, filename=name)
                     else:
                         path = storage.create_presigned_url(full_warc_path)
-
-                    files.append({'content-type': 'application/warc',
-                                  'filename': name,
-                                  'rec_id': recording.my_id,
-                                  'coll_name': collection.name,
-                                  'checksum': storage.get_checksum(full_warc_path),
-                                  'locations': [path]})
+                    kind, check_sum, size = storage.get_checksum_and_size(full_warc_path)
+                    files.append({
+                        'content-type': 'application/warc',
+                        'filetype': 'application/warc',
+                        'filename': name,
+                        'size': size,
+                        'recording': recording.my_id,
+                        'recording_date': recording.get_prop('created_at'),
+                        'collection': collection.name,
+                        'checksums': {kind: check_sum},
+                        'locations': [path]
+                    })
 
         return {'files': files, 'include-extra': True}
 

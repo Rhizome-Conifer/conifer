@@ -120,8 +120,14 @@ class BaseStorage(object):
 
         return self.do_delete(target_url, filename)
 
-    def get_checksum(self, filename):
-        return ''
+    def get_checksum_and_size(self, filepath_or_url):
+        """Returns the checksum of the supplied URL or filepath and the size of the resource
+
+        :param str filepath_or_url: The URL or filepath to the resource that the checksum and size is desired for
+        :return: A three tuple containing the kind of checksum, the checksum itself, and size
+        :rtype: tuple[str|None, str|None, int|None]
+        """
+        return None, None, None
 
     def do_delete(self, target_url, client_url):
         """Delete file from storage.

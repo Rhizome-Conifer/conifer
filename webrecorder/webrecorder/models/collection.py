@@ -402,9 +402,9 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return [key_pattern.replace('*', rec) for rec in recs]
 
     def get_warc_key(self):
-        """
+        """Returns the WARC key for this collection
 
-        :return:
+        :return: This collections WARC key
         :rtype: str
         """
         if self._warc_key is None:
@@ -412,6 +412,12 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return self._warc_key
 
     def get_warc_path(self, name):
+        """Returns the full path or URL to the WARC for the supplied recording name
+
+        :param str name: The recordings name
+        :return: The full path or URL to the WARC
+        :rtype: str
+        """
         return self.redis.hget(self.get_warc_key(), name)
 
     def commit_all(self, commit_id=None):

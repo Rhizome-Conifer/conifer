@@ -145,19 +145,19 @@ class S3Storage(BaseStorage):
         except Exception:
             return None
 
-    def get_checksum(self, url):
-        """Returns the checksum of the supplied URL on s3.
+    def get_checksum_and_size(self, filepath_or_url):
+        """Returns the checksum of the supplied URL or filepath and the size of the resource
 
-        :param str url: The URL to the resource on s3 that the checksum is desired for
-        :return: The checksum
-        :rtype: str|None
+        :param str filepath_or_url: The URL or filepath to the resource that the checksum and size is desired for
+        :return: A three tuple containing the kind of checksum, the checksum itself, and size
+        :rtype: tuple[str|None, str|None, int|None]
         """
-        path = self.client_url_to_target_url(url)
+        path = self.client_url_to_target_url(filepath_or_url)
         try:
 
             res = self.s3.head_object(Bucket=self.bucket_name,
                                       Key=path)
             # strip off quotes and return md5
-            return 'md5:' + res['ETag'][1:-1]
+            return 'etag', res['ETag'][1:-1], res['ContentLength']
         except Exception:
-            return None
+            return None, None, None

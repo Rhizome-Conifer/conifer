@@ -3,31 +3,14 @@ import logging
 import os
 import shutil
 import traceback
+from contextlib import closing
+
+from pywb.utils.loaders import BlockLoader
 
 from webrecorder.rec.storage.base import BaseStorage
 from webrecorder.rec.storage.storagepaths import add_local_store_prefix, strip_prefix
-from pywb.utils.loaders import BlockLoader
 
 logger = logging.getLogger('wr.io')
-
-
-def md5_checksum(full_file_path):
-    """Returns the md5 checksum of the supplied file path
-
-    :param str full_file_path: The file to
-    :return: the md5 checksum of the file
-    :rtype: str
-    """
-    m = hashlib.md5()
-    amount = 1024 * 1024
-    with BlockLoader().load(full_file_path) as f:
-        while 1:
-            data = f.read(amount)
-            if len(data) == 0:
-                break
-            m.update(data)
-
-    return m.hexdigest()
 
 
 # ============================================================================
@@ -173,12 +156,24 @@ class LocalFileStorage(DirectLocalFileStorage):
         """
         return self.redis.publish('handle_delete_file', target_url) > 0
 
-    def get_checksum(self, full_file_path):
-        """Returns the md5 checksum of the supplied file path
+    def get_checksum_and_size(self, filepath_or_url):
+        """Returns the checksum of the supplied URL or filepath and the size of the resource
 
-        :param str full_file_path: The file to
-        :return: the md5 checksum of the file
-        :rtype: str
+        :param str filepath_or_url: The URL or filepath to the resource that the checksum and size is desired for
+        :return: A three tuple containing the kind of checksum, the checksum itself, and size
+        :rtype: tuple[str|None, str|None, int|None]
         """
-        return 'md5:' + md5_checksum(full_file_path)
+        m = hashlib.md5()
+        amount = 1024 * 1024
+        total_size = 0
+        with closing(BlockLoader().load(filepath_or_url)) as f:
+            while 1:
+                chunk = f.read(amount)
+                chunk_size = len(chunk)
+                if chunk_size == 0:
+                    break
+                total_size += chunk_size
+                m.update(chunk)
+
+        return 'md5', m.hexdigest(), total_size
 
