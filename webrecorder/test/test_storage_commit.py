@@ -120,16 +120,16 @@ class BaseStorageCommit(FullStackTests):
 
         assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''default-collection-")
 
-    def test_waspi_list(self):
+    def test_wasapi_list(self):
         assert self.redis.hget(REC_INFO, '@index_file') is not None
         params = {'user': 'test'}
         res = self.testapp.get('/api/v1/download/webdata', params=params)
         result = self.redis.hgetall('c:{coll}:warc'.format(coll=COLL_ID))
         assert res.json['files'][0].get('filename') == list(result.keys())[0]
 
-    def test_waspi_download(self):
+    def test_wasapi_download(self):
         if not isinstance(self, TestLocalStorageCommit):
-            pytest.skip('waspi download is skipped for S3 storage')
+            pytest.skip('wasapi download is skipped for S3 storage')
             return
 
         assert self.redis.hget(REC_INFO, '@index_file') is not None

@@ -167,7 +167,7 @@ class LocalFileStorage(DirectLocalFileStorage):
         amount = 1024 * 1024
         total_size = 0
         with closing(BlockLoader().load(filepath_or_url)) as f:
-            while 1:
+            while True:
                 chunk = f.read(amount)
                 chunk_size = len(chunk)
                 if chunk_size == 0:

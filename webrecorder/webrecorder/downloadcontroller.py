@@ -184,32 +184,43 @@ class DownloadController(BaseController):
 
             return read_all(iter_infos())
 
+    def _get_wasapi_user(self, username=''):
+        basic_auth = request.auth
+
+        # if basic_auth, login as specified user, and user that as current user
+        if basic_auth:
+            user = self.user_manager.login_user_no_cookie(basic_auth[0], basic_auth[1])
+            if not user:
+                self._raise_error(404, 'invalid_login')
+
+        else:
+            # wasapi not supported for anon users
+            user = self.access.session_user
+            if user.is_anon():
+                self._raise_error(404, 'not_found')
+
+        # if username specified, override current/login user with specified user
+        # only useful for admin access
+        if username:
+            user = self.user_manager.get_user(username)
+
+        return user
+
     def wasapi_list(self):
         username = request.query.getunicode('user')
+
         # some clients use collection rather than coll_name so we must check for both
         coll_name = request.query.getunicode('coll_name') or request.query.getunicode('collection')
         commit = get_bool(request.query.getunicode('commit'))
 
-        basic_auth = request.auth
-        # if the username was not supplied as a query param it should be
-        # supplied via basic authentication
-        if username is None and basic_auth:
-            username = basic_auth[0]
+        user = self._get_wasapi_user()
 
-        user, collection = self.user_manager.get_user_coll(username, coll_name)
-
-        if not user:
-            self._raise_error(404, 'no_such_user')
-
-        if basic_auth:
-            authed_user = self.user_manager.get_authenticated_user(basic_auth[0], basic_auth[1])
-            if not authed_user or authed_user.my_id != user.my_id:
-                self._raise_error(404, 'Only Valid for Current User')
-        else:
-            self.access.assert_is_curr_user(user)
+        self.access.assert_is_curr_user(user)
 
         colls = None
+
         if coll_name:
+            collection = user.get_collection_by_name(coll_name)
             if collection:
                 colls = [collection]
             else:
@@ -236,7 +247,7 @@ class DownloadController(BaseController):
                 for name, path in recording.iter_all_files(include_index=False):
                     full_warc_path = collection.get_warc_path(name)
                     if storage.is_local_storage:
-                        path = download_path.format(user=username, coll=collection.name, filename=name)
+                        path = download_path.format(user=user.name, coll=collection.name, filename=name)
                     else:
                         path = storage.create_presigned_url(full_warc_path)
                     kind, check_sum, size = storage.get_checksum_and_size(full_warc_path)
@@ -254,15 +265,18 @@ class DownloadController(BaseController):
 
         return {'files': files, 'include-extra': True}
 
-    def wasapi_download(self, user, coll_name, filename):
-        user, collection = self.user_manager.get_user_coll(user, coll_name)
+    def wasapi_download(self, username, coll_name, filename):
+        user = self._get_wasapi_user(username)
 
         if not user:
             self._raise_error(404, 'no_such_user')
 
+        collection = user.get_collection_by_name(coll_name)
+
         if not collection:
             self._raise_error(404, 'no_such_collection')
 
+        #self.access.assert_is_curr_user(user)
         # only users with write access can use wasapi
         self.access.assert_can_write_coll(collection)
 

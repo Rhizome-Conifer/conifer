@@ -227,6 +227,21 @@ class UserManager(object):
                 return None
         return self.all_users[username]
 
+    def login_user_no_cookie(self, username, password):
+        try:
+            authed_user = self.get_authenticated_user(username, password)
+        except Exception:
+            return None
+
+        if not authed_user:
+            return None
+
+        self.access.log_in(username, False)
+        sesh = self.get_session()
+        sesh.should_save = False
+        sesh.should_renew = False
+        return authed_user
+
     def login_user(self, input_data):
         """Authenticate users"""
         username = input_data.get('username', '')
@@ -348,10 +363,15 @@ class UserManager(object):
     def get_roles(self):
         return [x for x in self.cork._store.roles]
 
-    def get_user_coll(self, username, coll_name):
+    def get_user(self, username):
         try:
-            user = self.all_users[username]
+            return self.all_users[username]
         except:
+            return None
+
+    def get_user_coll(self, username, coll_name):
+        user = self.get_user(username)
+        if not user:
             return None, None
 
         collection = user.get_collection_by_name(coll_name)

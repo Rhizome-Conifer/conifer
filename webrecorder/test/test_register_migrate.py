@@ -11,6 +11,8 @@ from webrecorder.rec.storage import get_storage
 from webrecorder.models.stats import Stats
 from webrecorder.utils import today_str
 
+from six.moves.urllib.parse import urlsplit
+
 import re
 import os
 import time
@@ -300,6 +302,17 @@ class TestRegisterMigrate(FullStackTests):
 
         assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''new-coll-")
 
+    def test_wasapi_list(self):
+        res = self.testapp.get('/api/v1/download/webdata')
+        assert len(res.json['files']) == 1
+        assert res.json['files'][0]['checksums']
+        assert res.json['files'][0]['locations']
+
+        wasapi_filename = res.json['files'][0]['locations'][0]
+        res = self.testapp.head(urlsplit(wasapi_filename).path)
+
+        assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''rec-")
+
     def get_rec_titles(self, user, coll_name, num):
         coll, rec = self.get_coll_rec(user, coll_name, None)
 
@@ -425,6 +438,10 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.get('/someuser/new-coll/$download', status=404)
         assert res.json == {'error': 'not_found'}
 
+    def test_error_logged_out_wasapi_list(self):
+        res = self.testapp.get('/api/v1/download/webdata?user=someuser', status=404)
+        assert res.json == {'error': 'not_found'}
+
     def test_error_logged_out_no_coll(self):
         res = self.testapp.get('/someuser/test-migrate', status=404)
         assert res.json == {'error': 'not_found'}
@@ -440,6 +457,26 @@ class TestRegisterMigrate(FullStackTests):
     def test_error_logged_out_replay_coll_1(self):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
         assert res.json == {'error': 'no_such_collection'}
+
+    def test_logged_out_wasapi_list_basic_auth(self):
+        self.testapp.authorization = ('Basic', ('someuser', 'Password1'))
+        res = self.testapp.get('/api/v1/download/webdata')
+        self.testapp.authorization = None
+
+        assert len(res.json['files']) == 1
+        assert res.json['files'][0]['checksums']
+        assert res.json['files'][0]['locations']
+
+        wasapi_filename = res.json['files'][0]['locations'][0]
+
+        # 404 without basic auth
+        res = self.testapp.head(urlsplit(wasapi_filename).path, status=404)
+
+        # 200 with basic auth
+        self.testapp.authorization = ('Basic', ('someuser', 'Password1'))
+        res = self.testapp.head(urlsplit(wasapi_filename).path)
+        assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''rec-")
+        self.testapp.authorization = None
 
     def test_login(self):
         params = {'username': 'someuser',
