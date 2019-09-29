@@ -246,10 +246,17 @@ class DownloadController(BaseController):
 
                 for name, path in recording.iter_all_files(include_index=False):
                     full_warc_path = collection.get_warc_path(name)
-                    if storage.is_local_storage:
-                        path = download_path.format(user=user.name, coll=collection.name, filename=name)
+
+                    local_download = download_path.format(user=user.name, coll=collection.name, filename=name)
+                    remote_download_url = storage.get_remote_presigned_url(full_warc_path)
+
+                    # if remote download url exists (eg. for s3), include that first
+                    # always include local download url as well
+                    if remote_download_url:
+                        locations = [remote_download_url, local_download]
                     else:
-                        path = storage.create_presigned_url(full_warc_path)
+                        locations = [local_download]
+
                     kind, check_sum, size = storage.get_checksum_and_size(full_warc_path)
                     files.append({
                         'content-type': 'application/warc',
@@ -260,7 +267,7 @@ class DownloadController(BaseController):
                         'recording_date': recording.get_prop('created_at'),
                         'collection': collection.name,
                         'checksums': {kind: check_sum},
-                        'locations': [path]
+                        'locations': locations,
                     })
 
         return {'files': files, 'include-extra': True}

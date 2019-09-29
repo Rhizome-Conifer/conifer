@@ -130,7 +130,7 @@ class S3Storage(BaseStorage):
             logger.debug(str(e))
             return False
 
-    def create_presigned_url(self, url, expires=3600):
+    def get_remote_presigned_url(self, url, expires=3600):
         """Returns a presigned URL for access to the supplied resource URL on s3
 
         :param str url: The URL to the resource on s3

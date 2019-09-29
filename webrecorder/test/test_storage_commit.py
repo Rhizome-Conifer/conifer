@@ -6,6 +6,7 @@ import os
 import boto3
 import pytest
 import base64
+import requests
 
 from urllib.parse import urlsplit
 from itertools import count
@@ -127,20 +128,14 @@ class BaseStorageCommit(FullStackTests):
         result = self.redis.hgetall('c:{coll}:warc'.format(coll=COLL_ID))
         assert res.json['files'][0].get('filename') == list(result.keys())[0]
 
-    def test_wasapi_download(self):
-        if not isinstance(self, TestLocalStorageCommit):
-            pytest.skip('wasapi download is skipped for S3 storage')
-            return
+        self.assert_wasapi_locations(res.json['files'][0].get('locations', []), verify_only=True)
 
+    def test_wasapi_download(self):
         assert self.redis.hget(REC_INFO, '@index_file') is not None
         params = {'user': 'test'}
-        list_result = self.testapp.get('/api/v1/download/webdata', params=params)
-        locations = list_result.json['files'][0].get('locations', [])
-        assert len(locations) == 1
-        downloaded = self.testapp.get(locations[0])
-        assert len(downloaded.body) == int(downloaded.headers['Content-Length'])
-        result = self.redis.hgetall('c:{coll}:warc'.format(coll=COLL_ID))
-        assert downloaded.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''" + list(result.keys())[0])
+        res = self.testapp.get('/api/v1/download/webdata', params=params)
+
+        self.assert_wasapi_locations(res.json['files'][0].get('locations', []), verify_only=False)
 
     def test_create_new_coll(self):
         # Collection
@@ -227,6 +222,16 @@ class TestLocalStorageCommit(BaseStorageCommit):
         storage_dir = os.environ['STORAGE_ROOT'].replace(os.path.sep, '/')
         assert storage_dir in key
 
+    def assert_wasapi_locations(self, locations, verify_only=True):
+        assert len(locations) == 1
+        if verify_only:
+            return
+
+        downloaded = self.testapp.get(locations[0])
+        assert len(downloaded.body) == int(downloaded.headers['Content-Length'])
+        result = self.redis.hgetall('c:{coll}:warc'.format(coll=COLL_ID))
+        assert downloaded.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''" + list(result.keys())[0])
+
 
 # ============================================================================
 class TestS3Storage(BaseStorageCommit):
@@ -289,9 +294,26 @@ class TestS3Storage(BaseStorageCommit):
 
         return check
 
-    def assert_warc_key(self, key):
-        assert key.startswith(os.environ['S3_ROOT'])
-
     def assert_deleted(self):
         keys = self._list_keys()
         assert len(keys) == 0
+
+    def assert_warc_key(self, key):
+        assert key.startswith(os.environ['S3_ROOT'])
+
+    def assert_wasapi_locations(self, locations, verify_only=True):
+        assert len(locations) == 2
+        if verify_only:
+            return
+
+        assert 's3.' in locations[0]
+        s3_downloaded = requests.get(locations[0])
+
+        downloaded = self.testapp.get(locations[1])
+        assert len(downloaded.body) == int(downloaded.headers['Content-Length'])
+        result = self.redis.hgetall('c:{coll}:warc'.format(coll=COLL_ID))
+        assert downloaded.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''" + list(result.keys())[0])
+
+        # ensure both locations serve exact same content
+        assert s3_downloaded.content == downloaded.body
+

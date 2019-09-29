@@ -10,7 +10,6 @@ class BaseStorage(object):
         """Initialize Webrecorder storage."""
         self.cache = {}
         self.storage_root = storage_root
-        self.is_local_storage = True
 
     def get_collection_url(self, collection):
         """Return collection URL.
@@ -128,6 +127,17 @@ class BaseStorage(object):
         :rtype: tuple[str|None, str|None, int|None]
         """
         return None, None, None
+
+    def get_remote_presigned_url(self, url, expires=3600):
+        """Returns a remote presigned URL for direct, validating access to resource
+        from remote source. Optional, only valid for remote storage (eg. S3)
+
+        :param str url: The URL to the resource from remote source
+        :param int expires: The number of seconds the presigned url is valid for
+        :return: A presigned url for downloading the supplied URL from remote source
+        :rtype: str|None
+        """
+        return None
 
     def do_delete(self, target_url, client_url):
         """Delete file from storage.
