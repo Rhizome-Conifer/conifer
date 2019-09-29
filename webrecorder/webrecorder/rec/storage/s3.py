@@ -1,8 +1,8 @@
-import boto3
-import os
 import logging
+import os
 
-from six.moves.urllib.parse import urlsplit, quote_plus
+import boto3
+from six.moves.urllib.parse import urlsplit
 
 from webrecorder.rec.storage.base import BaseStorage
 
@@ -16,15 +16,16 @@ class S3Storage(BaseStorage):
     :ivar str bucket_name: name of S3 bucket
     :ivar s3: service client
     """
+
     def __init__(self):
         """Initialize Webrecorder storage."""
-        super(S3Storage, self).__init__()
-        self.storage_root = os.environ['S3_ROOT']
+        super(S3Storage, self).__init__(os.environ['S3_ROOT'])
 
         res = self._split_bucket_path(self.storage_root)
         self.bucket_name, self.storage_root = res
 
         self.s3 = boto3.client('s3')
+        self.is_local_storage = False
 
     def _split_bucket_path(self, url):
         """Split S3 bucket URL into network location and path.
@@ -128,3 +129,35 @@ class S3Storage(BaseStorage):
         except Exception as e:
             logger.debug(str(e))
             return False
+
+    def get_remote_presigned_url(self, url, expires=3600):
+        """Returns a presigned URL for access to the supplied resource URL on s3
+
+        :param str url: The URL to the resource on s3
+        :param int expires: The number of seconds the presigned url is valid for
+        :return: A presigned url for downloading the supplied URL straight from s3
+        :rtype: str|None
+        """
+        path = self.client_url_to_target_url(url)
+        params = {'Bucket': self.bucket_name, 'Key': path}
+        try:
+            return self.s3.generate_presigned_url('get_object', Params=params, ExpiresIn=expires)
+        except Exception:
+            return None
+
+    def get_checksum_and_size(self, filepath_or_url):
+        """Returns the checksum of the supplied URL or filepath and the size of the resource
+
+        :param str filepath_or_url: The URL or filepath to the resource that the checksum and size is desired for
+        :return: A three tuple containing the kind of checksum, the checksum itself, and size
+        :rtype: tuple[str|None, str|None, int|None]
+        """
+        path = self.client_url_to_target_url(filepath_or_url)
+        try:
+
+            res = self.s3.head_object(Bucket=self.bucket_name,
+                                      Key=path)
+            # strip off quotes and return md5
+            return 'etag', res['ETag'][1:-1], res['ContentLength']
+        except Exception:
+            return None, None, None

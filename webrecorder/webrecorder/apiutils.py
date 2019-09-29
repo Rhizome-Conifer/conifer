@@ -69,6 +69,7 @@ class WRAPISpec(object):
         'browser': 'Browser Used',
         'page_id': 'Page Id',
         'upload_id': 'Upload Id',
+        'filename': 'File Name',
     }
 
     opt_bool_params = {

@@ -8,11 +8,13 @@ from webrecorder.basecontroller import BaseController
 from webrecorder import __version__
 
 from webrecorder.models.stats import Stats
+from webrecorder.utils import get_bool
 
-from bottle import response
+from bottle import response, request
 from six.moves.urllib.parse import quote
 from six import iteritems
 from collections import OrderedDict
+import gevent
 import json
 
 
@@ -44,6 +46,14 @@ class DownloadController(BaseController):
 
             return self.handle_download(user, coll, '*')
 
+        @self.app.get('/api/v1/download/webdata')
+        def wasapi_list_api():
+            return self.wasapi_list()
+
+        @self.app.get('/api/v1/download/<user>/<coll>/<filename>')
+        def wasapi_download_api(user, coll, filename):
+            return self.wasapi_download(user, coll, filename)
+
     def create_warcinfo(self, creator, name, metadata, source, serialized, filename):
         for key, value in iteritems(serialized):
             if key in self.COPY_FIELDS:
@@ -54,12 +64,12 @@ class DownloadController(BaseController):
             metadata['auto_title'] = True
 
         info = OrderedDict([
-                ('software', 'Webrecorder Platform v' + __version__),
-                ('format', 'WARC File Format 1.0'),
-                ('creator', creator.name),
-                ('isPartOf', name),
-                ('json-metadata', json.dumps(metadata)),
-               ])
+            ('software', 'Webrecorder Platform v' + __version__),
+            ('format', 'WARC File Format 1.0'),
+            ('creator', creator.name),
+            ('isPartOf', name),
+            ('json-metadata', json.dumps(metadata)),
+        ])
 
         wi_writer = BufferWARCWriter()
         wi_writer.write_record(wi_writer.create_warcinfo_record(filename, info))
@@ -81,9 +91,9 @@ class DownloadController(BaseController):
 
     def create_rec_warcinfo(self, user, collection, recording, filename=''):
         metadata = {}
-        #metadata['pages'] = collection.list_rec_pages(recording)
+        # metadata['pages'] = collection.list_rec_pages(recording)
         metadata['type'] = 'recording'
-        #metadata['id'] = recording.my_id
+        # metadata['id'] = recording.my_id
         rec_type = recording.get_prop('rec_type')
         if rec_type:
             metadata['rec_type'] = rec_type
@@ -103,7 +113,7 @@ class DownloadController(BaseController):
 
         self.access.assert_can_write_coll(collection)
 
-        #collection['uid'] = coll
+        # collection['uid'] = coll
         collection.load()
 
         Stats(self.redis).incr_download(collection)
@@ -149,7 +159,7 @@ class DownloadController(BaseController):
                 for n, warc_path in recording.iter_all_files():
                     try:
                         fh = loader.load(warc_path)
-                    except:
+                    except Exception:
                         print('Skipping invalid ' + warc_path)
                         continue
 
@@ -169,7 +179,133 @@ class DownloadController(BaseController):
             return read_all(infos)
 
         else:
-        # stream everything
+            # stream everything
             response.headers['Transfer-Encoding'] = 'chunked'
 
             return read_all(iter_infos())
+
+    def _get_wasapi_user(self, username=''):
+        basic_auth = request.auth
+
+        # if basic_auth, login as specified user, and user that as current user
+        if basic_auth:
+            user = self.user_manager.login_user_no_cookie(basic_auth[0], basic_auth[1])
+            if not user:
+                self._raise_error(404, 'invalid_login')
+
+        else:
+            # wasapi not supported for anon users
+            user = self.access.session_user
+            if user.is_anon():
+                self._raise_error(404, 'not_found')
+
+        # if username specified, override current/login user with specified user
+        # only useful for admin access
+        if username:
+            user = self.user_manager.get_user(username)
+
+        return user
+
+    def wasapi_list(self):
+        username = request.query.getunicode('user')
+
+        # some clients use collection rather than coll_name so we must check for both
+        coll_name = request.query.getunicode('coll_name') or request.query.getunicode('collection')
+        commit = get_bool(request.query.getunicode('commit'))
+
+        user = self._get_wasapi_user()
+
+        self.access.assert_is_curr_user(user)
+
+        colls = None
+
+        if coll_name:
+            collection = user.get_collection_by_name(coll_name)
+            if collection:
+                colls = [collection]
+            else:
+                self._raise_error(404, 'no_such_collection')
+
+        else:
+            colls = user.get_collections()
+
+        files = []
+        download_path = self.get_origin() + '/api/v1/download/{user}/{coll}/{filename}'
+
+        for collection in colls:
+            if commit:
+                commit_id = collection.commit_all()
+                while commit_id:
+                    gevent.sleep(10)
+                    commit_id = collection.commit_all(commit_id)
+
+            storage = collection.get_storage()
+            for recording in collection.get_recordings():
+                if not recording.is_fully_committed():
+                    continue
+
+                for name, path in recording.iter_all_files(include_index=False):
+                    full_warc_path = collection.get_warc_path(name)
+
+                    local_download = download_path.format(user=user.name, coll=collection.name, filename=name)
+                    remote_download_url = storage.get_remote_presigned_url(full_warc_path)
+
+                    # if remote download url exists (eg. for s3), include that first
+                    # always include local download url as well
+                    if remote_download_url:
+                        locations = [remote_download_url, local_download]
+                    else:
+                        locations = [local_download]
+
+                    kind, check_sum, size = storage.get_checksum_and_size(full_warc_path)
+                    files.append({
+                        'content-type': 'application/warc',
+                        'filetype': 'application/warc',
+                        'filename': name,
+                        'size': size,
+                        'recording': recording.my_id,
+                        'recording_date': recording.get_prop('created_at'),
+                        'collection': collection.name,
+                        'checksums': {kind: check_sum},
+                        'locations': locations,
+                    })
+
+        return {'files': files, 'include-extra': True}
+
+    def wasapi_download(self, username, coll_name, filename):
+        user = self._get_wasapi_user(username)
+
+        if not user:
+            self._raise_error(404, 'no_such_user')
+
+        collection = user.get_collection_by_name(coll_name)
+
+        if not collection:
+            self._raise_error(404, 'no_such_collection')
+
+        #self.access.assert_is_curr_user(user)
+        # only users with write access can use wasapi
+        self.access.assert_can_write_coll(collection)
+
+        warc_key = collection.get_warc_key()
+        warc_path = self.redis.hget(warc_key, filename)
+
+        if not warc_path:
+            self._raise_error(404, 'file_not_found')
+
+        response.headers['Content-Type'] = 'application/octet-stream'
+        response.headers['Content-Disposition'] = "attachment; filename*=UTF-8''" + filename
+        response.headers['Transfer-Encoding'] = 'chunked'
+
+        loader = BlockLoader()
+        fh = None
+        try:
+            fh = loader.load(warc_path)
+        except Exception:
+            self._raise_error(400, 'file_load_error')
+
+        def read_all(fh):
+            for chunk in StreamIter(fh):
+                yield chunk
+
+        return read_all(fh)

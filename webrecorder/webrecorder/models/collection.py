@@ -1,27 +1,21 @@
-import gevent
 import logging
-import json
-import hashlib
 import os
 import traceback
-
 from datetime import date
 
+import gevent
 from pywb.utils.loaders import load
-from warcio.timeutils import timestamp20_now, timestamp_now
-
 from pywb.warcserver.index.cdxobject import CDXObject
 
-from webrecorder.utils import sanitize_title, get_new_id
-from webrecorder.models.base import RedisUnorderedList, RedisOrderedList, RedisUniqueComponent, RedisNamedMap
-from webrecorder.models.recording import Recording
-from webrecorder.models.pages import PagesMixin
-from webrecorder.models.datshare import DatShare
 from webrecorder.models.auto import Auto
+from webrecorder.models.base import RedisNamedMap, RedisOrderedList, RedisUniqueComponent, RedisUnorderedList
+from webrecorder.models.datshare import DatShare
 from webrecorder.models.list_bookmarks import BookmarkList
+from webrecorder.models.pages import PagesMixin
+from webrecorder.models.recording import Recording
 from webrecorder.rec.storage import get_storage as get_global_storage
-
-from webrecorder.rec.storage.storagepaths import strip_prefix, add_local_store_prefix
+from webrecorder.rec.storage.storagepaths import strip_prefix
+from webrecorder.utils import get_new_id, sanitize_title
 
 logger = logging.getLogger('wr.io')
 
@@ -83,6 +77,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
         self.lists = RedisOrderedList(self.LISTS_KEY, self)
 
         self.list_names = RedisNamedMap(self.LIST_NAMES_KEY, self, self.LIST_REDIR_KEY)
+        self._storage = None
+        self._warc_key = None  # type: str
 
     @classmethod
     def init_props(cls, config):
@@ -296,7 +292,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
     def remove_list(self, blist):
         """Remove list of bookmarks from ordered list.
 
-        :param str blist: list ID
+        :param BookmarkList blist: list ID
 
         :returns: whether successful or not
         :rtype: bool
@@ -406,7 +402,23 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return [key_pattern.replace('*', rec) for rec in recs]
 
     def get_warc_key(self):
-        return Recording.COLL_WARC_KEY.format(coll=self.my_id)
+        """Returns the WARC key for this collection
+
+        :return: This collections WARC key
+        :rtype: str
+        """
+        if self._warc_key is None:
+            self._warc_key = Recording.COLL_WARC_KEY.format(coll=self.my_id)
+        return self._warc_key
+
+    def get_warc_path(self, name):
+        """Returns the full path or URL to the WARC for the supplied recording name
+
+        :param str name: The recordings name
+        :return: The full path or URL to the WARC
+        :rtype: str
+        """
+        return self.redis.hget(self.get_warc_key(), name)
 
     def commit_all(self, commit_id=None):
         # see if pending commits have been finished
@@ -625,12 +637,15 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return errs
 
     def get_storage(self):
+        if self._storage is not None:
+            return self._storage
         storage_type = self.get_prop('storage_type')
 
         if not storage_type:
             storage_type = self.DEFAULT_STORE_TYPE
 
-        return get_global_storage(storage_type, self.redis)
+        self._storage = get_global_storage(storage_type, self.redis)
+        return self._storage
 
     def get_created_iso_date(self):
         try:
