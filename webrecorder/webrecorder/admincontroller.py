@@ -643,11 +643,12 @@ class AdminController(BaseController):
             response.content_type = 'application/json'
             return json.dumps(stats)
 
-
         @self.app.post('/api/v1/stats/annotations')
         @self.admin_view
         def stats_annotations():
             return []
+
+        wr_api_spec.set_curr_tag(None)
 
 
 

@@ -1,3 +1,4 @@
+from webrecorder.apiutils import wr_api_spec
 from webrecorder.basecontroller import BaseController
 from bottle import request, static_file, HTTPResponse, response
 import os
@@ -80,6 +81,8 @@ class BehaviorMgr(BaseController):
         return None
 
     def init_routes(self):
+        wr_api_spec.set_curr_tag('Behaviors')
+
         @self.app.get('/api/v1/behavior/info')
         def info_list():
             # for non-desktop proxy mode, proxy to behaviors server
@@ -120,3 +123,5 @@ class BehaviorMgr(BaseController):
 
             res = static_file(behavior['fileName'], root=self.behaviors_data)
             return res
+
+        wr_api_spec.set_curr_tag(None)

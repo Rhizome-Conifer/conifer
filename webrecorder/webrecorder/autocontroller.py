@@ -3,11 +3,13 @@ from webrecorder.models.auto import Auto
 from bottle import request, response
 import requests
 import os
+from webrecorder.apiutils import wr_api_spec
 
 
 # ============================================================================
 class AutoController(BaseController):
     def init_routes(self):
+        wr_api_spec.set_curr_tag('Automation')
         # CREATE AUTO
         @self.app.post('/api/v1/auto')
         def create_auto():
@@ -66,6 +68,8 @@ class AutoController(BaseController):
             auto.delete_me()
 
             return {'deleted_id': auto.my_id}
+
+        wr_api_spec.set_curr_tag(None)
 
     def load_user_coll_auto(self, autoid, user=None, coll_name=None):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)

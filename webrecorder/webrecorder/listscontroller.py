@@ -203,6 +203,8 @@ class ListsController(BaseController):
             else:
                 self._raise_error(400, 'invalid_order')
 
+        wr_api_spec.set_curr_tag(None)
+
     def load_user_coll_list(self, list_id=None, user=None, coll_name=None):
         if not list_id:
             list_id = request.query.getunicode('list')

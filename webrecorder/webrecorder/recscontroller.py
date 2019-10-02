@@ -162,6 +162,8 @@ class RecsController(BaseController):
 
             return recording.delete_page(url, ts)
 
+        wr_api_spec.set_curr_tag(None)
+
     def load_recording(self, rec, user=None, coll_name=None):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
         if not user or not collection:
