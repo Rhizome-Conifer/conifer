@@ -12,6 +12,9 @@ class WRAPISpec(object):
     RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 
     tags = [
+        {'name': 'Downloads',
+         'description': 'Download WARC files API (conforms to WASAPI spec)'},
+
         {'name': 'Auth',
          'description': 'Auth and Login API'},
 
@@ -30,6 +33,12 @@ class WRAPISpec(object):
         {'name': 'Bookmarks',
          'description': 'Bookmarks API'},
 
+        {'name': 'Uploads',
+         'description': 'Upload WARC or HAR files API'},
+
+        {'name': 'Add External Records',
+         'description': 'Add External WARC Records API'},
+
         {'name': 'Browsers',
          'description': 'Browser API'},
 
@@ -47,9 +56,6 @@ class WRAPISpec(object):
 
         {'name': 'Stats',
          'description': 'Stats API'},
-
-        {'name': 'WASAPI',
-         'description': 'Web Archiving Systems API'},
 
         {'name': 'Automation',
          'description': 'Automation API'},
@@ -106,6 +112,7 @@ class WRAPISpec(object):
 
     all_responses = {
         'wasapi_list': {
+            'description': 'WASAPI response for list of WARC files available for download',
             'content': {
                 'application/json': {
                     'schema': {
@@ -130,6 +137,18 @@ class WRAPISpec(object):
                             },
                             'include-extra': {'type': 'boolean'}
                         }
+                    }
+                }
+            }
+        },
+        'wasapi_download': {
+            'description': 'WARC file',
+            'content': {
+                'application/warc': {
+                    'schema': {
+                        'type': 'string',
+                        'format': 'binary',
+                        'example': 'WARC/1.0\r\nWARC-Type: response\r\n...',
                     }
                 }
             }

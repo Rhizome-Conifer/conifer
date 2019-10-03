@@ -48,8 +48,6 @@ class DownloadController(BaseController):
 
             return self.handle_download(user, coll, '*')
 
-        wr_api_spec.set_curr_tag('WASAPI')
-
         @self.app.get('/api/v1/download/webdata')
         @self.api(
             query=['?user', '?collection', '?commit'],
@@ -61,6 +59,7 @@ class DownloadController(BaseController):
 
         @self.app.get('/api/v1/download/<user>/<coll>/<filename>')
         @self.api(
+            resp='wasapi_download',
             description='Download the specified WARC from a users collection, per WASAPI spec'
         )
         def wasapi_download_api(user, coll, filename):
