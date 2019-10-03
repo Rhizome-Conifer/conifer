@@ -6,7 +6,7 @@ from pywb.utils.io import StreamIter, chunk_encode_iter
 
 from webrecorder.basecontroller import BaseController
 from webrecorder import __version__
-
+from webrecorder.apiutils import wr_api_spec
 from webrecorder.models.stats import Stats
 from webrecorder.utils import get_bool
 
@@ -34,6 +34,8 @@ class DownloadController(BaseController):
         self.download_chunk_encoded = config['download_chunk_encoded']
 
     def init_routes(self):
+        wr_api_spec.set_curr_tag('Downloads')
+
         @self.app.get('/<user>/<coll>/<rec>/$download')
         def logged_in_download_rec_warc(user, coll, rec):
             self.redir_host()
@@ -47,12 +49,23 @@ class DownloadController(BaseController):
             return self.handle_download(user, coll, '*')
 
         @self.app.get('/api/v1/download/webdata')
+        @self.api(
+            query=['?user', '?collection', '?commit'],
+            resp='wasapi_list',
+            description='List all files available for download, their locations and checksums, per WASAPI spec'
+        )
         def wasapi_list_api():
             return self.wasapi_list()
 
         @self.app.get('/api/v1/download/<user>/<coll>/<filename>')
+        @self.api(
+            resp='wasapi_download',
+            description='Download the specified WARC from a users collection, per WASAPI spec'
+        )
         def wasapi_download_api(user, coll, filename):
             return self.wasapi_download(user, coll, filename)
+
+        wr_api_spec.set_curr_tag(None)
 
     def create_warcinfo(self, creator, name, metadata, source, serialized, filename):
         for key, value in iteritems(serialized):
@@ -210,7 +223,7 @@ class DownloadController(BaseController):
         username = request.query.getunicode('user')
 
         # some clients use collection rather than coll_name so we must check for both
-        coll_name = request.query.getunicode('coll_name') or request.query.getunicode('collection')
+        coll_name = request.query.getunicode('collection')
         commit = get_bool(request.query.getunicode('commit'))
 
         user = self._get_wasapi_user()
@@ -283,7 +296,7 @@ class DownloadController(BaseController):
         if not collection:
             self._raise_error(404, 'no_such_collection')
 
-        #self.access.assert_is_curr_user(user)
+        # self.access.assert_is_curr_user(user)
         # only users with write access can use wasapi
         self.access.assert_can_write_coll(collection)
 

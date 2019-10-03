@@ -272,6 +272,8 @@ class CollsController(BaseController):
             #rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]
             return self.get_collection_info_for_view(user, coll_name)
 
+        wr_api_spec.set_curr_tag(None)
+
     def get_collection_info_for_view(self, user, coll_name):
         self.redir_host()
 

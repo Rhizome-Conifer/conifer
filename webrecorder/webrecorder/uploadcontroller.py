@@ -1,3 +1,4 @@
+from webrecorder.apiutils import wr_api_spec
 from webrecorder.basecontroller import BaseController
 from webrecorder.models.importer import UploadImporter
 from webrecorder.models.stats import Stats
@@ -16,6 +17,8 @@ class UploadController(BaseController):
                                        wam_loader=content_app.wam_loader)
 
     def init_routes(self):
+        wr_api_spec.set_curr_tag('Uploads')
+
         @self.app.put(['/_upload', '/api/v1/upload'])
         def upload_file():
             user = self.access.session_user

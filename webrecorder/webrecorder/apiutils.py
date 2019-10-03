@@ -12,6 +12,9 @@ class WRAPISpec(object):
     RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 
     tags = [
+        {'name': 'Downloads',
+         'description': 'Download WARC files API (conforms to WASAPI spec)'},
+
         {'name': 'Auth',
          'description': 'Auth and Login API'},
 
@@ -30,6 +33,12 @@ class WRAPISpec(object):
         {'name': 'Bookmarks',
          'description': 'Bookmarks API'},
 
+        {'name': 'Uploads',
+         'description': 'Upload WARC or HAR files API'},
+
+        {'name': 'Add External Records',
+         'description': 'Add External WARC Records API'},
+
         {'name': 'Browsers',
          'description': 'Browser API'},
 
@@ -47,13 +56,20 @@ class WRAPISpec(object):
 
         {'name': 'Stats',
          'description': 'Stats API'},
-      ]
+
+        {'name': 'Automation',
+         'description': 'Automation API'},
+
+        {'name': 'Behaviors',
+         'description': 'Behaviors API'},
+    ]
 
     string_params = {
         'user': 'User',
         'username': 'User',
         'coll': 'Collection Slug',
         'coll_name': 'Collection Slug',
+        'collection': 'Collection Slug',
         'rec': 'Session Id',
         'reqid': 'Remote Browser Request Id',
         'new_coll_name': 'New Collection Name',
@@ -73,6 +89,7 @@ class WRAPISpec(object):
     }
 
     opt_bool_params = {
+        'commit': 'Force all non-committed recording to become committed',
         'public': 'Publicly Accessible',
         'include_recordings': 'Include Recording Sessions in response',
         'include_lists': 'Include all lists in response',
@@ -85,16 +102,58 @@ class WRAPISpec(object):
     custom_params = {
         'before_id': {'type': 'string',
                       'description': 'Insert Before this Id',
-                     },
+                      },
 
         'order': {'type': 'array',
                   'items': {'type': 'string'},
                   'description': 'an array of existing ids in new order'
-                 }
+                  }
     }
 
-    all_responses = {}
-
+    all_responses = {
+        'wasapi_list': {
+            'description': 'WASAPI response for list of WARC files available for download',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'files': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'content-type': {'type': 'string'},
+                                        'filetype': {'type': 'string'},
+                                        'filename': {'type': 'string', },
+                                        'size': {'type': 'integer'},
+                                        'recording': {'type': 'string'},
+                                        'recording_date': {'type': 'string'},
+                                        'collection': {'type': 'string'},
+                                        'checksums': {'type': 'object'},
+                                        'locations': {'type': 'array', 'items': {'type': 'string'}},
+                                    }
+                                }
+                            },
+                            'include-extra': {'type': 'boolean'}
+                        }
+                    }
+                }
+            }
+        },
+        'wasapi_download': {
+            'description': 'WARC file',
+            'content': {
+                'application/warc': {
+                    'schema': {
+                        'type': 'string',
+                        'format': 'binary',
+                        'example': 'WARC/1.0\r\nWARC-Type: response\r\n...',
+                    }
+                }
+            }
+        }
+    }
 
     @classmethod
     def bottle_path_to_openapi(cls, path):
@@ -139,19 +198,28 @@ class WRAPISpec(object):
                 self.funcs[route.callback]['tags'] = [self.curr_tag]
 
     def get_param(self, name):
+        """Returns the open api description of the supplied query parameter name
+
+        :param str name: The name of the query parameter
+        :return: A dictionary containing the
+        :rtype: dict
+        """
+        optional = name.startswith('?')
+        if optional:
+            name = name[1:]
         if name in self.string_params:
             param = {'description': self.string_params[name],
-                     'required': True,
+                     'required': not optional,
                      'schema': {'type': 'string'},
                      'name': name
-                    }
+                     }
 
         elif name in self.opt_bool_params:
             param = {'description': self.opt_bool_params[name],
                      'required': False,
                      'schema': {'type': 'boolean'},
                      'name': name
-                    }
+                     }
 
         elif name in self.custom_params:
             param = self.custom_params[name].copy()
@@ -194,6 +262,10 @@ class WRAPISpec(object):
         if req:
             self.funcs[func]['request'] = self.get_request(req, kwargs.get('req_desc'))
 
+        resp = kwargs.get('resp')
+        if resp:
+            self.funcs[func]['resp'] = resp
+
     def get_request(self, req_props, req_desc=None):
         properties = {}
 
@@ -205,7 +277,7 @@ class WRAPISpec(object):
                 obj_type = 'array'
                 prop_list = req_props['item_type']
 
-            assert(prop_list)
+            assert (prop_list)
 
         else:
             obj_type = 'object'
@@ -225,7 +297,7 @@ class WRAPISpec(object):
 
         request = {'content': {'application/json':
                     {'schema': schema}
-                  }}
+                   }}
 
         if req_desc:
             request['description'] = req_desc
@@ -249,14 +321,14 @@ class WRAPISpec(object):
                     if request:
                         api['requestBody'] = request
                 else:
-                # otherwise, ensure no request body!
+                    # otherwise, ensure no request body!
                     assert 'request' not in info
 
                 # set tags, if any
                 if 'tags' in info:
                     api['tags'] = info['tags']
 
-                api['responses'] = self.get_responses(None)
+                api['responses'] = self.get_responses(info.get('resp', None))
 
                 ops[method] = api
 
@@ -270,7 +342,7 @@ class WRAPISpec(object):
         obj = {'400': self.err_400,
                '404': self.err_404,
                '200': response_obj
-              }
+               }
 
         return obj
 
@@ -293,7 +365,20 @@ class WRAPISpec(object):
         return obj
 
     def get_api_spec_yaml(self):
+        """Returns the api specification as a yaml string
+
+        :return: The api specification as a yaml string
+        :rtype: str
+        """
         return self.spec.to_yaml()
+
+    def get_api_spec_dict(self):
+        """Returns the api specification as a dictionary
+
+        :return: The api specification as a dictionary
+        :rtype: dict
+        """
+        return self.spec.to_dict()
 
 
 # ============================================================================
@@ -314,5 +399,3 @@ def api_decorator(**kwargs):
 
 # ============================================================================
 wr_api_spec = WRAPISpec('/api/v1/')
-
-

@@ -48,6 +48,8 @@ class BugReportController(BaseController):
             self.do_report(data, useragent)
             return {}
 
+        wr_api_spec.set_curr_tag(None)
+
     def do_report(self, params, ua=''):
         report = {}
         for key in params:

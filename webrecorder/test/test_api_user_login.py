@@ -1,4 +1,6 @@
 from .testutils import FullStackTests
+from webrecorder.apiutils import wr_api_spec
+import json
 
 from mock import patch
 import re
@@ -478,8 +480,29 @@ class TestApiUserLogin(FullStackTests):
         assert res.json['user']['anon'] == True
         assert res.json['user']['num_collections'] == 0
 
-    def test_openapi_spec(self):
-        assert self.testapp.get('/api/v1', status=200).content_type == 'text/yaml'
+    def test_openapi_spec_yaml(self):
+        assert self.testapp.get('/api/v1.yml', status=200).content_type == 'text/yaml'
+
+    def test_openapi_spec_json(self):
+        res = self.testapp.get('/api/v1.json', status=200)
+        assert res.content_type == 'application/json'
+        api_paths = res.json.get('paths')
+
+        web_data = api_paths.get('/api/v1/download/webdata')
+        assert web_data is not None
+
+        get = web_data.get('get')
+        assert get is not None
+        assert len(get.get('parameters')) == 3
+        assert len(get.get('tags')) == 1
+        assert 'WASAPI' in get.get('responses').get('200').get('description')
+        assert get.get('tags')[0] == 'Downloads'
+
+        downloads = api_paths.get('/api/v1/download/{user}/{coll}/{filename}')
+        assert 'WARC/1.0' in downloads['get']['responses']['200']['content']['application/warc']['schema']['example']
+
+        get_responses = get.get('responses', {}).get('200', {})
+        assert json.dumps(get_responses) == json.dumps(wr_api_spec.all_responses['wasapi_list'])
 
     def test_invalid_api(self):
         # unknown api

@@ -393,10 +393,15 @@ class MainController(BaseController):
             self.flash_message(message, msg_type)
             return {}
 
-        @self.bottle_app.route('/api/v1')
-        def get_api_spec():
+        @self.bottle_app.route('/api/v1.yml')
+        def get_api_spec_yaml():
             response.content_type = 'text/yaml'
             return wr_api_spec.get_api_spec_yaml()
+
+        @self.bottle_app.route('/api/v1.json')
+        def get_api_spec_json():
+            response.content_type = 'application/json'
+            return json.dumps(wr_api_spec.get_api_spec_dict())
 
         @self.bottle_app.route('/<:re:.*>', method='ANY')
         def fallthrough():

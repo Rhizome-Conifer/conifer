@@ -326,3 +326,4 @@ class UserController(BaseController):
 
             return result
 
+        wr_api_spec.set_curr_tag(None)

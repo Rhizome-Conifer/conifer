@@ -32,7 +32,7 @@ class UserManager(object):
 
     RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager', 'coll', 'collection',
                         'guest', 'settings', 'profile', 'api', 'anon', 'webrecorder',
-                        'anonymous', 'register', 'join', 'download', 'live', 'embed']
+                        'anonymous', 'register', 'join', 'download', 'live', 'embed', 'docs']
 
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 

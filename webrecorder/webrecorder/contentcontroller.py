@@ -301,6 +301,8 @@ class ContentController(BaseController, RewriterApp):
 
             return res
 
+        wr_api_spec.set_curr_tag('Add External Records')
+
         @self.app.route('/api/v1/remote/put-record', method='PUT')
         def do_put_record():
             return self.do_put_record()
