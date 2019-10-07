@@ -1,5 +1,6 @@
 import autoprefixer from 'autoprefixer';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
+import CircularDependencyPlugin from 'circular-dependency-plugin';
 import fs from 'fs';
 import merge from 'webpack-merge';
 import webpack from 'webpack';
@@ -112,6 +113,11 @@ const devConfig = {
       'src/shared/images/favicon.png',
       'src/shared/images/webrecorder-social.png'
     ]),
+    new CircularDependencyPlugin({
+      exclude: /node_modules/,
+      failOnError: true,
+      cwd: process.cwd()
+    }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.DefinePlugin({
       __CLIENT__: true,

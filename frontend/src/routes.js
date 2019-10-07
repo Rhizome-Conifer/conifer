@@ -1,5 +1,5 @@
 import HttpStatus from 'components/HttpStatus';
-import { FAQ, TermsAndPolicies } from 'components/siteComponents';
+import { ApiDocs, Documentation, FAQ, TermsAndPolicies } from 'components/siteComponents';
 import { product } from 'config';
 
 import {
@@ -277,6 +277,19 @@ const infoRoutes = [
     exact: true,
     footer: true,
     name: 'Terms & Policies'
+  },
+  {
+    path: '/docs',
+    component: Documentation,
+    name: 'apidocs',
+    exact: true,
+  },
+  {
+    breadcrumb: 'Webrecorder API Docs',
+    path: '/docs/api',
+    component: ApiDocs,
+    name: 'apidocs',
+    exact: true,
   }
 ];
 

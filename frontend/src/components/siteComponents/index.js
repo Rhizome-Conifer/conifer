@@ -1,3 +1,5 @@
+export ApiDocs from './ApiDocs';
+export Documentation from './Documentation';
 export FAQ from './FAQ';
 export Footer from './Footer';
 export HomepageAnnouncement from './HomepageAnnouncement';

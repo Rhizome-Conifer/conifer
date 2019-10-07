@@ -24,6 +24,15 @@ module.exports = {
       "react-bootstrap": {
         "transform": "react-bootstrap/lib/${member}",
         "preventFullImport": true
+      },
+      "components/siteComponents": {
+        "transform": "components/siteComponents/${member}"
+      },
+      "components/controls": {
+        "transform": "components/controls/${member}"
+      },
+      "containers": {
+        "transform": "containers/${member}/${member}"
       }
     }]
   ]

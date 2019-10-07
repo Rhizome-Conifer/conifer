@@ -102,6 +102,7 @@
     "strip-loader": "^0.1.2",
     "style-loader": "0.23.1",
     "superagent": "^4.0.0",
+    "swagger-ui": "^3.23.11",
     "time-fix-plugin": "^2.0.5",
     "universal-webpack": "^0.6.6",
     "url-loader": "1.1.2",
@@ -116,12 +117,10 @@
   },
   "scripts": {
     "analyze": "STATS=true webpack --config ./webpack/webpack.config.client.production.babel.js --profile --json > stats.json",
-
     "build-player-dev": "better-npm-run build-player-dev",
     "build-desktop-dev": "better-npm-run build-desktop-dev",
     "build-player": "better-npm-run build-player",
     "build-desktop": "better-npm-run build-desktop",
-
     "dev:server:prepare": "universal-webpack --settings ./webpack/universal-webpack-settings.json prepare",
     "docker-dev": "run-p docker-dev:client:build dev:server:prepare docker-dev:server:build docker-dev:server:start",
     "docker-prod": "run-s prod:client:build prod:server:build docker-prod:server:start",
@@ -131,7 +130,6 @@
     "docker-prod:server:start": "better-npm-run start-docker-prod",
     "prod:client:build": "webpack --config ./webpack/webpack.config.client.production.babel.js",
     "prod:server:build": "webpack --config ./webpack/webpack.config.server.production.babel.js",
-
     "test": "jest --watch --env=jsdom"
   },
   "betterScripts": {
