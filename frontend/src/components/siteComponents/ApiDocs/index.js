@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import 'swagger-ui/dist/swagger-ui.css';
 
+import './style.scss';
+
 class ApiDocs extends Component {
   componentDidMount() {
     const SwaggerUi = require('swagger-ui');
