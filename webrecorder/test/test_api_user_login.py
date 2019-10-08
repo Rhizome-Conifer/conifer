@@ -496,7 +496,7 @@ class TestApiUserLogin(FullStackTests):
         assert len(get.get('parameters')) == 3
         assert len(get.get('tags')) == 1
         assert 'WASAPI' in get.get('responses').get('200').get('description')
-        assert get.get('tags')[0] == 'Downloads'
+        assert get.get('tags')[0] == 'WASAPI (Downloads)'
 
         downloads = api_paths.get('/api/v1/download/{user}/{coll}/{filename}')
         assert 'WARC/1.0' in downloads['get']['responses']['200']['content']['application/warc']['schema']['example']

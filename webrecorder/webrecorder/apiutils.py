@@ -12,7 +12,7 @@ class WRAPISpec(object):
     RE_URL = re.compile(r'<(?:[^:<>]+:)?([^<>]+)>')
 
     tags = [
-        {'name': 'Downloads',
+        {'name': 'WASAPI (Downloads)',
          'description': 'Download WARC files API (conforms to WASAPI spec)'},
 
         {'name': 'Auth',
@@ -52,17 +52,24 @@ class WRAPISpec(object):
          'description': 'Bug Reporting API'},
 
         {'name': 'Admin',
-         'description': 'Admin API'},
+         'description': 'Admin API',
+        },
 
         {'name': 'Stats',
-         'description': 'Stats API'},
+         'description': 'Stats API',
+        },
 
         {'name': 'Automation',
-         'description': 'Automation API'},
+         'description': 'Automation API',
+        },
 
         {'name': 'Behaviors',
-         'description': 'Behaviors API'},
+         'description': 'Behaviors API'
+        },
     ]
+
+    # only include these groups when logged in as admin
+    admin_tags = ['Admin', 'Stats', 'Automation']
 
     string_params = {
         'user': 'User',
@@ -173,10 +180,22 @@ class WRAPISpec(object):
             version='1.0.0',
             openapi_version='3.0.0',
             info=dict(
-                description='Webrecorder API'
+                description='Webrecorder API. This API includes all features available and in use by the frontend.'
             ),
             plugins=[]
         )
+
+        self.admin_spec = APISpec(
+            title='Webrecorder',
+            version='1.0.0',
+            openapi_version='3.0.0',
+            info=dict(
+                description='Webrecorder API (including Admin). This API includes all features available in Webrecorder, including admin and stats APIs.'
+            ),
+            plugins=[]
+        )
+
+
 
         self.err_400 = self.make_err_response('Invalid Request Param')
         self.err_404 = self.make_err_response('Object Not Found')
@@ -327,15 +346,24 @@ class WRAPISpec(object):
                 # set tags, if any
                 if 'tags' in info:
                     api['tags'] = info['tags']
+                    is_admin = info['tags'][0] in self.admin_tags
 
                 api['responses'] = self.get_responses(info.get('resp', None))
 
                 ops[method] = api
 
-            self.spec.add_path(path=name, operations=ops)
+            if not is_admin:
+                self.spec.add_path(path=name, operations=ops)
+
+            self.admin_spec.add_path(path=name, operations=ops)
 
         for tag in self.tags:
-            self.spec.add_tag(tag)
+            self.admin_spec.add_tag(tag)
+
+            if tag['name'] not in self.admin_tags:
+                self.spec.add_tag(tag)
+            else:
+                print('skip', tag)
 
     def get_responses(self, obj_type):
         response_obj = self.all_responses.get(obj_type) or self.any_obj
@@ -364,21 +392,21 @@ class WRAPISpec(object):
 
         return obj
 
-    def get_api_spec_yaml(self):
+    def get_api_spec_yaml(self, use_admin=False):
         """Returns the api specification as a yaml string
 
         :return: The api specification as a yaml string
         :rtype: str
         """
-        return self.spec.to_yaml()
+        return self.spec.to_yaml() if not use_admin else self.admin_spec.to_yaml()
 
-    def get_api_spec_dict(self):
+    def get_api_spec_dict(self, use_admin=False):
         """Returns the api specification as a dictionary
 
         :return: The api specification as a dictionary
         :rtype: dict
         """
-        return self.spec.to_dict()
+        return self.spec.to_dict() if not use_admin else self.admin_spec.to_dict()
 
 
 # ============================================================================
