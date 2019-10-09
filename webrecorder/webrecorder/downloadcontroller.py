@@ -34,7 +34,7 @@ class DownloadController(BaseController):
         self.download_chunk_encoded = config['download_chunk_encoded']
 
     def init_routes(self):
-        wr_api_spec.set_curr_tag('Downloads')
+        wr_api_spec.set_curr_tag('WASAPI (Downloads)')
 
         @self.app.get('/<user>/<coll>/<rec>/$download')
         def logged_in_download_rec_warc(user, coll, rec):

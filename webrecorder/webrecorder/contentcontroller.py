@@ -11,7 +11,8 @@ from pywb.utils.loaders import load_yaml_config
 from pywb.rewrite.wburl import WbUrl
 from pywb.rewrite.cookies import CookieTracker
 
-from pywb.apps.rewriterapp import RewriterApp, UpstreamException
+from pywb.apps.rewriterapp import RewriterApp
+from pywb.utils.wbexception import WbException
 
 from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.load.wamloader import WAMLoader
@@ -812,7 +813,7 @@ class ContentController(BaseController, RewriterApp):
 
             return resp
 
-        except UpstreamException as ue:
+        except WbException as ue:
             err_context = {
                 'url': ue.url,
                 'status': ue.status_code,

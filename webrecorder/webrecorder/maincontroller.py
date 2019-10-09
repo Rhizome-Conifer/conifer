@@ -396,12 +396,12 @@ class MainController(BaseController):
         @self.bottle_app.route('/api/v1.yml')
         def get_api_spec_yaml():
             response.content_type = 'text/yaml'
-            return wr_api_spec.get_api_spec_yaml()
+            return wr_api_spec.get_api_spec_yaml(self.access.is_superuser())
 
         @self.bottle_app.route('/api/v1.json')
         def get_api_spec_json():
             response.content_type = 'application/json'
-            return json.dumps(wr_api_spec.get_api_spec_dict())
+            return json.dumps(wr_api_spec.get_api_spec_dict(self.access.is_superuser()))
 
         @self.bottle_app.route('/<:re:.*>', method='ANY')
         def fallthrough():
