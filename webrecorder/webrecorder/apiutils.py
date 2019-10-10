@@ -96,7 +96,6 @@ class WRAPISpec(object):
     }
 
     opt_bool_params = {
-        'commit': 'Force all non-committed recording to become committed',
         'public': 'Publicly Accessible',
         'include_recordings': 'Include Recording Sessions in response',
         'include_lists': 'Include all lists in response',
@@ -139,6 +138,7 @@ class WRAPISpec(object):
                                         'collection': {'type': 'string'},
                                         'checksums': {'type': 'object'},
                                         'locations': {'type': 'array', 'items': {'type': 'string'}},
+                                        'is_active': {'type': 'boolean'},
                                     }
                                 }
                             },

@@ -493,7 +493,7 @@ class TestApiUserLogin(FullStackTests):
 
         get = web_data.get('get')
         assert get is not None
-        assert len(get.get('parameters')) == 3
+        assert len(get.get('parameters')) == 2
         assert len(get.get('tags')) == 1
         assert 'WASAPI' in get.get('responses').get('200').get('description')
         assert get.get('tags')[0] == 'WASAPI (Downloads)'
