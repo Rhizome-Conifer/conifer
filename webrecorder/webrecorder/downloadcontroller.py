@@ -244,10 +244,10 @@ class DownloadController(BaseController):
 
         files = []
         download_path = self.get_origin() + '/api/v1/download/{user}/{coll}/{filename}'
+        local_storage = LocalFileStorage(self.redis)
 
         for collection in colls:
             commit_storage = collection.get_storage()
-            local_storage = LocalFileStorage(self.redis)
 
             for recording in collection.get_recordings():
                 is_committed = recording.is_fully_committed()
