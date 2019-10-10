@@ -128,14 +128,14 @@ class BaseStorageCommit(FullStackTests):
         result = self.redis.hgetall('c:{coll}:warc'.format(coll=COLL_ID))
         assert res.json['files'][0].get('filename') == list(result.keys())[0]
 
-        self.assert_wasapi_locations(res.json['files'][0].get('locations', []), verify_only=True)
+        self.assert_wasapi_locations(res.json['files'][0], verify_only=True)
 
     def test_wasapi_download(self):
         assert self.redis.hget(REC_INFO, '@index_file') is not None
         params = {'user': 'test'}
         res = self.testapp.get('/api/v1/download/webdata', params=params)
 
-        self.assert_wasapi_locations(res.json['files'][0].get('locations', []), verify_only=False)
+        self.assert_wasapi_locations(res.json['files'][0], verify_only=False)
 
     def test_create_new_coll(self):
         # Collection
@@ -222,7 +222,9 @@ class TestLocalStorageCommit(BaseStorageCommit):
         storage_dir = os.environ['STORAGE_ROOT'].replace(os.path.sep, '/')
         assert storage_dir in key
 
-    def assert_wasapi_locations(self, locations, verify_only=True):
+    def assert_wasapi_locations(self, file_entry, verify_only=True):
+        locations = file_entry.get('locations', [])
+        assert list(file_entry.get('checksums').keys())[0] == 'md5'
         assert len(locations) == 1
         if verify_only:
             return
@@ -301,7 +303,9 @@ class TestS3Storage(BaseStorageCommit):
     def assert_warc_key(self, key):
         assert key.startswith(os.environ['S3_ROOT'])
 
-    def assert_wasapi_locations(self, locations, verify_only=True):
+    def assert_wasapi_locations(self, file_entry, verify_only=True):
+        locations = file_entry.get('locations', [])
+        assert list(file_entry.get('checksums').keys())[0] == 's3etag'
         assert len(locations) == 2
         if verify_only:
             return

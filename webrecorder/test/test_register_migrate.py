@@ -304,9 +304,14 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_wasapi_list(self):
         res = self.testapp.get('/api/v1/download/webdata')
-        assert len(res.json['files']) == 1
+        assert len(res.json['files']) == 2
         assert res.json['files'][0]['checksums']
         assert res.json['files'][0]['locations']
+
+        assert res.json['files'][1]['checksums']
+        assert res.json['files'][1]['locations']
+
+        assert sum((1 if val['is_open'] else 0 for val in res.json['files']), 0) == 1
 
         wasapi_filename = res.json['files'][0]['locations'][0]
         res = self.testapp.head(urlsplit(wasapi_filename).path)
@@ -463,9 +468,11 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.get('/api/v1/download/webdata')
         self.testapp.authorization = None
 
-        assert len(res.json['files']) == 1
+        assert len(res.json['files']) == 3
         assert res.json['files'][0]['checksums']
         assert res.json['files'][0]['locations']
+
+        assert sum((1 if val['is_open'] else 0 for val in res.json['files']), 0) == 2
 
         wasapi_filename = res.json['files'][0]['locations'][0]
 

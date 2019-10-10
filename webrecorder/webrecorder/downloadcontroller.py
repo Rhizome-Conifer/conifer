@@ -9,6 +9,7 @@ from webrecorder import __version__
 from webrecorder.apiutils import wr_api_spec
 from webrecorder.models.stats import Stats
 from webrecorder.utils import get_bool
+from webrecorder.rec.storage import LocalFileStorage
 
 from bottle import response, request
 from six.moves.urllib.parse import quote
@@ -50,7 +51,7 @@ class DownloadController(BaseController):
 
         @self.app.get('/api/v1/download/webdata')
         @self.api(
-            query=['?user', '?collection', '?commit'],
+            query=['?user', '?collection'],
             resp='wasapi_list',
             description='List all files available for download, their locations and checksums, per WASAPI spec'
         )
@@ -224,7 +225,6 @@ class DownloadController(BaseController):
 
         # some clients use collection rather than coll_name so we must check for both
         coll_name = request.query.getunicode('collection')
-        commit = get_bool(request.query.getunicode('commit'))
 
         user = self._get_wasapi_user()
 
@@ -246,16 +246,13 @@ class DownloadController(BaseController):
         download_path = self.get_origin() + '/api/v1/download/{user}/{coll}/{filename}'
 
         for collection in colls:
-            if commit:
-                commit_id = collection.commit_all()
-                while commit_id:
-                    gevent.sleep(10)
-                    commit_id = collection.commit_all(commit_id)
+            commit_storage = collection.get_storage()
+            local_storage = LocalFileStorage(self.redis)
 
-            storage = collection.get_storage()
             for recording in collection.get_recordings():
-                if not recording.is_fully_committed():
-                    continue
+                is_open = not recording.is_fully_committed()
+                print('IS OPEN', is_open)
+                storage = commit_storage if not is_open else local_storage
 
                 for name, path in recording.iter_all_files(include_index=False):
                     full_warc_path = collection.get_warc_path(name)
@@ -265,7 +262,7 @@ class DownloadController(BaseController):
 
                     # if remote download url exists (eg. for s3), include that first
                     # always include local download url as well
-                    if remote_download_url:
+                    if remote_download_url and not is_open:
                         locations = [remote_download_url, local_download]
                     else:
                         locations = [local_download]
@@ -281,9 +278,10 @@ class DownloadController(BaseController):
                         'collection': collection.name,
                         'checksums': {kind: check_sum},
                         'locations': locations,
+                        'is_open': is_open,
                     })
 
-        return {'files': files, 'include-extra': True}
+        return {'files': files, 'include-extra': len(files) > 0}
 
     def wasapi_download(self, username, coll_name, filename):
         user = self._get_wasapi_user(username)

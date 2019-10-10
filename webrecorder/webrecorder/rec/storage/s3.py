@@ -158,6 +158,6 @@ class S3Storage(BaseStorage):
             res = self.s3.head_object(Bucket=self.bucket_name,
                                       Key=path)
             # strip off quotes and return md5
-            return 'etag', res['ETag'][1:-1], res['ContentLength']
+            return 's3etag', res['ETag'][1:-1], res['ContentLength']
         except Exception:
             return None, None, None
