@@ -311,7 +311,7 @@ class TestRegisterMigrate(FullStackTests):
         assert res.json['files'][1]['checksums']
         assert res.json['files'][1]['locations']
 
-        assert sum((1 if val['is_open'] else 0 for val in res.json['files']), 0) == 1
+        assert sum((1 if val['is_active'] else 0 for val in res.json['files']), 0) == 1
 
         wasapi_filename = res.json['files'][0]['locations'][0]
         res = self.testapp.head(urlsplit(wasapi_filename).path)
@@ -472,7 +472,7 @@ class TestRegisterMigrate(FullStackTests):
         assert res.json['files'][0]['checksums']
         assert res.json['files'][0]['locations']
 
-        assert sum((1 if val['is_open'] else 0 for val in res.json['files']), 0) == 2
+        assert sum((1 if val['is_active'] else 0 for val in res.json['files']), 0) == 2
 
         wasapi_filename = res.json['files'][0]['locations'][0]
 

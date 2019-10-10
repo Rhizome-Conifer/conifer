@@ -305,7 +305,8 @@ class TestS3Storage(BaseStorageCommit):
 
     def assert_wasapi_locations(self, file_entry, verify_only=True):
         locations = file_entry.get('locations', [])
-        assert list(file_entry.get('checksums').keys())[0] == 's3etag'
+        hash_type = list(file_entry.get('checksums').keys())[0]
+        assert hash_type == 's3etag' or hash_type == 'md5'
         assert len(locations) == 2
         if verify_only:
             return

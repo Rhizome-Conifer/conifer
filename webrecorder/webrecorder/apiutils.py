@@ -138,7 +138,7 @@ class WRAPISpec(object):
                                         'collection': {'type': 'string'},
                                         'checksums': {'type': 'object'},
                                         'locations': {'type': 'array', 'items': {'type': 'string'}},
-                                        'is_open': {'type': 'boolean'},
+                                        'is_active': {'type': 'boolean'},
                                     }
                                 }
                             },

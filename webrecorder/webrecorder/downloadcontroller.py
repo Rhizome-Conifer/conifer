@@ -250,9 +250,9 @@ class DownloadController(BaseController):
             local_storage = LocalFileStorage(self.redis)
 
             for recording in collection.get_recordings():
-                is_open = not recording.is_fully_committed()
-                print('IS OPEN', is_open)
-                storage = commit_storage if not is_open else local_storage
+                is_committed = recording.is_fully_committed()
+                is_open = not is_committed and recording.get_pending_count() > 0
+                storage = commit_storage if is_committed else local_storage
 
                 for name, path in recording.iter_all_files(include_index=False):
                     full_warc_path = collection.get_warc_path(name)
@@ -262,10 +262,14 @@ class DownloadController(BaseController):
 
                     # if remote download url exists (eg. for s3), include that first
                     # always include local download url as well
-                    if remote_download_url and not is_open:
+                    if remote_download_url and is_committed:
                         locations = [remote_download_url, local_download]
                     else:
                         locations = [local_download]
+
+                    # add .open if current pending requests, checksum will likely change
+                    if is_open:
+                        name += '.open'
 
                     kind, check_sum, size = storage.get_checksum_and_size(full_warc_path)
                     files.append({
@@ -278,7 +282,7 @@ class DownloadController(BaseController):
                         'collection': collection.name,
                         'checksums': {kind: check_sum},
                         'locations': locations,
-                        'is_open': is_open,
+                        'is_active': not is_committed
                     })
 
         return {'files': files, 'include-extra': len(files) > 0}
