@@ -2,6 +2,7 @@ export ApiDocs from './ApiDocs';
 export Documentation from './Documentation';
 export FAQ from './FAQ';
 export Footer from './Footer';
+export HomeUI from './HomeUI';
 export HomepageAnnouncement from './HomepageAnnouncement';
 export HomepageMessage from './HomepageMessage';
 export NewCollection from './NewCollection';

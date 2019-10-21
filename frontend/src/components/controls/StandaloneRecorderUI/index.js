@@ -191,7 +191,7 @@ class StandaloneRecorderUI extends Component {
               </div>
             </div>
           </Collapsible>
-          <Button type="submit" className="rounded" aria-label="start recording" disabled={isOutOfSpace}>
+          <Button type="submit" className="rounded btn-primary" aria-label="start recording" disabled={isOutOfSpace}>
             Start Capture
           </Button>
           {
