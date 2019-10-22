@@ -48,7 +48,7 @@ class HomeUI extends PureComponent {
     const { auth, showModalCB } = this.props;
     const user = auth.get('user');
 
-    if (__DESKTOP__) {
+    if (__DESKTOP__ || !user.get('anon')) {
       return <RedirectWithStatus to={`/${user.get('username')}`} />;
     }
 
