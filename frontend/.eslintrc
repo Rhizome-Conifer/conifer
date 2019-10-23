@@ -33,6 +33,11 @@
     "jsx-a11y/label-has-associated-control": 1,
     "jsx-a11y/no-autofocus": 1,
     "jsx-a11y/no-noninteractive-element-interactions": 1,
+    "jsx-a11y/media-has-caption": [ 0, {
+      "audio": [ "Audio" ],
+      "video": [ "Video" ],
+      "track": [ "Track" ],
+    }],
     "jsx-a11y/mouse-events-have-key-events": 1,
     "jsx-a11y/iframe-has-title": 0,
     "jsx-a11y/no-noninteractive-element-to-interactive-role": 1,

@@ -79,7 +79,11 @@ module.exports = smp.wrap({
         options: {
           limit: 10240
         }
-      }
+      },
+      {
+        test: /\.(mov|mp4|ogv|webm)$/,
+        loader: 'file-loader'
+      },
     ]
   },
 

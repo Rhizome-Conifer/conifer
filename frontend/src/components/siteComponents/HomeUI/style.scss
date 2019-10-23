@@ -82,6 +82,10 @@
     @media (max-width: $mobile) {
         padding: 2rem;
     }
+
+    video {
+        width: 100%;
+    }
 }
 
 .advanced-features {
@@ -95,7 +99,7 @@
 .supporter {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    grid-gap: 3rem 1.5rem;
+    grid-gap: 3rem;
 
     @media (max-width: $xs) {
         grid-template-columns: 1fr;
@@ -178,6 +182,11 @@
 
         button {
             margin-top: auto;
+        }
+
+        img {
+            margin: 0 10%;
+            width: 80%;
         }
 
         @media (max-width: $xs) {
