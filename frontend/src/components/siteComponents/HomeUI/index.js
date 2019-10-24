@@ -71,7 +71,7 @@ class HomeUI extends PureComponent {
           </figure>
           <div className="intro">
             <h2>Webrecorder.io is a web archiving service to collect and revisit web pages.</h2>
-            <p>Capturing an interactive copy of a web page is as easy as browsing the web like you normally would. Webrecorder automatically archives each web page viewed, including content revealed by your interactions such as playing video and audio, scrolling, clicking buttons, and so forth.</p>
+            <p>Webrecorder creates an interactive copy of any web page that you browse, including content revealed by your interactions such as playing video and audio, scrolling, clicking buttons, and so forth.</p>
 
             <div className="cta">
               <button className="rounded btn-primary" onClick={this.signup} type="button">Create a Free Account</button>
