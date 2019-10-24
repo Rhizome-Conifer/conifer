@@ -38,6 +38,11 @@
             border: solid .1rem $black;
             padding: 1.5rem;
 
+            a {
+                color: $black;
+                text-decoration: underline;
+            }
+
             img {
                 flex-shrink: 0;
             }

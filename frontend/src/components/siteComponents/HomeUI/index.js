@@ -80,19 +80,17 @@ class HomeUI extends PureComponent {
 
             <div className="note">Webrecorder.io offers free accounts with 5GB of storage. Get more and contribute to Webrecorder's development by <a href="https://supporter.webrecorder.io" target="_blank">becoming a supporter</a>.</div>
 
-            {/*
             <div className="desktop-feature">
               <img src={require('shared/images/homepage/wr-desktop-64x64.png')} alt="Webrecorder Desktop Icon" />
               <div>
-                <h5>Download Desktop App</h5>
-                <p>Use the Webrecorder Desktop app to archive on your own computer, no registration necessary.</p>
+                <h5><a href="https://github.com/webrecorder/webrecorder-desktop/releases/latest" target="_blank">Download Desktop App</a></h5>
+                <p>Collect and access archived web pages on your own computer, no account necessary.</p>
               </div>
             </div>
-            */}
-            {
+            {/*
               homepageAnnouncement &&
                 <HomepageAnnouncement />
-            }
+            */}
           </div>
         </div>
 
