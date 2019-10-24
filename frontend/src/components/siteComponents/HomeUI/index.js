@@ -2,8 +2,9 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 
-import { homepageAnnouncement, supporterPortal } from 'config';
+import { anonDisabled, homepageAnnouncement, supporterPortal } from 'config';
 
+import { StandaloneRecorder } from 'containers';
 import RedirectWithStatus from 'components/RedirectWithStatus';
 import { HomepageAnnouncement, HomepageMessage } from 'components/siteComponents';
 
@@ -58,12 +59,20 @@ class HomeUI extends PureComponent {
           <title>Homepage</title>
         </Helmet>
 
-        {/*
-          user.get('anon') && user.get('num_collections') > 0 &&
-            <HomepageMessage
-              auth={auth}
-              showModal={showModalCB} />
-        */}
+        {
+          !anonDisabled &&
+          <div className="top-buffer">
+            <StandaloneRecorder />
+            <div className="top-buffer">
+              {
+                user.get('anon') && user.get('num_collections') > 0 &&
+                  <HomepageMessage
+                    auth={auth}
+                    showModal={showModalCB} />
+              }
+            </div>
+          </div>
+        }
 
         <div className="keystone">
           <figure>
