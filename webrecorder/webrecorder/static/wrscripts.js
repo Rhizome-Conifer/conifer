@@ -79,7 +79,7 @@
 
     (function() {
         async function doRun() {
-            for await (const result of window.$WBBehaviorRunner$.autoRunIter(250)) {
+            for await (const result of window.$WBBehaviorRunner$.autoRunIter({delayAmount: 250})) {
                 sendMessage({wb_type: "behaviorStep", result: result});
                 if (!result.done && window.$WBBehaviorPaused) {
                     sendMessage({wb_type: "behaviorStop"});
