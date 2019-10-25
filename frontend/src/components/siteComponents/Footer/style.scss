@@ -2,96 +2,77 @@
 
 footer {
     width: 100%;
-    padding-bottom: 2.4rem;
+    margin-top: 5rem;
+    padding: 4rem 0 3rem 0;
+    background: $gray350;
 
-    #email-signup {
-        padding-left: 0;
 
-        .form-group-sm {
+    .project-info {
+
+        .links {
             display: flex;
+            justify-content: space-between;
 
-            input {
-                width: 15rem;
-            }
-        }
-    }
-}
+            ul {
+                padding: 0;
+                list-style-type: none;
 
-.footer-label {
-    position: relative;
-    font-size: .9rem;
+                &:last-of-type {
+                    margin-right: 20%;
+                }
 
-    & > div {
-        margin-left: .2rem;
-    }
+                li {
+                    margin-bottom: 1rem;
 
-    & > a {
-        display: block;
-    }
-}
-.rhizome-logo {
-    padding-top: .5rem;
-    width: 11.8rem;
-}
-.project-info {
-
-    a {
-        margin-right: 1rem;
-
-        &:hover {
-            svg path {
-                fill: $blue;
-            }
-
-            svg circle {
-                stroke: $blue;
-            }
-        }
-
-        &.divider:before {
-            content:'';
-            display: inline-block;
-            width: .1rem;
-            height: 1.5rem;
-            margin-right: 1rem;
-            background: #000;
-            vertical-align: sub;
-        }
-
-        svg {
-            width: 1.8rem;
-            height: 1.8rem;
-            margin-right: 1rem;
-            vertical-align: middle;
-        }
-
-        &.contact {
-            svg {
-                margin-right: .5rem;
-                width: 1.6rem;
-                height: 1.6rem;
-
-                path {
-                    fill: $blue;
+                    a {
+                        color: $body-gray;
+                    }
                 }
             }
+        }
+
+        #email-signup {
+            margin-bottom: 4rem;
+            padding-left: 0;
+
+            .form-group-sm {
+                display: flex;
+
+                input {
+                    width: 15rem;
+                }
+            }
+
+            input {
+                border-right: 0;
+                border-bottom-left-radius: 2.5rem;
+                border-top-left-radius: 2.5rem;
+            }
+
+            button {
+                border-left: 0;
+                border-bottom-left-radius: 0;
+                border-top-left-radius: 0;
+                border-top-right-radius: 2.5rem;
+                border-bottom-right-radius: 2.5rem;
+                background: $gray600;
+                color: $white;
+            }
+        }
+    }
+
+    .donate-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0 10%;
+
+        button {
+            background: $white;
+            margin: 1rem 0 1.5rem 0;
         }
     }
 }
 
 @media (max-width: 767px) {
-    .project-info {
-        text-align: center;
-    }
-    .footer-label {
-        padding: 1rem 0;
-        text-align: center;
-    }
-}
-
-@media (min-width: 767px) {
-    footer .container .row {
-        display: flex;
-        align-items: flex-end;
-    }
 }

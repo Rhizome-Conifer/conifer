@@ -79,7 +79,11 @@ module.exports = smp.wrap({
         options: {
           limit: 10240
         }
-      }
+      },
+      {
+        test: /\.(mov|mp4|ogv|webm)$/,
+        loader: 'file-loader'
+      },
     ]
   },
 
@@ -105,6 +109,7 @@ module.exports = smp.wrap({
     new webpack.EnvironmentPlugin({
       APP_HOST: 'localhost:8089',
       ALLOW_DAT: false,
+      ANON_DISABLED: false,
       ANNOUNCE_MAILING_LIST: null,
       CONTENT_HOST: 'localhost:8092',
       FRONTEND_PORT: 8095,

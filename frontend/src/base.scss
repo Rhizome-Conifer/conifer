@@ -58,6 +58,7 @@ a {
 
 .btn-primary {
   background-color: $blue;
+  background: $blue;
   border-color: $dark-blue;
 
   &:hover {
@@ -95,6 +96,10 @@ a {
 
 .react-tabs__tab:first-of-type {
     margin-left: 1rem;
+}
+
+.form-group-recorder-url {
+  display: flex;
 }
 
 /*
@@ -220,6 +225,17 @@ a {
   font-size: 1.15rem;
   background: transparent;
   border: solid .1rem #CCC;
+
+  &.btn-primary {
+    background-color: $blue;
+    background: $blue;
+    border-color: $dark-blue;
+    color: $white;
+
+    &:hover {
+      background-color: $dark-blue;
+    }
+  }
 }
 
 .borderless {

@@ -54,6 +54,7 @@ const publicIP = process.env.PUBLIC_IP ? process.env.PUBLIC_IP : appHost;
 
 
 export default Object.assign({
+  anonDisabled: process.env.ANON_DISABLED,
   announceMailingList: process.env.ANNOUNCE_MAILING_LIST,
   apiProxy: false,
   apiPath: '/api/v1',
