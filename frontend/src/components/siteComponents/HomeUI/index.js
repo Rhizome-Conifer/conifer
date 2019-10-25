@@ -87,7 +87,7 @@ class HomeUI extends PureComponent {
               <button className="rounded" onClick={this.login} type="button">Existing Users Login</button>
             </div>
 
-            <div className="note">Webrecorder.io offers free accounts with 5GB of storage. Get more and contribute to Webrecorder's development by <a href="https://supporter.webrecorder.io" target="_blank">becoming a supporter</a>.</div>
+            { supporterPortal && <div className="note">Webrecorder.io offers free accounts with 5GB of storage. Get more and contribute to Webrecorder's development by <a href={supporterPortal} target="_blank">becoming a supporter</a>.</div> }
 
             <div className="desktop-feature">
               <img src={require('shared/images/homepage/wr-desktop-64x64.png')} alt="Webrecorder Desktop Icon" />
@@ -176,12 +176,15 @@ class HomeUI extends PureComponent {
             <p>Here are some other tools we have developed. An extensive lists of re-usable software components produced by Webrecorder is available here.</p>
           </div>
 
-          <div className="supportCTA">
-            <h3>You can support free, open source tools for archiving the web.</h3>
-            <button className="rounded" onClick={this.goToSupporterSite} type="button">Become a Supporter</button>
-            <a href="https://supporter.webrecorder.io" target="_blank">Learn more</a>
-            <p>Webrecorder is a project of Rhizome, a registered 501(c)(3) non-profit organization. Your donations are tax-deductible.</p>
-          </div>
+          {
+            supporterPortal &&
+              <div className="supportCTA">
+                <h3>You can support free, open source tools for archiving the web.</h3>
+                <button className="rounded" onClick={this.goToSupporterSite} type="button">Become a Supporter</button>
+                <a href="https://supporter.webrecorder.io" target="_blank">Learn more</a>
+                <p>Webrecorder is a project of Rhizome, a registered 501(c)(3) non-profit organization. Your donations are tax-deductible.</p>
+              </div>
+          }
 
           <div>
             <img src={require('shared/images/homepage/desktop.png')} alt="Desktop Logo" />

@@ -48,11 +48,14 @@ function Footer() {
             </p>
           </div>
 
-          <div className="col-xs-12 col-sm-6 donate-info hidden-xs">
-            <p>Webrecorder is a rapidly developing community project maintained by a non-profit arts organization. Becoming a supporter or donor helps us offset our operational costs, keeping Webrecorder a sustainable project.</p>
-            <button className="rounded" onClick={donateNow} type="button">Donate Now</button>
-            <a href={supporterPortal} target="_blank">Learn More About Becoming a Supporter</a>
-          </div>
+          {
+            supporterPortal &&
+              <div className="col-xs-12 col-sm-6 donate-info hidden-xs">
+                <p>Webrecorder is a rapidly developing community project maintained by a non-profit arts organization. Becoming a supporter or donor helps us offset our operational costs, keeping Webrecorder a sustainable project.</p>
+                <button className="rounded" onClick={donateNow} type="button">Donate Now</button>
+                <a href={supporterPortal} target="_blank">Learn More About Becoming a Supporter</a>
+              </div>
+          }
         </div>
       </div>
     </footer>
