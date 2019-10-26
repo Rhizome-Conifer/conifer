@@ -36,6 +36,8 @@ class UserManager(object):
 
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 
+    EMAIL_RX = re.compile(r'[\w./+-]+@[\w.-]+')
+
     LC_USERNAMES_KEY = 'h:lc_users'
 
     def __init__(self, redis, cork, config):
@@ -563,7 +565,7 @@ class UserManager(object):
 
         # EMAIL
         # validate email
-        if not re.match(r'[\w.-/+]+@[\w.-]+.\w+', email):
+        if not re.match(self.EMAIL_RX, email):
             errs.append('valid email required!')
 
         if email in [data['email_addr'] for u, data in self.all_users.items()]:
