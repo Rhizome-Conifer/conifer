@@ -73,16 +73,18 @@ class WebrecorderRunner(StandaloneRunner):
         if not self.default_user:
             return
 
-        if not self.user_manager.USER_RX.match(self.default_user):
-            self.default_user = sanitize_title(self.default_user)
-
         if not self.user_manager.check_user(self.default_user):
+            if not self.user_manager.is_username_available(self.default_user):
+                self.default_user = 'user-' + sanitize_title(self.default_user)
+
             res = self.user_manager.create_user(
               email='{0}@localhost'.format(self.default_user),
               username=self.default_user,
               passwd='LocalUser1',
               role='admin',
               name=self.default_user)
+
+        print('DEFAULT_USER=' + self.default_user, flush=True)
 
         # set max_size to available free space, if possible
         try:
