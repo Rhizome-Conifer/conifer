@@ -137,12 +137,13 @@ class HomeUI extends PureComponent {
             </div>
             <div className="col-sm-6 hidden-xs">
               <figure>
-                { !__DESKTOP__ &&
-                  <video autoPlay loop muted poster={require('shared/images/homepage/autopilot.jpg')}>
-                    <source src={require('shared/media/autopilot.mp4')} type="video/mp4" />
-                    <source src={require('shared/media/autopilot.webm')} type="video/webm" />
-                    <source src={require('shared/media/autopilot.ogv')} type="video/ogg" />
-                  </video>
+                {
+                  !__DESKTOP__ &&
+                    <video autoPlay loop muted poster={require('shared/images/homepage/autopilot.jpg')}>
+                      <source src={require('shared/media/autopilot.mp4')} type="video/mp4" />
+                      <source src={require('shared/media/autopilot.webm')} type="video/webm" />
+                      <source src={require('shared/media/autopilot.ogv')} type="video/ogg" />
+                    </video>
                 }
               </figure>
             </div>
