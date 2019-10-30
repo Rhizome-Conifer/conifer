@@ -1,3 +1,4 @@
+
 # Webrecorder Project
 ### *Web archiving for All!*
 [![Join the chat at https://gitter.im/webrecorder/webrecorder](https://badges.gitter.im/webrecorder/webrecorder.svg)](https://gitter.im/webrecorder/webrecorder)
@@ -32,7 +33,10 @@ Using our hosted version of Webrecorder at https://webrecorder.io/, users can si
 
 ### 2. Offline Capture and Browsing
 
-We also provide a OSX/Windows/Linux Electron application, [Webrecorder Player](https://github.com/webrecorder/webrecorderplayer-electron) that can browse WARC created by Webrecorder (and other web archiving tools) locally on the desktop.
+We also provide two OSX/Windows/Linux Electron applications:
+
+* [Webrecorder Player](https://github.com/webrecorder/webrecorder-player) browse WARCs created by Webrecorder (and other web archiving tools) locally on the desktop.
+* [Webrecorder Desktop](https://github.com/webrecorder/webrecorder-desktop) a desktop version of the hosted Webrecorder service providing both capture and replay features.
 
 
 ### 3. Preconfigured Deployment
