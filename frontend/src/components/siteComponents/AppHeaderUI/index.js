@@ -34,12 +34,13 @@ class AppHeader extends PureComponent {
     const { authUser, is404, location: { pathname } } = this.props;
     const { match, route } = this.getActiveMatch(pathname);
     const canAdmin = match && match.params.user === authUser.get('username');
+    const hostedLink = !__DESKTOP__ && canAdmin ? `/${match.params.user}` : '/';
 
     return (
       <header className={classNames('app-header', { dark: canAdmin })}>
         <nav className="header-webrecorder" role="navigation">
           <div className="navbar-tools">
-            <NavLink to={__DESKTOP__ ? `/${authUser.get('username')}` : '/'} className={classNames('wr-logomark', { desktop: __DESKTOP__ })}>
+            <NavLink to={__DESKTOP__ ? `/${authUser.get('username')}` : hostedLink} className={classNames('wr-logomark', { desktop: __DESKTOP__ })}>
               {
                 __DESKTOP__ ?
                   'Webrecorder' :

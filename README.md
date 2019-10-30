@@ -30,7 +30,7 @@ Webrecorder and related tools are designed to make web archiving more portable a
 
 Using our hosted version of Webrecorder at https://webrecorder.io/, users can sign up for a free account and create their own personal collections of web archives. Captures web content will be available online, either publicly or only privately, under each user account, and can be downloaded by the account owner at any time. Downloaded web archives are available as WARC files. (WARC is the ISO standard file format for web archives.) The hosted service can also be used anonymously and the captured content can be downloaded at the end of a temporary session.
 
-### 2. Offline Browsing
+### 2. Offline Capture and Browsing
 
 We also provide a OSX/Windows/Linux Electron application, [Webrecorder Player](https://github.com/webrecorder/webrecorderplayer-electron) that can browse WARC created by Webrecorder (and other web archiving tools) locally on the desktop.
 
@@ -97,6 +97,12 @@ To run Webrecorder on different domains, the `APP_HOST` and `CONTENT_HOST` envir
 For best results, the two domains should be two subdomains, both with https enabled.
 
 The `SCHEME` env var should also be set to `SCHEME=https` when deploying via https.
+
+#### Anonymous Mode
+
+By default webrecorder disallows anonymous recording. To enable this feature, set ANON_DISABLED=false to the wr.env file and restart.
+
+*Note: Previously the default setting was anonymous recording enabled (`ANON_DISABLED=false`)*
 
 #### Storage
 

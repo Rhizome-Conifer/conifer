@@ -76,7 +76,9 @@ class HomeUI extends PureComponent {
 
         <div className="keystone">
           <figure>
-            <img src={require('shared/images/homepage/keystone-figure.png')} alt="Screenshots of Webrecorder.io" />
+            <a href="https://webrecorder.io/pelicanbomb/pelican-bomb">
+              <img src={require('shared/images/homepage/keystone-figure.png')} alt="Screenshots of Webrecorder.io" />
+            </a>
           </figure>
           <div className="intro">
             <h2>Webrecorder.io is a web archiving service to collect and revisit web pages.</h2>
@@ -84,22 +86,17 @@ class HomeUI extends PureComponent {
 
             <div className="cta">
               <button className="rounded btn-primary" onClick={this.signup} type="button">Create a Free Account</button>
-              <button className="rounded" onClick={this.login} type="button">Existing Users Login</button>
+              <button className="button-link" onClick={this.login} type="button">Existing Users Login</button>
             </div>
 
             { supporterPortal && <div className="note">Webrecorder.io offers free accounts with 5GB of storage. Get more and contribute to Webrecorder's development by <a href={supporterPortal} target="_blank">becoming a supporter</a>.</div> }
 
-            <div className="desktop-feature">
-              <img src={require('shared/images/homepage/wr-desktop-64x64.png')} alt="Webrecorder Desktop Icon" />
-              <div>
-                <h5><a href="https://github.com/webrecorder/webrecorder-desktop/releases/latest" target="_blank">Download Desktop App</a></h5>
-                <p>Collect and access archived web pages on your own computer, no account necessary.</p>
-              </div>
-            </div>
-            {/*
+            <div className="note">Don't want to register? <a href="https://github.com/webrecorder/webrecorder-desktop/releases/latest">Download Desktop App</a> to collect and access archived web pages on your own computer, no account necessary.</div>
+
+            {
               homepageAnnouncement &&
                 <HomepageAnnouncement />
-            */}
+            }
           </div>
         </div>
 
