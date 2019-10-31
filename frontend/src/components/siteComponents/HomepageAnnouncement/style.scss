@@ -1,8 +1,11 @@
+@import 'src/vars';
+
 #news-alert {
     margin: 1rem auto 3rem auto;
     background-color: white;
     background-image: none;
-    border: .1rem solid #0232F5;
+    border: .1rem solid $gray500;
+    border-radius: unset;
     color: black;
 
     a {
@@ -22,14 +25,13 @@
     }
 
     .wr-alert-info {
-        display: table;
-
-        h5 {
-            padding: 0 4%;
+        h1,h2,h3,h4,h5 {
+            margin-top: 0;
+            color: $body-gray;
         }
 
         p {
-            margin: 0 5% 1rem 5%;
+            color: $body-gray;
         }
     }
 }
