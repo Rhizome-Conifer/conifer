@@ -325,7 +325,7 @@ class TestUpload(FullStackTests):
         assert res.json['coll_title'] == 'Temporary Collection'
         assert res.json['filename'] == 'example2.warc.gz'
         assert res.json['files'] == 1
-        assert res.json['total_size'] == 5192
+        assert res.json['total_size'] == 6490
         assert res.json['done'] == False
 
         def assert_finished():
