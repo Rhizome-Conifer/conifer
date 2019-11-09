@@ -120,6 +120,7 @@ class BaseImporter(ImportStatusChecker):
         self.detect_list_info = config['page_detect_list']
 
         self.max_detect_pages = config['max_detect_pages']
+        self.max_auto_bookmarks = config['max_auto_bookmarks']
 
     def handle_upload(self, stream, upload_id, upload_key, infos, filename,
                       user, force_coll_name, total_size):
@@ -195,7 +196,7 @@ class BaseImporter(ImportStatusChecker):
 
         with redis_pipeline(self.redis) as pi:
             pi.hset(upload_key, 'size', 0)
-            pi.hset(upload_key, 'total_size', total_size * 2)
+            pi.hset(upload_key, 'total_size', int(total_size * 2.5))
             pi.hset(upload_key, 'total_files', num_files)
             pi.hset(upload_key, 'files', num_files)
 
@@ -240,8 +241,7 @@ class BaseImporter(ImportStatusChecker):
                 else:
                     logger.debug('SKIP upload for zero-length recording')
 
-
-                self.process_pages(info, page_id_map)
+                self.process_pages(info, page_id_map, upload_key, total_size)
 
                 diff = info['offset'] - last_end
                 last_end = info['offset'] + info['length']
@@ -280,13 +280,13 @@ class BaseImporter(ImportStatusChecker):
                 first_coll.sync_coll_index(exists=False, do_async=False)
                 first_coll.set_external_remove_on_expire()
 
-    def process_pages(self, info, page_id_map):
+    def process_pages(self, info, page_id_map, upload_key, total_size):
         pages = info.get('pages')
 
         # detect pages if none
         detected = False
         if pages is None:
-            pages = self.detect_pages(info['coll'], info['rec'])
+            pages = self.detect_pages(info['coll'], info['rec'], upload_key, total_size)
             detected = True
 
         # if no pages, nothing more to do
@@ -303,9 +303,16 @@ class BaseImporter(ImportStatusChecker):
         if detected:
             blist = info['collection'].create_bookmark_list(self.detect_list_info)
 
+            # if set, further limit number of automatic bookmarks
+            if self.max_auto_bookmarks:
+                pages = pages[:self.max_auto_bookmarks]
+
+            incr = int((total_size * 0.25) / len(pages))
+
             for page in pages:
                 page['page_id'] = page['id']
                 bookmark = blist.create_bookmark(page, incr_stats=False)
+                self.redis.hincrby(upload_key, 'size', incr)
 
     def har2warc(self, filename, stream):
         """Convert HTTP Archive format file to WARC archive.
@@ -437,7 +444,7 @@ class BaseImporter(ImportStatusChecker):
                     bookmark_data['page_id'] = page_id_map.get(page_id)
                 bookmark = blist.create_bookmark(bookmark_data, incr_stats=False)
 
-    def detect_pages(self, coll, rec):
+    def detect_pages(self, coll, rec, upload_key, total_size):
         """Find pages in recording.
 
         :param str coll: collection ID
@@ -449,16 +456,24 @@ class BaseImporter(ImportStatusChecker):
         key = self.cdxj_key.format(coll=coll, rec=rec)
 
         pages = []
+        count = 0
+
+        total_cdx = self.redis.zcard(key)
+        if self.max_detect_pages:
+            total_cdx = min(self.max_detect_pages, total_cdx)
+
+        incr = int((total_size * 0.25) / total_cdx)
 
         #for member, score in self.redis.zscan_iter(key):
-        for member in self.redis.zrange(key, 0, -1):
+        for member, _ in zip(self.redis.zrange(key, 0, -1), range(total_cdx)):
             cdxj = CDXObject(member.encode('utf-8'))
 
-            if ((not self.max_detect_pages or len(pages) < self.max_detect_pages)
-                and self.is_page(cdxj)):
+            if self.is_page(cdxj):
                 pages.append(dict(url=cdxj['url'],
                                   title=cdxj['url'],
                                   timestamp=cdxj['timestamp']))
+
+            self.redis.hincrby(upload_key, 'size', incr)
 
         return pages
 
