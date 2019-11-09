@@ -41,7 +41,7 @@ class WebrecPlayerRunner(StandaloneRunner):
         super(WebrecPlayerRunner, self).close()
 
     def _patch_redis(self):
-        redis.StrictRedis = fakeredis.FakeStrictRedis
+        redis.StrictRedis = FakeStrictRedis
 
         if not self.cache_dir:
             return
@@ -231,6 +231,15 @@ class WebrecPlayerRunner(StandaloneRunner):
 
         parser.add_argument('--cache-dir',
                             help='Writable directory to cache state (including CDXJ index) to avoid reindexing on load')
+
+
+# ============================================================================
+class FakeStrictRedis(fakeredis.FakeStrictRedis):
+    # not supported by this version of fakeredis, so just emulate with zrange
+    def zscan_iter(self, name, match=None, count=None):
+        data = self.zrange(name, 0, -1)
+        for item in data:
+            yield item, 0
 
 
 # ============================================================================

@@ -459,21 +459,24 @@ class BaseImporter(ImportStatusChecker):
         count = 0
 
         total_cdx = self.redis.zcard(key)
-        if self.max_detect_pages:
-            total_cdx = min(self.max_detect_pages, total_cdx)
 
         incr = int((total_size * 0.25) / total_cdx)
+        count = 0
 
-        #for member, score in self.redis.zscan_iter(key):
-        for member, _ in zip(self.redis.zrange(key, 0, -1), range(total_cdx)):
+        for member, score in self.redis.zscan_iter(key, match='*', count=100):
             cdxj = CDXObject(member.encode('utf-8'))
+
+            count += 1
+            self.redis.hincrby(upload_key, 'size', incr)
 
             if self.is_page(cdxj):
                 pages.append(dict(url=cdxj['url'],
                                   title=cdxj['url'],
                                   timestamp=cdxj['timestamp']))
 
-            self.redis.hincrby(upload_key, 'size', incr)
+                if self.max_detect_pages and len(pages) > self.max_detect_pages:
+                    self.redis.hincrby(upload_key, 'size', incr * (total_cdx - count))
+                    break
 
         return pages
 
