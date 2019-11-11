@@ -9,6 +9,7 @@ export CollectionFilters from './CollectionFilters/CollectionFilters';
 export CollectionHeader from './CollectionHeader/CollectionHeader';
 export CollectionList from './CollectionList/CollectionList';
 export CollectionManagement from './CollectionManagement/CollectionManagement';
+export CollectionSearch from './CollectionSearch/CollectionSearch';
 export DeleteCollection from './DeleteCollection/DeleteCollection';
 export Extract from './Extract/Extract';
 export ExtractWidget from './ExtractWidget/ExtractWidget';
