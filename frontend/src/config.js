@@ -61,6 +61,7 @@ export default Object.assign({
   appHost: `${hostScheme}://${appHost}`,
   contentHost: `${hostScheme}://${contentHost}`,
   publicIP: publicIP,
+  clipList: 500,
   columns: ['rowIndex', 'timestamp', 'title', 'url', 'browser', 'session'],
   columnLabels: {
     'browser': 'Capture Browser',

@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 
 import { getCollectionLink, getListLink, remoteBrowserMod } from 'helpers/utils';
+import { clipList } from 'config';
 
 import ClippedLink from 'components/ClippedLink';
 import TimeFormat from 'components/TimeFormat';
@@ -13,6 +15,8 @@ import './style.scss';
 
 
 const ListEntry = ({ collection, isDetail, list }) => {
+  const bookmarks = list.get('bookmarks');
+  const listLink = getListLink(collection, list);
   return (
     <div className="list-entry">
       {
@@ -39,7 +43,7 @@ const ListEntry = ({ collection, isDetail, list }) => {
               <ListIcon />
             </div>
 
-            <h3><Link to={getListLink(collection, list)}>{list.get('title')}</Link></h3>
+            <h3><Link to={listLink}>{list.get('title')}</Link></h3>
           </div>
       }
       <div className="desc">
@@ -50,10 +54,10 @@ const ListEntry = ({ collection, isDetail, list }) => {
               initial={list.get('desc')} />
         }
       </div>
-      <ol>
+      <ol className={classNames({'clipped': !isDetail && bookmarks.size > clipList })}>
         {
-          list.get('bookmarks').map((bk) => {
-            const replay = `${getListLink(collection, list)}/b${bk.get('id')}/${remoteBrowserMod(bk.get('browser'), bk.get('timestamp'))}/${bk.get('url')}`;
+          bookmarks.slice(0, isDetail ? -1 : clipList).map((bk) => {
+            const replay = `${listLink}/b${bk.get('id')}/${remoteBrowserMod(bk.get('browser'), bk.get('timestamp'))}/${bk.get('url')}`;
             return (
               <li key={bk.get('id')}>
                 <Link className="link-group" to={replay}>
@@ -73,6 +77,10 @@ const ListEntry = ({ collection, isDetail, list }) => {
           })
         }
       </ol>
+      {
+        !isDetail && bookmarks.size > clipList &&
+          <div className="expand-clipped"><Link to={listLink}>See full list</Link></div>
+      }
     </div>
   );
 };

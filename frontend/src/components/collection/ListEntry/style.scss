@@ -104,8 +104,27 @@
     }
 
     & > ol {
+        position: relative;
+
+        &.clipped {
+
+            &:after {
+                content: '';
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: 100%;
+                height: 15rem;
+                z-index: 5;
+                pointer-events: none;
+                background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
+            }
+        }
+
         li {
-            margin-bottom: 3.5rem;
+            &:not(:last-of-type) {
+                margin-bottom: 3.5rem;
+            }
 
             .link-group {
                 display: block;
@@ -143,6 +162,14 @@
             .wr-editor {
                 margin-top: 1rem;
             }
+        }
+    }
+
+    .expand-clipped {
+        text-align: center;
+
+        a {
+            font-size: 1.8rem;
         }
     }
 }
