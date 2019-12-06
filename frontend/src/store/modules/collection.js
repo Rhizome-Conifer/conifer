@@ -38,6 +38,10 @@ const LISTS_REORDER = 'wr/coll/LISTS_REORDER';
 const LISTS_REORDER_SUCCESS = 'wr/coll/LISTS_REORDER_SUCCESS';
 const LISTS_REORDER_FAIL = 'wr/coll/LISTS_REORDER_FAIL';
 
+const SEARCH = 'wr/coll/SEARCH';
+const SEARCH_SUCCESS = 'wr/coll/SEARCH_SUCCESS';
+const SEARCH_FAIL = 'wr/coll/SEARCH_FAIL';
+
 export const defaultSort = { sort: 'timestamp', dir: 'DESC' };
 const initialState = fromJS({
   editing: false,
@@ -48,6 +52,7 @@ const initialState = fromJS({
   error: null,
   loading: false,
   loaded: false,
+  search: '',
   sortBy: defaultSort
 });
 
@@ -283,13 +288,17 @@ export function resetEditState() {
 }
 
 
-export function shareToDat(user, coll) {
+export function search(user, coll, searchParams) {
   return {
-    types: [DAT_SHARE, DAT_SHARE_SUCCESS, DAT_SHARE_FAIL],
-    promise: client => client.post(`${apiPath}/collection/${coll}/dat/share`, {
-      params: { user }
+    types: [SEARCH, SEARCH_SUCCESS, SEARCH_FAIL],
+    promise: client => client.get(`${apiPath}/url_search`, {
+      params: {
+        user,
+        coll,
+        ...searchParams
+      }
     })
-  };
+  }
 }
 
 
@@ -297,6 +306,16 @@ export function setSort(sortBy) {
   return {
     type: COLL_SET_SORT,
     sortBy
+  };
+}
+
+
+export function shareToDat(user, coll) {
+  return {
+    types: [DAT_SHARE, DAT_SHARE_SUCCESS, DAT_SHARE_FAIL],
+    promise: client => client.post(`${apiPath}/collection/${coll}/dat/share`, {
+      params: { user }
+    })
   };
 }
 
