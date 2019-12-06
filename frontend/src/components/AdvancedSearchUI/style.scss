@@ -1,0 +1,107 @@
+@import 'src/vars';
+
+.search-mock {
+    .table-container {
+        height: 50rem;
+    }
+}
+
+#advanced-search {
+    /* temp */
+    margin: 5rem;
+
+    width: 60rem;
+    border: solid .1rem #000;
+    padding: 1rem .5rem 0 .5rem;
+
+    .filter {
+        display: flex;
+        margin-bottom: 1.5rem;
+
+        &:first-of-type > .options {
+            width: 100%
+        }
+
+        &:last-of-type .label {
+            align-self: center;
+        }
+
+        .label {
+            color: $gray600;
+            font-weight: 300;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            display: block;
+        }
+
+        & > .label {
+            width: 15rem;
+        }
+
+        input[name=search] {
+            border-width: 0 0 .1rem 0;
+            width: 100%;
+        }
+
+        .dropdown {
+            width: 100%;
+
+            .dropdown-menu {
+                max-height: 30rem;
+                overflow: auto;
+            }
+        }
+
+        .dropdown + .dropdown {
+            margin-top: .5rem;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+
+            label {
+                color: $gray600;
+                font-weight: 300;
+                font-size: 1.4rem;
+            }
+        }
+
+        .sub-filters {
+            display: flex;
+            margin-top: .5rem;
+        }
+    }
+
+    .date-select {
+        margin-top: 1.5rem;
+
+        .label {
+            text-align: left;
+            padding-left: 0;
+        }
+
+        .react-datepicker-wrapper + .react-datepicker-wrapper {
+            margin-left: .5rem;
+        }
+
+
+        .end-date {
+            margin-top: 1.5rem;
+        }
+    }
+
+    .actions {
+        margin: 1.5rem;
+        display: flex;
+        justify-content: flex-end;
+
+        .button-link {
+            color: $gray600;
+        }
+
+        button + button {
+            margin-left: 1.5rem;
+        }
+    }
+}

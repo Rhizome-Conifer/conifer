@@ -72,6 +72,7 @@
     "react": "^16.7.0",
     "react-bootstrap": "^0.32.4",
     "react-collapsible": "github:m4rk3r/react-collapsible#dist",
+    "react-datepicker": "^2.10.1",
     "react-dnd": "^6.0.0",
     "react-dnd-html5-backend": "^6.0.0",
     "react-dom": "^16.7.0",
