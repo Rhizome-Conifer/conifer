@@ -8,6 +8,7 @@ from webrecorder.webreccork import ValidationException
 from webrecorder.models.base import DupeNameException
 from webrecorder.models.datshare import DatShare
 from webrecorder.utils import get_bool
+from pywb.warcserver.index.cdxobject import CDXObject
 
 
 # ============================================================================
@@ -208,6 +209,28 @@ class CollsController(BaseController):
                 rec_pages = None
 
             return {'page_bookmarks': collection.get_all_page_bookmarks(rec_pages)}
+
+        @self.app.get('/api/v1/url_search')
+        def do_url_search():
+            user, collection = self.load_user_coll()
+            results = []
+            search = request.query.getunicode('search')
+            # remove trailing comma,
+            mimes = request.query.getunicode('mime', '').rstrip(',')
+            mimes = mimes.split(',') if mimes else []
+            for line, _ in collection.get_cdxj_iter():
+                cdxj = CDXObject(line.encode('utf-8'))
+                if search and search not in cdxj['url']:
+                    continue
+
+                if mimes and not any(cdxj['mime'].startswith(mime) for mime in mimes):
+                    continue
+
+                results.append({'url': cdxj['url'],
+                                'timestamp': cdxj['timestamp'],
+                                'mime': cdxj['mime']})
+
+            return {'results': results}
 
         # DAT
         @self.app.post('/api/v1/collection/<coll_name>/dat/share')
