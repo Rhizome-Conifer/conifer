@@ -773,6 +773,11 @@ class Collection(PagesMixin, RedisUniqueComponent):
             return True
         return False
 
+    def get_cdxj_iter(self):
+        self.sync_coll_index(exists=False, do_async=False)
+        coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)
+        return self.redis.zscan_iter(coll_cdxj_key, match='*', count=100)
+
     def sync_coll_index(self, exists=False, do_async=False):
         coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)
         if exists != self.redis.exists(coll_cdxj_key):
