@@ -53,6 +53,7 @@ const initialState = fromJS({
   loading: false,
   loaded: false,
   search: '',
+  searching: false,
   sortBy: defaultSort
 });
 
@@ -110,11 +111,6 @@ export default function collection(state = initialState, action = {}) {
         }
       } = action.result;
 
-      const pgs = {};
-      if (pages) {
-        pages.forEach((pg) => { pgs[pg.id] = pg; });
-      }
-
       let editState = {};
       if (action.type === COLL_EDIT_SUCCESS) {
         editState = {
@@ -130,7 +126,7 @@ export default function collection(state = initialState, action = {}) {
         loaded: true,
         accessed: action.accessed,
         error: null,
-        pages: fromJS(pgs),
+        pages: fromJS(pages),
         created_at,
         dat_updated_at,
         dat_key,
@@ -208,6 +204,16 @@ export default function collection(state = initialState, action = {}) {
       });
     case RESET_EDIT_STATE:
       return state.set('edited', false);
+
+    case SEARCH:
+      return state.set('searching', true);
+    case SEARCH_SUCCESS:
+      return state.merge({
+        pages: fromJS(action.result.results),
+        searching: false
+      });
+    case SEARCH_FAIL:
+      return state.set('searching', false);
 
     case LISTS_LOAD_FAIL:
     case LISTS_LOAD:

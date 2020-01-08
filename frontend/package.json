@@ -91,7 +91,6 @@
     "redux-batched-actions": "^0.4.1",
     "redux-connect": "^8.0.0",
     "redux-immutable": "^4.0.0",
-    "redux-search": "^2.4.1",
     "remark": "^10.0.1",
     "remark-react": "^5.0.1",
     "remove-markdown": "^0.3.0",

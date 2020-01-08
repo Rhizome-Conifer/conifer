@@ -8,7 +8,6 @@ import { timestampOrderedPages } from 'store/selectors';
 import { isLoaded as isCollLoaded, load as loadColl, loadLists } from 'store/modules/collection';
 import { isLoaded as isRBLoaded, load as loadRB } from 'store/modules/remoteBrowsers';
 import { getQueryPages, getOrderedPages } from 'store/selectors';
-import { pageSearchResults } from 'store/selectors/search';
 
 import CollectionCoverUI from 'components/collection/CollectionCoverUI';
 
@@ -73,17 +72,13 @@ const initialData = [
 
 const mapStateToProps = (outerState) => {
   const { app } = outerState;
-  const isLoaded = app.getIn(['collection', 'loaded']);
-  const { pageFeed, searchText } = isLoaded ? pageSearchResults(outerState) : { pageFeed: Map(), searchText: '' };
-  const isIndexing = isLoaded && !pageFeed.size && app.getIn(['collection', 'pages']).size && !searchText;
-
   const querying = app.getIn(['pageQuery', 'querying']);
   let pages;
 
   if (querying) {
     pages = getQueryPages(app);
   } else {
-    pages = isIndexing ? getOrderedPages(app) : pageFeed;
+    pages = getOrderedPages(app);
   }
 
   return {

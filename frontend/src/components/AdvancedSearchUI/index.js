@@ -18,7 +18,7 @@ class AdvancedSearchUI extends Component {
 
     this.state = {
       bodyText: false,
-      date: 'daterange',
+      date: 'anytime',
       endDate: new Date(),
       includeWebpages: false,
       includeImages: false,
@@ -126,13 +126,15 @@ class AdvancedSearchUI extends Component {
             <div className="label">Contains the words</div>
             <div className="options">
               <input type="text" name="search" onChange={this.handleInput} />
+              {/*
               <div className="sub-filters">
                 <div className="label">within</div>
                 <ul>
                   <li><label><input type="checkbox" onChange={this.handleInput} name="itemUrl" checked={this.state.itemUrl} /> item url</label></li>
-                  {/*<li><label><input type="checkbox" onChange={this.handleInput} name="bodyText" checked={this.state.bodyText} /> body text (if any)</label></li>*/}
+                  <li><label><input type="checkbox" onChange={this.handleInput} name="bodyText" checked={this.state.bodyText} /> body text (if any)</label></li>
                 </ul>
               </div>
+              */}
             </div>
           </div>
 

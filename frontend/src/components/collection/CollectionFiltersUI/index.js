@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { indexResource } from 'redux-search/dist/commonjs/actions';
 
 import { columns } from 'config';
 
@@ -21,6 +20,7 @@ class CollectionFiltersUI extends PureComponent {
     isIndexing: PropTypes.bool,
     querying: PropTypes.bool,
     search: PropTypes.func,
+    searching: PropTypes.bool,
     searchText: PropTypes.string,
     searchPages: PropTypes.func,
     setPageQuery: PropTypes.func
@@ -51,31 +51,6 @@ class CollectionFiltersUI extends PureComponent {
     dispatch(searchPages(''));
   }
 
-  startIndex = () => {
-    const { collection, dispatch, searchPages } = this.props;
-
-    if (this.indexed) {
-      return;
-    }
-
-    this.indexed = true;
-
-    dispatch(
-      indexResource({
-        resourceName: 'collection.pages',
-        fieldNamesOrIndexFunction: ({ resources, indexDocument }) => {
-          resources.forEach((pg) => {
-            const id = pg.get('id');
-            indexDocument(id, pg.get('title') || '');
-            indexDocument(id, pg.get('url').split('?')[0]);
-          });
-        },
-        resources: collection.get('pages')
-      })
-    );
-    dispatch(searchPages(''));
-  }
-
   render() {
     return (
       <div className="wr-coll-utilities">
@@ -87,9 +62,8 @@ class CollectionFiltersUI extends PureComponent {
                 search={this.search}
                 clear={this.clearSearch}
                 disabled={this.props.disabled}
-                index={this.startIndex}
                 searchText={this.props.searchText}
-                isIndexing={this.props.isIndexing} />
+                searching={this.props.searching} />
           }
         </nav>
       </div>

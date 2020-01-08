@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import querystring from 'querystring';
 import { asyncConnect } from 'redux-connect';
 import { createSearchAction } from 'redux-search';
-import { Map } from 'immutable';
 
 import { isLoaded as isCollLoaded, getBookmarkCount, load as loadColl } from 'store/modules/collection';
 import { clear, multiSelect, selectBookmark, selectPage } from 'store/modules/inspector';
@@ -12,7 +11,6 @@ import { setQueryMode } from 'store/modules/pageQuery';
 import { isLoaded as isRBLoaded, load as loadRB } from 'store/modules/remoteBrowsers';
 
 import { getQueryPages, getOrderedPages } from 'store/selectors';
-import { pageSearchResults } from 'store/selectors/search';
 
 import CollectionDetailUI from 'components/collection/CollectionDetailUI';
 
@@ -116,16 +114,13 @@ const initialData = [
 const mapStateToProps = (outerState) => {
   const { app, reduxAsyncConnect } = outerState;
   const isLoaded = app.getIn(['collection', 'loaded']);
-  const { pageFeed, searchText } = isLoaded ? pageSearchResults(outerState) : { pageFeed: Map(), searchText: '' };
-  const isIndexing = isLoaded && !pageFeed.size && app.getIn(['collection', 'pages']).size && !searchText;
-
   const querying = app.getIn(['pageQuery', 'querying']);
   let pages;
 
   if (querying) {
     pages = getQueryPages(app);
   } else {
-    pages = isIndexing ? getOrderedPages(app) : pageFeed;
+    pages = getOrderedPages(app);
   }
 
   return {
@@ -138,7 +133,7 @@ const mapStateToProps = (outerState) => {
     loaded: reduxAsyncConnect.loaded,
     pages,
     publicIndex: app.getIn(['collection', 'public_index']),
-    searchText
+    searchText: app.getIn(['collection', 'search'])
   };
 };
 
