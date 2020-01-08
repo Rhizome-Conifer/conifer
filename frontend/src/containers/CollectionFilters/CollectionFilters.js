@@ -1,10 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { createSearchAction } from 'redux-search';
 
 import { setQueryMode } from 'store/modules/pageQuery';
-
-import { getSearchText } from 'store/selectors/search';
 
 import CollectionFiltersUI from 'components/collection/CollectionFiltersUI';
 
@@ -18,13 +15,14 @@ const mapStateToProps = (outerState) => {
     collection: app.get('collection'),
     isIndexing,
     querying: app.getIn(['pageQuery', 'querying']),
-    searchText: getSearchText(outerState)
+    searchText: app.getIn(['collection', 'search']),
+    searching: app.getIn(['collection', 'searching'])
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    searchPages: createSearchAction('collection.pages'),
+    searchPages: q => console.log(`searching ${q}`),
     setPageQuery: coll => dispatch(setQueryMode(true, coll)),
     dispatch
   };

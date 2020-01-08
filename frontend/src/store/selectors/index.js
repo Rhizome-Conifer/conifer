@@ -94,7 +94,7 @@ export const getOrderedPages = createSelector(
       return List();
     }
 
-    const sortedPages = pages.toList().sortBy(o => o.get(sort));
+    const sortedPages = pages.sortBy(o => o.get(sort));
 
     if (dir === 'DESC') {
       return sortedPages.reverse();
