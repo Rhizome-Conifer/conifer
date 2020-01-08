@@ -6,14 +6,9 @@ import { setQueryMode } from 'store/modules/pageQuery';
 import CollectionFiltersUI from 'components/collection/CollectionFiltersUI';
 
 
-const mapStateToProps = (outerState) => {
-  const { app } = outerState;
-  const searchKey = outerState.search['collection.pages'];
-  const isIndexing = searchKey.isSearching && searchKey.text === '';
-
+const mapStateToProps = ({ app }) => {
   return {
     collection: app.get('collection'),
-    isIndexing,
     querying: app.getIn(['pageQuery', 'querying']),
     searchText: app.getIn(['collection', 'search']),
     searching: app.getIn(['collection', 'searching'])

@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import querystring from 'querystring';
 import { asyncConnect } from 'redux-connect';
-import { createSearchAction } from 'redux-search';
 
-import { isLoaded as isCollLoaded, getBookmarkCount, load as loadColl } from 'store/modules/collection';
+import { isLoaded as isCollLoaded, getBookmarkCount, load as loadColl, search } from 'store/modules/collection';
 import { clear, multiSelect, selectBookmark, selectPage } from 'store/modules/inspector';
 import { load as loadList, removeBookmark, bookmarkSort } from 'store/modules/list';
 import { setQueryMode } from 'store/modules/pageQuery';
@@ -113,7 +112,6 @@ const initialData = [
 
 const mapStateToProps = (outerState) => {
   const { app, reduxAsyncConnect } = outerState;
-  const isLoaded = app.getIn(['collection', 'loaded']);
   const querying = app.getIn(['pageQuery', 'querying']);
   let pages;
 
@@ -141,7 +139,7 @@ const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => 
   return {
     clearInspector: () => dispatch(clear()),
     clearQuery: () => dispatch(setQueryMode(false)),
-    clearSearch: () => dispatch(createSearchAction('collection.pages')('')),
+    clearSearch: () => dispatch(search(user, coll, { mime: 'text/html', search: '*' })),
     setMultiInspector: count => dispatch(multiSelect(count)),
     setPageInspector: fields => dispatch(selectPage(fields)),
     setBookmarkInspector: bk => dispatch(selectBookmark(bk)),
