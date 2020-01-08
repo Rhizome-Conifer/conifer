@@ -1,7 +1,6 @@
 import { combineReducers } from 'redux';
 import { combineReducers as combineImmutableReduers } from 'redux-immutable';
 import { reducer as reduxAsyncConnect } from 'redux-connect';
-import { reducer as searchReducer } from 'redux-search';
 
 import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './modules/auth';
 
@@ -56,7 +55,6 @@ const makeAppReducer = () => {
 
 
 const appReducer = combineReducers({
-  search: searchReducer,
   reduxAsyncConnect,
   app: makeAppReducer()
 });
