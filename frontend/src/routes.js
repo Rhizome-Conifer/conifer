@@ -312,7 +312,7 @@ export default [
   },
   {
     path: '/_valreg/:registration',
-    breadcrumb: 'Registering',
+    breadcrumb: 'Complete Registration',
     component: RegisterAccount,
     exact: true,
     footer: true,
