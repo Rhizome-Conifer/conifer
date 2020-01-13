@@ -1,8 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-import { columns } from 'config';
-
 import { QueryBox } from 'containers';
 
 import Searchbox from 'components/Searchbox';
@@ -14,15 +12,13 @@ class CollectionFiltersUI extends PureComponent {
   };
 
   static propTypes = {
+    clearSearch: PropTypes.func,
     collection: PropTypes.object,
     disabled: PropTypes.bool,
-    dispatch: PropTypes.func,
-    isIndexing: PropTypes.bool,
     querying: PropTypes.bool,
-    search: PropTypes.func,
     searching: PropTypes.bool,
-    searchText: PropTypes.string,
-    searchPages: PropTypes.func,
+    searched: PropTypes.bool,
+    searchCollection: PropTypes.func,
     setPageQuery: PropTypes.func
   };
 
@@ -32,23 +28,13 @@ class CollectionFiltersUI extends PureComponent {
     this.indexed = false;
   }
 
-  search = (evt) => {
-    const { dispatch, searchPages, setPageQuery } = this.props;
-
-    const queryColumn = columns.find(c => evt.target.value.startsWith(`${c}:`));
-
-    if (queryColumn) {
-      // TODO: issue with batchActions and redux-search
-      dispatch(searchPages(''));
-      dispatch(setPageQuery(queryColumn));
-    } else {
-      dispatch(searchPages(evt.target.value));
-    }
+  search = (searchParams) => {
+    const { collection, searchCollection } = this.props;
+    searchCollection(collection.get('owner'), collection.get('id'), searchParams);
   }
 
-  clearSearch = () => {
-    const { dispatch, searchPages } = this.props;
-    dispatch(searchPages(''));
+  query = (queryColumn) => {
+    this.props.setPageQuery(queryColumn);
   }
 
   render() {
@@ -59,11 +45,12 @@ class CollectionFiltersUI extends PureComponent {
             this.props.querying ?
               <QueryBox /> :
               <Searchbox
+                collection={this.props.collection}
+                query={this.query}
                 search={this.search}
-                clear={this.clearSearch}
-                disabled={this.props.disabled}
-                searchText={this.props.searchText}
-                searching={this.props.searching} />
+                clear={this.props.clearSearch}
+                searching={this.props.searching}
+                searched={this.props.searched} />
           }
         </nav>
       </div>

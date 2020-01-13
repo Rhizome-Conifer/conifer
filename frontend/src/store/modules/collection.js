@@ -41,6 +41,7 @@ const LISTS_REORDER_FAIL = 'wr/coll/LISTS_REORDER_FAIL';
 const SEARCH = 'wr/coll/SEARCH';
 const SEARCH_SUCCESS = 'wr/coll/SEARCH_SUCCESS';
 const SEARCH_FAIL = 'wr/coll/SEARCH_FAIL';
+const CLEAR_SEARCH = 'wr/coll/CLEAR_SEARCH';
 
 export const defaultSort = { sort: 'timestamp', dir: 'DESC' };
 const initialState = fromJS({
@@ -54,6 +55,7 @@ const initialState = fromJS({
   loaded: false,
   search: '',
   searching: false,
+  searched: false,
   sortBy: defaultSort
 });
 
@@ -127,6 +129,7 @@ export default function collection(state = initialState, action = {}) {
         accessed: action.accessed,
         error: null,
         pages: fromJS(pages),
+        page_count: pages.length,
         created_at,
         dat_updated_at,
         dat_key,
@@ -140,6 +143,8 @@ export default function collection(state = initialState, action = {}) {
         lists: fromJS(lists),
         owner,
         recordings: fromJS(recordings),
+        searching: false,
+        searched: false,
         size,
         slug,
         slug_matched,
@@ -206,14 +211,22 @@ export default function collection(state = initialState, action = {}) {
       return state.set('edited', false);
 
     case SEARCH:
-      return state.set('searching', true);
+      return state.merge({
+        searching: true,
+      });
     case SEARCH_SUCCESS:
       return state.merge({
         pages: fromJS(action.result.results),
-        searching: false
+        searching: false,
+        searched: true
       });
     case SEARCH_FAIL:
       return state.set('searching', false);
+    case CLEAR_SEARCH:
+      return state.merge({
+        searching: false,
+        searched: false,
+      });
 
     case LISTS_LOAD_FAIL:
     case LISTS_LOAD:
@@ -294,6 +307,10 @@ export function resetEditState() {
 }
 
 
+export function clearSearch() {
+  return { type: CLEAR_SEARCH };
+}
+
 export function search(user, coll, searchParams) {
   return {
     types: [SEARCH, SEARCH_SUCCESS, SEARCH_FAIL],
@@ -304,7 +321,7 @@ export function search(user, coll, searchParams) {
         ...searchParams
       }
     })
-  }
+  };
 }
 
 
