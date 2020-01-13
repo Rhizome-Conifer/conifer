@@ -233,7 +233,7 @@ class ListsUI extends Component {
                 (publicIndex || canAdmin) &&
                   <li className={classNames('all-pages', { selected: !activeListSlug })} onClick={this.navigate}>
                     <div className={classNames('wrapper', { editable: canAdmin })}>
-                      <span className="title" title="All pages"><AllPagesIcon /> Pages ({collection.get('pages').size})</span>
+                      <span className="title" title="All pages"><AllPagesIcon /> Pages ({collection.get('page_count')})</span>
                       {
                         canAdmin && !__DESKTOP__ &&
                           <VisibilityLamp
