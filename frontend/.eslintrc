@@ -64,6 +64,7 @@
     "object-shorthand": 1,
     "operator-linebreak": 0,
     "padded-blocks": 0,
+    "prefer-destructuring": 1,
     "prefer-template": 1,
     "quote-props": 1,
     "quotes": 1,

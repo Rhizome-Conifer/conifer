@@ -15,6 +15,8 @@ class CollectionFiltersUI extends PureComponent {
     clearSearch: PropTypes.func,
     collection: PropTypes.object,
     disabled: PropTypes.bool,
+    history: PropTypes.object,
+    location: PropTypes.object,
     querying: PropTypes.bool,
     searching: PropTypes.bool,
     searched: PropTypes.bool,
@@ -46,6 +48,8 @@ class CollectionFiltersUI extends PureComponent {
               <QueryBox /> :
               <Searchbox
                 collection={this.props.collection}
+                history={this.props.history}
+                location={this.props.location}
                 query={this.query}
                 search={this.search}
                 clear={this.props.clearSearch}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 
 import { clearSearch, load, search } from 'store/modules/collection';
 import { setQueryMode } from 'store/modules/pageQuery';
@@ -28,7 +29,7 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(
+export default withRouter(connect(
   mapStateToProps,
   mapDispatchToProps
-)(CollectionFiltersUI);
+)(CollectionFiltersUI));

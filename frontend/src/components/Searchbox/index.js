@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import DatePicker from 'react-datepicker';
+import querystring from 'querystring';
 import { Button, DropdownButton, FormControl, InputGroup, MenuItem } from 'react-bootstrap';
 
 import { columns } from 'config';
@@ -14,7 +15,7 @@ class Searchbox extends PureComponent {
   static propTypes = {
     collection: PropTypes.object,
     clear: PropTypes.func,
-    placeholder: PropTypes.string,
+    location: PropTypes.object,
     query: PropTypes.func,
     search: PropTypes.func,
     searching: PropTypes.bool,
@@ -24,22 +25,69 @@ class Searchbox extends PureComponent {
   constructor(props) {
     super(props);
 
+    let includeWebpages = true;
+    let includeImages = false;
+    let includeAudio = false;
+    let includeVideo = false;
+    let includeDocuments = false;
+    let session = '';
+    let search = '';
+    let date = 'anytime';
+    let startDate = new Date();
+    let endDate = new Date();
+
     this.initialValues = {
-      date: 'anytime',
-      endDate: new Date(),
-      includeWebpages: true,
-      includeImages: false,
-      includeAudio: false,
-      includeVideo: false,
-      includeDocuments: false,
-      session: '',
-      startDate: new Date()
+      date,
+      endDate,
+      includeWebpages,
+      includeImages,
+      includeAudio,
+      includeVideo,
+      includeDocuments,
+      search,
+      session,
+      startDate
     };
 
+    if (props.location.search) {
+      const qs = querystring.parse(props.location.search.replace(/^\?/, ''));
+
+      if (qs.search) {
+        props.search(qs);
+        search = qs.search;
+      }
+
+      if (qs.mime) {
+        includeWebpages = qs.mime.includes('text/html');
+        includeImages = qs.mime.includes('image/');
+        includeAudio = qs.mime.includes('audio/');
+        includeVideo = qs.mime.includes('video/');
+        includeDocuments = qs.mime.includes('application/pdf');
+      }
+
+      if (qs.session) {
+        session = qs.session;
+        date = 'session';
+      }
+
+      if (qs.daterange) {
+        startDate = qs.startDate;
+        endDate = qs.endDate;
+      }
+    }
+
     this.state = {
+      date,
+      endDate,
       options: false,
-      search: '',
-      ...this.initialValues
+      includeWebpages,
+      includeImages,
+      includeAudio,
+      includeVideo,
+      includeDocuments,
+      search,
+      session,
+      startDate
     };
 
     this.labels = {
@@ -92,8 +140,6 @@ class Searchbox extends PureComponent {
   }
 
   search = () => {
-    console.log('executing search...');
-
     const {
       date,
       endDate,
@@ -130,6 +176,7 @@ class Searchbox extends PureComponent {
       ...dateFilter
     };
 
+    window.history.replaceState({}, '', `?${querystring.stringify(searchParams)}`);
     this.props.search(searchParams);
   }
 
@@ -137,6 +184,7 @@ class Searchbox extends PureComponent {
     const { collection } = this.props;
     evt.stopPropagation();
 
+    window.history.replaceState({}, '', '?search=');
     this.setState({ search: '' });
     this.props.clear(collection.get('owner'), collection.get('id'));
   }
@@ -156,14 +204,14 @@ class Searchbox extends PureComponent {
   }
 
   render() {
-    const { collection, placeholder, searching, searched } = this.props;
+    const { collection, searching, searched } = this.props;
     const { date } = this.state;
 
     return (
       <div className="search-box">
         <InputGroup bsClass="input-group search-box" title="Search">
           <div className="input-wrapper">
-            <FormControl aria-label="filter" bsSize="sm" onKeyUp={this.keyUp} onChange={this.handleChange} name="search" value={this.state.search} autoComplete="off" placeholder={placeholder || 'Filter'} />
+            <FormControl aria-label="filter" bsSize="sm" onKeyUp={this.keyUp} onChange={this.handleChange} name="search" value={this.state.search} autoComplete="off" placeholder="Filter" />
             <button className="borderless advanced-options" onClick={this.toggleAdvancedSearch} type="button">options</button>
           </div>
           <InputGroup.Button>
