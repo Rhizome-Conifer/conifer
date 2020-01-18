@@ -70,7 +70,7 @@ Webrecorder can be run on any system that has [Docker](https://docs.docker.com/i
 
 Point your browser to `http://localhost:8089/` to access the locally running Webrecorder instance.
 
-(Note: you may see a maintenance message briefly while Webrecorder is starting up for the first time. Refresh the page after a few seconds to see the Webrecorder home page).
+(Note: you may see a maintenance message briefly while Webrecorder is starting up for the first time. Refresh the page after a few minutes to see the Webrecorder home page).
 
 ### Installing Remote Browsers
 
