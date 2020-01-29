@@ -115,12 +115,17 @@ services:
             - 8092:81
 
     behaviors:
-      container_name: behaviors
-      image: "webrecorder/behaviors:latest"
+        container_name: behaviors
+        image: "webrecorder/behaviors:latest"
+
+    coturn:
+        image: oldwebtoday/coturn:1.0
+        ports:
+            - 33478:33478
 
     shepherd:
         container_name: shepherd
-        image: oldwebtoday/shepherd:1.1.0
+        image: oldwebtoday/shepherd:1.2.0
 
         env_file:
             - ./wr.env

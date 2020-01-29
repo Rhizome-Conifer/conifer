@@ -74,6 +74,7 @@ class RemoteBrowserUI extends Component {
       on_event: this.onEvent,
       headers: { 'x-requested-with': 'XMLHttpRequest' },
       webrtc: true,
+      webrtc_video: false,
       webrtcHostIP: publicIP,
     };
   }
