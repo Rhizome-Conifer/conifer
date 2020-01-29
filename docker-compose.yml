@@ -119,9 +119,17 @@ services:
         image: "webrecorder/behaviors:latest"
 
     coturn:
+        container_name: coturn
         image: oldwebtoday/coturn:1.0
         ports:
-            - 33478:33478
+            - "33478:33478/tcp"
+            - "33478:33478/udp"
+
+        networks:
+            - browsers
+
+        env_file:
+            - ./wr.env
 
     shepherd:
         container_name: shepherd
@@ -139,7 +147,7 @@ services:
             - PROXY_GET_CA=http://wsgiprox/download/pem
 
             - CONTAINER_EXPIRE_SECS=3600
-            - IDLE_TIMEOUT=120
+            - IDLE_TIMEOUT=5
 
             - BROWSER_NET=webrecorder_browsers
             - MAIN_NET=webrecorder_default
