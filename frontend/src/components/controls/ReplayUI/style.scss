@@ -92,6 +92,28 @@
     &.embed {
         flex-direction: column;
 
+        #browser {
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+
+          #noVNC_screen {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+
+            & > .canvas {
+              flex-grow: 1;
+              display: flex;
+              flex-direction: column;
+
+              & > div {
+                flex-grow: 1;
+              }
+            }
+          }
+        }
+
         iframe {
             width: 100%;
         }
