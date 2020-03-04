@@ -7,8 +7,8 @@
 
     .collection-header {
         display: flex;
+        flex-direction: column;
         justify-content: space-between;
-        align-items: center;
 
         h2 {
             font-size: 2.8rem;
@@ -20,11 +20,9 @@
 
         .wr-coll-utilities {
             background: #FFF;
-            //z-index: 10;
-            margin-left: 1.5rem;
-            width: 30%;
+            margin: 0 0 1.5rem 1.5rem;
+            width: 70%;
             min-width: 25rem;
-            max-width: 35rem;
 
             nav {
                 height: 100%;

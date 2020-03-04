@@ -8,6 +8,7 @@ import { columns } from 'config';
 
 import { LoaderIcon, SearchIcon, XIcon } from 'components/icons';
 
+import "react-datepicker/dist/react-datepicker.css";
 import './style.scss';
 
 
@@ -86,9 +87,12 @@ class Searchbox extends PureComponent {
       includeVideo,
       includeDocuments,
       search,
+      searchStruct: '',
       session,
       startDate
     };
+
+    this.buildQuery(true);
 
     this.labels = {
       anytime: 'Anytime',
@@ -97,11 +101,72 @@ class Searchbox extends PureComponent {
     };
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     // check for searched prop being cleared
     if (prevProps.searched && !this.props.searched) {
       this.setState({ search: '' });
     }
+
+    if (this.state.options) {
+      this.buildQuery(false, this.state.search !== prevState.search);
+    }
+  }
+
+  buildQuery = (init = false, textChange = false) => {
+    const filterValues = {
+      includeWebpages: this.state.includeWebpages,
+      includeImages: this.state.includeImages,
+      includeAudio: this.state.includeAudio,
+      includeVideo: this.state.includeVideo,
+      includeDocuments: this.state.includeDocuments,
+    };
+    const filterFields = {
+      includeWebpages: 'is:Page',
+      includeImages: 'is:Image',
+      includeAudio: 'is:Audio',
+      includeVideo: 'is:Video',
+      includeDocuments: 'is:Document'
+    };
+
+    let { filters, query } = this.parseQuery();
+
+    let searchStruct = '';
+    Object.keys(filterValues).forEach((val) => {
+      const b = textChange ?
+        (
+          (this.state[val] && filters.includes(filterFields[val])) ||
+          (!this.state[val] && filters.includes(filterFields[val]))
+        ) : this.state[val];
+
+      // if new typed flag detected, remove flag from query
+      if (!this.state[val] && filters.includes(filterFields[val])) {
+        console.log('found flag', filterFields[val], 'removing from', query);
+        query = query.replace(filterFields[val], '');
+      }
+
+      filterValues[val] = b;
+      searchStruct += b ? `${filterFields[val]} ` : '';
+    });
+    searchStruct += query;
+
+    console.log(filters, query, filterValues);
+
+    if (init) {
+      this.state.search = searchStruct;
+    } else {
+      this.setState({
+        ...filterValues,
+        search: searchStruct
+      });
+    }
+  }
+
+  parseQuery = () => {
+    const { search } = this.state;
+    const filters = search.match(/(is:\w+)/ig) || [];
+    const searchRX = search.match(/(?:(is\:\w+\s?)+\s)?(?<query>.*)/i);
+    const query = searchRX ? searchRX.groups.query : '';
+    return { filters, query };
   }
 
   changeTimeframe = (evtKey, evt) => {
@@ -120,11 +185,11 @@ class Searchbox extends PureComponent {
       return;
     }
 
-    const queryColumn = columns.find(c => evt.target.value.startsWith(`${c}:`));
-    if (queryColumn) {
-      this.props.query(queryColumn);
-      return;
-    }
+    // const queryColumn = columns.find(c => evt.target.value.startsWith(`${c}:`));
+    // if (queryColumn) {
+    //   this.props.query(queryColumn);
+    //   return;
+    // }
 
     if (evt.target.type === 'checkbox') {
       if (evt.target.name in this.state) {
@@ -137,6 +202,19 @@ class Searchbox extends PureComponent {
         [evt.target.name]: evt.target.value
       });
     }
+  }
+
+  clear = (evt) => {
+    const { collection } = this.props;
+    evt.stopPropagation();
+
+    window.history.replaceState({}, '', '?search=');
+    this.setState({ search: '' });
+    this.props.clear(collection.get('owner'), collection.get('id'));
+  }
+
+  reset = () => {
+    this.setState({ ...this.initialValues });
   }
 
   search = () => {
@@ -176,21 +254,8 @@ class Searchbox extends PureComponent {
       ...dateFilter
     };
 
-    window.history.replaceState({}, '', `?${querystring.stringify(searchParams)}`);
-    this.props.search(searchParams);
-  }
-
-  clear = (evt) => {
-    const { collection } = this.props;
-    evt.stopPropagation();
-
-    window.history.replaceState({}, '', '?search=');
-    this.setState({ search: '' });
-    this.props.clear(collection.get('owner'), collection.get('id'));
-  }
-
-  reset = () => {
-    this.setState({ ...this.initialValues });
+    // window.history.replaceState({}, '', `?${querystring.stringify(searchParams)}`);
+    // this.props.search(searchParams);
   }
 
   selectSession = session => this.setState({ session })
@@ -200,6 +265,10 @@ class Searchbox extends PureComponent {
   setStartDate = d => this.setState({ startDate: d })
 
   toggleAdvancedSearch = () => {
+    if (!this.state.options) {
+      this.buildQuery();
+    }
+
     this.setState({ options: !this.state.options });
   }
 
