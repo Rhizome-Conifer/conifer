@@ -71,9 +71,10 @@ class Searchbox extends PureComponent {
         date = 'session';
       }
 
-      if (qs.daterange) {
-        startDate = qs.startDate;
-        endDate = qs.endDate;
+      if (qs.from || qs.to) {
+        startDate = qs.from ? new Date(parseInt(qs.from, 10)) : startDate;
+        endDate = qs.to ? new Date(parseInt(qs.to, 10)) : endDate;
+        date = 'daterange';
       }
     }
 
@@ -157,8 +158,9 @@ class Searchbox extends PureComponent {
       } else {
         date = 'session';
       }
+    } else if(textChange && filters.findIndex(f => f.match(/(start|end|session):/)) === -1 && date !== 'anytime') {
+      date = 'anytime';
     }
-
 
     if (date === 'daterange') {
       let { startDate, endDate } = this.state;
@@ -169,14 +171,12 @@ class Searchbox extends PureComponent {
         const endStr = filters.find(f => f.match(/^end/i)) || '';
         const newEndDate = endStr.match(/(start|end):(?<dt>[a-z0-9-.:]+)/i);
 
-        console.log(startStr, newStartDate.groups.dt);
-
-        if (this.dateIsValid(new Date(newStartDate.groups.dt)) && newStartDate.groups.dt !== this.state.startDate.toISOString()) {
+        if (newStartDate && this.dateIsValid(new Date(newStartDate.groups.dt)) && newStartDate.groups.dt !== this.state.startDate.toISOString()) {
           startDate = new Date(newStartDate.groups.dt);
           filterValues.startDate = startDate;
         }
 
-        if (this.dateIsValid(new Date(newEndDate.groups.dt)) && newEndDate.groups.dt !== this.state.endDate.toISOString()) {
+        if (newEndDate && this.dateIsValid(new Date(newEndDate.groups.dt)) && newEndDate.groups.dt !== this.state.endDate.toISOString()) {
           endDate = new Date(newEndDate.groups.dt);
           filterValues.endDate = endDate;
         }
@@ -193,7 +193,9 @@ class Searchbox extends PureComponent {
         filterValues.session = session;
       }
 
-      searchStruct += `session:${session} `;
+      if (session) {
+        searchStruct += `session:${session} `;
+      }
     }
 
     searchStruct += query;
@@ -285,6 +287,8 @@ class Searchbox extends PureComponent {
       startDate
     } = this.state;
 
+    const { query } = this.parseQuery();
+
     const mime = (includeWebpages ? 'text/html,' : '') +
                  (includeImages ? 'image/,' : '') +
                  (includeAudio ? 'audio/,' : '') +
@@ -303,13 +307,13 @@ class Searchbox extends PureComponent {
     }
 
     const searchParams = {
-      search,
+      search: query,
       mime,
       ...dateFilter
     };
 
-    // window.history.replaceState({}, '', `?${querystring.stringify(searchParams)}`);
-    // this.props.search(searchParams);
+    window.history.replaceState({}, '', `?${querystring.stringify(searchParams)}`);
+    this.props.search(searchParams);
   }
 
   selectSession = session => this.setState({ session })
