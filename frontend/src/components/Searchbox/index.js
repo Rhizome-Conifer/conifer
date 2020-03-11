@@ -125,9 +125,10 @@ class Searchbox extends PureComponent {
       includeImages: 'is:Image',
       includeAudio: 'is:Audio',
       includeVideo: 'is:Video',
-      includeDocuments: 'is:Document'
+      includeDocuments: 'is:Document',
     };
 
+    let { date } = this.state;
     let { filters, query } = this.parseQuery();
 
     let searchStruct = '';
@@ -147,24 +148,77 @@ class Searchbox extends PureComponent {
       filterValues[val] = b;
       searchStruct += b ? `${filterFields[val]} ` : '';
     });
+
+
+    // check for date filter changes
+    if (textChange && filters.findIndex(f => f.match(/(start|end|session):/)) !== -1 && date === 'anytime') {
+      if (filters.findIndex(f => f.match(/(start|end):/)) !== -1) {
+        date = 'daterange';
+      } else {
+        date = 'session';
+      }
+    }
+
+
+    if (date === 'daterange') {
+      let { startDate, endDate } = this.state;
+
+      if (textChange) {
+        const startStr = filters.find(f => f.match(/^start/i)) || '';
+        const newStartDate = startStr.match(/(start|end):(?<dt>[a-z0-9-.:]+)/i);
+        const endStr = filters.find(f => f.match(/^end/i)) || '';
+        const newEndDate = endStr.match(/(start|end):(?<dt>[a-z0-9-.:]+)/i);
+
+        console.log(startStr, newStartDate.groups.dt);
+
+        if (this.dateIsValid(new Date(newStartDate.groups.dt)) && newStartDate.groups.dt !== this.state.startDate.toISOString()) {
+          startDate = new Date(newStartDate.groups.dt);
+          filterValues.startDate = startDate;
+        }
+
+        if (this.dateIsValid(new Date(newEndDate.groups.dt)) && newEndDate.groups.dt !== this.state.endDate.toISOString()) {
+          endDate = new Date(newEndDate.groups.dt);
+          filterValues.endDate = endDate;
+        }
+      }
+
+      searchStruct += `start:${startDate.toISOString()} end:${endDate.toISOString()} `;
+    } else if (date === 'session') {
+      const sessionFilter = filters.find(f => f.match(/^session/i)) || '';
+      let sessionReg = sessionFilter.match(/session:(?<session>\w+)/i);
+      let session = this.state.session;
+
+      if (textChange && sessionReg && sessionReg.groups && sessionReg.groups.session !== session) {
+        session = sessionReg.groups.session;
+        filterValues.session = session;
+      }
+
+      searchStruct += `session:${session} `;
+    }
+
     searchStruct += query;
 
-    console.log(filters, query, filterValues);
+    console.log(textChange, filters, query, filterValues, searchStruct);
 
     if (init) {
       this.state.search = searchStruct;
     } else {
       this.setState({
+        date,
         ...filterValues,
         search: searchStruct
       });
     }
   }
 
+  dateIsValid = (dt) => {
+    return dt instanceof Date && !isNaN(dt);
+  }
+
   parseQuery = () => {
     const { search } = this.state;
-    const filters = search.match(/(is:\w+)/ig) || [];
-    const searchRX = search.match(/(?:(is\:\w+\s?)+\s)?(?<query>.*)/i);
+    const filters = search.match(/((is|start|end|session):[a-z0-9-.:]+)/ig) || [];
+    const searchRX = search.match(/(?:((is|start|end|session):[a-z0-9-.:]+\s?)+\s)?(?<query>.*)/i);
     const query = searchRX ? searchRX.groups.query : '';
     return { filters, query };
   }
@@ -266,7 +320,7 @@ class Searchbox extends PureComponent {
 
   toggleAdvancedSearch = () => {
     if (!this.state.options) {
-      this.buildQuery();
+      this.buildQuery(false, true);
     }
 
     this.setState({ options: !this.state.options });
