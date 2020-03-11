@@ -8,6 +8,10 @@
         .input-wrapper {
             position: relative;
 
+            input {
+                padding-right: 4.5rem;
+            }
+
             .advanced-options {
                 position: absolute;
                 right: .2rem;
