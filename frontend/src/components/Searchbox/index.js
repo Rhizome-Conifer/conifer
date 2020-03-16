@@ -167,17 +167,17 @@ class Searchbox extends PureComponent {
 
       if (textChange) {
         const startStr = filters.find(f => f.match(/^start/i)) || '';
-        const newStartDate = startStr.match(/(start|end):(?<dt>[a-z0-9-.:]+)/i);
+        const newStartDate = startStr.match(/(?:start|end):([a-z0-9-.:]+)/i);
         const endStr = filters.find(f => f.match(/^end/i)) || '';
-        const newEndDate = endStr.match(/(start|end):(?<dt>[a-z0-9-.:]+)/i);
+        const newEndDate = endStr.match(/(?:start|end):([a-z0-9-.:]+)/i);
 
-        if (newStartDate && this.dateIsValid(new Date(newStartDate.groups.dt)) && newStartDate.groups.dt !== this.state.startDate.toISOString()) {
-          startDate = new Date(newStartDate.groups.dt);
+        if (newStartDate && this.dateIsValid(new Date(newStartDate[1])) && newStartDate[1] !== this.state.startDate.toISOString()) {
+          startDate = new Date(newStartDate[1]);
           filterValues.startDate = startDate;
         }
 
-        if (newEndDate && this.dateIsValid(new Date(newEndDate.groups.dt)) && newEndDate.groups.dt !== this.state.endDate.toISOString()) {
-          endDate = new Date(newEndDate.groups.dt);
+        if (newEndDate && this.dateIsValid(new Date(newEndDate[1])) && newEndDate[1] !== this.state.endDate.toISOString()) {
+          endDate = new Date(newEndDate[1]);
           filterValues.endDate = endDate;
         }
       }
@@ -185,11 +185,11 @@ class Searchbox extends PureComponent {
       searchStruct += `start:${startDate.toISOString()} end:${endDate.toISOString()} `;
     } else if (date === 'session') {
       const sessionFilter = filters.find(f => f.match(/^session/i)) || '';
-      let sessionReg = sessionFilter.match(/session:(?<session>\w+)/i);
+      let sessionReg = sessionFilter.match(/session:(\w+)/i);
       let session = this.state.session;
 
-      if (textChange && sessionReg && sessionReg.groups && sessionReg.groups.session !== session) {
-        session = sessionReg.groups.session;
+      if (textChange && sessionReg && sessionReg[1] !== session) {
+        session = sessionReg[1];
         filterValues.session = session;
       }
 
@@ -220,8 +220,8 @@ class Searchbox extends PureComponent {
   parseQuery = () => {
     const { search } = this.state;
     const filters = search.match(/((is|start|end|session):[a-z0-9-.:]+)/ig) || [];
-    const searchRX = search.match(/(?:((is|start|end|session):[a-z0-9-.:]+\s?)+\s)?(?<query>.*)/i);
-    const query = searchRX ? searchRX.groups.query : '';
+    const searchRX = search.match(/(?:(?:(?:is|start|end|session):[a-z0-9-.:]+\s?)+\s)?(.*)/i);
+    const query = searchRX ? searchRX[1] : '';
     return { filters, query };
   }
 
