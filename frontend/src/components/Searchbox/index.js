@@ -171,18 +171,18 @@ class Searchbox extends PureComponent {
         const endStr = filters.find(f => f.match(/^end/i)) || '';
         const newEndDate = endStr.match(/(?:start|end):([a-z0-9-.:]+)/i);
 
-        if (newStartDate && this.dateIsValid(new Date(newStartDate[1])) && newStartDate[1] !== this.state.startDate.toISOString()) {
+        if (newStartDate && this.dateIsValid(new Date(newStartDate[1])) && newStartDate[1] !== this.dateFormat(this.state.startDate)) {
           startDate = new Date(newStartDate[1]);
           filterValues.startDate = startDate;
         }
 
-        if (newEndDate && this.dateIsValid(new Date(newEndDate[1])) && newEndDate[1] !== this.state.endDate.toISOString()) {
+        if (newEndDate && this.dateIsValid(new Date(newEndDate[1])) && newEndDate[1] !== this.dateFormat(this.state.endDate)) {
           endDate = new Date(newEndDate[1]);
           filterValues.endDate = endDate;
         }
       }
 
-      searchStruct += `start:${startDate.toISOString()} end:${endDate.toISOString()} `;
+      searchStruct += `start:${this.dateFormat(startDate)} end:${this.dateFormat(endDate)} `;
     } else if (date === 'session') {
       const sessionFilter = filters.find(f => f.match(/^session/i)) || '';
       let sessionReg = sessionFilter.match(/session:(\w+)/i);
@@ -215,6 +215,11 @@ class Searchbox extends PureComponent {
 
   dateIsValid = (dt) => {
     return dt instanceof Date && !isNaN(dt);
+  }
+
+  dateFormat = (dt) => {
+    const s = num => String(num);
+    return `${dt.getUTCFullYear()}-${s(dt.getUTCMonth()).padStart(2, '0')}-${s(dt.getUTCDay()).padStart(2, '0')}T${s(dt.getUTCHours()).padStart(2, '0')}:${s(dt.getUTCMinutes()).padStart(2, '0')}`;
   }
 
   parseQuery = () => {
