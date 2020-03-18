@@ -147,8 +147,12 @@ class CollectionDetailUI extends Component {
 
   onSelectRow = ({ event, index }) => {
     const {
-      clearInspector, match: { params: { list } }, pages, setBookmarkInspector,
-      setMultiInspector, setPageInspector
+      clearInspector,
+      match: { params: { list } },
+      pages,
+      setBookmarkInspector,
+      setMultiInspector,
+      setPageInspector
     } = this.props;
     const { listBookmarks, selectedPageIdx } = this.state;
 

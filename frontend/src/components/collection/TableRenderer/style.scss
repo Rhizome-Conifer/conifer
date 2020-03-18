@@ -45,6 +45,16 @@
         padding-left: 1.5rem;
         background: #FFF;
 
+        &.resources-table {
+            .ReactVirtualized__Table__row {
+                background-color: #F1F1FF;
+
+                &:not(.selected).odd {
+                    background-color: #E8E8F6;
+                }
+            }
+        }
+
         .table-header-menu {
             position: absolute;
             right: -.5rem;
@@ -66,6 +76,10 @@
 
             &:last-of-type {
                 margin-right: 0;
+            }
+
+            &.hide-header {
+              opacity: 0;
             }
 
             & > div{
@@ -125,7 +139,7 @@
                 }
 
                 .wr-remove-widget {
-                    text-align: left;
+                    text-align: center;
 
                     button {
                         margin: 0;
