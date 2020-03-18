@@ -5,6 +5,7 @@ import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 
 import config from 'config';
@@ -55,14 +56,14 @@ class TableRenderer extends Component {
   constructor(props, context) {
     super(props);
 
-    this.columns = config.columns;
     this.state = {
       columns: context.isMobile ? ['timestamp', 'url'] : config.defaultColumns,
       headerEditor: false
     };
 
-    if (props.activeList && context.canAdmin && !context.isMobile) {
-      this.state.columns = ['remove', ...this.columns];
+    if (props.activeList && !context.isMobile) {
+      const pageColumns = context.canAdmin ? ['remove', 'rowIndex'] : ['rowIndex'];
+      this.state.columns = [...pageColumns, ...config.defaultColumns];
     }
   }
 
@@ -76,12 +77,11 @@ class TableRenderer extends Component {
 
     if (inStorage('columnOrder')) {
       try {
-        const columns = JSON.parse(getStorage('columnOrder')).filter(o => config.columns.includes(o));
+        let columns = JSON.parse(getStorage('columnOrder')).filter(o => config.columns.includes(o));
 
-        if ((!activeList || !canAdmin) && columns.includes('remove')) {
-          columns.splice(columns.indexOf('remove'), 1);
-        } else if (activeList && canAdmin && !columns.includes('remove')) {
-          columns.unshift('remove');
+        if (activeList) {
+          const pageColumns = canAdmin ? ['remove', 'rowIndex'] : ['rowIndex'];
+          columns = [...pageColumns, ...columns];
         }
 
         this.setState({ columns });
@@ -106,7 +106,8 @@ class TableRenderer extends Component {
         dataKey: 'id',
         disableSort: true,
         key: 'rowIndex',
-        width: 60
+        width: 55,
+        headerClassName: 'hide-header'
       },
       remove: {
         cellRenderer: RemoveRenderer,
@@ -118,7 +119,8 @@ class TableRenderer extends Component {
         },
         dataKey: 'remove',
         key: 'remove',
-        width: 55
+        width: 35,
+        headerClassName: 'hide-header'
       },
       session: {
         cellRenderer: SessionRenderer,
@@ -186,7 +188,7 @@ class TableRenderer extends Component {
   }
 
   customHeaderRenderer = (props) => {
-    if (__PLAYER__) {
+    if (__PLAYER__ || ['remove', 'id'].includes(props.dataKey)) {
       return <DefaultHeader {...props} />;
     }
 
@@ -206,7 +208,7 @@ class TableRenderer extends Component {
   }
 
   saveHeaderState = () => {
-    setStorage('columnOrder', JSON.stringify(this.state.columns));
+    setStorage('columnOrder', JSON.stringify(this.state.columns.filter(o => !['rowIndex','remove'].includes(o))));
   }
 
   testRowHighlight = ({ index }) => {
@@ -255,12 +257,11 @@ class TableRenderer extends Component {
             </div>
         }
 
-        <OutsideClick classes="wr-coll-detail-table" handleClick={this.props.deselect}>
+        <OutsideClick classes={classNames('wr-coll-detail-table', { 'resources-table': !activeList })} handleClick={this.props.deselect}>
           {
             canAdmin &&
               <React.Fragment>
                 <Button onClick={this.toggleHeaderModal} className="table-header-menu borderless" bsSize="xs">
-                  {/* TODO: placeholder icon */}
                   <span style={{ display: 'inline-block', fontWeight: 'bold', transform: 'rotateZ(90deg)' }}>...</span>
                 </Button>
                 <Modal
@@ -271,7 +272,7 @@ class TableRenderer extends Component {
                   footer={<Button onClick={this.toggleHeaderModal}>Close</Button>}>
                   <ul>
                     {
-                      this.columns.map((coll) => {
+                      config.columns.map((coll) => {
                         return (
                           <li key={coll}>
                             <input type="checkbox" onChange={this.toggleColumn} name={coll} id={`add-to-list-${coll}`} checked={this.state.columns.includes(coll) || false} />

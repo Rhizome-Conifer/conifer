@@ -61,7 +61,7 @@ export default Object.assign({
   appHost: `${hostScheme}://${appHost}`,
   contentHost: `${hostScheme}://${contentHost}`,
   publicIP: publicIP,
-  columns: ['rowIndex', 'timestamp', 'title', 'url', 'browser', 'session'],
+  columns: ['timestamp', 'title', 'url', 'browser', 'session'],
   columnLabels: {
     'browser': 'Capture Browser',
     'rowIndex': 'Index',
@@ -73,7 +73,7 @@ export default Object.assign({
   },
   defaultBookmarkDesc: 'No description provided.',
   defaultCollectionTitle: 'New Collection',
-  defaultColumns: ['rowIndex', 'timestamp', 'title', 'url', 'browser'],
+  defaultColumns: ['timestamp', 'title', 'url', 'browser'],
   defaultCollDesc: '_This collection doesn\'t yet have a description._',
   defaultListDesc: '_This list doesn\'t yet have a description._',
   defaultRecDesc: 'Add notes about this session. Visible only to you.',
