@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-import { defaultBookmarkDesc, untitledEntry } from 'config';
+import { untitledEntry } from 'config';
 import { getCollectionLink } from 'helpers/utils';
 
 import InlineEditor from 'components/InlineEditor';

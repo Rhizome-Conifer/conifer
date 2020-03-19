@@ -208,7 +208,7 @@ class TableRenderer extends Component {
   }
 
   saveHeaderState = () => {
-    setStorage('columnOrder', JSON.stringify(this.state.columns.filter(o => !['rowIndex','remove'].includes(o))));
+    setStorage('columnOrder', JSON.stringify(this.state.columns.filter(o => !['rowIndex', 'remove'].includes(o))));
   }
 
   testRowHighlight = ({ index }) => {

@@ -185,16 +185,13 @@ class CollectionHeaderUI extends Component {
               <div className="menu-row">
                 <Button className="rounded new-session" onClick={this.newSession}><PlusIcon /><span className="hidden-xs"> New Session</span></Button>
                 <DropdownButton id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
-                  <MenuItem onClick={this.newSession}>New Session</MenuItem>
-                  <MenuItem divider />
-                  <MenuItem onClick={this.togglePublicView}>Cover</MenuItem>
-                  <MenuItem divider />
                   <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
                   {
                     !isAnon &&
                       <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>{ __DESKTOP__ ? 'Import' : 'Upload' } To Collection</Upload>
                   }
                   <MenuItem onClick={this.downloadCollection}>{ __DESKTOP__ ? 'Export' : 'Download' } Collection</MenuItem>
+                  <MenuItem divider />
                   <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
                   {
                     allowDat && canAdmin && !isAnon && newFeatures &&
@@ -203,12 +200,13 @@ class CollectionHeaderUI extends Component {
                         <MenuItem onClick={this.toggleDatModal}><p className="menu-label">More Sharing Options</p><DatIcon /> Share via Dat...</MenuItem>
                       </React.Fragment>
                   }
-                  <MenuItem divider />
                   {
                     onboardingLink && !this.context.isMobile &&
-                      <MenuItem onClick={this.showOnboarding}><span role="img" aria-label="tada emoji">&#127881;</span> Tour New Features</MenuItem>
+                      <React.Fragment>
+                        <MenuItem divider />
+                        <MenuItem onClick={this.showOnboarding}><span role="img" aria-label="tada emoji">&#127881;</span> Tour New Features</MenuItem>
+                      </React.Fragment>
                   }
-                  <MenuItem href="https://guide.webrecorder.io/" target="_blank">Help</MenuItem>
                 </DropdownButton>
               </div>
           }
