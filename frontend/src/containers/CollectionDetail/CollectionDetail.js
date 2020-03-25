@@ -6,7 +6,6 @@ import { asyncConnect } from 'redux-connect';
 import { isLoaded as isCollLoaded, getBookmarkCount, load as loadColl, search } from 'store/modules/collection';
 import { clear, multiSelect, selectBookmark, selectPage } from 'store/modules/inspector';
 import { load as loadList, removeBookmark, bookmarkSort } from 'store/modules/list';
-import { setQueryMode } from 'store/modules/pageQuery';
 import { isLoaded as isRBLoaded, load as loadRB } from 'store/modules/remoteBrowsers';
 
 import { getQueryPages, getOrderedPages } from 'store/selectors';
@@ -48,20 +47,6 @@ class CollectionDetail extends Component {
 
 
 const initialData = [
-  {
-    promise: ({ location: { search }, store: { dispatch } }) => {
-      if (search) {
-        const qs = querystring.parse(search.replace(/^\?/, ''));
-
-        if (qs.query && qs.query.includes(':')) {
-          const [column, str] = qs.query.split(':');
-          dispatch(setQueryMode(true, column, str));
-        }
-      }
-
-      return undefined;
-    }
-  },
   {
     promise: ({ match: { params: { coll, list, user } }, store: { dispatch, getState } }) => {
       const state = getState();
@@ -112,17 +97,11 @@ const initialData = [
 
 const mapStateToProps = (outerState) => {
   const { app, reduxAsyncConnect } = outerState;
-  const querying = app.getIn(['pageQuery', 'querying']);
-  let pages;
-
-  if (querying) {
-    pages = getQueryPages(app);
-  } else {
-    pages = getOrderedPages(app);
-  }
+  const pages = getOrderedPages(app);
 
   return {
     auth: app.get('auth'),
+    bookmarks: app.getIn(['list', 'bookmarks']),
     browsers: app.get('remoteBrowsers'),
     bkDeleting: app.getIn(['list', 'bkDeleting']),
     bkDeleteError: app.getIn(['list', 'bkDeleteError']),
@@ -138,7 +117,6 @@ const mapStateToProps = (outerState) => {
 const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => {
   return {
     clearInspector: () => dispatch(clear()),
-    clearQuery: () => dispatch(setQueryMode(false)),
     clearSearch: () => dispatch(search(user, coll, { mime: 'text/html', search: '*' })),
     setMultiInspector: count => dispatch(multiSelect(count)),
     setPageInspector: fields => dispatch(selectPage(fields)),

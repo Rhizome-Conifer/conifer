@@ -39,6 +39,7 @@ class CollectionDetailUI extends Component {
 
   static propTypes = {
     auth: PropTypes.object,
+    bookmarks: PropTypes.object,
     browsers: PropTypes.object,
     bkDeleting: PropTypes.bool,
     bkDeleteError: PropTypes.oneOfType([
@@ -46,7 +47,6 @@ class CollectionDetailUI extends Component {
       PropTypes.string
     ]),
     clearInspector: PropTypes.func,
-    clearQuery: PropTypes.func,
     clearSearch: PropTypes.func,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
@@ -79,8 +79,8 @@ class CollectionDetailUI extends Component {
     ];
 
     this.state = {
-      listBookmarks: props.list.get('bookmarks'),
-      sortedBookmarks: props.list.get('bookmarks'),
+      listBookmarks: props.bookmarks,
+      sortedBookmarks: props.bookmarks,
       overrideHeight: null,
       selectedPageIdx: null
     };
@@ -98,13 +98,8 @@ class CollectionDetailUI extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.list !== this.props.list) {
-      const bookmarks = nextProps.list.get('bookmarks');
+      const { bookmarks } = nextProps;
       this.setState({ listBookmarks: bookmarks, sortedBookmarks: bookmarks });
-    }
-
-    // clear querybox if removed from url
-    if (this.props.location.search.includes('query') && !nextProps.location.search.includes('query')) {
-      this.props.clearQuery();
     }
   }
 
@@ -119,7 +114,6 @@ class CollectionDetailUI extends Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.loaded && !prevProps.loaded) {
-      this.props.clearQuery();
       if (this.props.searchText) {
         this.props.clearSearch();
       }

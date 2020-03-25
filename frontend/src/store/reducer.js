@@ -14,7 +14,6 @@ import infoStats from './modules/infoStats';
 import inspector from './modules/inspector';
 import list from './modules/list';
 import passwordReset from './modules/passwordReset';
-import pageQuery from './modules/pageQuery';
 import recordings from './modules/recordings';
 import remoteBrowsers from './modules/remoteBrowsers';
 import sidebar from './modules/sidebar';
@@ -35,7 +34,6 @@ const makeAppReducer = () => {
     infoStats,
     inspector,
     list,
-    pageQuery,
     passwordReset,
     recordings,
     remoteBrowsers,

@@ -7,7 +7,7 @@ import { timestampOrderedPages } from 'store/selectors';
 
 import { isLoaded as isCollLoaded, load as loadColl, loadLists } from 'store/modules/collection';
 import { isLoaded as isRBLoaded, load as loadRB } from 'store/modules/remoteBrowsers';
-import { getQueryPages, getOrderedPages } from 'store/selectors';
+import { getOrderedPages } from 'store/selectors';
 
 import CollectionCoverUI from 'components/collection/CollectionCoverUI';
 
@@ -72,14 +72,7 @@ const initialData = [
 
 const mapStateToProps = (outerState) => {
   const { app } = outerState;
-  const querying = app.getIn(['pageQuery', 'querying']);
-  let pages;
-
-  if (querying) {
-    pages = getQueryPages(app);
-  } else {
-    pages = getOrderedPages(app);
-  }
+  const pages = getOrderedPages(app);
 
   return {
     auth: app.get('auth'),
