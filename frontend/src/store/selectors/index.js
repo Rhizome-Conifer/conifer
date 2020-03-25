@@ -10,10 +10,10 @@ import {
   getActiveBookmarkId,
   getActiveRemoteBrowserId,
   getCollections,
-  getColumn,
+  // getColumn,
   getListBookmarks,
   getPages,
-  getQuery,
+  // getQuery,
   getRecordings,
   getRemoteBrowsers,
   getSize,
@@ -201,19 +201,19 @@ export const getPageCount = createSelector(
 );
 
 
-export const getQueryPages = createSelector(
-  [getOrderedPages, getColumn, getQuery],
-  (orderedPages, column, query) => {
-    const c = columnMappings.hasOwnProperty(column) ? columnMappings[column] : column;
-    const exact = query.startsWith('"') && query.endsWith('"') && query.length > 1;
-    const _query = exact ? query.substring(1, query.length - 1) : query;
-
-    return orderedPages.filter((o) => {
-      return o.get(c) &&
-      (exact ? o.get(c) === _query : o.get(c).startsWith(_query));
-    });
-  }
-);
+// export const getQueryPages = createSelector(
+//   [getOrderedPages, getColumn, getQuery],
+//   (orderedPages, column, query) => {
+//     const c = columnMappings.hasOwnProperty(column) ? columnMappings[column] : column;
+//     const exact = query.startsWith('"') && query.endsWith('"') && query.length > 1;
+//     const _query = exact ? query.substring(1, query.length - 1) : query;
+//
+//     return orderedPages.filter((o) => {
+//       return o.get(c) &&
+//       (exact ? o.get(c) === _query : o.get(c).startsWith(_query));
+//     });
+//   }
+// );
 
 
 export const getRemoteArchiveStats = createSelector(

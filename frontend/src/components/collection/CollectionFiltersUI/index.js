@@ -1,8 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-import { QueryBox } from 'containers';
-
 import Searchbox from 'components/Searchbox';
 
 
@@ -17,11 +15,9 @@ class CollectionFiltersUI extends PureComponent {
     disabled: PropTypes.bool,
     history: PropTypes.object,
     location: PropTypes.object,
-    querying: PropTypes.bool,
     searching: PropTypes.bool,
     searched: PropTypes.bool,
-    searchCollection: PropTypes.func,
-    setPageQuery: PropTypes.func
+    searchCollection: PropTypes.func
   };
 
   constructor(props) {
@@ -35,27 +31,18 @@ class CollectionFiltersUI extends PureComponent {
     searchCollection(collection.get('owner'), collection.get('id'), searchParams);
   }
 
-  query = (queryColumn) => {
-    this.props.setPageQuery(queryColumn);
-  }
-
   render() {
     return (
       <div className="wr-coll-utilities">
         <nav>
-          {
-            this.props.querying ?
-              <QueryBox /> :
-              <Searchbox
-                collection={this.props.collection}
-                history={this.props.history}
-                location={this.props.location}
-                query={this.query}
-                search={this.search}
-                clear={this.props.clearSearch}
-                searching={this.props.searching}
-                searched={this.props.searched} />
-          }
+          <Searchbox
+            collection={this.props.collection}
+            history={this.props.history}
+            location={this.props.location}
+            search={this.search}
+            clear={this.props.clearSearch}
+            searching={this.props.searching}
+            searched={this.props.searched} />
         </nav>
       </div>
     );

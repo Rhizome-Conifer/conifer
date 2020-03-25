@@ -2,8 +2,8 @@ export const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 
 export const getActiveBookmarkId = state => (state.app ? state.app : state).getIn(['controls', 'activeBookmarkId']);
 export const getArchives = state => state.getIn(['controls', 'archives']);
 export const getCollections = state => state.getIn(['collections', 'collections']);
-export const getColumn = state => (state.app ? state.app : state).getIn(['pageQuery', 'column']);
-export const getQuery = state => (state.app ? state.app : state).getIn(['pageQuery', 'query']);
+// export const getColumn = state => (state.app ? state.app : state).getIn(['pageQuery', 'column']);
+// export const getQuery = state => (state.app ? state.app : state).getIn(['pageQuery', 'query']);
 export const getListBookmarks = state => (state.app ? state.app : state).getIn(['list', 'bookmarks']);
 export const getPages = state => (state.app ? state.app : state).getIn(['collection', 'pages']);
 export const getRecordings = state => state.getIn(['collection', 'recordings']);
