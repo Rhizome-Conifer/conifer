@@ -310,9 +310,9 @@ class TableRenderer extends Component {
                             onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex })
                           }}
                           rowRenderer={this.customRowRenderer}
-                          sort={activeList ? null : this.props.sort}
-                          sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
-                          sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
+                          sort={this.props.sort}
+                          sortBy={collection.getIn(['sortBy', 'sort'])}
+                          sortDirection={collection.getIn(['sortBy', 'dir'])}>
                           {
                             this.state.columns.map((c, idx) => {
                               let props = columnDefs[c];

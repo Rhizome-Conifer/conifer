@@ -8,26 +8,57 @@
         .input-wrapper {
             position: relative;
 
-            input {
-                padding-right: 4.5rem;
+            .search-icon {
+                position: absolute;
+                left: 1rem;
+                height: 3rem;
+                z-index: 20;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                svg {
+                    width: 1.5rem;
+                    height: 1.5rem;
+
+                    path {
+                        fill: $gray500;
+                    }
+                }
             }
 
-            .advanced-options {
+            input {
+                padding-left: 3.2rem;
+                padding-right: 4rem;
+                border-radius: .3rem !important;
+                flex-grow: 1;
+            }
+
+            .searchbar-actions {
                 position: absolute;
                 right: .2rem;
-                top: .2rem;
-                height: 2.6rem;
+                height: 3rem;
                 z-index: 20;
-                font-size: 1rem;
-                background: linear-gradient(-90deg, #FFF 80%, rgba(255,255,255,0));
-                padding-left: 1rem;
-                color: $gray600;
-            }
-        }
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
 
-        svg {
-            transition: opacity $quickShift ease-in-out;
-            vertical-align: middle;
+                .advanced-options {
+                    // position: absolute;
+                    // right: .2rem;
+                    // top: .2rem;
+                    // height: 2.6rem;
+                    // z-index: 20;
+                    font-size: 1rem;
+                    background: linear-gradient(-90deg, #FFF 80%, rgba(255,255,255,0));
+                    // padding-left: 1rem;
+                    color: $gray600;
+
+                    .glyphicon {
+                        vertical-align: middle;
+                    }
+                }
+            }
         }
     }
 
@@ -39,72 +70,53 @@
         border: solid .1rem $gray500;
         border-radius: .5rem;
         width: 100%;
-        padding: 1rem .5rem 0 .5rem;
+        padding: 1rem 1rem 0 1rem;
         background: #FFF;
 
-        .close-adv {
-            position: absolute;
-            right: .5rem;
-            top: .5rem;
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        grid-gap: 1.5rem;
+
+        .label {
+            color: $gray600;
+            font-weight: 300;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            display: block;
         }
 
-        .filter {
-            display: flex;
-            margin-bottom: 1.5rem;
+        input[name=searchFrag] {
+            border-width: 0 0 .1rem 0;
+            width: 100%;
+        }
 
-            &:first-of-type > .options {
-                width: 100%
+        .dropdown {
+            width: 100%;
+
+            .dropdown-menu {
+                max-height: 30rem;
+                overflow: auto;
             }
+        }
 
-            &.date-filter label {
-                align-self: center;
-            }
+        .dropdown + .dropdown {
+            margin-top: .5rem;
+        }
 
-            .label {
+        ul {
+            list-style-type: none;
+            padding: 0;
+
+            label {
                 color: $gray600;
                 font-weight: 300;
                 font-size: 1.4rem;
-                flex-shrink: 0;
-                display: block;
             }
+        }
 
-            & > .label {
-                width: 15rem;
-            }
-
-            input[name=search] {
-                border-width: 0 0 .1rem 0;
-                width: 100%;
-            }
-
-            .dropdown {
-                width: 100%;
-
-                .dropdown-menu {
-                    max-height: 30rem;
-                    overflow: auto;
-                }
-            }
-
-            .dropdown + .dropdown {
-                margin-top: .5rem;
-            }
-
-            ul {
-                list-style-type: none;
-                padding: 0;
-
-                label {
-                    color: $gray600;
-                    font-weight: 300;
-                    font-size: 1.4rem;
-                }
-            }
-
-            .sub-filters {
-                display: flex;
-                margin-top: .5rem;
-            }
+        .sub-filters {
+            display: flex;
+            margin-top: .5rem;
         }
 
         .date-select {
@@ -127,8 +139,8 @@
 
         .actions {
             margin: 1.5rem;
-            display: flex;
-            justify-content: flex-end;
+            grid-column: 2;
+            justify-self: end;
 
             .button-link {
                 color: $gray600;
