@@ -33,11 +33,12 @@ class Searchbox extends PureComponent {
     let includeDocuments = false;
     let session = '';
     let search = '';
-    let serachFrag = '';
+    let searchFrag = '';
     let date = 'anytime';
     let startDate = new Date();
     let endDate = new Date();
 
+    // create clone
     this.initialValues = {
       date,
       endDate,
@@ -47,7 +48,7 @@ class Searchbox extends PureComponent {
       includeVideo,
       includeDocuments,
       search,
-      serachFrag,
+      searchFrag,
       session,
       startDate
     };
@@ -58,7 +59,7 @@ class Searchbox extends PureComponent {
       if (qs.search) {
         props.search(qs);
         search = qs.search;
-        serachFrag = qs.search;
+        searchFrag = qs.search;
       }
 
       if (qs.mime) {
@@ -90,6 +91,7 @@ class Searchbox extends PureComponent {
       includeAudio,
       includeVideo,
       includeDocuments,
+      reset: false,
       search,
       searchStruct: '',
       session,
@@ -108,11 +110,11 @@ class Searchbox extends PureComponent {
   componentDidUpdate(prevProps, prevState) {
     // check for searched prop being cleared
     if (prevProps.searched && !this.props.searched) {
-      this.setState({ search: '' });
+      this.setState({ search: 'is:Page', searchFrag: '' });
     }
 
     if (this.state.options) {
-      this.buildQuery(false, this.state.search !== prevState.search);
+      this.buildQuery(false, this.state.search !== prevState.search && !this.state.reset);
     }
   }
 
@@ -215,7 +217,8 @@ class Searchbox extends PureComponent {
       this.setState({
         date,
         ...filterValues,
-        search: searchStruct
+        search: searchStruct,
+        reset: false,
       });
     }
   }
@@ -271,12 +274,11 @@ class Searchbox extends PureComponent {
     evt.stopPropagation();
 
     window.history.replaceState({}, '', '?search=');
-    this.setState({ search: 'is:Page', searchFrag: '' });
     this.props.clear(collection.get('owner'), collection.get('id'));
   }
 
   reset = () => {
-    this.setState({ ...this.initialValues });
+    this.setState({ ...this.initialValues, reset: true });
   }
 
   search = () => {
@@ -288,7 +290,6 @@ class Searchbox extends PureComponent {
       includeImages,
       includeVideo,
       includeWebpages,
-      search,
       session,
       startDate
     } = this.state;
@@ -320,6 +321,7 @@ class Searchbox extends PureComponent {
 
     window.history.replaceState({}, '', `?${querystring.stringify(searchParams)}`);
     this.props.search(searchParams);
+
     // close adv search
     if (this.state.options) {
       this.setState({ options: false });
