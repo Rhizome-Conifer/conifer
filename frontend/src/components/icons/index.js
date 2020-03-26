@@ -11,6 +11,7 @@ export Collection from './Collection';
 export DatIcon from './Dat';
 export DisabledIcon from './Disabled';
 export DownloadIcon from './Download';
+export FalafelIcon from './Falafel';
 export FlagIcon from './Flag';
 export GlobeIcon from './Globe';
 export HandleIcon from './Handle';

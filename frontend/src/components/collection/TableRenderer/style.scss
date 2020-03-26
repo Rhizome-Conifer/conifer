@@ -5,6 +5,25 @@
     flex-direction: column;
     flex-grow: 1;
 
+    &.dark {
+        background: $gray700;
+
+        .collection-header h2 {
+            color: $white;
+        }
+
+        .wr-coll-detail-table {
+            .ReactVirtualized__Table__row {
+                color: $white;
+                fill: $white;
+
+                a {
+                    color: $white;
+                }
+            }
+        }
+    }
+
     .collection-header {
         display: flex;
         flex-direction: column;
@@ -19,7 +38,6 @@
 
 
         .wr-coll-utilities {
-            background: #FFF;
             margin: 0 0 1.5rem 1.5rem;
             width: 70%;
             min-width: 25rem;
@@ -43,21 +61,20 @@
         position: relative;
         padding-right: 1.5rem;
         padding-left: 1.5rem;
-        background: #FFF;
 
         &.resources-table {
             .ReactVirtualized__Table__row {
-                background-color: #F1F1FF;
+                background-color: $gray700;
 
                 &:not(.selected).odd {
-                    background-color: #E8E8F6;
+                    background-color: $gray800;
                 }
             }
         }
 
         .table-header-menu {
             position: absolute;
-            right: -.5rem;
+            right: .2rem;
             top: 0.25rem;
         }
 
@@ -114,7 +131,7 @@
             cursor: context-menu;
             font-size: 1.2rem;
             position: relative;
-            background: #FFF;
+            background: $white;
 
             &:before {
                 transition: background-color $quickShift ease-in-out;
@@ -188,15 +205,15 @@
 
             &.selected {
                 background-color: $blue;
-                color: #FFF;
-                fill: #FFF;
+                color: $white;
+                fill: $white;
 
-                .session-link:link, a:link { color: #FFF; }
-                .session-link:visited, a:visited{ color: #FFF; }
+                .session-link:link, a:link { color: $white; }
+                .session-link:visited, a:visited{ color: $white; }
 
                 svg {
                     & > g {
-                        fill: #FFF;
+                        fill: $white;
                     }
                 }
             }

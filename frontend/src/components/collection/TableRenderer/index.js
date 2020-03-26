@@ -15,6 +15,7 @@ import { CollectionFilters, ListHeader } from 'containers';
 
 import Modal from 'components/Modal';
 import OutsideClick from 'components/OutsideClick';
+import { FalafelIcon } from 'components/icons';
 
 import {
   BrowserRenderer,
@@ -247,7 +248,7 @@ class TableRenderer extends Component {
     const columnDefs = this.getColumnDefs(activeList, collection, browsers, list, objectLabel);
 
     return (
-      <div className="table-container">
+      <div className={classNames('table-container', { dark: !activeList})}>
         {
           activeList ?
             <ListHeader /> :
@@ -262,7 +263,7 @@ class TableRenderer extends Component {
             canAdmin &&
               <React.Fragment>
                 <Button onClick={this.toggleHeaderModal} className="table-header-menu borderless" bsSize="xs">
-                  <span style={{ display: 'inline-block', fontWeight: 'bold', transform: 'rotateZ(90deg)' }}>...</span>
+                  <FalafelIcon />
                 </Button>
                 <Modal
                   visible={this.state.headerEditor}
