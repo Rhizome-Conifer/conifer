@@ -7,7 +7,7 @@
 # By default, only latest versions of browsers are pulled. Uncomment other versions to include them as well.
 
 # Remote Desktop System and Base Browser (Required for all browsers)
-docker pull oldwebtoday/vnc-webrtc-audio
+docker pull oldwebtoday/remote-desktop-server
 docker pull oldwebtoday/base-displayaudio
 docker pull oldwebtoday/base-browser
 
