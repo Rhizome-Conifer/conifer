@@ -375,7 +375,7 @@ class Searchbox extends PureComponent {
               <section className="adv-search-filters">
                 <div className="label">Contains the words</div>
                 <div className="options">
-                  <input type="text" name="searchFrag" value={this.state.searchFrag} onChange={this.handleChange} />
+                  <input type="text" name="searchFrag" value={this.state.searchFrag} onKeyUp={this.keyUp} onChange={this.handleChange} />
                 </div>
                 <div className="label">Include File Types</div>
                 <ul>
