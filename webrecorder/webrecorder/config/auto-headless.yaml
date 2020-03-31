@@ -1,0 +1,33 @@
+name: auto-headless
+auto_remove: false
+
+volumes:
+  tmpdir: '/tmp/.X11-unix'
+
+containers:
+  - name: browser
+    image: oldwebtoday/base-browser
+    image_label: wr.name
+    set_user_params: true
+    external_network: '${BROWSER_NET}'
+
+    environment:
+      DISPLAY: ':99'
+      PULSE_SERVER: '/tmp/.X11-unix/pulse-socket'
+
+      PROXY_HOST: '${PROXY_HOST}'
+      PROXY_PORT: '${PROXY_PORT}'
+      PROXY_CA_URL: '${PROXY_CA_URL}'
+      PROXY_CA_FILE: '${PROXY_CA_FILE}'
+
+  - name: autobrowser
+    image: webrecorder/search-driver
+
+    external_network: '${MAIN_NET}'
+
+    environment:
+      BROWSER_HOST: 'browser'
+      REDIS_URL: 'redis://redis:6379/0'
+      TAB_TYPE: 'CrawlerTab'
+
+
