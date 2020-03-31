@@ -1,5 +1,6 @@
 import json
 import hashlib
+import os
 
 
 # ============================================================================
@@ -12,6 +13,9 @@ class PagesMixin(object):
     """
     PAGES_KEY = 'c:{coll}:p'
     PAGE_BOOKMARKS_CACHE_KEY = 'c:{coll}:p_to_b'
+    PAGES_Q = 'c:{coll}:pq'
+
+    NEW_PAGES_Q = 'new_pages:q'
 
     def __init__(self, **kwargs):
         """Initialize recording pages."""
@@ -50,6 +54,18 @@ class PagesMixin(object):
         pid = self._new_page_id(page)
 
         self.redis.hset(self.pages_key, pid, json.dumps(page))
+
+        if os.environ.get('SEARCH_AUTO') == '1':
+            # new pages queue
+            user = self.get_owner()
+
+            page['coll'] = self.my_id
+            page['user'] = user.name
+            page['coll_name'] = self.name
+            page['pid'] = pid
+
+            print(page)
+            self.redis.lpush(self.NEW_PAGES_Q, json.dumps(page))
 
         return pid
 

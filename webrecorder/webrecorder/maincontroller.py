@@ -35,6 +35,7 @@ from webrecorder.autocontroller import AutoController
 from webrecorder.behaviormgr import BehaviorMgr
 
 from webrecorder.browsermanager import BrowserManager
+from webrecorder.solrmanager import SolrManager
 
 from webrecorder.webreccork import WebRecCork
 
@@ -119,6 +120,9 @@ class MainController(BaseController):
         # Init Browser Mgr
         browser_mgr = BrowserManager(config, browser_redis, user_manager)
 
+        # Init Solr Mgr
+        solr_mgr = SolrManager(config)
+
         # Init Dat Share
         DatShare.dat_share = DatShare(self.redis)
 
@@ -128,6 +132,7 @@ class MainController(BaseController):
                                         user_manager=user_manager,
                                         config=config,
                                         browser_mgr=browser_mgr,
+                                        solr_mgr=solr_mgr,
                                         redis=self.redis,
                                         cork=cork)
 
@@ -138,6 +143,7 @@ class MainController(BaseController):
                       jinja_env=jinja_env,
                       user_manager=user_manager,
                       browser_mgr=browser_mgr,
+                      solr_mgr=solr_mgr,
                       content_app=content_app,
                       cork=cork,
                       redis=self.redis,

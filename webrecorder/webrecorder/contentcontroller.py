@@ -7,6 +7,8 @@ from six.moves.urllib.parse import quote, unquote, urlencode
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 import requests
 
+from warcio.timeutils import timestamp_to_iso_date
+
 from pywb.utils.loaders import load_yaml_config
 from pywb.rewrite.wburl import WbUrl
 from pywb.rewrite.cookies import CookieTracker
@@ -42,6 +44,8 @@ class ContentController(BaseController, RewriterApp):
         config['csp-header'] = self.get_csp_header()
 
         self.browser_mgr = kwargs['browser_mgr']
+
+        self.solr_mgr = kwargs['solr_mgr']
 
         RewriterApp.__init__(self,
                              framed_replay=True,
@@ -575,16 +579,23 @@ class ContentController(BaseController, RewriterApp):
                       rec=recording.my_id,
                       type='put_record')
 
-        url = request.query.getunicode('target_uri')
+        url = request.query.getunicode('url')
 
-        params = {'url': url}
-
-        upstream_url = self.get_upstream_url('', kwargs, params)
+        timestamp = request.query.getunicode('timestamp')
 
         headers = {'Content-Type': request.environ.get('CONTENT_TYPE', 'text/plain')}
 
+        if timestamp:
+            headers['WARC-Date'] = timestamp_to_iso_date(timestamp)
+
+        url_params = {'url': 'urn:' + request.query.get('type', 'metadata') + ':' + url}
+
+        upstream_url = self.get_upstream_url('', kwargs, url_params)
+
+        data = request.body.read()
+
         r = requests.put(upstream_url,
-                         data=request.body,
+                         data=data,
                          headers=headers,
                         )
         try:
@@ -599,7 +610,20 @@ class ContentController(BaseController, RewriterApp):
             print(e)
             return {'error_message': 'put_record_failed'}
 
+        if request.query.getunicode('type') == 'text':
+            pid = request.query.getunicode('pid')
+            page = collection.get_page(pid)
+            print(page)
+            kwargs['pid'] = pid
+            kwargs['title'] = page.get('title')
+            kwargs['url'] = url
+            kwargs['timestamp'] = timestamp or page.get('timestamp')
+            kwargs['hasScreenshot'] = request.query.getunicode('hasScreenshot')
+            print(kwargs)
+            self.solr_mgr.ingest(data, kwargs)
+
         return res
+
 
     def do_create_new_and_redir(self, coll_name, rec_name, wb_url, mode):
         new_url, _, _2 = self.do_create_new(coll_name, rec_name, wb_url, mode)
