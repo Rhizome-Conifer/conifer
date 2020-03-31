@@ -3,6 +3,9 @@ import hashlib
 import os
 
 
+search_auto = os.environ.get('SEARCH_AUTO') == '1'
+
+
 # ============================================================================
 class PagesMixin(object):
     """Recording pages.
@@ -55,7 +58,7 @@ class PagesMixin(object):
 
         self.redis.hset(self.pages_key, pid, json.dumps(page))
 
-        if os.environ.get('SEARCH_AUTO') == '1':
+        if search_auto:
             # new pages queue
             user = self.get_owner()
 
@@ -64,7 +67,6 @@ class PagesMixin(object):
             page['coll_name'] = self.name
             page['pid'] = pid
 
-            print(page)
             self.redis.lpush(self.NEW_PAGES_Q, json.dumps(page))
 
         return pid

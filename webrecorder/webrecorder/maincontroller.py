@@ -121,7 +121,10 @@ class MainController(BaseController):
         browser_mgr = BrowserManager(config, browser_redis, user_manager)
 
         # Init Solr Mgr
-        solr_mgr = SolrManager(config)
+        if os.environ.get('SEARCH_AUTO') == '1':
+            solr_mgr = SolrManager(config)
+        else:
+            solr_mgr = None
 
         # Init Dat Share
         DatShare.dat_share = DatShare(self.redis)

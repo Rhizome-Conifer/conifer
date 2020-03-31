@@ -14,8 +14,8 @@ class SolrManager:
         self.solr_update_api = 'http://solr:8983/solr/webrecorder/update?commit=true'
         self.solr_select_api = 'http://solr:8983/solr/webrecorder/select'
 
-        self.page_query = '?q=title_t:*&fq=coll_s:{coll}&fl=title_t,url_s,timestamp_s,has_screenshot_b&rows={rows}&start={start}&sort=timestamp_s+{sort}'
-        self.text_query = '?q={q}&fq={fq}&fl=id,title_t,url_s,timestamp_s,has_screenshot_b&hl=true&hl.fl=content_t&hl.snippets=3&rows={rows}&start={start}'
+        self.page_query = '?q=title_t:*&fq=coll_s:{coll}&fl=title_t,url_s,timestamp_s,has_screenshot_b,id&rows={rows}&start={start}&sort=timestamp_s+{sort}'
+        self.text_query = '?q={q}&fq={fq}&fl=id,title_t,url_s,timestamp_s,has_screenshot_b,id&hl=true&hl.fl=content_t&hl.snippets=3&rows={rows}&start={start}'
 
     def update_if_dupe(self, digest, coll, url, timestamp, timestamp_dt):
         try:
@@ -77,7 +77,7 @@ class SolrManager:
             'user_s': params.get('user'),
             'coll_s': params.get('coll'),
             'rec_s': params.get('rec'),
-            'page_s': params.get('pid'),
+            'id': params.get('pid'),
             'title_t': title,
             'content_t': content,
             'url_s': url,
@@ -99,7 +99,7 @@ class SolrManager:
 
         start = int(params.get('start', 0))
 
-        rows = int(params.get('limit', 10))
+        rows = int(params.get('limit', 100))
 
         sort = params.get('sort', 'asc')
 
@@ -118,9 +118,10 @@ class SolrManager:
                 'results': [
                     {
                         'title': doc.get('title_t'),
+                        'rec': doc.get('rec_s'),
                         'url': doc.get('url_s'),
                         'timestamp': doc.get('timestamp_s'),
-                        'page_id': doc.get('page_s'),
+                        'id': doc.get('id'),
                         'has_screenshot': doc.get('has_screenshot_b'),
                     }
                     for doc in docs
@@ -148,9 +149,10 @@ class SolrManager:
                 'results': [
                     {
                         'title': doc.get('title_t'),
+                        'rec': doc.get('rec_s'),
                         'url': doc.get('url_s'),
                         'timestamp': doc.get('timestamp_s'),
-                        'page_id': doc.get('page_s'),
+                        'id': doc.get('id'),
                         'has_screenshot': doc.get('has_screenshot_b'),
                         'matched': hl.get(doc.get('id'), {}).get('content_t'),
                     }

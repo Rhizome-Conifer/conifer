@@ -165,7 +165,7 @@ services:
 
     browsertrix:
         container_name: browsertrix
-        image: webrecorder/browsertrix
+        image: webrecorder/browsertrix:0.2.0
         #build:
         #    context: .
         environment:

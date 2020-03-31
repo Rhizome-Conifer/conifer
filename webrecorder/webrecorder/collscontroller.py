@@ -17,6 +17,8 @@ class CollsController(BaseController):
         super(CollsController, self).__init__(*args, **kwargs)
         config = kwargs['config']
 
+        self.solr_mgr = kwargs.get('solr_mgr')
+
         self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
 
     def init_routes(self):
@@ -231,6 +233,15 @@ class CollsController(BaseController):
                                 'mime': cdxj['mime']})
 
             return {'results': results}
+
+        @self.app.get('/api/v1/text_search')
+        def do_text_search():
+            if not self.solr_mgr:
+                self._raise_error(400, 'not_supported')
+
+            user, collection = self.load_user_coll()
+
+            return self.solr_mgr.query_solr(collection.my_id, request.query)
 
         # DAT
         @self.app.post('/api/v1/collection/<coll_name>/dat/share')

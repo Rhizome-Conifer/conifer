@@ -45,7 +45,7 @@ class ContentController(BaseController, RewriterApp):
 
         self.browser_mgr = kwargs['browser_mgr']
 
-        self.solr_mgr = kwargs['solr_mgr']
+        self.solr_mgr = kwargs.get('solr_mgr')
 
         RewriterApp.__init__(self,
                              framed_replay=True,
@@ -610,7 +610,7 @@ class ContentController(BaseController, RewriterApp):
             print(e)
             return {'error_message': 'put_record_failed'}
 
-        if request.query.getunicode('type') == 'text':
+        if self.solr_mgr and request.query.getunicode('type') == 'text':
             pid = request.query.getunicode('pid')
             page = collection.get_page(pid)
             print(page)
