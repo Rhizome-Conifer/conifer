@@ -31,7 +31,7 @@ async function connect() {
 
   let browser = null;
   const browserURL = `http://${hostname}:9222`;
-  const defaultViewport = null;
+  const defaultViewport = {width: 1024, height: 768};
   const params = {browserURL, defaultViewport};
 
   console.log(params);
@@ -90,23 +90,25 @@ async function main() {
   while (nextData = await redis.rpop(`a:${crawlId}:q`)) {
     try {
       console.log(nextData);
-      const { url, depth, timestamp, title, pid } = JSON.parse(nextData);
+      const { url, depth, timestamp, pid } = JSON.parse(nextData);
 
+      await redis.sadd(`a:${crawlId}:qp`, url);
+      await redis.sadd(`a:${crawlId}:seen`, url);
+
+      // set timestamp for next url
       if (timestamp) {
         await redis.hset(browserKey, 'timestamp', timestamp);
-        console.log(await redis.hgetall(browserKey));
+        //console.log(await redis.hgetall(browserKey));
       }
 
-      if (timestamp) {
-        console.log('timestamp: ' + timestamp);
-        await page.goto(`http://webrecorder.proxy/${user}/${collection}/${timestamp}/${url}`);
-      } else {
-        await page.goto(url);
-      }
+      await page.goto(url);
 
       await putScreenshot(page, url);
 
-      await putText(client, url, timestamp, title, pid);
+      await putText(client, url, timestamp, pid);
+
+      await redis.srem(`a:${crawlId}:qp`, url);
+
     } catch (e) {
       console.log(e);
     }
@@ -140,7 +142,7 @@ async function putScreenshot(page, url) {
 
 
 // ===========================================================================
-async function putText(client, url, timestamp, title, pid) {
+async function putText(client, url, timestamp, pid) {
   try {
     if (!textAPI) {
       return;
@@ -151,10 +153,9 @@ async function putText(client, url, timestamp, title, pid) {
     //console.log(result);
 
     //await putCustomRecord(textAPI, url, 'application/json', JSON.stringify(result));
-    title = title || "";
     timestamp = timestamp || "";
 
-    const params = {url, title, timestamp, pid, "hasScreenshot": screenshotAPI ? "1" : "0", reqid, type: 'text'};
+    const params = {url, timestamp, pid, "hasScreenshot": screenshotAPI ? "1" : "0", reqid, type: 'text'};
     await putCustomRecord(textAPI, params, 'text/plain', parseTextFromDom(result));
   } catch (e) {
     console.log(e);
