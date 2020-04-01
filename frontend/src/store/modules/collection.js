@@ -1,6 +1,8 @@
 import { apiPath } from 'config';
 import { fromJS } from 'immutable';
 
+import { defaultSort } from 'config';
+
 const BK_COUNT = 'wr/coll/BK_COUNT';
 const BK_COUNT_SUCCESS = 'wr/coll/BK_COUNT_SUCCESS';
 const BK_COUNT_FAIL = 'wr/coll/BK_COUNT_FAIL';
@@ -43,7 +45,6 @@ const SEARCH_SUCCESS = 'wr/coll/SEARCH_SUCCESS';
 const SEARCH_FAIL = 'wr/coll/SEARCH_FAIL';
 const CLEAR_SEARCH = 'wr/coll/CLEAR_SEARCH';
 
-export const defaultSort = { sort: 'timestamp', dir: 'DESC' };
 const initialState = fromJS({
   editing: false,
   datProcessing: false,

@@ -6,6 +6,8 @@ import { columnMappings } from 'config';
 import { rts, truncate } from 'helpers/utils';
 
 import {
+  collSortBy,
+  collSortDir,
   getArchives,
   getActiveBookmarkId,
   getActiveRemoteBrowserId,
@@ -21,9 +23,9 @@ import {
   getTimestamp,
   getUrl,
   getUserCollections,
+  listSortBy,
+  listSortDir,
   selectedCollection,
-  userSortBy,
-  userSortDir,
 } from './access';
 
 
@@ -88,10 +90,31 @@ export const timestampOrderedIds = createSelector(
 
 
 export const getOrderedPages = createSelector(
-  getPages, userSortBy, userSortDir,
+  getPages, collSortBy, collSortDir,
   (pages, sort, dir) => {
     if (!pages) {
       return List();
+    }
+
+    const sortedPages = pages.sortBy(o => o.get(sort));
+
+    if (dir === 'DESC') {
+      return sortedPages.reverse();
+    }
+    return sortedPages;
+  }
+);
+
+
+export const getOrderedBookmarks = createSelector(
+  getListBookmarks, listSortBy, listSortDir,
+  (pages, sort, dir) => {
+    if (!pages) {
+      return List();
+    }
+
+    if (sort === null) {
+      return pages;
     }
 
     const sortedPages = pages.sortBy(o => o.get(sort));

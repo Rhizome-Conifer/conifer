@@ -6,6 +6,7 @@ import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
 import classNames from 'classnames';
+import { Map } from 'immutable';
 import { Button } from 'react-bootstrap';
 
 import config from 'config';
@@ -94,6 +95,7 @@ class TableRenderer extends Component {
 
   getColumnDefs = memoize((activeList, collection, browsers, list, objectLabel) => {
     const { canAdmin } = this.context;
+
     return {
       browser: {
         cellRenderer: BrowserRenderer,
@@ -107,7 +109,7 @@ class TableRenderer extends Component {
         dataKey: 'id',
         disableSort: true,
         key: 'rowIndex',
-        width: 55,
+        width: 45,
         headerClassName: 'hide-header'
       },
       remove: {
@@ -245,15 +247,16 @@ class TableRenderer extends Component {
     const { activeList, browsers, collection, displayObjects, list, selectedPageIdx } = this.props;
 
     const objectLabel = activeList ? 'Bookmark Title' : 'Page Title';
+    const sortStore = activeList ? list : collection;
     const columnDefs = this.getColumnDefs(activeList, collection, browsers, list, objectLabel);
+    const sorted = activeList && !list.get('sortBy').equals(Map(config.defaultSort));
 
     return (
-      <div className={classNames('table-container', { dark: !activeList})}>
+      <div className={classNames('table-container', { sorted })}>
         {
           activeList ?
             <ListHeader /> :
             <div className="collection-header">
-              <h2>Pages</h2>
               <CollectionFilters />
             </div>
         }
@@ -312,8 +315,8 @@ class TableRenderer extends Component {
                           }}
                           rowRenderer={this.customRowRenderer}
                           sort={this.props.sort}
-                          sortBy={collection.getIn(['sortBy', 'sort'])}
-                          sortDirection={collection.getIn(['sortBy', 'dir'])}>
+                          sortBy={sortStore.getIn(['sortBy', 'sort'])}
+                          sortDirection={sortStore.getIn(['sortBy', 'dir'])}>
                           {
                             this.state.columns.map((c, idx) => {
                               let props = columnDefs[c];

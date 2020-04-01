@@ -5,22 +5,9 @@
     flex-direction: column;
     flex-grow: 1;
 
-    &.dark {
-        background: $gray700;
-
-        .collection-header h2 {
-            color: $white;
-        }
-
-        .wr-coll-detail-table {
-            .ReactVirtualized__Table__row {
-                color: $white;
-                fill: $white;
-
-                a {
-                    color: $white;
-                }
-            }
+    &.sorted {
+        .row-index {
+            display: none;
         }
     }
 
@@ -28,6 +15,7 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        margin
 
         h2 {
             font-size: 2.8rem;
@@ -38,7 +26,7 @@
 
 
         .wr-coll-utilities {
-            margin: 0 0 1.5rem 1.5rem;
+            margin: 1.5rem 0 1.5rem 1.5rem;
             width: 70%;
             min-width: 25rem;
 
@@ -61,16 +49,6 @@
         position: relative;
         padding-right: 1.5rem;
         padding-left: 1.5rem;
-
-        &.resources-table {
-            .ReactVirtualized__Table__row {
-                background-color: $gray700;
-
-                &:not(.selected).odd {
-                    background-color: $gray800;
-                }
-            }
-        }
 
         .table-header-menu {
             position: absolute;
@@ -161,6 +139,8 @@
 
                 .wr-remove-widget {
                     text-align: center;
+                    opacity: 0;
+                    transition: opacity $midShift ease-in-out;
 
                     button {
                         margin: 0;
@@ -200,6 +180,10 @@
                     &:before {
                         background: $tr-highlight-selected;
                     }
+                }
+
+                .wr-remove-widget {
+                    opacity: 1;
                 }
             }
 

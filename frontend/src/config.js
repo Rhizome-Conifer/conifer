@@ -78,6 +78,7 @@ export default Object.assign({
   defaultListDesc: '_This list doesn\'t yet have a description._',
   defaultRecDesc: 'Add notes about this session. Visible only to you.',
   defaultRecordingTitle: 'Recording Session',
+  defaultSort: { sort: 'timestamp', dir: 'DESC' },
   dow: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   draggableTypes: {
     LIST: 'list',

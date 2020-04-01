@@ -14,5 +14,7 @@ export const getTimestamp = state => (state.app ? state.app : state).getIn(['con
 export const getUrl = state => (state.app ? state.app : state).getIn(['controls', 'url']);
 export const getUserCollections = state => state.getIn(['auth', 'user', 'collections']);
 export const selectedCollection = state => state.getIn(['auth', 'activeCollection']);
-export const userSortBy = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'sort']);
-export const userSortDir = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'dir']);
+export const collSortBy = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'sort']);
+export const collSortDir = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'dir']);
+export const listSortBy = state => (state.app ? state.app : state).getIn(['list', 'sortBy', 'sort']);
+export const listSortDir = state => (state.app ? state.app : state).getIn(['list', 'sortBy', 'dir']);

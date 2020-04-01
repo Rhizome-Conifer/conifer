@@ -152,7 +152,7 @@ export function TitleRenderer({ cellData, rowData, columnData: { collection, lis
 }
 
 export function DefaultHeader(props) {
-  return <div style={{ paddingLeft: '1rem' }}>{customHeaderRenderer(props)}</div>
+  return <div key={props.label} style={{ paddingLeft: '1rem' }}>{customHeaderRenderer(props)}</div>
 }
 
 const headerSource = {

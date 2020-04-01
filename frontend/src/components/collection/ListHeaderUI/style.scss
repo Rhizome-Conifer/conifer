@@ -20,12 +20,40 @@
         }
     }
 
-    .Collapsible {
-        margin: 0 0 1.5rem 1.5rem;
-        cursor: pointer;
+    .list-metadata {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
 
-        .click-highlight {
-            display: inline-block;
+        .Collapsible {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin: 0 .5rem 0 1.5rem;
+            cursor: pointer;
+
+            .click-highlight {
+                display: inline-block;
+            }
+        }
+
+        .list-sort-actions {
+            display: flex;
+            align-items: flex-end;
+            transition: opacity $midShift ease-in-out;
+
+            &.fade {
+                opacity: 0;
+            }
+
+            button {
+                width: max-content;
+            }
+
+            button + button {
+                margin-left: 1.5rem;
+            }
         }
     }
 }

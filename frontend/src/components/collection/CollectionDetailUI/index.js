@@ -6,7 +6,8 @@ import { List } from 'immutable';
 
 import config from 'config';
 
-import { setSort } from 'store/modules/collection';
+import { setSort as collSetSort } from 'store/modules/collection';
+import { setSort as listSetSort } from 'store/modules/list';
 import { getCollectionLink, getListLink, range, truncate } from 'helpers/utils';
 
 import {
@@ -239,17 +240,25 @@ class CollectionDetailUI extends Component {
   }
 
   sort = ({ sortBy, sortDirection }) => {
-    const { collection, dispatch } = this.props;
-    const prevSort = collection.getIn(['sortBy', 'sort']);
-    const prevDir = collection.getIn(['sortBy', 'dir']);
+    const { collection, dispatch, list, match: { params } } = this.props;
+    const activeList = Boolean(params.list);
+
+    const access = activeList ? list : collection;
+    const prevSort = access.getIn(['sortBy', 'sort']);
+    const prevDir = access.getIn(['sortBy', 'dir']);
 
     // clear selected pages
     this.setState({ selectedPageIdx: null });
 
+    if (activeList && prevSort === sortBy && prevDir === 'DESC') {
+      return dispatch(listSetSort({ sort: null, dir: null }));
+    }
+
+    const sortFn = activeList ? listSetSort : collSetSort;
     if (prevSort !== sortBy) {
-      dispatch(setSort({ sort: sortBy, dir: sortDirection }));
+      dispatch(sortFn({ sort: sortBy, dir: sortDirection }));
     } else {
-      dispatch(setSort({ sort: sortBy, dir: prevDir === 'ASC' ? 'DESC' : 'ASC' }));
+      dispatch(sortFn({ sort: sortBy, dir: prevDir === 'ASC' ? 'DESC' : 'ASC' }));
     }
   }
 

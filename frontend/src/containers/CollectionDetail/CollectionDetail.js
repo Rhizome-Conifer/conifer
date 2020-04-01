@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import querystring from 'querystring';
 import { asyncConnect } from 'redux-connect';
 
 import { isLoaded as isCollLoaded, getBookmarkCount, load as loadColl, search } from 'store/modules/collection';
@@ -8,7 +7,7 @@ import { clear, multiSelect, selectBookmark, selectPage } from 'store/modules/in
 import { load as loadList, removeBookmark, bookmarkSort } from 'store/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'store/modules/remoteBrowsers';
 
-import { getQueryPages, getOrderedPages } from 'store/selectors';
+import { getOrderedBookmarks, getOrderedPages } from 'store/selectors';
 
 import CollectionDetailUI from 'components/collection/CollectionDetailUI';
 
@@ -98,10 +97,11 @@ const initialData = [
 const mapStateToProps = (outerState) => {
   const { app, reduxAsyncConnect } = outerState;
   const pages = getOrderedPages(app);
+  const bookmarks = getOrderedBookmarks(app);
 
   return {
     auth: app.get('auth'),
-    bookmarks: app.getIn(['list', 'bookmarks']),
+    bookmarks,
     browsers: app.get('remoteBrowsers'),
     bkDeleting: app.getIn(['list', 'bkDeleting']),
     bkDeleteError: app.getIn(['list', 'bkDeleteError']),

@@ -26,6 +26,8 @@ const LIST_EDIT_SUCCESS = 'wr/list/LIST_EDIT_SUCCESS';
 const LIST_EDIT_FAIL = 'wr/list/LIST_EDIT_FAIL';
 const LIST_EDITED_RESET = 'wr/list/LIST_EDITED_RESET';
 
+const LIST_SET_SORT = 'wr/list/LIST_SET_SORT';
+
 const BOOKMARK_REORDER = 'wr/list/BOOKMARK_REORDER';
 const BOOKMARK_REORDER_SUCCESS = 'wr/list/BOOKMARK_REORDER_SUCCESS';
 const BOOKMARK_REORDER_FAIL = 'wr/list/BOOKMARK_REORDER_FAIL';
@@ -44,6 +46,7 @@ const BOOKMARK_REMOVE_SUCCESS = 'wr/list/BOOKMARK_REMOVE_SUCCESS';
 const BOOKMARK_REMOVE_FAIL = 'wr/list/BOOKMARK_REMOVE_FAIL';
 
 
+const defaultSort = { sort: null, dir: null };
 const initialState = fromJS({
   adding: false,
   bookmarks: [],
@@ -56,7 +59,8 @@ const initialState = fromJS({
   edited: false,
   loading: false,
   loaded: false,
-  error: null
+  error: null,
+  sortBy: defaultSort
 });
 
 
@@ -127,6 +131,10 @@ export default function list(state = initialState, action = {}) {
       });
     case LIST_LOAD_FAIL:
       return state.merge(action.error);
+    case LIST_SET_SORT:
+      return state.merge({
+        sortBy: fromJS(action.sortBy)
+      });
     case BOOKMARK_EDIT_SUCCESS:
       return state.set('bkEdited', true);
     case RESET_BOOKMARK_EDIT:
@@ -270,5 +278,13 @@ export function deleteList(user, coll, id) {
     promise: client => client.del(`${apiPath}/list/${id}`, {
       params: { user, coll: decodeURIComponent(coll) }
     })
+  };
+}
+
+
+export function setSort(sortBy) {
+  return {
+    type: LIST_SET_SORT,
+    sortBy
   };
 }
