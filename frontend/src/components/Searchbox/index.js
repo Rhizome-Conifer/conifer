@@ -151,7 +151,6 @@ class Searchbox extends PureComponent {
 
       // if new typed flag detected, remove flag from query
       if (!this.state[val] && filters.includes(filterFields[val])) {
-        console.log('found flag', filterFields[val], 'removing from', query);
         query = query.replace(filterFields[val], '');
       }
 
@@ -208,8 +207,6 @@ class Searchbox extends PureComponent {
     }
 
     searchStruct += query;
-
-    console.log(textChange, filters, query, filterValues, searchStruct);
 
     if (init) {
       this.state.search = searchStruct;
