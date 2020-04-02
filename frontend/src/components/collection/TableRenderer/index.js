@@ -249,7 +249,7 @@ class TableRenderer extends Component {
     const objectLabel = activeList ? 'Bookmark Title' : 'Page Title';
     const sortStore = activeList ? list : collection;
     const columnDefs = this.getColumnDefs(activeList, collection, browsers, list, objectLabel);
-    const sorted = activeList && !list.get('sortBy').equals(Map(config.defaultSort));
+    const sorted = activeList && list.getIn(['sortBy', 'sort']) !== null;
 
     return (
       <div className={classNames('table-container', { sorted })}>

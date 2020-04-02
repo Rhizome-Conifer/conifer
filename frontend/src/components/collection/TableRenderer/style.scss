@@ -7,7 +7,7 @@
 
     &.sorted {
         .row-index {
-            display: none;
+            opacity: 0;
         }
     }
 
@@ -156,6 +156,7 @@
 
                 .row-index {
                     text-align: center;
+                    transition: opacity $midShift ease-in-out;
                 }
             }
 
