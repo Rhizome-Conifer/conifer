@@ -87,10 +87,16 @@ class RemoveWidget extends Component {
 
   render() {
     const { borderless, children, classes, deleteMsg, error, isDeleting, placement } = this.props;
+    const { confirmRemove } = this.state;
+    const styles = { position: 'relative' };
+
+    if (confirmRemove) {
+      styles.opacity = '1';
+    }
 
     return (
       <React.Fragment>
-        <div className="wr-remove-widget" style={{ position: 'relative' }}>
+        <div className="wr-remove-widget" style={styles}>
           <button
             className={classNames('remove-widget-icon', [classes], { borderless })}
             onClick={this.removeClick}
