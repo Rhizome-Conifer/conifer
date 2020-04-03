@@ -14,8 +14,8 @@ class SolrManager:
         self.solr_update_api = 'http://solr:8983/solr/webrecorder/update?commit=true'
         self.solr_select_api = 'http://solr:8983/solr/webrecorder/select'
 
-        self.page_query = '?q=title_t:*&fq=coll_s:{coll}&fl=title_t,url_s,timestamp_s,has_screenshot_b,id&rows={rows}&start={start}&sort=timestamp_s+{sort}'
-        self.text_query = '?q={q}&fq={fq}&fl=id,title_t,url_s,timestamp_s,has_screenshot_b,id&hl=true&hl.fl=content_t&hl.snippets=3&rows={rows}&start={start}'
+        self.page_query = '?q=title_t:*&fq=coll_s:{coll}&fl=title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s&rows={rows}&start={start}&sort=timestamp_s+{sort}'
+        self.text_query = '?q={q}&fq={fq}&fl=id,title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s&hl=true&hl.fl=content_t,title_t,url_s&hl.snippets=3&rows={rows}&start={start}'
 
     def update_if_dupe(self, digest, coll, url, timestamp, timestamp_dt):
         try:
@@ -154,7 +154,8 @@ class SolrManager:
                         'timestamp': doc.get('timestamp_s'),
                         'id': doc.get('id'),
                         'has_screenshot': doc.get('has_screenshot_b'),
-                        'matched': hl.get(doc.get('id'), {}).get('content_t'),
+                        'matched': hl.get(doc.get('id'))
+                        #'matched': hl.get(doc.get('id'), {}).get('content_t'),
                     }
                     for doc in docs
                 ],

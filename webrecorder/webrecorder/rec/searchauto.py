@@ -96,5 +96,5 @@ class SearchAutomation(object):
 # =============================================================================
 if __name__ == "__main__":
     from webrecorder.rec.worker import Worker
-    Worker(SearchAutomation).run()
+    Worker(SearchAutomation, 120).run()
 
