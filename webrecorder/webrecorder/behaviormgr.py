@@ -83,21 +83,23 @@ class BehaviorMgr(BaseController):
     def init_routes(self):
         wr_api_spec.set_curr_tag('Behaviors')
 
-        @self.app.get('/api/v1/behavior/info')
+        @self.app.get('/api/v1/behavior/info-list')
         def info_list():
             # for non-desktop proxy mode, proxy to behaviors server
             if not self.behaviors_root:
                 query = dict(request.query)
-                res = requests.get(self.behaviors_api + '/info', params=query)
+                res = requests.get(self.behaviors_api + '/info-list', params=query)
                 response.content_type = 'application/json; charset=utf-8'
                 return res.content
 
             url = request.query.getunicode('url')
             behavior = self.find_match(url)
-            if not behavior:
-                behavior = self.default_behavior
+            behavior_list = []
+            if behavior:
+                behavior_list.append(behavior)
 
-            return behavior
+            behavior_list.append(self.default_behavior)
+            return {'behaviors': behavior_list}
 
         @self.app.get('/api/v1/behavior/behavior')
         def get_behavior():

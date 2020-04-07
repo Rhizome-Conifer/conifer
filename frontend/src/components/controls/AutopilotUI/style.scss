@@ -35,12 +35,17 @@
             display: flex;
             align-items: center;
             margin-bottom: 1rem;
+            cursor: pointer;
 
             input {
                 margin-right: 1rem;
+                cursor: pointer;
             }
 
             .desc {
+                border: solid .1rem $white;
+                border-radius: .4rem;
+                padding: 1rem;
 
                 .heading {
                     font-size: 2rem;
