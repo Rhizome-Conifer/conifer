@@ -582,17 +582,23 @@ class ContentController(BaseController, RewriterApp):
         url = request.query.getunicode('url')
 
         timestamp = request.query.getunicode('timestamp')
+        if not timestamp:
+            self._raise_error(400, 'timestamp_missing')
 
         headers = {'Content-Type': request.environ.get('CONTENT_TYPE', 'text/plain')}
 
-        if timestamp:
-            headers['WARC-Date'] = timestamp_to_iso_date(timestamp)
+        #if timestamp:
+        #    headers['WARC-Date'] = timestamp_to_iso_date(timestamp)
 
-        url_params = {'url': 'urn:' + request.query.get('type', 'metadata') + ':' + url}
+        ts_url = timestamp + '/' + url if timestamp else url
+
+        url_params = {'url': 'urn:' + request.query.get('type', 'metadata') + ':' + ts_url}
 
         upstream_url = self.get_upstream_url('', kwargs, url_params)
 
         data = request.body.read()
+
+        print('adding record', upstream_url)
 
         r = requests.put(upstream_url,
                          data=data,
@@ -613,14 +619,17 @@ class ContentController(BaseController, RewriterApp):
         if self.solr_mgr and request.query.getunicode('type') == 'text':
             pid = request.query.getunicode('pid')
             page = collection.get_page(pid)
-            print(page)
             kwargs['pid'] = pid
             kwargs['title'] = page.get('title')
             kwargs['url'] = url
             kwargs['timestamp'] = timestamp or page.get('timestamp')
             kwargs['hasScreenshot'] = request.query.getunicode('hasScreenshot')
-            print(kwargs)
             self.solr_mgr.ingest(data, kwargs)
+
+            # update page metadata as well
+            page['has_text'] = True
+            page['has_screenshot'] = request.query.getunicode('hasScreenshot')
+            collection.update_page(page)
 
         return res
 

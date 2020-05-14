@@ -293,6 +293,24 @@ class CollsController(BaseController):
             else:
                 return {'commit_id': res}
 
+
+        @self.app.post('/api/v1/collection/<coll_name>/generate_derivs')
+        def generate_derivs(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            self.access.assert_can_admin_coll(collection)
+
+            if not get_bool(os.environ.get('SEARCH_AUTO')):
+                self._raise_error(400, 'not_supported')
+
+            title = 'Derivates Regenerated on ' + datetime.datetime.now().isoformat()
+            derivs_recording = collection.create_recording(title=title,
+                                                           rec_type='derivs')
+
+            res = collection.requeue_pages_for_derivs(derivs_recording.my_id, get_bool(request.query.get('include_existing')))
+
+            return {'queued': res}
+
         # LEGACY ENDPOINTS (to remove)
         # Collection view (all recordings)
         @self.app.get(['/<user>/<coll_name>', '/<user>/<coll_name>/'])

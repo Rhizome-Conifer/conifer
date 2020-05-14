@@ -2,8 +2,9 @@ import json
 import hashlib
 import os
 
+from webrecorder.utils import get_bool
 
-search_auto = os.environ.get('SEARCH_AUTO') == '1'
+search_auto = get_bool(os.environ.get('SEARCH_AUTO'))
 
 
 # ============================================================================
@@ -59,15 +60,7 @@ class PagesMixin(object):
         self.redis.hset(self.pages_key, pid, json.dumps(page))
 
         if search_auto:
-            # new pages queue
-            user = self.get_owner()
-
-            page['coll'] = self.my_id
-            page['user'] = user.name
-            page['coll_name'] = self.name
-            page['pid'] = pid
-
-            self.redis.lpush(self.NEW_PAGES_Q, json.dumps(page))
+            self.queue_page_for_derivs(pid, page)
 
         return pid
 
@@ -81,6 +74,25 @@ class PagesMixin(object):
         """
         page_attrs = (page['url'] + page['timestamp'] + page.get('rec', '') + page.get('browser', '')).encode('utf-8')
         return hashlib.md5(page_attrs).hexdigest()[:10]
+
+    def queue_page_for_derivs(self, pid, page, derivs_rec=None):
+        """ Queue page for derivatives creation via automation (text and screenshots)
+
+        :param pid: page id
+        :param dict page: the page
+        :param str derivs_rec: If set, existing recording id to place derivatives in
+        """
+
+        user = self.get_owner()
+
+        page['coll'] = self.my_id
+        page['user'] = user.name
+        page['coll_name'] = self.name
+        page['pid'] = pid
+        if derivs_rec:
+            page['derivs_rec'] = derivs_rec
+
+        self.redis.lpush(self.NEW_PAGES_Q, json.dumps(page))
 
     def delete_page(self, pid, all_page_bookmarks):
         """Delete page.
@@ -123,6 +135,16 @@ class PagesMixin(object):
             page['id'] = pid
             return page
 
+    def update_page(self, page):
+        """Update an existing page metadata.
+
+        :param str pid: page ID
+        """
+
+        pid = page.pop('pid', '')
+        if pid:
+            self.redis.hset(self.pages_key, pid, json.dumps(page))
+
     def count_pages(self):
         """Return number of pages.
 
@@ -132,6 +154,29 @@ class PagesMixin(object):
         self.access.assert_can_read_coll(self)
 
         return self.redis.hlen(self.pages_key)
+
+    def requeue_pages_for_derivs(self, derivs_rec, include_existing=True):
+        """ Queue pages for derivs
+
+        :param str derivs_rec: If set, existing recording id to place derivatives in
+        :param: bool include_existing: If true, include pages that already have
+        text and screenshots
+        """
+
+        page_data = self.redis.hgetall(self.pages_key)
+        pages = []
+        count = 0
+
+        for n, v in page_data.items():
+            page = json.loads(v)
+            if not include_existing:
+                if page.get('has_text') and page.get('has_screenshot'):
+                    continue
+
+            self.queue_page_for_derivs(n, page, derivs_rec)
+            count += 1
+
+        return count
 
     def list_pages(self):
         """List pages.

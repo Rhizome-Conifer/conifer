@@ -18,6 +18,9 @@ const reqid = process.env.REQ_ID;
 const screenshotAPI = process.env.SCREENSHOT_API_URL;
 const textAPI = process.env.EXTRACTED_RAW_DOM_API_URL;
 
+const screenWidth = process.env.SCREEN_WIDTH || 1280;
+const screenHeight = process.env.SCREEN_HEIGHT || 1280;
+
 
 // ===========================================================================
 function sleep(ms) {
@@ -31,7 +34,7 @@ async function connect() {
 
   let browser = null;
   const browserURL = `http://${hostname}:9222`;
-  const defaultViewport = {width: 1024, height: 768};
+  const defaultViewport = {width: screenWidth, height: screenHeight};
   const params = {browserURL, defaultViewport};
 
   console.log(params);
@@ -103,7 +106,7 @@ async function main() {
 
       await page.goto(url);
 
-      await putScreenshot(page, url);
+      await putScreenshot(page, url, timestamp, pid);
 
       await putText(client, url, timestamp, pid);
 
@@ -122,7 +125,7 @@ async function main() {
 
 
 // ===========================================================================
-async function putScreenshot(page, url) {
+async function putScreenshot(page, url, timestamp, pid) {
   try {
     if (!screenshotAPI) {
       return;
@@ -132,7 +135,7 @@ async function putScreenshot(page, url) {
 
     const buff = await fs.promises.readFile('/tmp/screenshot.png');
 
-    const params = {url, reqid, type: 'screenshot'};
+    const params = {url, timestamp, pid, reqid, type: 'screenshot'};
 
     await putCustomRecord(screenshotAPI, params, 'image/png', buff);
   } catch (e) {

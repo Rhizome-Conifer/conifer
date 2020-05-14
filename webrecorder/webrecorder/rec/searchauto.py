@@ -72,13 +72,44 @@ class SearchAutomation(object):
             })
 
         for rec, data in crawl_groups.items():
+            user = User(my_id=data['user'],
+                        redis=self.redis,
+                        access=BaseAccess())
+
+            if not user:
+                print('Invalid User: ' + user)
+                continue
+
+            collection = user.get_collection_by_name(data['coll_name'])
+
+            if not collection:
+                print('Invalid Collection: ' + data['coll_name'])
+                continue
+
+            recording = collection.get_recording(rec)
+
+            # if a specific derivates recording is provided, use that
+            derivs_rec = data.get('derivs_rec')
+
+            # otherwise create derivates recording if none exists
+            if not derivs_rec:
+                derivs_recording = recording.get_derivs_recording()
+                if not derivs_recording:
+                    title = 'Derivatives for Session from: ' + recording.to_iso_date(recording['created_at'], no_T=True)
+                    derivs_recording = collection.create_recording(title=title,
+                                                                   rec_type='derivs')
+
+                    recording.set_derivs_recording(derivs_recording)
+
+                derivs_rec = derivs_recording.my_id
+
             crawl_def = SEARCH_CRAWL_DEF.copy()
             crawl_def['coll'] = crawl_def['screenshot_coll'] = crawl_def['text_coll'] = data['coll']
             crawl_def['user_params'] = {
                 'user': data['user'],
                 'coll': data['coll'],
                 'coll_name': data['coll_name'],
-                'rec': rec,
+                'rec': derivs_rec,
                 'type': 'replay-coll',
                 # updated later
                 'request_ts': '',
