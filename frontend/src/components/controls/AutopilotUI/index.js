@@ -155,9 +155,10 @@ class AutopilotUI extends Component {
                   behaviors && behaviors.valueSeq().map((behavior) => {
                     const name = behavior.get('name');
                     const dt = new Date(behavior.get('updated'));
+                    const functional = behavior.get('functional');
                     return (
-                      <li className={classNames({ disabled: !behavior.get('functional') })} onClick={behavior.get('functional') && this.selectMode.bind(this, name)} key={behavior.get('name')}>
-                        <input type="radio" name="behavior" value={name} disabled={isRunning || isComplete || !behavior.get('functional')} aria-labelledby="opt1" onChange={this.handleInput} checked={this.state.behavior === name} />
+                      <li className={classNames({ disabled: !functional })} onClick={functional && this.selectMode.bind(this, name)} key={behavior.get('name')}>
+                        <input type="radio" name="behavior" value={name} disabled={isRunning || isComplete || !functional} aria-labelledby="opt1" onChange={this.handleInput} checked={this.state.behavior === name} />
                         <div className="desc">
                           <h4>{behavior.get('displayName') || behavior.get('name')}</h4>
                           <div className="last-modified">
@@ -167,7 +168,7 @@ class AutopilotUI extends Component {
                             {behavior.get('description')}
                           </p>
                           {
-                            !behavior.get('functional') &&
+                            !functional &&
                               <div className="note">This behavior is not currently supported. <a href="https://guide.webrecorder.io/#supported-behavior" target="_blank">Learn more</a></div>
                           }
                         </div>
