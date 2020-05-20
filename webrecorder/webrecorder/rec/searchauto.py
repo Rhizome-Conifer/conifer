@@ -71,6 +71,9 @@ class SearchAutomation(object):
                 'title': page_data.get('title'),
             })
 
+            if page_data.get('derivs_rec'):
+                crawl_groups[rec]['derivs_rec'] = page_data.get('derivs_rec')
+
         for rec, data in crawl_groups.items():
             user = User(my_id=data['user'],
                         redis=self.redis,
@@ -95,7 +98,7 @@ class SearchAutomation(object):
             if not derivs_rec:
                 derivs_recording = recording.get_derivs_recording()
                 if not derivs_recording:
-                    title = 'Derivatives for Session from: ' + recording.to_iso_date(recording['created_at'], no_T=True)
+                    title = 'Derivatives for: Session from ' + recording.to_iso_date(recording['created_at'], no_T=True)
                     derivs_recording = collection.create_recording(title=title,
                                                                    rec_type='derivs')
 
