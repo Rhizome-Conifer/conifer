@@ -20,6 +20,7 @@ class CollsController(BaseController):
         self.solr_mgr = kwargs.get('solr_mgr')
 
         self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
+        self.is_search_auto = get_bool(os.environ.get('SEARCH_AUTO', False))
 
     def init_routes(self):
         wr_api_spec.set_curr_tag('Collections')
@@ -70,6 +71,10 @@ class CollsController(BaseController):
 
                 if is_external:
                     collection.set_external(True)
+
+                # if auto-indexing is on, mark new collections as auto-indexed to distinguish from prev collections
+                if self.is_search_auto:
+                    collection.set_bool_prop('autoindexed', True)
 
                 user.mark_updated()
 
@@ -300,7 +305,7 @@ class CollsController(BaseController):
 
             self.access.assert_can_admin_coll(collection)
 
-            if not get_bool(os.environ.get('SEARCH_AUTO')):
+            if not self.is_search_auto:
                 self._raise_error(400, 'not_supported')
 
             title = 'Derivates Regenerated on ' + datetime.datetime.now().isoformat()
@@ -308,6 +313,9 @@ class CollsController(BaseController):
                                                            rec_type='derivs')
 
             res = collection.requeue_pages_for_derivs(derivs_recording.my_id, get_bool(request.query.get('include_existing')))
+
+            if res > 0:
+                collection.set_bool_prop('autoindexed', True)
 
             return {'queued': res}
 
