@@ -26,11 +26,6 @@ class CollectionFiltersUI extends PureComponent {
     this.indexed = false;
   }
 
-  search = (searchParams) => {
-    const { collection, searchCollection } = this.props;
-    searchCollection(collection.get('owner'), collection.get('id'), searchParams);
-  }
-
   render() {
     return (
       <div className="wr-coll-utilities">
@@ -39,7 +34,7 @@ class CollectionFiltersUI extends PureComponent {
             collection={this.props.collection}
             history={this.props.history}
             location={this.props.location}
-            search={this.search}
+            search={this.props.searchCollection}
             clear={this.props.clearSearch}
             searching={this.props.searching}
             searched={this.props.searched} />

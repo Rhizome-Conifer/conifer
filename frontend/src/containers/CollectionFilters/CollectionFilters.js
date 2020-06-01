@@ -17,7 +17,7 @@ const mapStateToProps = ({ app }) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    searchCollection: (user, coll, params) => dispatch(search(user, coll, params)),
+    searchCollection: (user, coll, params, fullText) => dispatch(search(user, coll, params, fullText)),
     clearSearch: async (user, coll) => {
       await dispatch(clearSearch());
       await dispatch(load(user, coll));

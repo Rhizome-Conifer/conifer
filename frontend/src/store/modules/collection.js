@@ -92,6 +92,7 @@ export default function collection(state = initialState, action = {}) {
     case COLL_LOAD_SUCCESS: {
       const {
         collection: {
+          autoindexed,
           created_at,
           dat_updated_at,
           dat_key,
@@ -131,6 +132,7 @@ export default function collection(state = initialState, action = {}) {
         error: null,
         pages: fromJS(pages),
         page_count: pages.length,
+        autoindexed,
         created_at,
         dat_updated_at,
         dat_key,
@@ -312,10 +314,10 @@ export function clearSearch() {
   return { type: CLEAR_SEARCH };
 }
 
-export function search(user, coll, searchParams) {
+export function search(user, coll, searchParams, fullText = false) {
   return {
     types: [SEARCH, SEARCH_SUCCESS, SEARCH_FAIL],
-    promise: client => client.get(`${apiPath}/url_search`, {
+    promise: client => client.get(`${apiPath}/${fullText ? 'text' : 'url'}_search`, {
       params: {
         user,
         coll,

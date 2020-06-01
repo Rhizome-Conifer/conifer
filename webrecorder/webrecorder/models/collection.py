@@ -569,6 +569,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         data['public'] = self.is_public()
         data['public_index'] = self.get_bool_prop('public_index', False)
+        data['autoindexed'] = self.get_bool_prop('autoindexed', False)
 
         if DatShare.DAT_SHARE in data:
             data[DatShare.DAT_SHARE] = self.get_bool_prop(DatShare.DAT_SHARE, False)

@@ -14,7 +14,7 @@ class SolrManager:
         self.solr_update_api = 'http://solr:8983/solr/webrecorder/update?commit=true'
         self.solr_select_api = 'http://solr:8983/solr/webrecorder/select'
 
-        self.page_query = '?q=title_t:*&fq=coll_s:{coll}&fl=title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s&rows={rows}&start={start}&sort=timestamp_s+{sort}'
+        self.page_query = '?q=title_t:* AND timestamp_s:[{f} TO {t}] AND rec_s:{s}&fq=coll_s:{coll}&fl=title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s&rows={rows}&start={start}&sort=timestamp_s+{sort}'
         self.text_query = '?q={q}&fq={fq}&fl=id,title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s&hl=true&hl.fl=content_t,title_t,url_s&hl.snippets=3&rows={rows}&start={start}'
 
     def update_if_dupe(self, digest, coll, url, timestamp, timestamp_dt):
@@ -103,9 +103,14 @@ class SolrManager:
 
         sort = params.get('sort', 'asc')
 
+        ts_from = params.get('from', '*')
+        ts_to = params.get('to', '*')
+        session = params.get('session', '*')
+
         if not search:
             qurl = self.solr_select_api + self.page_query.format(
-                coll=coll, start=start, rows=rows, sort=sort
+                coll=coll, start=start, rows=rows, sort=sort,
+                f=ts_from, t=ts_to, s=session,
             )
             res = requests.get(qurl)
 
@@ -129,9 +134,12 @@ class SolrManager:
             }
 
         else:
-            query = 'content_t:"{q}" OR title_t:"{q}" OR url_s:"*{q}*"'.format(
-                q=search, coll=coll
-            )
+            query = (
+                '(content_t:"{q}" OR title_t:"{q}" OR url_s:"*{q}*")'
+                'AND timestamp_s:[{f} TO {t}]'
+                'AND rec_s:{s}'
+            ).format(q=search, coll=coll, f=ts_from, t=ts_to, s=session)
+
             res = requests.get(
                 self.solr_select_api
                 + self.text_query.format(
@@ -160,4 +168,3 @@ class SolrManager:
                     for doc in docs
                 ],
             }
-

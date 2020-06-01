@@ -76,8 +76,8 @@ class Searchbox extends PureComponent {
       }
 
       if (qs.from || qs.to) {
-        startDate = qs.from ? new Date(parseInt(qs.from, 10)) : startDate;
-        endDate = qs.to ? new Date(parseInt(qs.to, 10)) : endDate;
+        startDate = qs.from ? this.parseDate(qs.from) : startDate;
+        endDate = qs.to ? this.parseDate(qs.to) : endDate;
         date = 'daterange';
       }
     }
@@ -99,6 +99,9 @@ class Searchbox extends PureComponent {
     };
 
     this.buildQuery(true);
+    if (props.location.search) {
+      this.search();
+    }
 
     this.labels = {
       anytime: 'Anytime',
@@ -179,18 +182,18 @@ class Searchbox extends PureComponent {
         const endStr = filters.find(f => f.match(/^end/i)) || '';
         const newEndDate = endStr.match(/(?:start|end):([a-z0-9-.:]+)/i);
 
-        if (newStartDate && this.dateIsValid(new Date(newStartDate[1])) && newStartDate[1] !== this.dateFormat(this.state.startDate)) {
+        if (newStartDate && this.dateIsValid(new Date(newStartDate[1])) && newStartDate[1] !== this.humanDateFormat(this.state.startDate)) {
           startDate = new Date(newStartDate[1]);
           filterValues.startDate = startDate;
         }
 
-        if (newEndDate && this.dateIsValid(new Date(newEndDate[1])) && newEndDate[1] !== this.dateFormat(this.state.endDate)) {
+        if (newEndDate && this.dateIsValid(new Date(newEndDate[1])) && newEndDate[1] !== this.humanDateFormat(this.state.endDate)) {
           endDate = new Date(newEndDate[1]);
           filterValues.endDate = endDate;
         }
       }
 
-      searchStruct += `start:${this.dateFormat(startDate)} end:${this.dateFormat(endDate)} `;
+      searchStruct += `start:${this.humanDateFormat(startDate)} end:${this.humanDateFormat(endDate)} `;
     } else if (date === 'session') {
       const sessionFilter = filters.find(f => f.match(/^session/i)) || '';
       let sessionReg = sessionFilter.match(/session:(\w+)/i);
@@ -224,9 +227,19 @@ class Searchbox extends PureComponent {
     return dt instanceof Date && !isNaN(dt);
   }
 
-  dateFormat = (dt) => {
+  humanDateFormat = (dt) => {
     const s = num => String(num);
-    return `${dt.getUTCFullYear()}-${s(dt.getUTCMonth()).padStart(2, '0')}-${s(dt.getUTCDay()).padStart(2, '0')}T${s(dt.getUTCHours()).padStart(2, '0')}:${s(dt.getUTCMinutes()).padStart(2, '0')}`;
+    return `${dt.getUTCFullYear()}-${s(dt.getUTCMonth() + 1).padStart(2, '0')}-${s(dt.getUTCDate()).padStart(2, '0')}T${s(dt.getUTCHours()).padStart(2, '0')}:${s(dt.getUTCMinutes()).padStart(2, '0')}`;
+  }
+
+  warcDateFormat = (dt) => {
+    const s = num => String(num);
+    return `${dt.getUTCFullYear()}${s(dt.getUTCMonth() + 1).padStart(2, '0')}${s(dt.getUTCDate()).padStart(2, '0')}${s(dt.getUTCHours()).padStart(2, '0')}${s(dt.getUTCMinutes()).padStart(2, '0')}`;
+  }
+
+  parseDate = (d) => {
+    const m = d.match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})?/);
+    return new Date(Date.UTC(m[1], (m[2] - 1), m[3], m[4], m[5], m[6] || 0));
   }
 
   parseQuery = () => {
@@ -279,6 +292,7 @@ class Searchbox extends PureComponent {
   }
 
   search = () => {
+    const { collection } = this.props;
     const {
       date,
       endDate,
@@ -303,8 +317,8 @@ class Searchbox extends PureComponent {
 
     if (date === 'daterange') {
       dateFilter = {
-        from: startDate.getTime(),
-        to: endDate.getTime()
+        from: this.warcDateFormat(startDate),
+        to: this.warcDateFormat(endDate)
       };
     } else if (date === 'session') {
       dateFilter.session = session;
@@ -316,8 +330,16 @@ class Searchbox extends PureComponent {
       ...dateFilter
     };
 
-    window.history.replaceState({}, '', `?${querystring.stringify(searchParams)}`);
-    this.props.search(searchParams);
+    if (typeof window !== "undefined") {
+      window.history.replaceState({}, '', `?${querystring.stringify(searchParams)}`);
+    }
+
+    this.props.search(
+      collection.get('owner'),
+      collection.get('id'),
+      searchParams,
+      collection.get('autoindexed')
+    );
 
     // close adv search
     if (this.state.options) {
@@ -397,12 +419,14 @@ class Searchbox extends PureComponent {
                           <DatePicker
                             showPopperArrow={false}
                             selected={this.state.startDate}
-                            onChange={this.setStartDate} />
+                            onChange={this.setStartDate}
+                            shouldCloseOnSelect={false} />
                           <DatePicker
                             selected={this.state.startDate}
                             onChange={this.setStartDate}
                             showTimeSelect
                             showTimeSelectOnly
+                            shouldCloseOnSelect={false}
                             timeIntervals={15}
                             timeCaption="Time"
                             dateFormat="h:mm aa" />
@@ -412,7 +436,8 @@ class Searchbox extends PureComponent {
                           <DatePicker
                             showPopperArrow={false}
                             selected={this.state.endDate}
-                            onChange={this.setEndDate} />
+                            onChange={this.setEndDate}
+                            shouldCloseOnSelect={false} />
                           <DatePicker
                             selected={this.state.endDate}
                             onChange={this.setEndDate}
@@ -420,6 +445,7 @@ class Searchbox extends PureComponent {
                             showTimeSelectOnly
                             timeIntervals={15}
                             timeCaption="Time"
+                            shouldCloseOnSelect={false}
                             dateFormat="h:mm aa" />
                         </div>
                       </div>
