@@ -1,4 +1,4 @@
-from PyInstaller.utils.hooks import collect_data_files, copy_metadata
+from PyInstaller.utils.hooks import collect_data_files, copy_metadata, collect_submodules
 import os
 
 from webrecorder.standalone.assetsutils import build_all
@@ -49,3 +49,4 @@ hiddenimports = ['webrecorder.git_hash',
                  'configparser',
                  '_cffi_backend']
 
+hiddenimports.extend(collect_submodules('pkg_resources'))
