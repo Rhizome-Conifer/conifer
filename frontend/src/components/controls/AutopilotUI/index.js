@@ -105,7 +105,7 @@ class AutopilotUI extends Component {
 
   render() {
     const { autopilot, autopilotInfo, autopilotReady, behaviorMessages, behaviorStats, status } = this.props;
-    const behaviors = autopilotInfo; // && autopilotInfo.size > 1 ? autopilotInfo.filter(b => !b.get('defaultBehavior')) : autopilotInfo;
+    const behaviors = autopilotInfo;
 
     // only render if sidebar is open
     if (!autopilot) {
