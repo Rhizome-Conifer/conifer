@@ -171,7 +171,7 @@ class Webview extends Component {
   }
 
   sendMsg = (msg) => {
-    ipcRenderer.sendTo(this.webviewHandle.getWebContents().id, 'wr-message', msg);
+    ipcRenderer.sendTo(this.webviewHandle.getWebContentsId(), 'wr-message', msg);
   }
 
   handleIPCEvent = (evt) => {
@@ -294,13 +294,15 @@ class Webview extends Component {
 
   goBack = () => {
     if (this.webviewHandle.canGoBack()) {
-      this.webviewHandle.goToIndex(this.webviewHandle.getWebContents().getActiveIndex() - 1);
+      //this.webviewHandle.goToIndex(this.webviewHandle.getWebContents().getActiveIndex() - 1);
+      this.webviewHandle.goBack();
     }
   }
 
   goForward = () => {
     if (this.webviewHandle.canGoForward()) {
-      this.webviewHandle.goToIndex(this.webviewHandle.getWebContents().getActiveIndex() + 1);
+      //this.webviewHandle.goToIndex(this.webviewHandle.getWebContents().getActiveIndex() + 1);
+      this.webviewHandle.goForward();
     }
   }
 

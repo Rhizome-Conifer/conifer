@@ -24,6 +24,7 @@ install:
   - "pip install pyyaml"
   - "pip install coverage pytest-cov codecov"
   - "pip install certauth boto youtube-dl"
+  - "pip install wheel"
 
 build_script:
   - ps: "cd webrecorder"

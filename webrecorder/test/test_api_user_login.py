@@ -502,7 +502,8 @@ class TestApiUserLogin(FullStackTests):
         assert 'WARC/1.0' in downloads['get']['responses']['200']['content']['application/warc']['schema']['example']
 
         get_responses = get.get('responses', {}).get('200', {})
-        assert json.dumps(get_responses) == json.dumps(wr_api_spec.all_responses['wasapi_list'])
+        assert get_responses == wr_api_spec.all_responses['wasapi_list']
+        #assert json.dumps(get_responses) == json.dumps(wr_api_spec.all_responses['wasapi_list'])
 
     def test_invalid_api(self):
         # unknown api

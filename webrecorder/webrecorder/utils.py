@@ -133,6 +133,8 @@ class CacheingLimitReader(LimitReader):
         super(CacheingLimitReader, self).__init__(stream, length)
         self.out = out
         self.lenread = 0
+        if hasattr(stream, 'tell'):
+            self.lenread = stream.tell()
         self.closed = False
 
     def read(self, size=-1):
