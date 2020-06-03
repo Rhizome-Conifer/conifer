@@ -36,19 +36,57 @@
             align-items: center;
             margin-bottom: 1rem;
 
+            &:not(.disabled) {
+                cursor: pointer;
+
+                input {
+                    cursor: pointer;
+                }
+            }
+
+            &.disabled {
+                cursor: not-allowed;
+
+                .desc {
+                    border-color: $gray525;
+
+                    h4, p, .last-modified {
+                        color: $gray525;
+                    }
+
+                    .note {
+                        margin-top: .5rem;
+                    }
+
+                    a {
+                        color: white;
+                        text-decoration: underline;
+                    }
+                }
+            }
+
             input {
                 margin-right: 1rem;
             }
 
             .desc {
+                border: solid .1rem $white;
+                border-radius: .4rem;
+                padding: 1rem;
 
-                .heading {
+                h4 {
                     font-size: 2rem;
+                    font-weight: normal;
+                    margin: 0;
                 }
 
                 .last-modified {
                     font-size: 1.2rem;
                     margin-bottom: .5rem;
+                }
+
+                p {
+                    margin: 0;
                 }
             }
         }

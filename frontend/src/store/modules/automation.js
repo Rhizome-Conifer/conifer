@@ -41,7 +41,7 @@ const initialState = fromJS({
   autopilotReady: false,
   autopilotStatus: 'new', // new, running, stopping, stopped, complete
   autopilotUrl: '',
-  autopilotInfo: null,
+  autopilotInfo: List(),
   queued: false,
   show: false,
   workers: []
@@ -62,7 +62,7 @@ export default function automation(state = initialState, action = {}) {
         workers: action.result.browsers || []
       });
     case AUTOPILOT_CHECK_SUCCESS:
-      return state.set('autopilotInfo', fromJS(action.result));
+      return state.set('autopilotInfo', fromJS(action.result.behaviors));
     case AUTOPILOT_TOGGLE_AUTOMATION:
       return state.merge({
         behavior: action.behavior,
@@ -84,7 +84,7 @@ export default function automation(state = initialState, action = {}) {
       return state.merge({
         autopilotStatus: 'new',
         autopilotReady: false,
-        autopilotInfo: null,
+        autopilotInfo: List(),
         autopilotUrl: action.url,
         behavior: null,
         behaviorMessages: List(),
@@ -99,7 +99,7 @@ export default function automation(state = initialState, action = {}) {
 export function autopilotCheck(url = '') {
   return {
     types: [AUTOPILOT_CHECK, AUTOPILOT_CHECK_SUCCESS, AUTOPILOT_CHECK_FAIL],
-    promise: client => client.get(`${apiPath}/behavior/info`, {
+    promise: client => client.get(`${apiPath}/behavior/info-list`, {
       params: { url }
     })
   };

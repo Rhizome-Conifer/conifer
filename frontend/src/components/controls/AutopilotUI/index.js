@@ -34,6 +34,7 @@ class AutopilotUI extends Component {
     super(props);
 
     this.state = {
+      behavior: 'autoScrollBehavior',
       unsupported: false
     };
   }
@@ -77,9 +78,21 @@ class AutopilotUI extends Component {
     this.props.autopilotReset();
   }
 
+  handleInput = (evt) => {
+    if (this.props.status === 'new') {
+      this.setState({ behavior: evt.target.value });
+    }
+  }
+
+  selectMode = (mode) => {
+    if (this.props.status === 'new') {
+      this.setState({ behavior: mode });
+    }
+  }
+
   toggleAutomation = () => {
-    const { autopilotInfo, toggleAutopilot, status, url } = this.props;
-    const behavior = autopilotInfo.get('name');
+    const { behavior } = this.state;
+    const { toggleAutopilot, status, url } = this.props;
 
     if (behavior && ['new', 'running'].includes(status)) {
       toggleAutopilot(...(status === 'running' ? [null, 'stopping', url] : [behavior, 'running', url]));
@@ -92,20 +105,19 @@ class AutopilotUI extends Component {
 
   render() {
     const { autopilot, autopilotInfo, autopilotReady, behaviorMessages, behaviorStats, status } = this.props;
+    const behaviors = autopilotInfo;
 
     // only render if sidebar is open
     if (!autopilot) {
       return null;
     }
 
-    const behavior = autopilotInfo;
     const isRunning = status === 'running';
     const isComplete = status === 'complete';
     const isStopping = status === 'stopping';
     const isStopped = status === 'stopped';
 
-    const dt = behavior && new Date(behavior.get('updated'));
-    const keyDomain = behavior && autopilotFields[behavior.get('name')];
+    const keyDomain = autopilotFields[this.state.behavior];
 
     let buttonText;
     switch (status) {
@@ -140,16 +152,29 @@ class AutopilotUI extends Component {
             <React.Fragment>
               <ul className={classNames('behaviors', { active: isRunning })}>
                 {
-                  behavior &&
-                    <li key={behavior.get('name')}>
-                      <div className="desc" id="opt1">
-                        <div className="heading">{behavior.get('displayName') || behavior.get('name')}</div>
-                        <div className="last-modified">
-                          <em>{`Updated: ${dt.toLocaleDateString()} ${dt.toLocaleTimeString()}`}</em>
+                  behaviors && behaviors.valueSeq().map((behavior) => {
+                    const name = behavior.get('name');
+                    const dt = new Date(behavior.get('updated'));
+                    const functional = behavior.get('functional');
+                    return (
+                      <li className={classNames({ disabled: !functional })} onClick={functional && this.selectMode.bind(this, name)} key={behavior.get('name')}>
+                        <input type="radio" name="behavior" value={name} disabled={isRunning || isComplete || !functional} aria-labelledby="opt1" onChange={this.handleInput} checked={this.state.behavior === name} />
+                        <div className="desc">
+                          <h4>{behavior.get('displayName') || behavior.get('name')}</h4>
+                          <div className="last-modified">
+                            <em>{`Updated: ${dt.toLocaleDateString()} ${dt.toLocaleTimeString()}`}</em>
+                          </div>
+                          <p>
+                            {behavior.get('description')}
+                          </p>
+                          {
+                            !functional &&
+                              <div className="note">This behavior is not currently supported. <a href="https://guide.webrecorder.io/#supported-behavior" target="_blank">Learn more</a></div>
+                          }
                         </div>
-                        {behavior.get('description')}
-                      </div>
-                    </li>
+                      </li>
+                    );
+                  })
                 }
               </ul>
 

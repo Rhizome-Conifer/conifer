@@ -912,9 +912,10 @@
   dependencies:
     unist-util-visit "^1.3.0"
 
-"@novnc/novnc@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@novnc/novnc/-/novnc-1.0.0.tgz#76b0e89e6f8738ca8154195baf5b8e6a80bc9105"
+"@novnc/novnc@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@novnc/novnc/-/novnc-1.1.0.tgz#3827b623e9e201ee1e1c8a61d107c51cbfaeb871"
+  integrity sha512-W90Q79EuCYT++39aT/VKGyk7hUt2gPN3rN+ifPUvY4rdjgZlfwdCg9q7yzj04hke/zgdHsbXFfyFijBvrRuU5A==
 
 "@pm2/agent-node@^1.0.9":
   version "1.1.3"
@@ -5960,7 +5961,7 @@ lodash.templatesettings@^4.0.0:
   dependencies:
     lodash._reinterpolate "^3.0.0"
 
-lodash@^4.0.0, lodash@^4.12.0, lodash@^4.13.1, lodash@^4.15.0, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.0, lodash@^4.2.1, lodash@~4.17.10:
+lodash@^4.0.0, lodash@^4.12.0, lodash@^4.13.1, lodash@^4.15.0, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.0, lodash@^4.2.1, lodash@~4.17.10:
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
 
@@ -8722,12 +8723,11 @@ shellwords@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/shellwords/-/shellwords-0.1.1.tgz#d6b9181c1a48d397324c84871efbcfc73fc0654b"
 
-"shepherd-client@github:oldweb-today/shepherd-client#master":
-  version "1.1.0"
-  resolved "https://codeload.github.com/oldweb-today/shepherd-client/tar.gz/88b0c0fb9e37623aa9fa7489becfad98b78c1530"
+"shepherd-client@github:oldweb-today/shepherd-client#1.2.0":
+  version "1.2.0"
+  resolved "https://codeload.github.com/oldweb-today/shepherd-client/tar.gz/09235352aacd9d1cbd0cfee00733cf0665b0fe65"
   dependencies:
-    "@novnc/novnc" "^1.0.0"
-    lodash "^4.17.13"
+    "@novnc/novnc" "^1.1.0"
     promise-polyfill "^8.1.0"
     unfetch "^4.0.1"
 

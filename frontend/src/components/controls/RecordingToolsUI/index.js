@@ -112,7 +112,7 @@ class RecordingToolsUI extends PureComponent {
     const isWrite = ['new', 'patch', 'record', 'extract', 'live'].includes(currMode);
     const modalFooter = <Button onClick={this._close}>Close</Button>;
     const autopilotClasses = classNames('rounded autopilot-btn', {
-      'special-behavior': autopilotInfo && autopilotInfo.get('defaultBehavior') !== true
+      'special-behavior': autopilotInfo && autopilotInfo.size > 1
     });
 
     return (
