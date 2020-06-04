@@ -42,7 +42,10 @@
             .dropdown-toggle {
                 background: transparent;
                 color: $white;
-                border-color: $mgmt-gray;
+                border-color: $pine;
+                border-width: 0 0 .3rem 0;
+                border-radius: 0;
+                box-shadow: none;
 
                 span {
                     text-overflow: elipsis;
@@ -58,11 +61,14 @@
             }
 
             .dropdown-menu {
-                background: $body-gray;
+                background: $slate;
 
                 input {
                     background: transparent;
                     color: $white;
+                    border-radius: 0;
+                    outline: none;
+                    box-shadow: none;
                 }
             }
 

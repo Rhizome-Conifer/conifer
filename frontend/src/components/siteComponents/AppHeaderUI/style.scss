@@ -63,7 +63,7 @@
 
     &.dark {
         .header-webrecorder {
-            background-color: $body-gray;
+            background-color: $slate;
             color: $white;
 
             .wr-logomark.desktop {
@@ -117,7 +117,7 @@
                         }
 
                         &:hover {
-                            background-color: $blue;
+                            background-color: $pine;
                         }
                     }
                 }

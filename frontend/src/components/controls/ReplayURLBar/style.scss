@@ -18,18 +18,18 @@
    -ms-flex: 30%;
 
     .input-group .form-control:first-child, .input-group .form-control:last-child {
-        border-top-right-radius: 2.7rem;
-        border-bottom-right-radius: 2.7rem;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
     }
 
     .sources-widget {
-        border-top-right-radius: 2.7rem;
-        border-bottom-right-radius: 2.7rem;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
     }
 
     .btn, .form-control:first-child {
-        border-top-left-radius: 2.7rem;
-        border-bottom-left-radius: 2.7rem;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
     }
 
     .rb-dropdown + .wr-app-url .form-control:first-child {
@@ -57,7 +57,7 @@
     }
 
     .form-control {
-        border-radius: 2.7rem;
+        border-radius: 0;
         float: none;
     }
 

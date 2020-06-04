@@ -24,7 +24,7 @@
     display: flex;
 
     button {
-        border-radius: 2.7rem;
+        border-radius: 0;
     }
 
     ul {
@@ -104,10 +104,6 @@
     .wr-mode.active { background: #eef9ea; }
     .wr-mode.disabled { opacity: 0.6; filter: grayscale(100%); }
     .wr-mode:not(.disabled):not(.active):hover { background-color: #E3E3E3; }
-}
-
-.wr-mode-message {
-
 }
 
 .wr-modes {

@@ -4,7 +4,7 @@
     flex-shrink: 0;
     display: flex;
     justify-content: space-between;
-    background: $sidebarHeaderBg;
+    background: $dusty-pine;
     padding: 1.5rem 1rem 1rem 1rem;
     margin-bottom: .5rem;
     border: solid .1rem #CECECE;
@@ -12,7 +12,7 @@
 
     h4 {
         display: inline-block;
-        color: $sidebarHeaderLabel;
+        color: $gray800;
         font-size: 1.15rem;
         font-weight: 300;
         margin: 0 0 0 0.5rem;

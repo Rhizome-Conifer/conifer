@@ -36,7 +36,7 @@
 
             .private-index {
                 font-style: italic;
-                color: $body-gray;
+                color: $slate;
                 opacity: .5;
             }
 
@@ -75,7 +75,7 @@
 
                     &.selected {
                         &:before {
-                            background-color: $blue;
+                            background-color: $pine;
                         }
                     }
 
@@ -159,7 +159,7 @@
 
             .private-index {
                 font-style: italic;
-                color: $body-gray;
+                color: $slate;
                 opacity: .5;
                 margin-left: 1.5rem;
             }

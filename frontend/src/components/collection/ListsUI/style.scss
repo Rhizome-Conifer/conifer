@@ -54,7 +54,7 @@
         overflow: auto;
 
         .collection-header {
-            background: $blue;
+            background: $pine;
             color: #FFF;
             padding: 1rem;
             margin-bottom: .5rem;
@@ -176,7 +176,7 @@
                         }
 
                         .title {
-                            color: $body-gray;
+                            color: $slate;
                         }
                     }
                 }
@@ -210,10 +210,10 @@
                 }
 
                 &.selected {
-                    color: $body-gray;
+                    color: $slate;
 
                     &:before {
-                        background-color: $blue;
+                        background-color: $pine;
                     }
                 }
 

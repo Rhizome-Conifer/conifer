@@ -15,8 +15,10 @@ $mobile: 375px;
 
 /* colors */
 $collTrigger: rgb(0, 57, 229);
-$blue: #0000ee;
-$blue-deselect: #B4C1F5;
+$pine: #DCEDC9;
+$pine-deselect: #B4C1F5;
+$dusty-pine: #C0C2A3;
+$deep-pine: #676C5B;
 $dark-blue: #0129C4;
 $bookmarkListDefault: rgb(100,100,100);
 $brightGreen: #45A109;
@@ -32,7 +34,9 @@ $gray550: #7e7e7e;
 $gray600: #6E6E6E;
 $gray700: #5C5C5C;
 $gray800: #545454;
+$gray900: #3c3a3a;
 $body-gray: #3E3E3E;
+$slate: #3E3E3E;
 $header: #373944;
 $link: #337ab7;
 $linkHover: #74B9F3;
@@ -40,11 +44,10 @@ $listsBlue: #72D1FE;
 $listsYellow: #F9FF95;
 $mgmt-gray: #979797;
 $sidebarBg: #FFF;
-$slate: #8F9294;
-$success-color: #7ED321;
+$success-color: #26451F;
 $tableHeaderBg: #E0E0E0; //gray400
 $tr-selected: #BABAC4;
-$tr-highlight-selected: #0A0A97;
+$tr-highlight-selected: $dusty-pine;
 $white: #FFF;
 $black: #000;
 $yellow: rgb(255, 252, 108);

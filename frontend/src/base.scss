@@ -17,11 +17,11 @@ body {
 
 a {
   &:link, &:visited {
-    color: $blue;
+    color: $slate;
   }
 
   &:hover {
-    color: $blue;
+    color: $slate;
   }
 }
 
@@ -57,17 +57,17 @@ a {
 }
 
 .btn-primary {
-  background-color: $blue;
-  background: $blue;
-  border-color: $dark-blue;
+  background-color: $pine;
+  background: $pine;
+  border-color: $deep-pine;
 
   &:hover {
-    background-color: $dark-blue;
+    background-color: $deep-pine;
   }
 }
 
 .sidebar-toggle {
-  border-radius: 2.7rem;
+  border-radius: 0;
 
   svg {
     vertical-align: sub;
@@ -209,7 +209,7 @@ a {
     border: none;
     background: none;
     padding: 0;
-    color: $blue;
+    color: $pine;
     text-decoration: none;
 
     &:hover {
@@ -220,20 +220,25 @@ a {
 
 .rounded {
   color: $gray600;
-  border-radius: 2.7rem;
+  border-radius: 0;
   padding: 0.7rem 3rem;
   font-size: 1.15rem;
   background: transparent;
-  border: solid .1rem #CCC;
+  border: solid .1rem $slate;
+
+  &:hover {
+      border-color: $slate;
+  }
 
   &.btn-primary {
-    background-color: $blue;
-    background: $blue;
-    border-color: $dark-blue;
-    color: $white;
+    background-color: $pine;
+    background: $pine;
+    border-color: $deep-pine;
+    color: $slate;
 
     &:hover {
-      background-color: $dark-blue;
+      background-color: $deep-pine;
+      color: $white;
     }
   }
 }

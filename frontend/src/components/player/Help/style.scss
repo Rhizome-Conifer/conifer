@@ -27,7 +27,7 @@
     h5 {
       font-size: 1.9rem;
       margin: 3rem 0 0.3rem 0;
-      color: $blue;
+      color: $pine;
 
       &:first-child {
         margin: 0 0 0.3rem 0;
@@ -51,12 +51,12 @@
 
       &:hover{
         color: $blue !important;
-        box-shadow: 0 .3rem 0 $blue;
+        box-shadow: 0 .3rem 0 $pine;
       }
 
       &:active{
-        color: $blue;
-        box-shadow: 0 .4rem 0 $blue;
+        color: $pine;
+        box-shadow: 0 .4rem 0 $pine;
       }
 
       &:visited{

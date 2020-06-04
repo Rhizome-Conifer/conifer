@@ -53,7 +53,7 @@ nav.topBar {
   .player-functions button {
     transition: color $quickShift ease-in-out;
     &:hover {
-      color: $blue;
+      color: $pine;
     }
   }
 
@@ -65,7 +65,7 @@ nav.topBar {
     &:hover {
       svg {
         path {
-          fill: $blue;
+          fill: $pine;
         }
       }
     }

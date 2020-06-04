@@ -104,13 +104,12 @@
         }
 
         &.last-selected {
-            background-color: $blue-deselect;
+            background-color: $pine-deselect;
             color: #FFF;
         }
 
         &.selected {
-            background-color: $blue;
-            color: #FFF;
+            background-color: $pine;
         }
 
         &:hover {

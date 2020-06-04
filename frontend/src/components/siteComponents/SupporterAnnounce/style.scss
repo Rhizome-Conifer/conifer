@@ -1,12 +1,12 @@
 @import 'src/vars';
 
 .supporter-announce {
-    border-bottom: solid .2rem $blue;
+    border-bottom: solid .2rem $pine;
     display: flex;
     flex-direction: column;
 
     .banner {
-        background: $blue;
+        background: $pine;
         height: 7.5rem;
 
         .wrapper {
@@ -56,7 +56,7 @@
                 border-radius: 2.7rem;
                 padding: 0.7rem 3rem;
                 font-size: 1.15rem;
-                background: $blue;
+                background: $pine;
                 border: none;
                 color: #FFF;
                 font-size: 1.8rem;

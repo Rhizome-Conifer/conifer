@@ -305,7 +305,7 @@ class TableRenderer extends Component {
                           width={width}
                           height={height}
                           rowCount={displayObjects.size}
-                          headerHeight={25}
+                          headerHeight={30}
                           rowHeight={40}
                           rowGetter={({ index }) => displayObjects.get(index)}
                           rowClassName={this.testRowHighlight}

@@ -30,8 +30,11 @@
             input {
                 padding-left: 3.2rem;
                 padding-right: 4rem;
-                border-radius: .3rem !important;
                 flex-grow: 1;
+                border: solid .4rem $pine;
+                border-width: 0 0 .4rem 0;
+                outline: none;
+                box-shadow: none;
             }
 
             .searchbar-actions {
@@ -68,7 +71,6 @@
         right: 0;
         z-index: 100;
         border: solid .1rem $gray500;
-        border-radius: .5rem;
         width: 100%;
         padding: 1rem 1rem 0 1rem;
         background: #FFF;

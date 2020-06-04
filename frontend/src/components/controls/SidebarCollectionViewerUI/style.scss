@@ -86,21 +86,21 @@
                         }
 
                         a, button {
-                            color: $body-gray;
+                            color: $slate;
                         }
                     }
                 }
 
 
                 &.selected {
-                    color: $body-gray;
+                    color: $slate;
 
                     &:before {
-                        background-color: $blue;
+                        background-color: $pine;
                     }
 
                     a:visited, a:link, a:hover {
-                        color: $body-gray;
+                        color: $slate;
                     }
                 }
 

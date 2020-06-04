@@ -80,10 +80,10 @@
             & > div{
                 display: flex;
                 align-items: center;
-                background: $tableHeaderBg;
                 padding: 0 .5rem 0 0;
                 width: 100%;
                 height: 100%;
+                border-bottom: solid .3rem $pine;
 
                 svg {
                     margin-left: auto;
@@ -189,18 +189,7 @@
             }
 
             &.selected {
-                background-color: $blue;
-                color: $white;
-                fill: $white;
-
-                .session-link:link, a:link { color: $white; }
-                .session-link:visited, a:visited{ color: $white; }
-
-                svg {
-                    & > g {
-                        fill: $white;
-                    }
-                }
+                background-color: $pine;
             }
 
 
@@ -208,6 +197,7 @@
                 a {
                     display: inline-block;
                     padding: 1rem;
+                    color: $slate;
                 }
             }
         }
