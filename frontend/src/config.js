@@ -94,12 +94,12 @@ export default Object.assign({
   months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   passwordRegex: new RegExp(/(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}/),
   port: process.env.FRONTEND_PORT || 8095,
-  product: 'Webrecorder',
-  productLink: 'https://webrecorder.io',
+  product: 'Conifer',
+  productLink: 'https://dev.conifer.rhizome.org',
   ravenConfig: null,
   saveDelay: 1000,
   storageKey: 'wr__',
-  supportEmail: 'support@webrecorder.io',
+  supportEmail: 'support@conifer.rhizome.org',
   supporterPortal: '',
   tagline: 'Create high-fidelity, interactive web archives of any web site you browse.',
   truncSentence: new RegExp(/([.!?])/),
@@ -107,15 +107,15 @@ export default Object.assign({
   untitledEntry: 'Untitled Document',
   userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
   app: {
-    title: 'Webrecorder',
+    title: 'Conifer',
     head: {
-      titleTemplate: 'Webrecorder | %s',
+      titleTemplate: 'Conifer | %s',
       meta: [
         { name: 'description', content: '' },
         { charset: 'utf-8' },
-        { property: 'og:site_name', content: 'Webrecorder' },
+        { property: 'og:site_name', content: 'Conifer' },
         { property: 'og:locale', content: 'en_US' },
-        { property: 'og:title', content: 'Webrecorder' },
+        { property: 'og:title', content: 'Conifer' },
         { property: 'og:description', content: 'Create high-fidelity, interactive web archives of any web site you browse.' },
         { property: 'og:image', content: `${hostScheme}://${appHost}/static/webrecorder-social.png`, width: '1200', height: '630' }
       ]
