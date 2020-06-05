@@ -9,6 +9,7 @@ import CollectionFiltersUI from 'components/collection/CollectionFiltersUI';
 
 const mapStateToProps = ({ app }) => {
   return {
+    user: app.getIn(['auth', 'user']),
     collection: app.get('collection'),
     searching: app.getIn(['collection', 'searching']),
     searched: app.getIn(['collection', 'searched'])

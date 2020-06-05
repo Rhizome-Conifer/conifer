@@ -83,9 +83,11 @@
             font-size: 1.4rem;
             flex-shrink: 0;
             display: block;
+            margin: 0;
+            text-align: right;
         }
 
-        input[name=searchFrag] {
+        input[name=searchFrag], input[name=urlFrag] {
             border-width: 0 0 .1rem 0;
             width: 100%;
         }

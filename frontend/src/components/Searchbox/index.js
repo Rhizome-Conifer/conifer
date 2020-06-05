@@ -13,6 +13,27 @@ import "react-datepicker/dist/react-datepicker.css";
 import './style.scss';
 
 
+const parseQuery = (search) => {
+  const filters = search.match(/((is|start|end|session):[a-z0-9-.:]+)/ig) || [];
+  const urlFragRX = search.match(/url:((?:https?:\/\/)?(?:www\.)?(?:[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})?(?:[-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*))/i);
+  const searchRX = search.match(/(?:(?:(?:is|start|end|session|url):[^ ]+\s?)+\s?)?(.*)/i);
+  return {
+    filters,
+    query: searchRX ? searchRX[1] : '',
+    urlFragTxt: urlFragRX ? urlFragRX[1] : '',
+  };
+};
+
+const dateIsValid = (dt) => {
+  return dt instanceof Date && !isNaN(dt);
+};
+
+const humanDateFormat = (dt) => {
+  if (!dt) return '';
+  const s = num => String(num);
+  return `${dt.getUTCFullYear()}-${s(dt.getUTCMonth() + 1).padStart(2, '0')}-${s(dt.getUTCDate()).padStart(2, '0')}T${s(dt.getUTCHours()).padStart(2, '0')}:${s(dt.getUTCMinutes()).padStart(2, '0')}`;
+};
+
 class Searchbox extends PureComponent {
   static propTypes = {
     collection: PropTypes.object,
@@ -22,6 +43,125 @@ class Searchbox extends PureComponent {
     searching: PropTypes.bool,
     searched: PropTypes.bool,
   };
+
+  static getDerivedStateFromProps(props, state) {
+    const modalClosed = !state.options && !state.reset;
+    const textChange = state.search !== state.prevSearch && !state.reset;
+    const filterValues = {
+      includeWebpages: state.includeWebpages,
+      includeImages: state.includeImages,
+      includeAudio: state.includeAudio,
+      includeVideo: state.includeVideo,
+      includeDocuments: state.includeDocuments,
+    };
+    const filterFields = {
+      includeWebpages: 'is:page',
+      includeImages: 'is:image',
+      includeAudio: 'is:audio',
+      includeVideo: 'is:video',
+      includeDocuments: 'is:document',
+    };
+
+    let { date, options, search, searchFrag, urlFrag } = state;
+    let { filters, query, urlFragTxt } = parseQuery(search);
+
+    // update query from dropdown search fragment
+    if (options && query !== searchFrag) {
+      query = searchFrag;
+    }
+
+    let searchStruct = '';
+    Object.keys(filterValues).forEach((val) => {
+      const b = textChange ?
+        (
+          (state[val] && filters.includes(filterFields[val])) ||
+          (!state[val] && filters.includes(filterFields[val]))
+        ) : state[val];
+
+      // if new typed flag detected, remove flag from query
+      if (!state[val] && filters.includes(filterFields[val])) {
+        query = query.replace(filterFields[val], '');
+      }
+
+      filterValues[val] = b;
+      searchStruct += b ? `${filterFields[val]} ` : '';
+    });
+
+    if (urlFrag || (urlFragTxt && textChange)) {
+      if (textChange) {
+        urlFrag = urlFragTxt;
+      }
+
+      if (urlFrag) {
+        searchStruct += textChange ? `url:${urlFragTxt} ` : `url:${encodeURIComponent(urlFrag)} `;
+      }
+    }
+
+    // check for date filter changes
+    if (textChange && filters.findIndex(f => f.match(/(start|end|session):/)) !== -1 && date === 'anytime') {
+      if (filters.findIndex(f => f.match(/(start|end):/)) !== -1) {
+        date = 'daterange';
+      } else {
+        date = 'session';
+      }
+    } else if(textChange && filters.findIndex(f => f.match(/(start|end|session):/)) === -1 && date !== 'anytime') {
+      date = 'anytime';
+    }
+
+    if (date === 'daterange') {
+      let { startDate, endDate } = state;
+
+      if (textChange) {
+        const startStr = filters.find(f => f.match(/^start/i)) || '';
+        const newStartDate = startStr.match(/(?:start|end):([a-z0-9-.:]+)/i);
+        const endStr = filters.find(f => f.match(/^end/i)) || '';
+        const newEndDate = endStr.match(/(?:start|end):([a-z0-9-.:]+)/i);
+
+        if (newStartDate && dateIsValid(new Date(newStartDate[1])) && newStartDate[1] !== humanDateFormat(state.startDate)) {
+          startDate = new Date(newStartDate[1]);
+          filterValues.startDate = startDate;
+        }
+
+        if (newEndDate && dateIsValid(new Date(newEndDate[1])) && newEndDate[1] !== humanDateFormat(state.endDate)) {
+          endDate = new Date(newEndDate[1]);
+          filterValues.endDate = endDate;
+        }
+      }
+
+      searchStruct += `start:${humanDateFormat(startDate)} end:${humanDateFormat(endDate)} `;
+    } else if (date === 'session') {
+      const sessionFilter = filters.find(f => f.match(/^session/i)) || '';
+      let sessionReg = sessionFilter.match(/session:(\w+)/i);
+      let session = state.session;
+
+      if (textChange && sessionReg && sessionReg[1] !== session) {
+        session = sessionReg[1];
+        filterValues.session = session;
+      }
+
+      if (session) {
+        searchStruct += `session:${session} `;
+      }
+    }
+
+    searchStruct += query;
+    let newState = {
+      date,
+      ...filterValues,
+      prevSearch: searchStruct,
+      urlFrag,
+      reset: false
+    };
+
+    if (!modalClosed) {
+      newState = {
+        ...newState,
+        search: searchStruct,
+      };
+    }
+
+    return newState;
+  }
 
   constructor(props) {
     super(props);
@@ -91,14 +231,13 @@ class Searchbox extends PureComponent {
       includeAudio,
       includeVideo,
       includeDocuments,
-      reset: false,
+      reset: true, // reset first render
       search,
       searchStruct: '',
       session,
       startDate
     };
 
-    this.buildQuery(true);
     if (props.location.search) {
       this.search();
     }
@@ -113,123 +252,8 @@ class Searchbox extends PureComponent {
   componentDidUpdate(prevProps, prevState) {
     // check for searched prop being cleared
     if (prevProps.searched && !this.props.searched) {
-      this.setState({ search: 'is:Page', searchFrag: '' });
+      this.setState({ search: 'is:page', searchFrag: '', urlFrag: '' });
     }
-
-    if (this.state.options) {
-      this.buildQuery(false, this.state.search !== prevState.search && !this.state.reset);
-    }
-  }
-
-  buildQuery = (init = false, textChange = false) => {
-    const filterValues = {
-      includeWebpages: this.state.includeWebpages,
-      includeImages: this.state.includeImages,
-      includeAudio: this.state.includeAudio,
-      includeVideo: this.state.includeVideo,
-      includeDocuments: this.state.includeDocuments,
-    };
-    const filterFields = {
-      includeWebpages: 'is:Page',
-      includeImages: 'is:Image',
-      includeAudio: 'is:Audio',
-      includeVideo: 'is:Video',
-      includeDocuments: 'is:Document',
-    };
-
-    let { date, options, searchFrag } = this.state;
-    let { filters, query } = this.parseQuery();
-
-    if (options && query !== searchFrag) {
-      query = searchFrag;
-    }
-
-    let searchStruct = '';
-    Object.keys(filterValues).forEach((val) => {
-      const b = textChange ?
-        (
-          (this.state[val] && filters.includes(filterFields[val])) ||
-          (!this.state[val] && filters.includes(filterFields[val]))
-        ) : this.state[val];
-
-      // if new typed flag detected, remove flag from query
-      if (!this.state[val] && filters.includes(filterFields[val])) {
-        query = query.replace(filterFields[val], '');
-      }
-
-      filterValues[val] = b;
-      searchStruct += b ? `${filterFields[val]} ` : '';
-    });
-
-
-    // check for date filter changes
-    if (textChange && filters.findIndex(f => f.match(/(start|end|session):/)) !== -1 && date === 'anytime') {
-      if (filters.findIndex(f => f.match(/(start|end):/)) !== -1) {
-        date = 'daterange';
-      } else {
-        date = 'session';
-      }
-    } else if(textChange && filters.findIndex(f => f.match(/(start|end|session):/)) === -1 && date !== 'anytime') {
-      date = 'anytime';
-    }
-
-    if (date === 'daterange') {
-      let { startDate, endDate } = this.state;
-
-      if (textChange) {
-        const startStr = filters.find(f => f.match(/^start/i)) || '';
-        const newStartDate = startStr.match(/(?:start|end):([a-z0-9-.:]+)/i);
-        const endStr = filters.find(f => f.match(/^end/i)) || '';
-        const newEndDate = endStr.match(/(?:start|end):([a-z0-9-.:]+)/i);
-
-        if (newStartDate && this.dateIsValid(new Date(newStartDate[1])) && newStartDate[1] !== this.humanDateFormat(this.state.startDate)) {
-          startDate = new Date(newStartDate[1]);
-          filterValues.startDate = startDate;
-        }
-
-        if (newEndDate && this.dateIsValid(new Date(newEndDate[1])) && newEndDate[1] !== this.humanDateFormat(this.state.endDate)) {
-          endDate = new Date(newEndDate[1]);
-          filterValues.endDate = endDate;
-        }
-      }
-
-      searchStruct += `start:${this.humanDateFormat(startDate)} end:${this.humanDateFormat(endDate)} `;
-    } else if (date === 'session') {
-      const sessionFilter = filters.find(f => f.match(/^session/i)) || '';
-      let sessionReg = sessionFilter.match(/session:(\w+)/i);
-      let session = this.state.session;
-
-      if (textChange && sessionReg && sessionReg[1] !== session) {
-        session = sessionReg[1];
-        filterValues.session = session;
-      }
-
-      if (session) {
-        searchStruct += `session:${session} `;
-      }
-    }
-
-    searchStruct += query;
-
-    if (init) {
-      this.state.search = searchStruct;
-    } else {
-      this.setState({
-        date,
-        ...filterValues,
-        search: searchStruct,
-        reset: false,
-      });
-    }
-  }
-
-  dateIsValid = (dt) => {
-    return dt instanceof Date && !isNaN(dt);
-  }
-
-  humanDateFormat = (dt) => {
-    const s = num => String(num);
-    return `${dt.getUTCFullYear()}-${s(dt.getUTCMonth() + 1).padStart(2, '0')}-${s(dt.getUTCDate()).padStart(2, '0')}T${s(dt.getUTCHours()).padStart(2, '0')}:${s(dt.getUTCMinutes()).padStart(2, '0')}`;
   }
 
   warcDateFormat = (dt) => {
@@ -240,14 +264,6 @@ class Searchbox extends PureComponent {
   parseDate = (d) => {
     const m = d.match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})?/);
     return new Date(Date.UTC(m[1], (m[2] - 1), m[3], m[4], m[5], m[6] || 0));
-  }
-
-  parseQuery = () => {
-    const { search } = this.state;
-    const filters = search.match(/((is|start|end|session):[a-z0-9-.:]+)/ig) || [];
-    const searchRX = search.match(/(?:(?:(?:is|start|end|session):[a-z0-9-.:]+\s?)+\s)?(.*)/i);
-    const query = searchRX ? searchRX[1] : '';
-    return { filters, query };
   }
 
   changeTimeframe = (evtKey, evt) => {
@@ -284,6 +300,7 @@ class Searchbox extends PureComponent {
     evt.stopPropagation();
 
     window.history.replaceState({}, '', '?search=');
+    this.reset()
     this.props.clear(collection.get('owner'), collection.get('id'));
   }
 
@@ -301,11 +318,13 @@ class Searchbox extends PureComponent {
       includeImages,
       includeVideo,
       includeWebpages,
+      search,
       session,
-      startDate
+      startDate,
+      urlFrag
     } = this.state;
 
-    const { query } = this.parseQuery();
+    const { query } = parseQuery(search);
 
     const mime = (includeWebpages ? 'text/html,' : '') +
                  (includeImages ? 'image/,' : '') +
@@ -324,9 +343,15 @@ class Searchbox extends PureComponent {
       dateFilter.session = session;
     }
 
+    const urlQuery = {};
+    if (urlFrag) {
+      urlQuery.url = urlFrag;
+    }
+
     const searchParams = {
       search: query,
       mime,
+      ...urlQuery,
       ...dateFilter
     };
 
@@ -354,11 +379,7 @@ class Searchbox extends PureComponent {
   setStartDate = d => this.setState({ startDate: d })
 
   toggleAdvancedSearch = () => {
-    if (!this.state.options) {
-      this.buildQuery(false, true);
-    }
-
-    const { query } = this.parseQuery();
+    const { query } = parseQuery(this.state.search);
     this.setState({ options: !this.state.options, searchFrag: query });
   }
 
@@ -392,10 +413,12 @@ class Searchbox extends PureComponent {
           this.state.options &&
             <OutsideClick handleClick={this.toggleAdvancedSearch}>
               <section className="adv-search-filters">
-                <div className="label">Contains the words</div>
-                <div className="options">
-                  <input type="text" name="searchFrag" value={this.state.searchFrag} onKeyUp={this.keyUp} onChange={this.handleChange} />
-                </div>
+                <label htmlFor="searchFrag" className="label">Contains the words</label>
+                <input type="text" id="searchFrag" name="searchFrag" value={this.state.searchFrag} onKeyUp={this.keyUp} onChange={this.handleChange} />
+
+                <label htmlFor="urlFrag" className="label">URL contains</label>
+                <input type="text" id="urlFrag" name="urlFrag" value={this.state.urlFrag} onKeyUp={this.keyUp} onChange={this.handleChange} />
+
                 <div className="label">Include File Types</div>
                 <ul>
                   <li><label htmlFor="includeWebpages"><input type="checkbox" onChange={this.handleChange} id="includeWebpages" name="includeWebpages" checked={this.state.includeWebpages} /> Webpages</label></li>

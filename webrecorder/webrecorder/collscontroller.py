@@ -222,21 +222,83 @@ class CollsController(BaseController):
         def do_url_search():
             user, collection = self.load_user_coll()
             results = []
+
             search = request.query.getunicode('search')
+            url_query = request.query.getunicode('url')
+            has_query = search or url_query
+            ts_from = request.query.getunicode('from')
+            ts_to = request.query.getunicode('to')
+            date_filter = ts_from and ts_to
+
+            if date_filter:
+                try:
+                    ts_from = int(ts_from)
+                    ts_to = int(ts_to)
+                except ValueError:
+                    date_filter = False
+
+            session = request.query.getunicode('session')
+
             # remove trailing comma,
             mimes = request.query.getunicode('mime', '').rstrip(',')
             mimes = mimes.split(',') if mimes else []
-            for line, _ in collection.get_cdxj_iter():
-                cdxj = CDXObject(line.encode('utf-8'))
-                if search and search not in cdxj['url']:
-                    continue
 
-                if mimes and not any(cdxj['mime'].startswith(mime) for mime in mimes):
-                    continue
+            # search pages or default to page search if no mime supplied
+            if 'text/html' in mimes or len(mimes) == 0:
+                try:
+                    mimes.remove('text/html')
+                except ValueError:
+                    pass
 
-                results.append({'url': cdxj['url'],
-                                'timestamp': cdxj['timestamp'],
-                                'mime': cdxj['mime']})
+                # shortcut empty search
+                if not has_query and not date_filter and not session:
+                    results = collection.list_pages()
+                else:
+                    for page in collection.list_pages():
+                        # check for legacy hidden flag
+                        if page.get('hidden', False):
+                            continue
+
+                        if date_filter:
+                            # trim seconds
+                            ts = int(page['timestamp'][:12])
+                            if ts < ts_from or ts > ts_to:
+                                continue
+
+                        if session and page['rec'] != session:
+                            continue
+
+                        if search and search not in page.get('title', ''):
+                            continue
+
+                        if url_query and url_query not in page['url']:
+                            continue
+
+                        results.append(page)
+
+            # search non-page cdx
+            if len(mimes):
+                for line, _ in collection.get_cdxj_iter():
+                    cdxj = CDXObject(line.encode('utf-8'))
+
+                    if date_filter:
+                        # trim seconds
+                        ts = int(cdxj['timestamp'][:12])
+                        if ts < ts_from or ts > ts_to:
+                            continue
+
+                    if search and search not in cdxj['url']:
+                        continue
+
+                    if url_query and url_query not in cdxj['url']:
+                        continue
+
+                    if mimes and not any(cdxj['mime'].startswith(mime) for mime in mimes):
+                        continue
+
+                    results.append({'url': cdxj['url'],
+                                    'timestamp': cdxj['timestamp'],
+                                    'mime': cdxj['mime']})
 
             return {'results': results}
 
@@ -362,4 +424,3 @@ class CollsController(BaseController):
         result['size_remaining'] = user.get_size_remaining()
 
         return result
-

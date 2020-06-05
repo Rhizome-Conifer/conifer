@@ -17,13 +17,19 @@ class CollectionFiltersUI extends PureComponent {
     location: PropTypes.object,
     searching: PropTypes.bool,
     searched: PropTypes.bool,
-    searchCollection: PropTypes.func
+    searchCollection: PropTypes.func,
+    user: PropTypes.object,
   };
 
   constructor(props) {
     super(props);
 
     this.indexed = false;
+  }
+
+  search = (user, coll, params, fullText) => {
+    const newSearch = this.context.canAdmin && ['admin', 'beta-archivist'].includes(this.props.user.get('role'))
+    this.props.searchCollection(user, coll, params, fullText && newSearch);
   }
 
   render() {
@@ -34,7 +40,7 @@ class CollectionFiltersUI extends PureComponent {
             collection={this.props.collection}
             history={this.props.history}
             location={this.props.location}
-            search={this.props.searchCollection}
+            search={this.search}
             clear={this.props.clearSearch}
             searching={this.props.searching}
             searched={this.props.searched} />
