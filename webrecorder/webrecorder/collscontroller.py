@@ -223,8 +223,8 @@ class CollsController(BaseController):
             user, collection = self.load_user_coll()
             results = []
 
-            search = request.query.getunicode('search')
-            url_query = request.query.getunicode('url')
+            search = request.query.getunicode('search', '').lower()
+            url_query = request.query.getunicode('url', '').lower()
             has_query = search or url_query
             ts_from = request.query.getunicode('from')
             ts_to = request.query.getunicode('to')
@@ -268,10 +268,10 @@ class CollsController(BaseController):
                         if session and page['rec'] != session:
                             continue
 
-                        if search and search not in page.get('title', ''):
+                        if search and search not in page.get('title', '').lower():
                             continue
 
-                        if url_query and url_query not in page['url']:
+                        if url_query and url_query not in page['url'].lower():
                             continue
 
                         results.append(page)
@@ -287,10 +287,10 @@ class CollsController(BaseController):
                         if ts < ts_from or ts > ts_to:
                             continue
 
-                    if search and search not in cdxj['url']:
+                    if search and search not in cdxj['url'].lower():
                         continue
 
-                    if url_query and url_query not in cdxj['url']:
+                    if url_query and url_query not in cdxj['url'].lower():
                         continue
 
                     if mimes and not any(cdxj['mime'].startswith(mime) for mime in mimes):
