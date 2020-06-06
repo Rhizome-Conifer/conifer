@@ -260,8 +260,11 @@ class CollsController(BaseController):
                             continue
 
                         if date_filter:
-                            # trim seconds
-                            ts = int(page['timestamp'][:12])
+                            try:
+                                # trim seconds
+                                ts = int(page['timestamp'][:12])
+                            except ValueError:
+                                continue
                             if ts < ts_from or ts > ts_to:
                                 continue
 
@@ -282,8 +285,11 @@ class CollsController(BaseController):
                     cdxj = CDXObject(line.encode('utf-8'))
 
                     if date_filter:
-                        # trim seconds
-                        ts = int(cdxj['timestamp'][:12])
+                        try:
+                            # trim seconds
+                            ts = int(page['timestamp'][:12])
+                        except ValueError:
+                            continue
                         if ts < ts_from or ts > ts_to:
                             continue
 
