@@ -297,7 +297,7 @@ class RemoteBrowserUI extends Component {
         }
         {
           !message && countdownLabel && !dismissCountdown &&
-            <Alert bsStyle="warning" className="rb-countdown" onDismiss={this.hideCountdown}>
+            <Alert variant="warning" className="rb-countdown" onDismiss={this.hideCountdown}>
               Browser Time Left: <b>{countdown}</b>
             </Alert>
         }

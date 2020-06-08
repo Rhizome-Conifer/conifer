@@ -87,7 +87,7 @@ class Automation extends Component {
               this.props.active &&
                 <Button style={{ marginRight: 5 }} onClick={this.sendStopAutomation}>Stop Automation</Button>
             }
-            <Button onClick={this.startAutomation} disabled={this.props.autoQueued} bsStyle={this.props.autoQueued ? 'success' : 'primary'}>{`Create${this.props.autoQueued ? 'd!' : ''}`}</Button>
+            <Button onClick={this.startAutomation} disabled={this.props.autoQueued} variant={this.props.autoQueued ? 'success' : 'primary'}>{`Create${this.props.autoQueued ? 'd!' : ''}`}</Button>
           </React.Fragment>
         }>
         <React.Fragment>
@@ -99,7 +99,7 @@ class Automation extends Component {
               value={this.state.num_browsers}
               onChange={this.handleChange} />
           </FormGroup>
-          <FormGroup bsClass="form-group automation-scope">
+          <FormGroup bsPrefix="form-group automation-scope">
             <ControlLabel>Scope:</ControlLabel>
             <Radio name="scope" onChange={this.handleChange} value="single-page" checked={scope === 'single-page'} inline>
               Single Page
@@ -114,7 +114,7 @@ class Automation extends Component {
           <FormGroup controlId="formControlsTextarea">
             <ControlLabel>Links</ControlLabel>
             <FormControl
-              componentClass="textarea"
+              as="textarea"
               name="listAutoLinks"
               value={this.state.listAutoLinks}
               placeholder="http://example.com"

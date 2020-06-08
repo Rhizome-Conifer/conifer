@@ -221,12 +221,12 @@ class CollectionHeaderUI extends Component {
                       <Button onClick={this.copyDat} className="rounded copy-dat"><ClipboardIcon />Copy</Button>
                       {
                         collection.get('dat_updated_at') && new Date(collection.get('updated_at')) > new Date(collection.get('dat_updated_at')) ?
-                          <div><div className="dat-current update-dat">Dat file is not up-to-date with collection.</div><Button className="rounded" onClick={this.datShare} bsStyle="success">Update</Button></div> :
+                          <div><div className="dat-current update-dat">Dat file is not up-to-date with collection.</div><Button className="rounded" onClick={this.datShare} variant="success">Update</Button></div> :
                           <div className="dat-current">Dat dataset is up-to-date with collection.</div>
 
                       }
                     </div>
-                    <Button className="rectangular" bsStyle="warning" onClick={this.datUnshare}>Stop Sharing</Button>
+                    <Button className="rectangular" variant="warning" onClick={this.datUnshare}>Stop Sharing</Button>
                   </React.Fragment> :
                   <React.Fragment>
                     <h4>Make Available as a Dat archive</h4>
@@ -239,7 +239,7 @@ class CollectionHeaderUI extends Component {
                           <div className="dat-note">This may take a minute, depending on the size of your collection.</div>
                         </div> :
                         <React.Fragment>
-                          <Button className="rectangular" bsStyle="success" onClick={this.datShare}> Make this Collection Available via Dat </Button>
+                          <Button className="rectangular" variant="success" onClick={this.datShare}> Make this Collection Available via Dat </Button>
                         </React.Fragment>
                     }
                   </React.Fragment>

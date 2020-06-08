@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { Panel } from 'react-bootstrap';
 
@@ -36,7 +36,7 @@ class Temp404UI extends PureComponent {
         <Helmet>
           <title>Temporary Collection Not Found</title>
         </Helmet>
-        <Panel bsStyle="danger" className="wr-error-notice">
+        <Panel variant="danger" className="wr-error-notice">
           <Panel.Heading>Temporary Collection Not Found</Panel.Heading>
           <Panel.Body>
             <p>Sorry, this link is to a temporary collection, which is no longer available.</p>

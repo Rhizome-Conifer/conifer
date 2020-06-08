@@ -92,7 +92,7 @@ const prodConfig = {
     new CleanPlugin([assetsPath], { root: projectRootPath, verbose: false }),
 
     new CopyWebpackPlugin([
-      'src/shared/images/favicon.png',
+      'src/shared/images/favicon.ico',
       'src/shared/images/webrecorder-social.png'
     ]),
 

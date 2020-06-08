@@ -266,7 +266,7 @@ class WYSIWYG extends Component {
           _editMode && !contentSync &&
             <div className="editor-button-row">
               <Button onClick={this.cancel} className="rounded" type="button">Cancel</Button>
-              <Button bsStyle={this.props.success ? 'success' : 'default'} className="rounded" onClick={this.save} type="button">
+              <Button variant={this.props.success ? 'success' : 'default'} className="rounded" onClick={this.save} type="button">
                 { this.props.success ? 'Saved..' : 'Save' }
               </Button>
             </div>

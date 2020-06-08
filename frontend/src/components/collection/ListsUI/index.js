@@ -281,7 +281,7 @@ class ListsUI extends Component {
             <Modal
               visible={editModal}
               closeCb={this.closeEditModal}
-              footer={<Button onClick={this.closeEditModal} bsStyle="success">Done</Button>}
+              footer={<Button onClick={this.closeEditModal} variant="success">Done</Button>}
               dialogClassName="lists-edit-modal">
               <header>
                 <button className="borderless" onClick={this.clearInput} disabled={!title.length} type="button"><XIcon /></button>

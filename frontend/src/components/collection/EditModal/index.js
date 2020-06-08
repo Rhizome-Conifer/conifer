@@ -97,7 +97,7 @@ class EditModal extends Component {
         footer={
           <React.Fragment>
             <Button className="rounded" onClick={!editing ? this.props.closeCb : undefined} disabled={editing}>Cancel</Button>
-            <Button onClick={!editing ? this.edit : undefined} disabled={editing} bsStyle="success">
+            <Button onClick={!editing ? this.edit : undefined} disabled={editing} variant="success">
               {
                 editing && this.state.indicator &&
                   <LoaderIcon />
@@ -108,7 +108,7 @@ class EditModal extends Component {
         }>
         <Form horizontal onSubmit={this.edit}>
           <FormGroup controlId="formHorizontalName" validationState={error ? 'error' : null}>
-            <Col componentClass={ControlLabel} sm={2}>
+            <Col as={ControlLabel} sm={2}>
               {label} Name:
             </Col>
             <Col sm={10}>
@@ -117,7 +117,7 @@ class EditModal extends Component {
             </Col>
           </FormGroup>
           <FormGroup controlId="formHorizontalDesc">
-            <Col componentClass={ControlLabel} sm={2}>
+            <Col as={ControlLabel} sm={2}>
               {label} Description:
             </Col>
             <Col sm={10}>

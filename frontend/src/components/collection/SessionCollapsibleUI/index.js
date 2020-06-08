@@ -197,7 +197,7 @@ class SessionCollapsibleUI extends PureComponent {
               }
               <div className="action-row">
                 <Button onClick={this.closeDeletePopover}>Cancel</Button>
-                <Button bsStyle="danger" onClick={this.confirmDelete} disabled={recordingDeleting}>{recordingDeleting ? <LoaderIcon /> : 'OK'}</Button>
+                <Button variant="danger" onClick={this.confirmDelete} disabled={recordingDeleting}>{recordingDeleting ? <LoaderIcon /> : 'OK'}</Button>
               </div>
             </OutsideClick>
           </Popover>

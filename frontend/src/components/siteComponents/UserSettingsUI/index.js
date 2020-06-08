@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import {
   Alert,
   Button,
@@ -385,13 +385,13 @@ class UserSettingsUI extends Component {
             </div>
             {
               passUpdateFail &&
-                <Alert bsStyle="danger">
+                <Alert variant="danger">
                   {passUpdateFail}
                 </Alert>
             }
             {
               passUpdate &&
-                <Alert bsStyle="success">
+                <Alert variant="success">
                   Password successfully updated
                 </Alert>
             }
@@ -408,7 +408,6 @@ class UserSettingsUI extends Component {
                   required />
                 <div className="help-block with-errors" />
               </div>
-
               <FormGroup validationState={this.validatePassword()}>
                 <ControlLabel>New Password</ControlLabel>
                 <FormControl
@@ -440,7 +439,7 @@ class UserSettingsUI extends Component {
             </form>
           </div>
 
-          <Panel className="buffer-top" bsStyle="danger">
+          <Panel className="buffer-top" variant="danger">
             <Panel.Heading>
               <Panel.Title>Delete Account</Panel.Title>
             </Panel.Heading>
@@ -449,7 +448,7 @@ class UserSettingsUI extends Component {
                 <div>
                   <b>Permanently delete this account and all archived data for this user</b>
                   <p>This action <u>can not</u> be undone!</p>
-                  <Button bsStyle="danger" className="rounded" bsSize="sm" disabled={!canAdmin} onClick={this.toggleDelete}><TrashIcon /> Delete Account</Button>
+                  <Button variant="danger" className="rounded" bsSize="sm" disabled={!canAdmin} onClick={this.toggleDelete}><TrashIcon /> Delete Account</Button>
                 </div>
               </div>
             </Panel.Body>

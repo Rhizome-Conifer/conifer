@@ -155,7 +155,7 @@ class UserManager(object):
 
         if not msg:
             msg['success'] = ('A confirmation e-mail has been sent to <b>{0}</b>. ' +
-                              'Please check your e-mail to complete the registration!').format(username)
+                              'Please check your e-mail to complete the registration!').format(email)
 
         return msg, redir_extra
 
@@ -886,5 +886,3 @@ class CLIUserManager(UserManager):
 
     def _get_access(self):
         return self.base_access
-
-

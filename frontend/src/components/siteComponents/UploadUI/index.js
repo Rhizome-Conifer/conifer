@@ -196,7 +196,7 @@ class UploadUI extends PureComponent {
     const modalFooter = (
       <React.Fragment>
         <Button onClick={this.close} disabled={!this.state.canCancel}>Cancel</Button>
-        <Button onClick={this.submitUpload} disabled={isUploading} bsStyle="success">{ __DESKTOP__ ? 'Import' : 'Upload' }</Button>
+        <Button onClick={this.submitUpload} disabled={isUploading} variant="success">{ __DESKTOP__ ? 'Import' : 'Upload' }</Button>
       </React.Fragment>
     );
 

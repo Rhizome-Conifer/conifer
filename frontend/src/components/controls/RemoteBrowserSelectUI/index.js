@@ -114,7 +114,7 @@ class RemoteBrowserSelectUI extends PureComponent {
       <DropdownButton
         id="cnt-button"
         title={btn}
-        bsStyle="default"
+        variant="default"
         disabled={autopilotRunning}
         open={open}
         onToggle={this.getRemoteBrowsers}>

@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import HTML5Backend from 'react-dnd-html5-backend';
 import PropTypes from 'prop-types';
 import Raven from 'raven-js';
 import { matchPath } from 'react-router-dom';
 import { renderRoutes } from 'react-router-config';
-import { Alert, Button, Panel } from 'react-bootstrap';
+import { Alert, Button, Card } from 'react-bootstrap';
 import { asyncConnect } from 'redux-connect';
 import { DragDropContext } from 'react-dnd';
 
@@ -210,7 +210,7 @@ export class App extends Component {
         }
         {
           isOutOfSpace && this.state.outOfSpaceAlert &&
-            <Alert bsStyle="warning" className="oos-alert" onDismiss={this.dismissSpaceAlert}>
+            <Alert variant="warning" className="oos-alert" onDismiss={this.dismissSpaceAlert}>
               <p><b>Your account is out of space.</b> This means you can't capture anything right now.</p>
               To be able to capture again, you can:
               <ul>
@@ -224,15 +224,15 @@ export class App extends Component {
         }
         {
           this.state.stalled &&
-            <Panel className="stalled-alert" bsStyle="warning">
-              <Panel.Heading>Oops, this request seems to be taking a long time..</Panel.Heading>
-              <Panel.Body>
+            <Card className="stalled-alert" variant="warning">
+              <Card.Heading>Oops, this request seems to be taking a long time..</Card.Heading>
+              <Card.Body>
                 <p>
                   Please refresh the page and try again. If the problem persists, contact <a href={`mailto:${config.supportEmail}`}>support</a>.
                 </p>
                 <Button onClick={this.dismissStalledAlert}>dismiss</Button>
-              </Panel.Body>
-            </Panel>
+              </Card.Body>
+            </Card>
         }
         {
           !isEmbed && this.isMobile && this.state.mobileAlert &&
@@ -251,16 +251,16 @@ export class App extends Component {
             error ?
               <div>
                 <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
-                  <Panel bsStyle="danger" className="error-panel">
-                    <Panel.Heading><InfoIcon /> Oops!</Panel.Heading>
-                    <Panel.Body>
-                      <p>Oops, the page encountered an error.</p>
+                  <Card variant="danger" className="error-panel">
+                    <Card.Header><InfoIcon /> Oops!</Card.Header>
+                    <Card.Body>
+                      <Card.Title>Oops, the page encountered an error.</Card.Title>
                       {
                         config.ravenConfig &&
-                          <Button onClick={() => Raven.lastEventId() && Raven.showReportDialog()}>Submit a bug report</Button>
+                          <Button variant="primary" onClick={() => Raven.lastEventId() && Raven.showReportDialog()}>Submit a bug report</Button>
                       }
-                    </Panel.Body>
-                  </Panel>
+                    </Card.Body>
+                  </Card>
                 </div>
               </div> :
               <section role="main" className={containerClasses}>
@@ -305,4 +305,4 @@ const DnDApp = DragDropContext(HTML5Backend)(App);
 export default asyncConnect(
   initalData,
   mapStateToProps
-)(DnDApp);
+)(App);

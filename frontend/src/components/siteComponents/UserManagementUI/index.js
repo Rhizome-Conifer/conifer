@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { DropdownButton, MenuItem } from 'react-bootstrap';
+import { Button, DropdownButton, Dropdown } from 'react-bootstrap';
 
 import { product, supporterPortal } from 'config';
 
@@ -173,7 +173,7 @@ class UserManagementUI extends PureComponent {
           { !auth.get('loaded') || !username || (isAnon && collCount === 0) ?
             <React.Fragment>
               <li><Link to="/_register">Sign Up</Link></li>
-              <li><button className="rounded login-link" onClick={this.showLogin} type="button">Login</button></li>
+              <li><Button variant="primary" onClick={this.showLogin}>Login</Button></li>
             </React.Fragment> :
             <li className="navbar-text">
               <DropdownButton pullRight id="user-dropdown" title={userDropdown} onToggle={this.toggleDropdown}>
@@ -188,9 +188,9 @@ class UserManagementUI extends PureComponent {
 
                 {
                   hasCollections &&
-                    <MenuItem onClick={this.goToCollections}>
+                    <Dropdown.Item onClick={this.goToCollections}>
                       Your Collections<span className="num-collection">{ collCount }</span>
-                    </MenuItem>
+                    </Dropdown.Item>
                 }
                 {
                   hasCollections &&
@@ -204,39 +204,39 @@ class UserManagementUI extends PureComponent {
 
                 {
                   __DESKTOP__ &&
-                    <MenuItem divider />
+                    <Dropdown.Item divider />
                 }
 
                 {
                   !isAnon &&
-                    <MenuItem onClick={this.goToSettings}><span className="glyphicon glyphicon-wrench" /> { __DESKTOP__ ? 'App' : 'Account' } Settings</MenuItem>
+                    <Dropdown.Item onClick={this.goToSettings}><span className="glyphicon glyphicon-wrench" /> { __DESKTOP__ ? 'App' : 'Account' } Settings</Dropdown.Item>
                 }
 
                 {
                   !__DESKTOP__ &&
                     <React.Fragment>
-                      <MenuItem divider />
-                      <MenuItem href="https://guide.webrecorder.io/" target="_blank">User Guide</MenuItem>
-                      <MenuItem href="mailto:support@webrecorder.io" target="_blank">Contact Support</MenuItem>
-                      <MenuItem divider />
-                      <MenuItem onClick={this.goToFAQ}>About Webrecorder</MenuItem>
-                      <MenuItem href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</MenuItem>
+                      <Dropdown.Item divider />
+                      <Dropdown.Item href="https://guide.webrecorder.io/" target="_blank">User Guide</Dropdown.Item>
+                      <Dropdown.Item href="mailto:support@webrecorder.io" target="_blank">Contact Support</Dropdown.Item>
+                      <Dropdown.Item divider />
+                      <Dropdown.Item onClick={this.goToFAQ}>About Webrecorder</Dropdown.Item>
+                      <Dropdown.Item href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</Dropdown.Item>
                     </React.Fragment>
                 }
 
                 {
                   (!isAnon && !__DESKTOP__) &&
                     <React.Fragment>
-                      <MenuItem divider />
-                      <MenuItem onClick={this.goToLogout}><span className="glyphicon glyphicon-log-out" title="Logout" /> Logout</MenuItem>
+                      <Dropdown.Item divider />
+                      <Dropdown.Item onClick={this.goToLogout}><span className="glyphicon glyphicon-log-out" title="Logout" /> Logout</Dropdown.Item>
                     </React.Fragment>
                 }
                 {
                   isAnon &&
                     <React.Fragment>
-                      <MenuItem divider />
-                      <MenuItem onClick={this.goToSignup}>Sign Up</MenuItem>
-                      <MenuItem onClick={this.showLogin}>Login</MenuItem>
+                      <Dropdown.Item divider />
+                      <Dropdown.Item onClick={this.goToSignup}>Sign Up</Dropdown.Item>
+                      <Dropdown.Item onClick={this.showLogin}>Login</Dropdown.Item>
 
                     </React.Fragment>
                 }

@@ -67,7 +67,7 @@ class NewPasswordUI extends Component {
       <React.Fragment>
         {
           (success || errors) &&
-            <Alert bsStyle={errors ? 'danger' : 'success'}>
+            <Alert variant={errors ? 'danger' : 'success'}>
               {
                 errors ?
                   <span>{passwordResetErr[errors.get('error')]}</span> :
@@ -112,7 +112,7 @@ class NewPasswordUI extends Component {
                   onChange={this.handleChange} />
               </FormGroup>
 
-              <Button bsStyle="primary" type="submit" disabled={success} block>Reset Password</Button>
+              <Button variant="primary" type="submit" disabled={success} block>Reset Password</Button>
             </Form>
           </div>
         </div>

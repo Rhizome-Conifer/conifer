@@ -5,10 +5,25 @@
     display: flex;
     margin-top: 3rem;
 
+    figure {
+        display: flex;
+        width: 50%;
+    }
+
     .intro {
+        width: 50%;
         margin-left: 3rem;
 
+        h1 {
+            font-family: $serif;
+            font-size: 6.8rem;
+        }
+
         h2 {
+            font-weight: 100;
+        }
+
+        h4 {
             font-weight: 100;
         }
 
@@ -27,6 +42,9 @@
 
             button {
                 flex-grow: 1;
+                width: 100%;
+                padding-top: 2rem;
+                padding-bottom: 2rem;
 
                 &.button-link {
                     color: $black;
@@ -115,14 +133,27 @@
 .advanced-features {
     border-bottom: .1rem solid $gray300;
 
+    h3 {
+        font-size: 2.8rem;
+        font-weight: 300;
+    }
+
     dt {
+        font-size: 1.8rem;
+        line-height: 1.4;
+        font-weight: 500;
         margin-top: 1.5rem;
+    }
+
+    dd {
+        font-size: 1.6rem;
+        line-height: 1.6;
     }
 }
 
 .supporter {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     grid-gap: 3rem;
 
     @media (max-width: $xs) {
@@ -132,18 +163,12 @@
 
     header {
         margin-top: 3rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         text-align: center;
-        background-color: #0000ee;
-        color: white;
+        color: $deep-pine;
         height: 15rem;
-        background-image: url('../../../shared/images/donor-page-banner.jpg');
-        background-position: center;
-        background-size: cover;
+        text-shadow: 2px 2px 0 $pine;
 
-        grid-column: 1/span 3;
+        grid-column: 1/span 2;
 
         @media (max-width: $xs) {
             grid-column: auto;
@@ -151,7 +176,7 @@
     }
 
     .oss-intro {
-        grid-column: 1/span 2;
+        grid-column: 1;
 
         @media (max-width: $xs) {
             grid-column: auto;
@@ -160,19 +185,22 @@
 
     h2 {
         font-weight: 100;
+        font-size: 1.8rem;
+        line-height: 1.6;
     }
 
     p {
         font-weight: 100;
         font-size: 1.6rem;
+        line-height: 1.6;
     }
 
     .supportCTA {
         display: flex;
         flex-direction: column;
         align-items: center;
-        background: $gray200;
         padding: 3rem;
+        border: solid .3rem $pine-sap;
 
         h3 {
             margin-top: 0;
@@ -181,7 +209,7 @@
         button {
             margin: 1.5rem 0;
             flex-grow: 0;
-            background: $white;
+            padding: 2rem 3rem;
         }
 
         a {
@@ -193,28 +221,35 @@
         }
     }
 
-    div:nth-last-child(-n+3) {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        // align-items: center;
-        align-items: flex-start;
+    .sub-grid {
+        grid-column: 1 / span 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-gap: 1.5rem;
 
-        h4 {
-            margin-top: 1.5rem;
-        }
+        div:nth-last-child(-n+3) {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
 
-        button {
-            margin-top: auto;
-        }
+            h4 {
+                margin-top: 1.5rem;
+            }
 
-        img {
-            margin: 0 10%;
-            width: 80%;
-        }
+            button {
+                margin-top: auto;
+                align-self: center;
+            }
 
-        @media (max-width: $xs) {
-            align-items: center;
+            img {
+                width: 80%;
+                align-self: center;
+            }
+
+            @media (max-width: $xs) {
+                align-items: center;
+            }
         }
     }
 }

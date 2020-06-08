@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { Alert, Button, Checkbox, ControlLabel, Form, HelpBlock, FormControl, FormGroup } from 'react-bootstrap';
+import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
 
 import { product, userRegex } from 'config';
 import { registration as registrationErr } from 'helpers/userMessaging';
@@ -44,15 +44,6 @@ class UserSignup extends Component {
     };
   }
 
-  componentDidUpdate() {
-    const { confirmpassword, missingPw, password } = this.state;
-
-    // clear missing confirm password error
-    if(missingPw && password && confirmpassword) {
-      this.setState({ missingPw: false});
-    }
-  }
-
   save = (evt) => {
     evt.preventDefault();
     const { user } = this.props;
@@ -67,13 +58,11 @@ class UserSignup extends Component {
       username
     } = this.state;
 
-    if (!password || !confirmpassword) {
-      this.setState({ missingPw: true });
-    }
-
-    if (username && this.validateUsername() === 'success' &&
-       password && confirmpassword && this.validatePassword() === null &&
-       email && this.validateEmail() === null) {
+    if (
+      this.validateUsername() &&
+      this.validatePassword() &&
+      this.validateEmail()
+    ) {
       // core fields to send to server
       let data = { username, email, password, confirmpassword };
 
@@ -101,6 +90,10 @@ class UserSignup extends Component {
       this.setState({ [evt.target.name]: !this.state[evt.target.name] });
     } else {
       this.setState({ [evt.target.name]: evt.target.value });
+      if (evt.target.name === 'username') {
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(this.sendUserCheck, 250);
+      }
     }
   }
 
@@ -108,7 +101,7 @@ class UserSignup extends Component {
     const { userCheck, checkedUsername } = this.props;
     const { username } = this.state;
 
-    if (!username) {
+    if (!username || !this.userPassRegex(username)) {
       this.setState({ userIsRequired: true });
       return;
     }
@@ -116,6 +109,10 @@ class UserSignup extends Component {
     if (!userCheck || (userCheck && checkedUsername !== username)) {
       this.props.checkUser(username.trim());
     }
+  }
+
+  checkEmail = () => {
+    this.setState({ checkEmail: true });
   }
 
   userPassRegex = (username) => {
@@ -134,45 +131,49 @@ class UserSignup extends Component {
     if (username && username.length > 1) {
       // check if valid username formatting
       if (!this.userPassRegex(username)) {
-        return 'error';
+        return null;
       }
 
       // check if already exists
       if (userCheck && username === checkedUsername && !available) {
-        return 'error';
+        return false;
       }
 
-      return 'success';
+      return true;
     } else if (userIsRequired) {
-      return 'error';
+      return null;
     }
 
     return null;
   }
 
-  checkEmail = () => {
-    this.setState({ checkEmail: true });
-  }
-
   validateEmail = () => {
     const { checkEmail, email } = this.state;
 
-    if (checkEmail && (!email || email.indexOf('@') === -1 || email.match(/\.\w+$/) === null)) {
-      return 'error';
+    if (checkEmail) {
+      if (!email || email.indexOf('@') === -1 || email.match(/\.\w+$/) === null) {
+        return false;
+      }
+
+      return true;
     }
 
     return null;
   }
 
   validatePassword = () => {
-    const { password, confirmpassword, missingPw } = this.state;
+    const { password, confirmpassword } = this.state;
 
-    if (password && !passwordPassRegex(password)) {
-      return 'warning';
-    }
+    if (password && confirmpassword) {
+      if (!passwordPassRegex(password)) {
+        return null;
+      }
 
-    if ((password && confirmpassword && password !== confirmpassword) || missingPw) {
-      return 'error';
+      if (password !== confirmpassword) {
+        return false;
+      }
+
+      return true;
     }
 
     return null;
@@ -180,14 +181,11 @@ class UserSignup extends Component {
 
   render() {
     const {
-      available,
-      checkedUsername,
       errors,
       result,
       submitting,
       success,
-      user,
-      userCheck
+      user
     } = this.props;
     const {
       email,
@@ -199,17 +197,17 @@ class UserSignup extends Component {
       username
     } = this.state;
 
-    const classes = classNames('col-sm-6 col-md-6 col-md-offset-3 wr-signup', {
+    const classes = classNames('wr-signup', {
       success
     });
 
     return (
-      <div className="row">
+      <Row className="signup-form">
         {
           (success || errors) &&
             <Alert
               className="top-buffer signup-alert"
-              bsStyle={errors ? 'danger' : 'success'}>
+              variant={errors ? 'danger' : 'success'}>
               {
                 errors &&
                   <div>
@@ -227,18 +225,18 @@ class UserSignup extends Component {
               }
             </Alert>
         }
-        <div className="col-sm-8 col-md-6 col-md-offset-3">
+        <Col xs={12} sm={6}>
           <h2>{ product } Account Sign-Up</h2>
-          <h4>Create your own web archive as you browse!</h4>
+          <h5>Create your own web archive as you browse!</h5>
           <br />
-          <h4>To begin, please fill out the registration form below.</h4>
+          <p>To begin, please fill out the registration form.</p>
           <br />
-        </div>
-        <div className={classes}>
-          <Form onSubmit={this.save}>
-            <FormGroup validationState={this.validateUsername()}>
-              <ControlLabel>Choose a username for your archive</ControlLabel>
-              <FormControl
+        </Col>
+        <Col xs={12} sm={6} className={classes}>
+          <Form onSubmit={this.save} validated={this.state.formValid}>
+            <Form.Group>
+              <Form.Label>Choose a username for your archive</Form.Label>
+              <Form.Control
                 aria-label="username"
                 type="text"
                 name="username"
@@ -246,80 +244,82 @@ class UserSignup extends Component {
                 value={username}
                 onChange={this.handleChange}
                 onBlur={this.sendUserCheck}
+                required
                 autoComplete="off"
+                isInvalid={this.validateUsername() === false}
                 autoFocus />
-              <FormControl.Feedback />
-              {
-                userCheck && username === checkedUsername && !available &&
-                  <HelpBlock>Sorry, this username is not available.</HelpBlock>
-              }
+              <Form.Control.Feedback type="invalid">Sorry, this username is not available.</Form.Control.Feedback>
               {
                 username && !this.userPassRegex(username) &&
-                  <HelpBlock>Usernames must be 3-16 characters, and start with letter or digit and contain only letters, digit or -</HelpBlock>
+                  <Form.Text bsPrefix="text-warning">Usernames must be 3-16 characters, and start with letter or digit and contain only letters, digit or -</Form.Text>
               }
-            </FormGroup>
+            </Form.Group>
 
-            <FormGroup>
-              <ControlLabel srOnly>Name:</ControlLabel>
-              <FormControl
+            <Form.Group>
+              <Form.Label srOnly>Name:</Form.Label>
+              <Form.Control
                 aria-label="name"
                 type="name"
                 name="name"
                 placeholder="Your Name (Optional)"
                 value={name}
                 onChange={this.handleChange} />
-            </FormGroup>
+            </Form.Group>
 
-            <FormGroup validationState={this.validateEmail()}>
-              <ControlLabel srOnly>Email:</ControlLabel>
-              <FormControl
+            <Form.Group>
+              <Form.Label srOnly>Email:</Form.Label>
+              <Form.Control
                 aria-label="email"
                 type="email"
                 name="email"
                 placeholder="Your Email"
                 value={email}
                 onChange={this.handleChange}
-                onBlur={this.checkEmail} />
-            </FormGroup>
+                onBlur={this.checkEmail}
+                required
+                isInvalid={this.validateEmail() === false} />
+              <Form.Control.Feedback type="invalid">Please provide a valid email</Form.Control.Feedback>
+            </Form.Group>
 
-            <FormGroup validationState={this.validatePassword()}>
-              <ControlLabel srOnly>Password</ControlLabel>
-              <FormControl
+            <Form.Group>
+              <Form.Label srOnly>Password</Form.Label>
+              <Form.Control
                 aria-label="password"
                 type="password"
                 name="password"
                 placeholder="Password"
+                required
                 value={password}
                 onChange={this.handleChange} />
               {
                 password && !passwordPassRegex(password) &&
-                  <HelpBlock>Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols</HelpBlock>
+                  <Form.Text bsPrefix="text-warning">Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols</Form.Text>
               }
-            </FormGroup>
+            </Form.Group>
 
-            <FormGroup validationState={this.validatePassword()}>
-              <ControlLabel srOnly>Password</ControlLabel>
-              <FormControl
+            <Form.Group>
+              <Form.Label srOnly>Password</Form.Label>
+              <Form.Control
                 aria-label="confirm password"
                 type="password"
                 name="confirmpassword"
                 placeholder="Confirm Password"
+                required
                 value={confirmpassword}
                 onChange={this.handleChange}
-                onBlur={this.validatePassword} />
-              {
-                password && confirmpassword && password !== confirmpassword &&
-                  <HelpBlock>Password confirmation does not match</HelpBlock>
-              }
-            </FormGroup>
+                onBlur={this.validatePassword}
+                isInvalid={this.validatePassword() === false} />
+              <Form.Control.Feedback type="invalid">Password confirmation does not match</Form.Control.Feedback>
+            </Form.Group>
 
-            <FormGroup>
-              <Checkbox
+            <Form.Group controlId="mailingListSignup">
+              <Form.Check
+                type="checkbox"
                 name="announce_mailer"
-                onChange={this.handleChange}>
-                Update me on new features.
-              </Checkbox>
-            </FormGroup>
+                label="Update me on new features."
+                inline
+                onChange={this.handleChange} />
+            </Form.Group>
 
             {
               user.get('anon') && user.get('num_collections') > 0 &&
@@ -329,7 +329,7 @@ class UserSignup extends Component {
                 toColl={toColl} />
             }
 
-            <Button bsStyle="primary" bsSize="large" type="submit" block disabled={success || submitting}>
+            <Button variant="primary" size="large" type="submit" block disabled={success || submitting}>
               {
                 submitting && !success &&
                   <LoaderIcon />
@@ -341,8 +341,8 @@ class UserSignup extends Component {
               By registering, you agree to our <Link to="/_policies">terms of service</Link>, including that we may use the provided email address to contact you from time to time in reference to the service and your account.
             </p>
           </Form>
-        </div>
-      </div>
+        </Col>
+      </Row>
     );
   }
 }

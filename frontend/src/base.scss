@@ -1,5 +1,9 @@
 @import './vars';
 
+/* custom bootstrap */
+@import './bootstrap';
+
+
 html {
   font-size: 62.5%;
 }
@@ -56,14 +60,32 @@ a {
   transform: rotateZ(0deg);
 }
 
-.btn-primary {
-  background-color: $pine;
+button.btn-cta {
   background: $pine;
-  border-color: $deep-pine;
+  color: $slate;
+  border: solid .3rem transparent;
+  box-sizing: border-box;
+  transition: border-color .25s ease-in-out;
+  font-weight: 600;
+  font-size: 1.4rem;
 
   &:hover {
-    background-color: $deep-pine;
+    border: solid .3rem $dusty-pine;
   }
+}
+
+button.primary {
+    background-color: $gray600;
+    border: solid .3rem transparent;
+    transition: border-color .25s ease-in-out;
+    box-sizing: border-box;
+    color: $white;
+    font-weight: 600;
+    font-size: 1.4rem;
+
+    &:hover {
+      border: solid .3rem $gray700;
+    }
 }
 
 .sidebar-toggle {
@@ -224,23 +246,6 @@ a {
   padding: 0.7rem 3rem;
   font-size: 1.15rem;
   background: transparent;
-  border: solid .1rem $slate;
-
-  &:hover {
-      border-color: $slate;
-  }
-
-  &.btn-primary {
-    background-color: $pine;
-    background: $pine;
-    border-color: $deep-pine;
-    color: $slate;
-
-    &:hover {
-      background-color: $deep-pine;
-      color: $white;
-    }
-  }
 }
 
 .borderless {
@@ -286,23 +291,6 @@ a {
     }
 }
 
-/* modal overrides */
-.modal {
-  display: flex !important;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-.modal-dialog {
-  margin: 0 0 15rem 0;
-}
-.modal-content {
-  border-radius: 0;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
-}
-.modal-backdrop {
-  opacity: 0.35;
-}
 
 .on-boarding {
   margin: 0;

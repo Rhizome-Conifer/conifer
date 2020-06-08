@@ -1,0 +1,55 @@
+@import './vars';
+
+/* bootstrap var override */
+$theme-colors: (
+  "primary": $pine,
+  "secondary": $gray600,
+  "danger": $cf-danger,
+  "warning": $redwood,
+  "success": $cf-success,
+);
+
+$input-border-color: $gray400;
+$input-focus-border-color: $input-border-color;
+$form-feedback-invalid-color: $warning;
+$input-btn-focus-color: rgba($pine-accent, .25);
+
+@import "~bootstrap/scss/bootstrap";
+
+/* bootstrap overrides */
+
+.form-control {
+    border-radius: 0;
+}
+
+.btn {
+    border-radius: 0;
+
+    &.btn-primary {
+        border: solid .3rem transparent;
+        box-sizing: border-box;
+        transition: border-color .25s ease-in-out;
+        font-weight: 600;
+        font-size: 1.4rem;
+
+        &:not(:disabled):not(.disabled):active, &:not(:disabled):not(.disabled):active:focus, &:focus, &:hover {
+          border: solid .3rem $pine-accent;
+          background-color: $pine;
+          box-shadow: none;
+        }
+    }
+
+    &.btn-secondary {
+        border: solid .3rem transparent;
+        box-sizing: border-box;
+        transition: border-color .25s ease-in-out;
+        font-weight: 600;
+        font-size: 1.4rem;
+
+        &:not(:disabled):not(.disabled):active, &:not(:disabled):not(.disabled):active:focus, &:focus, &:hover {
+          border: solid .3rem $gray650;
+          background-color: $gray600;
+          box-shadow: none;
+        }
+    }
+}

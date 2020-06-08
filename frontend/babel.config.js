@@ -22,10 +22,10 @@ module.exports = {
     "react-hot-loader/babel",
     "transform-react-remove-prop-types",
     ["transform-imports", {
-      "react-bootstrap": {
-        "transform": "react-bootstrap/lib/${member}",
-        "preventFullImport": true
-      },
+      // "react-bootstrap": {
+      //   "transform": "react-bootstrap/lib/${member}",
+      //   "preventFullImport": true
+      // },
       "components/siteComponents": {
         "transform": "components/siteComponents/${member}"
       },

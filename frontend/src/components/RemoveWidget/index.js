@@ -114,7 +114,7 @@ class RemoveWidget extends Component {
                 }
                 <div className="action-row">
                   <Button onClick={this.outsideClickCheck} disabled={error || isDeleting}>Cancel</Button>
-                  <Button bsStyle="danger" disabled={error || isDeleting} onClick={this.removeClick}>{isDeleting ? <LoaderIcon /> : 'OK'}</Button>
+                  <Button variant="danger" disabled={error || isDeleting} onClick={this.removeClick}>{isDeleting ? <LoaderIcon /> : 'OK'}</Button>
                 </div>
               </OutsideClick>
             </Popover>

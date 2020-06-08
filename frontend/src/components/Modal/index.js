@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { Modal as BSModal } from 'react-bootstrap';
+import { Container, Modal as BSModal } from 'react-bootstrap';
 
 
 class Modal extends Component {
@@ -23,9 +23,10 @@ class Modal extends Component {
 
     return (
       <BSModal
-        role="dialog"
         show={visible}
         onHide={closeCb}
+        size="lg"
+        centered
         dialogClassName={dialogClassName}
         {...this.props.propsPass}>
         { header &&
@@ -37,7 +38,11 @@ class Modal extends Component {
             }
           </BSModal.Header>
         }
-        <BSModal.Body>{ body || children }</BSModal.Body>
+        <BSModal.Body>
+          <Container>
+            { body || children }
+          </Container>
+        </BSModal.Body>
         {
           footer &&
             <BSModal.Footer>

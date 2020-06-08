@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 import { batchActions } from 'redux-batched-actions';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';

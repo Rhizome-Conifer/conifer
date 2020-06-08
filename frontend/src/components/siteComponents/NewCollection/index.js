@@ -64,11 +64,11 @@ class NewCollection extends Component {
         <form onSubmit={this.submit} id="create-coll" className="form-horizontal">
           {
             error &&
-              <Alert bsStyle="danger">
+              <Alert variant="danger">
                 { collection[error] || 'Error encountered' }
               </Alert>
           }
-          <FormGroup bsClass="form-group col-xs-5" validationState={this.titleValidation()}>
+          <FormGroup bsPrefix="form-group col-xs-5" validationState={this.titleValidation()}>
             <ControlLabel htmlFor="collection">Collection Name:</ControlLabel>
             <FormControl type="text" inputRef={(obj) => { this.input = obj; }} id="title" name="title" onFocus={this.focusInput} onChange={this.handleInput} value={collTitle} />
           </FormGroup>

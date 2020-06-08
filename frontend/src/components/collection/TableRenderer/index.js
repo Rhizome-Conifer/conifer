@@ -63,7 +63,7 @@ class TableRenderer extends Component {
       headerEditor: false
     };
 
-    if (props.activeList && context.canAdmin && !isMobile) {
+    if (props.activeList && context.canAdmin && !props.isMobile) {
       const pageColumns = context.canAdmin ? ['remove', 'rowIndex'] : ['rowIndex'];
       this.state.columns = [...pageColumns, ...config.defaultColumns];
     }

@@ -1,8 +1,9 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
+import { Button } from 'react-bootstrap';
 
-import { anonDisabled, homepageAnnouncement, supporterPortal } from 'config';
+import { anonDisabled, homepageAnnouncement, product, supporterPortal } from 'config';
 
 import { StandaloneRecorder } from 'containers';
 import RedirectWithStatus from 'components/RedirectWithStatus';
@@ -76,20 +77,20 @@ class HomeUI extends PureComponent {
 
         <div className="keystone">
           <figure>
-            <a href="https://webrecorder.io/pelicanbomb/pelican-bomb">
-              <img src={require('shared/images/homepage/keystone-figure.png')} alt="Screenshots of Webrecorder.io" />
-            </a>
+            <img src={require('shared/images/homepage/conifer-chest-anim.svg')} alt="Illustration of browser windows in a chest" />
           </figure>
           <div className="intro">
-            <h2>Webrecorder.io is a web archiving service to collect and revisit web pages.</h2>
-            <p>Webrecorder creates an interactive copy of any web page that you browse, including content revealed by your interactions such as playing video and audio, scrolling, clicking buttons, and so forth.</p>
+            <h1>{product}</h1>
+            <h2>Collect and revisit web pages.</h2>
+            <h4>{product} is a web archiving service to collect and revisit web pages.</h4>
+            <p>{product} creates an interactive copy of any web page that you browse, including content revealed by your interactions such as playing video and audio, scrolling, clicking buttons, and so forth.</p>
 
             <div className="cta">
-              <button className="rounded btn-primary" onClick={this.signup} type="button">Create a Free Account</button>
+              <Button variant="primary" size="lg" onClick={this.signup}>Creat a Free Account</Button>
               <button className="button-link" onClick={this.login} type="button">Existing Users Login</button>
             </div>
 
-            { supporterPortal && <div className="note">Webrecorder.io offers free accounts with 5GB of storage. Get more and contribute to Webrecorder's development by <a href={supporterPortal} target="_blank">becoming a supporter</a>.</div> }
+            { supporterPortal && <div className="note">{product} offers free accounts with 5GB of storage. Get more and contribute to Webrecorder's development by <a href={supporterPortal} target="_blank">becoming a supporter</a>.</div> }
 
             <div className="note">Don't want to register? <a href="https://github.com/webrecorder/webrecorder-desktop/releases/latest">Download Desktop App</a> to collect and access archived web pages on your own computer, no account necessary.</div>
 
@@ -107,7 +108,7 @@ class HomeUI extends PureComponent {
               <p>Links break. Information is removed from the web. Services disappear and redesigns happen. Make sure that what’s important to you will stay available.</p>
             </div>
             <div className="col-sm-6 hidden-xs">
-              <img src={require('shared/images/homepage/link.png')} className="center-block" alt="Online Now ≠ Online Forever" />
+              <img src={require('shared/images/homepage/broken_link.svg')} className="center-block" alt="Online Now ≠ Online Forever" />
             </div>
           </div>
         </section>
@@ -117,10 +118,10 @@ class HomeUI extends PureComponent {
           <div>
             <div className="col-sm-6">
               <h3>Capture Complex Webpages</h3>
-              <p>Webrecorder takes a new approach to web archiving by capturing ("recording") network traffic and processes within the browser while you interact with a web page. Unlike conventional crawler-based web archiving methods, this allows even intricate websites, such as those with embedded media, complex Javascript, user-specific content and interactions, and other dynamic elements, to be captured and faithfully restaged.</p>
+              <p>Unlike conventional crawler-based web archiving methods, {product}’s approach allows even intricate websites, such as those with embedded media, complex Javascript, user-specific content and interactions, and other dynamic elements, to be captured and restaged.</p>
             </div>
             <div className="col-sm-6 hidden-xs">
-              <img src={require('shared/images/homepage/belljar.png')} className="center-block" alt="Web Preservation for Web Media" />
+              <img src={require('shared/images/homepage/complex_dynamic_webpages-w-pause.svg')} className="center-block" alt="Web Preservation for Web Media" />
             </div>
           </div>
         </section>
@@ -148,7 +149,7 @@ class HomeUI extends PureComponent {
         </section>
 
         <section className="advanced-features">
-          <div className="col-xs-8 col-xs-offset-2">
+          <div className="col-xs-10 col-xs-offset-1">
             <h3>Advanced Features</h3>
             <dl>
               <dt>Login and Capture</dt>
@@ -168,43 +169,45 @@ class HomeUI extends PureComponent {
 
         <section className="supporter">
           <header>
-            <h1>You can support free, open source tools for archiving the web.</h1>
+            <h1>Support free, open source tools for archiving the web.</h1>
           </header>
 
           <div className="oss-intro">
-            <h2>The Webrecorder project is an open source initiative by Rhizome at the New Museum. Our mission is to make high-fidelity web archiving accessible to all.</h2>
-            <p>Here are some other tools we have developed. An extensive lists of re-usable software components produced by Webrecorder is available here.</p>
+            <h2>{product} is a rapidly developing community project maintained by a non-profit arts organization, Rhizome. Becoming a supporter or donor helps us offset our operational costs, keeping {product} a sustainable project.</h2>
+            <p>In partnership with the Webrecorder Project, we aim to make high-fidelity web archiving accessible to all. Here are some other tools we have developed together. An extensive list of reusable software components produced by {product} and the Webrecorder Project is available here.</p>
           </div>
 
           {
             supporterPortal &&
               <div className="supportCTA">
-                <h3>You can support free, open source tools for archiving the web.</h3>
-                <button className="rounded" onClick={this.goToSupporterSite} type="button">Become a Supporter</button>
-                <a href="https://supporter.webrecorder.io" target="_blank">Learn more</a>
-                <p>Webrecorder is a project of Rhizome, a registered 501(c)(3) non-profit organization. Your donations are tax-deductible.</p>
+                {/*<h3>You can support free, open source tools for archiving the web.</h3>*/}
+                <Button variant="primary" onClick={this.gotToSupporterSite}>Become a Supporter</Button>
+                <a href={supporterPortal} target="_blank">Learn more</a>
+                <p>{product} is a project of Rhizome, a registered 501(c)(3) non-profit organization. Your donations are tax-deductible.</p>
               </div>
           }
 
-          <div>
-            <img src={require('shared/images/homepage/desktop.png')} alt="Desktop Logo" />
-            <h4>Webrecorder Desktop App</h4>
-            <p>Create, manage, and store web archives on your local computer.</p>
-            <button className="rounded" onClick={this.desktopApp} type="button">Download Desktop App</button>
-          </div>
+          <div className="sub-grid">
+            <div>
+              <img src={require('shared/images/homepage/desktop.png')} alt="Desktop Logo" />
+              <h4>Webrecorder Desktop App</h4>
+              <p>Create, manage, and store web archives on your local computer.</p>
+              <Button variant="primary" onClick={this.desktopApp}>Download Desktop App</Button>
+            </div>
 
-          <div>
-            <img src={require('shared/images/homepage/player.png')} alt="Player Logo" />
-            <h4>Webrecorder Player App</h4>
-            <p>Use this desktop web archive viewer to browse exported collections, even when you are offline.</p>
-            <button className="rounded" onClick={this.playerApp} type="button">Download Player App</button>
-          </div>
+            <div>
+              <img src={require('shared/images/homepage/player.png')} alt="Player Logo" />
+              <h4>Webrecorder Player App</h4>
+              <p>Use this desktop web archive viewer to browse exported collections, even when you are offline.</p>
+              <Button variant="primary" onClick={this.playerApp}>Download Player App</Button>
+            </div>
 
-          <div>
-            <img src={require('shared/images/homepage/oss.png')} alt="Group of open source software logos" />
-            <h4>Other Software Components</h4>
-            <p>Webrecorder produces a range of re-usable open source software components for web archiving, all of which are available on GitHub.</p>
-            <button className="rounded" onClick={this.github} type="button">Visit Our Github</button>
+            <div>
+              <img src={require('shared/images/homepage/oss.png')} alt="Group of open source software logos" />
+              <h4>Other Software Components</h4>
+              <p>Webrecorder produces a range of re-usable open source software components for web archiving, all of which are available on GitHub.</p>
+              <Button variant="primary" onClick={this.github}>Visit Our Github</Button>
+            </div>
           </div>
         </section>
       </React.Fragment>

@@ -67,7 +67,7 @@ class ResetPasswordUI extends Component {
       <div className="row">
         {
           (success || errors) &&
-            <Alert bsStyle={errors ? 'danger' : 'success'}>
+            <Alert variant={errors ? 'danger' : 'success'}>
               {
                 errors ?
                   <span>Username or email address not found.</span> :
@@ -105,7 +105,7 @@ class ResetPasswordUI extends Component {
                 onChange={this.handleChange} />
             </FormGroup>
 
-            <Button bsStyle="primary" type="submit" disabled={success} block>Send Reset Email</Button>
+            <Button variant="primary" type="submit" disabled={success} block>Send Reset Email</Button>
           </Form>
         </div>
       </div>

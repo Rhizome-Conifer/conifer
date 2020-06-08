@@ -87,7 +87,7 @@ class DeleteCollectionUI extends Component {
           footer={
             <React.Fragment>
               <Button onClick={!deleting ? this.toggleDeleteModal : undefined} disabled={deleting} style={{ marginRight: 5 }}>Cancel</Button>
-              <Button onClick={!deleting ? this.deleteCollection : undefined} disabled={!isAnon && (deleting || this.validateConfirmDelete() !== 'success')} bsStyle="danger">
+              <Button onClick={!deleting ? this.deleteCollection : undefined} disabled={!isAnon && (deleting || this.validateConfirmDelete() !== 'success')} variant="danger">
                 {
                   deleting && this.state.indicator &&
                     <LoaderIcon />

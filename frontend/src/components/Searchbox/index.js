@@ -389,7 +389,7 @@ class Searchbox extends PureComponent {
 
     return (
       <div className="search-box">
-        <InputGroup bsClass="input-group search-box" title="Search">
+        <InputGroup bsPrefix="input-group search-box" title="Search">
           <div className="input-wrapper">
             <span className="search-icon"><SearchIcon /></span>
             <FormControl aria-label="filter" bsSize="sm" onKeyUp={this.keyUp} onChange={this.handleChange} name="search" value={this.state.search} autoComplete="off" placeholder="Filter" />

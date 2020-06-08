@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { List } from 'immutable';
-import { Dropdown, MenuItem } from 'react-bootstrap';
+import { Dropdown } from 'react-bootstrap';
 
 import { doubleRAF } from 'helpers/utils';
 
@@ -171,10 +171,10 @@ class CollectionDropdownUI extends Component {
                 <Dropdown.Menu>
                   {
                     canCreateCollection &&
-                      <MenuItem key="new-collection" onClick={this.toggle}>+ Create new collection</MenuItem>
+                      <Dropdown.Item key="new-collection" onClick={this.toggle}>+ Create new collection</Dropdown.Item>
                   }
                   {
-                    <MenuItem key="filter">
+                    <Dropdown.Item key="filter">
                       <input
                         autoComplete="off"
                         className="form-control"
@@ -187,30 +187,30 @@ class CollectionDropdownUI extends Component {
                         type="text"
                         aria-label="filter collections"
                         value={this.state.filter} />
-                    </MenuItem>
+                    </Dropdown.Item>
                   }
-                  <MenuItem key="divider" divider />
+                  <Dropdown.Item key="divider" divider />
                   {
                     this.state.collections.map((coll) => {
                       const id = coll.get('id');
                       const title = coll.get('title');
 
                       return (
-                        <MenuItem
+                        <Dropdown.Item
                           key={id}
                           eventKey={id}
                           className={title.length > 50 ? 'make-wrap' : ''}
                           active={activeCollection.id === id}>
                           <WarcIcon /> { title }
-                        </MenuItem>
+                        </Dropdown.Item>
                       );
                     })
                   }
                   {
                     this.state.collections.size === 0 &&
-                      <MenuItem disabled>
+                      <Dropdown.Item disabled>
                         No collections found...
-                      </MenuItem>
+                      </Dropdown.Item>
                   }
                 </Dropdown.Menu>
               </Dropdown>

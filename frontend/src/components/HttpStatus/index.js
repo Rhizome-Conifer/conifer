@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import { Panel } from 'react-bootstrap';
 import { connect } from 'react-redux';
 
@@ -38,7 +38,7 @@ class HttpStatus extends PureComponent {
         <Helmet>
           <title>There's been an error</title>
         </Helmet>
-        <Panel bsStyle="danger" className="wr-error-notice">
+        <Panel variant="danger" className="wr-error-notice">
           <Panel.Heading>There's been an error</Panel.Heading>
           <Panel.Body>
             { children || 'No such page or content is not accessible.'}

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { Link } from 'react-router-dom';

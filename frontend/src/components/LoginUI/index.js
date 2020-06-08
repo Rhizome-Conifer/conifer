@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
+import { Col, Container, Row } from 'react-bootstrap';
 import querystring from 'querystring';
 
 import { product } from 'config';
@@ -34,13 +35,17 @@ class LoginUI extends Component {
         <Helmet>
           <title>Log in to {product}</title>
         </Helmet>
-        <div className="col-xs-10 col-xs-offset-1 col-md-6 col-md-offset-3">
-          <h2>{ product } Login</h2>
-          <LoginForm
-            auth={auth}
-            cb={this.props.loginFn}
-            error={auth.get('loginError')} />
-        </div>
+        <Row className="justify-content-center">
+          <Col xs={8}>
+            <Col>
+              <h2>{ product } Login</h2>
+            </Col>
+            <LoginForm
+              auth={auth}
+              cb={this.props.loginFn}
+              error={auth.get('loginError')} />
+          </Col>
+        </Row>
       </div>
     );
   }

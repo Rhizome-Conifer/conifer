@@ -22,7 +22,6 @@ const devConfig = {
     main: [
       `webpack-hot-middleware/client?path=http://${host}:${port}/__webpack_hmr&quiet=true`,
       './config/polyfills',
-      'bootstrap-loader',
       './src/client.js'
     ]
   },
@@ -117,7 +116,7 @@ const devConfig = {
 
   plugins: [
     new CopyWebpackPlugin([
-      'src/shared/images/favicon.png',
+      'src/shared/images/favicon.ico',
       'src/shared/images/webrecorder-social.png'
     ]),
     new CircularDependencyPlugin({

@@ -170,7 +170,7 @@ class InlineEditor extends PureComponent {
                     </div>
                   }
                 </div>
-                <Button aria-label="save" onClick={this._save} bsStyle={this.validation(true)}><CheckIcon /></Button>
+                <Button aria-label="save" onClick={this._save} variant={this.validation(true)}><CheckIcon /></Button>
                 <Button aria-label="toggle edit mode" onClick={this.toggleEditMode}><XIcon /></Button>
               </FormGroup>
             </div> :

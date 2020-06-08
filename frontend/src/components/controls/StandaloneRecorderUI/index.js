@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Collapsible from 'react-collapsible';
-import { Button, ControlLabel, FormControl, FormGroup, HelpBlock, Row } from 'react-bootstrap';
+import { Button, ControlLabel, Form, Row } from 'react-bootstrap';
 
 import { appHost, defaultRecDesc } from 'config';
 
@@ -137,14 +137,14 @@ class StandaloneRecorderUI extends Component {
     );
 
     return (
-      <form className="start-recording-homepage" onSubmit={this.startRecording}>
-        <FormGroup className={classNames('col-md-8 col-md-offset-2', { 'input-group': extractable })} validationState={this.state.validation}>
-          <ControlLabel htmlFor="url" aria-label="url" srOnly>Url</ControlLabel>
-          <FormControl id="url" aria-label="url" type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to capture" title={isOutOfSpace ? 'Out of space' : 'Enter URL to capture'} required disabled={isOutOfSpace} />
+      <Form className="start-recording-homepage" onSubmit={this.startRecording}>
+        <Form.Group className={classNames('col-md-8 col-md-offset-2', { 'input-group': extractable })}>
+          <Form.Label htmlFor="url" aria-label="url" srOnly>Url</Form.Label>
+          <Form.Control id="url" aria-label="url" type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to capture" title={isOutOfSpace ? 'Out of space' : 'Enter URL to capture'} required disabled={isOutOfSpace} />
           <ExtractWidget
             toCollection={activeCollection.title}
             url={url} />
-        </FormGroup>
+        </Form.Group>
 
         <div className="col-md-8 col-md-offset-2 top-buffer">
           <Row>
@@ -157,9 +157,9 @@ class StandaloneRecorderUI extends Component {
               }
               {
                 this.state.setColl &&
-                  <HelpBlock style={{ color: 'red' }}>
+                  <Form.Text style={{ color: 'red' }}>
                     Choose a collection
-                  </HelpBlock>
+                  </Form.Text>
               }
             </div>
           </Row>
@@ -191,7 +191,7 @@ class StandaloneRecorderUI extends Component {
               </div>
             </div>
           </Collapsible>
-          <Button type="submit" className="rounded btn-primary" aria-label="start recording" disabled={isOutOfSpace}>
+          <Button type="submit" variant="primary" aria-label="start recording" disabled={isOutOfSpace}>
             Start Capture
           </Button>
           {
@@ -200,7 +200,7 @@ class StandaloneRecorderUI extends Component {
           }
         </div>
         <div className="clearfix" />
-      </form>
+      </Form>
     );
   }
 }
