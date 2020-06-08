@@ -179,7 +179,7 @@ class CollectionHeaderUI extends Component {
           {
             canAdmin &&
               <div className="menu-row">
-                <Button className="rounded new-session" onClick={this.newSession}><PlusIcon /><span className="hidden-xs"> New Session</span></Button>
+                <Button variant="outline-secondary" onClick={this.newSession}><PlusIcon /><span className="hidden-xs"> New Session</span></Button>
                 <DropdownButton id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
                   <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
                   {

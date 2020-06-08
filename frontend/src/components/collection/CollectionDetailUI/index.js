@@ -364,13 +364,13 @@ class CollectionDetailUI extends Component {
             <TempUserAlert />
         }
 
-        {
+        {/*
           canAdmin &&
             <Automation collection={collection} />
-        }
+        */}
 
         <Sidebar storageKey="collSidebar">
-          <CollectionHeader />
+          {/*<CollectionHeader />*/}
           <div className="resizable-container">
             <Resizable
               axis="y"

@@ -305,4 +305,4 @@ const DnDApp = DragDropContext(HTML5Backend)(App);
 export default asyncConnect(
   initalData,
   mapStateToProps
-)(App);
+)(DnDApp);

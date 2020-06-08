@@ -265,9 +265,9 @@ class TableRenderer extends Component {
           {
             canAdmin &&
               <React.Fragment>
-                <Button onClick={this.toggleHeaderModal} className="table-header-menu borderless" bsSize="xs">
+                <button onClick={this.toggleHeaderModal} type="button" className="table-header-menu borderless">
                   <FalafelIcon />
-                </Button>
+                </button>
                 <Modal
                   visible={this.state.headerEditor}
                   closeCb={this.toggleHeaderModal}

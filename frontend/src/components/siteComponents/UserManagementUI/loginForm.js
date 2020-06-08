@@ -111,7 +111,7 @@ class LoginForm extends Component {
                     moveTemp={moveTemp}
                     toColl={toColl} />
               }
-              <Button bsSize="lg" variant="primary" type="submit" block>Sign in</Button>
+              <Button size="lg" variant="primary" type="submit" block>Sign in</Button>
             </Form>
           </Col>
         </Row>

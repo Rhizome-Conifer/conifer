@@ -180,7 +180,7 @@ class DesktopSettingsUI extends Component {
                 <div>
                   <b>Permanently remove all local archived data for this user</b>
                   <p>This action can not be undone!</p>
-                  <Button variant="danger" bsSize="sm" onClick={this.toggleDelete}>Clear Local Data</Button>
+                  <Button variant="danger" size="sm" onClick={this.toggleDelete}>Clear Local Data</Button>
                 </div>
               </div>
             </Panel.Body>

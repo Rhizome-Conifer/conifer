@@ -276,7 +276,7 @@ class UserSettingsUI extends Component {
                             value={this.state.allotment} />
                           <InputGroup.Addon>GB</InputGroup.Addon>
                         </InputGroup>
-                        <Button className="top-buffer-md rounded" bsSize="sm" onClick={this.updateUserAllotment}>Update Allotment</Button>
+                        <Button className="top-buffer-md rounded" size="sm" onClick={this.updateUserAllotment}>Update Allotment</Button>
                       </FormGroup>
                     </div>
 
@@ -293,7 +293,7 @@ class UserSettingsUI extends Component {
                           </Dropdown.Menu>
                         </Dropdown>
                       </div>
-                      <Button className="top-buffer-md rounded" bsSize="sm" onClick={this.saveRole}>Update Role</Button>
+                      <Button className="top-buffer-md rounded" size="sm" onClick={this.saveRole}>Update Role</Button>
                     </div>
 
                     <div className="admin-section suspend">
@@ -435,7 +435,7 @@ class UserSettingsUI extends Component {
                     <HelpBlock>Password confirmation does not match</HelpBlock>
                 }
               </FormGroup>
-              <Button className="rounded" bsSize="sm" disabled={!canAdmin} type="submit">Update Password</Button>
+              <Button className="rounded" size="sm" disabled={!canAdmin} type="submit">Update Password</Button>
             </form>
           </div>
 
@@ -448,7 +448,7 @@ class UserSettingsUI extends Component {
                 <div>
                   <b>Permanently delete this account and all archived data for this user</b>
                   <p>This action <u>can not</u> be undone!</p>
-                  <Button variant="danger" className="rounded" bsSize="sm" disabled={!canAdmin} onClick={this.toggleDelete}><TrashIcon /> Delete Account</Button>
+                  <Button variant="danger" className="rounded" size="sm" disabled={!canAdmin} onClick={this.toggleDelete}><TrashIcon /> Delete Account</Button>
                 </div>
               </div>
             </Panel.Body>

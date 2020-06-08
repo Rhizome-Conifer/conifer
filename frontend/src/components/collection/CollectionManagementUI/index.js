@@ -129,7 +129,7 @@ class CollectionManagementUI extends Component {
         <section>
           <div className="session-head">
             <h3>Sessions</h3>
-            <Button bsSize="sm" onClick={this.toggleAll}>
+            <Button size="sm" onClick={this.toggleAll}>
               { expandAll ? 'Collapse All' : 'Expand All' }
             </Button>
           </div>
