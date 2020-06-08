@@ -60,6 +60,7 @@
     "immutable": "^4.0.0-rc.12",
     "memoize-one": "^4.1.0",
     "mini-css-extract-plugin": "^0.4.5",
+    "node-sass": "^4.14.1",
     "object-assign": "4.1.1",
     "piping": "^1.0.0-rc.4",
     "pm2": "^3.2.2",

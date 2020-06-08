@@ -50,7 +50,6 @@ module.exports = {
   entry: {
     main: [
       './config/polyfills',
-      'bootstrap-loader',
       './src/client.js'
     ]
   },

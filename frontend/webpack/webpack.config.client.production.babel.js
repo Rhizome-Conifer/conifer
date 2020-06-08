@@ -20,7 +20,6 @@ const prodConfig = {
   entry: {
     main: [
       './config/polyfills',
-      'bootstrap-loader',
       './src/client.js'
     ]
   },
