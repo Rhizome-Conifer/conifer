@@ -19,7 +19,7 @@ except ImportError:
 #long_description = open('README.rst').read()
 long_description = ''
 
-PYWB_MIN_VER = '2.3.1'
+PYWB_MIN_VER = '2.4.1'
 
 PYWB_DEP = 'pywb>=' + PYWB_MIN_VER
 

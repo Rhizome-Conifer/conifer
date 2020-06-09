@@ -1101,6 +1101,9 @@ class ContentController(BaseController, RewriterApp):
         self.dyn_stats.update_dyn_stats(url, kwargs, referrer, source, ra_recording)
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
+        # don't attempt to check if url is valid by accessing content
+        kwargs['no_timegate_check'] = True
+
         # test if request specifies a containerized browser
         if wb_url.mod.startswith('$br:'):
             return self.handle_browser_embed(wb_url, kwargs)
