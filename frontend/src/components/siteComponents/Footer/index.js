@@ -44,9 +44,6 @@ function Footer() {
                   </div>
                 </form>
             }
-            <p>
-              This instance of the {product} web application is hosted by Rhizome at the New Museum. The Andrew W. Mellon Foundation is the lead supporter of the {product} Initiative.
-            </p>
           </div>
 
           {
