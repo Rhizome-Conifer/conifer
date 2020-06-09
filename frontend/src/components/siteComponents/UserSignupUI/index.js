@@ -317,7 +317,6 @@ class UserSignup extends Component {
                 type="checkbox"
                 name="announce_mailer"
                 label="Update me on new features."
-                inline
                 onChange={this.handleChange} />
             </Form.Group>
 

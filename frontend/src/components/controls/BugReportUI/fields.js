@@ -8,9 +8,7 @@ export function CheckboxField(props) {
   const { cb, label, name } = props;
 
   return (
-    <Form.Check type="checkbox" name={name} onChange={cb}>
-      { label }
-    </Form.Check>
+    <Form.Check type="checkbox" id={name} name={name} onChange={cb} label={label} />
   );
 }
 
