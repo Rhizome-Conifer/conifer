@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Alert, Button, ControlLabel, Form, FormControl, FormGroup } from 'react-bootstrap';
+import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
 
 import './style.scss';
 
@@ -38,51 +38,33 @@ class ResetPasswordUI extends Component {
     this.setState({ [evt.target.name]: evt.target.value });
   }
 
-  validateItem = (key) => {
-    if (this.state.error) {
-      switch (key) {
-        case 'email': {
-          const { email } = this.state;
-          if (!email || email.indexOf('@') === -1 || email.match(/\.\w+$/) === null) {
-            return 'error';
-          }
-          return null;
-        }
-        case 'username':
-          if (!this.state.username) {
-            return 'error';
-          }
-          return null;
-        default:
-          return null;
-      }
-    }
-  }
-
   render() {
     const { errors, success } = this.props;
     const { username, email } = this.state;
 
     return (
-      <div className="row">
-        {
-          (success || errors) &&
-            <Alert variant={errors ? 'danger' : 'success'}>
-              {
-                errors ?
-                  <span>Username or email address not found.</span> :
-                  <span>A password reset e-mail has been sent to your e-mail!</span>
-              }
-            </Alert>
-        }
-        <div className={classNames('col-sm-6 col-md-6 col-md-offset-3 pw-reset-form', { success })}>
+      <Row>
+        <Col xs={12} sm={{ span: 8, offset: 2}}>
+          {
+            (success || errors) &&
+              <Alert className="top-buffer" variant={errors ? 'danger' : 'success'}>
+                {
+                  errors ?
+                    <span>Username or email address not found.</span> :
+                    <span>A password reset e-mail has been sent to your e-mail!</span>
+                }
+              </Alert>
+          }
+        </Col>
+        <Col xs={12} sm={{ span: 8, offset: 2 }} className={classNames('pw-reset-form', { success })}>
           <Form onSubmit={this.save}>
             <h3>Password Recovery</h3>
-            <h4>Please enter either your e-mail address and/or username to request a password reset.</h4>
+            <h5>Please enter either your e-mail address and/or username to request a password reset.</h5>
 
-            <FormGroup validationState={this.validateItem('username')}>
-              <ControlLabel>Username</ControlLabel>
-              <FormControl
+            <Form.Group>
+              <Form.Label>Username</Form.Label>
+              <Form.Control
+                required={!username && !email}
                 aria-label="username"
                 type="text"
                 name="username"
@@ -90,25 +72,26 @@ class ResetPasswordUI extends Component {
                 value={username}
                 onChange={this.handleChange}
                 autoFocus />
-            </FormGroup>
+            </Form.Group>
 
             <div className="form-option"><span /><span className="opt">OR</span><span /></div>
 
-            <FormGroup validationState={this.validateItem('email')}>
-              <ControlLabel>Email</ControlLabel>
-              <FormControl
+            <Form.Group>
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                required={!username && !email}
                 aria-label="email"
                 type="email"
                 name="email"
                 placeholder="Email"
                 value={email}
                 onChange={this.handleChange} />
-            </FormGroup>
+            </Form.Group>
 
             <Button variant="primary" type="submit" disabled={success} block>Send Reset Email</Button>
           </Form>
-        </div>
-      </div>
+        </Col>
+      </Row>
     );
   }
 }

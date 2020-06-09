@@ -12,12 +12,12 @@
 
         &:not(:first-of-type):before {
             content: '/';
-            color: $slate;
+            color: $white;
             padding:0 1rem;
         }
 
         a, span {
-            color: $slate;
+            color: $white;
             max-width: 10rem !important;
             overflow: hidden;
             text-overflow: ellipsis;

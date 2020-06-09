@@ -130,7 +130,6 @@ export default function collection(state = initialState, action = {}) {
         accessed: action.accessed,
         error: null,
         pages: fromJS(pages),
-        page_count: pages.length,
         autoindexed,
         created_at,
         dat_updated_at,

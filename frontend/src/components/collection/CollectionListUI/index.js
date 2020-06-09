@@ -145,7 +145,7 @@ class CollectionListUI extends Component {
                   success={this.props.edited} />
               </Col>
           }
-          <Col xs={12} sm={__DESKTOP__ ? 10 : 9} smOffset={__DESKTOP__ ? 1 : 0} className="wr-coll-meta">
+          <Col xs={12} sm={{ span: __DESKTOP__ ? 10 : 9, offset: __DESKTOP__ ? 1 : 0}} className="wr-coll-meta">
             {
               canAdmin &&
                 <Row className="collection-start-form">
