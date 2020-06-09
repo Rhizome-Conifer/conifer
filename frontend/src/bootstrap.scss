@@ -1,6 +1,14 @@
 @import './vars';
 
-/* bootstrap var override */
+/*
+    ~*~ update bootstrap variables here ~*~
+    Variables available to be set can be found
+    in the bootstrap folder (node_modules/bootstrap/scss/_variables.scss)
+
+    This is the prefered way to make changes~
+*/
+
+// gobal theme
 $theme-colors: (
   "primary": $pine,
   "secondary": $gray600,
@@ -9,15 +17,28 @@ $theme-colors: (
   "success": $cf-success,
 );
 
+/* forms */
 $input-border-color: $gray400;
 $input-focus-border-color: $input-border-color;
 $form-feedback-invalid-color: $warning;
 $input-btn-focus-color: rgba($pine-accent, .25);
+
+/* buttons */
+$btn-border-radius: 0;
+$btn-border-radius-lg: 0;
+$btn-border-radius-sm: 0;
+
+/* misc */
 $component-active-color: $slate;
 
+/* import bootstrap form node_modules */
 @import "~bootstrap/scss/bootstrap";
 
-/* bootstrap overrides */
+/*
+    ~*~ bootstrap overrides ~*~
+    Here is where you can extend the global bootstrap styles
+    with your own settings.
+*/
 
 .form-control {
     border-radius: 0;
@@ -34,7 +55,6 @@ $component-active-color: $slate;
 }
 
 .btn {
-    border-radius: 0;
 
     &.btn-primary {
         border: solid .3rem transparent;

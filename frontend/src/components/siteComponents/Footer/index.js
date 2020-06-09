@@ -21,7 +21,7 @@ function Footer() {
             <div className="links">
               <ul>
                 <li><Link to="/_faq">About {product}</Link></li>
-                <li><a href="https://guide.webrecorder.io/" target="_blank">User Guide</a></li>
+                <li><a href="https://guide.conifer.rhizome.org/" target="_blank">User Guide</a></li>
                 <li><Link to="/_policies">Terms & Policies</Link></li>
               </ul>
               <ul>

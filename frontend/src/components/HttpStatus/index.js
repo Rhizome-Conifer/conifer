@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
-import { Panel } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
 import { connect } from 'react-redux';
 
 import { set404 } from 'store/modules/controls';
@@ -38,12 +38,12 @@ class HttpStatus extends PureComponent {
         <Helmet>
           <title>There's been an error</title>
         </Helmet>
-        <Panel variant="danger" className="wr-error-notice">
-          <Panel.Heading>There's been an error</Panel.Heading>
-          <Panel.Body>
+        <Card className="wr-error-notice">
+          <Card.Header>There's been an error</Card.Header>
+          <Card.Body>
             { children || 'No such page or content is not accessible.'}
-          </Panel.Body>
-        </Panel>
+          </Card.Body>
+        </Card>
       </SetStatus>
     );
   }

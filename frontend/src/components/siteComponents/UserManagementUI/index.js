@@ -159,7 +159,7 @@ class UserManagementUI extends PureComponent {
             {
               __DESKTOP__ ?
                 <button className="button-link" onClick={this.openDesktopHelp} type="button">Help</button> :
-                <a href="https://guide.webrecorder.io/" target="_blank">Help</a>
+                <a href="https://guide.conifer.rhizome.org/" target="_blank">Help</a>
             }
           </li>
 
@@ -216,7 +216,7 @@ class UserManagementUI extends PureComponent {
                   !__DESKTOP__ &&
                     <React.Fragment>
                       <Dropdown.Divider />
-                      <Dropdown.Item href="https://guide.webrecorder.io/" target="_blank">User Guide</Dropdown.Item>
+                      <Dropdown.Item href="https://guide.conifer.rhizome.org/" target="_blank">User Guide</Dropdown.Item>
                       <Dropdown.Item href="mailto:support@webrecorder.io" target="_blank">Contact Support</Dropdown.Item>
                       <Dropdown.Divider />
                       <Dropdown.Item onClick={this.goToFAQ}>About Webrecorder</Dropdown.Item>

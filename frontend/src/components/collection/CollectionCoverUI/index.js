@@ -227,7 +227,6 @@ class CollectionCoverUI extends Component {
                             <div className="table-container">
                               <div className="collection-header">
                                 <h2>Pages</h2>
-                                <CollectionFilters disabled />
                               </div>
                               <div className="private-index">This collection does not have a public index.</div>
                             </div>
