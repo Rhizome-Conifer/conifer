@@ -31,7 +31,7 @@ $btn-border-radius-sm: 0;
 /* misc */
 $component-active-color: $slate;
 
-/* import bootstrap form node_modules */
+/* import bootstrap from node_modules */
 @import "~bootstrap/scss/bootstrap";
 
 /*
@@ -67,11 +67,9 @@ $component-active-color: $slate;
             padding: .175rem .55rem;
         }
 
-
         #{$bs-button-interactive} {
           border: solid .3rem $pine-accent;
           background-color: $pine;
-          box-shadow: none;
           box-shadow: none;
         }
     }
@@ -108,7 +106,7 @@ $component-active-color: $slate;
         font-weight: 600;
         font-size: 1.4rem;
 
-        &:not(:disabled):not(.disabled):active, &:not(:disabled):not(.disabled):active:focus, &:focus, &:hover {
+        #{$bs-button-interactive} {
           border: solid .3rem $gray650;
           background-color: $gray600;
           box-shadow: none;
