@@ -143,19 +143,19 @@ class UserManagementUI extends PureComponent {
         <ul className="navbar-user-links">
           {
             isAnon &&
-              <li>
+              <li className="d-none d-sm-block">
                 <Link to="/_faq">About</Link>
               </li>
           }
 
           {
             !__DESKTOP__ &&
-              <li className="navbar-text hidden-xs">
+              <li className="navbar-text d-none d-md-block">
                 <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
               </li>
           }
 
-          <li className="hidden-xs">
+          <li className="d-none d-lg-block">
             {
               __DESKTOP__ ?
                 <button className="button-link" onClick={this.openDesktopHelp} type="button">Help</button> :
@@ -165,7 +165,7 @@ class UserManagementUI extends PureComponent {
 
           {
             supporterPortal &&
-              <li className="hidden-xs">
+              <li className="d-none d-lg-block">
                 <a href={supporterPortal} target="_blank">{user.get('customer_id') ? 'Manage Support' : 'Support Us'}</a>
               </li>
           }

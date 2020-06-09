@@ -2,7 +2,7 @@
 
 .wr-mode-selector {
     .row {
-        padding: 1rem 0;
+        padding: rem(1rem) 0;
     }
 
     li {
@@ -54,12 +54,12 @@
         }
 
         svg {
-            width: 1.2rem;
+            width: rem(1.2rem);
             height: 100%;
             vertical-align: middle;
 
             &.stop-icon {
-                width: 1rem;
+                width: rem(1rem);
             }
         }
     }
@@ -71,14 +71,14 @@
 }
 
 .wr-mode {
-    min-width: 35rem;
+    min-width: rem(35rem);
     position: relative;
 
     &.active:before {
         content: '';
         position: absolute;
         display: block;
-        width: 1rem;
+        width: rem(1rem);
         height: 100%;
         left: 0;
         top: 0;
@@ -90,15 +90,15 @@
     }
 
     svg {
-        width: 1.8rem;
-        height: 1.8rem;
+        width: rem(1.8rem);
+        height: rem(1.8rem);
     }
 }
 
 .preview-mode {
     display: inline-block;
-    border: solid .1rem $warning;
-    width: 1.7rem;
-    height: 1.7rem;
+    border: solid rem(.1rem) $warning;
+    width: rem(1.7rem);
+    height: rem(1.7rem);
     border-radius: 50%;
 }

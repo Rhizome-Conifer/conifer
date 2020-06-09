@@ -1,11 +1,11 @@
 @import 'src/vars';
 
 .signup-form {
-    margin-top: 3.5rem;
+    margin-top: rem(3.5rem);
 
     .signup-alert {
         position: fixed;
-        top: 4rem;
+        top: rem(4rem);
         z-index: 100;
     }
 
@@ -19,7 +19,7 @@
 
         .btn {
             .wr-loader {
-                margin-right: .5rem;
+                margin-right: rem(.5rem);
 
                 path {
                     fill: #FFF;

@@ -1,25 +1,25 @@
 @import 'src/vars';
 
 .app-header {
-    height: 5.5rem;
+    height: rem(5.5rem);
 
     .header-webrecorder {
         display: flex;
         justify-content: space-between;
         height: 100%;
-        padding: 0 1.5rem;
+        padding: 0 rem(1.5rem);
 
         transition: background-color $quickShift ease-in-out;
         background-color: $deep-pine;
 
         .wr-logomark {
-            margin-right: 1.5rem;
+            margin-right: rem(1.5rem);
             align-self: flex-end;
             text-decoration: none;
 
             &.desktop {
                 font-family: $serif;
-                font-size: 1.8rem;
+                font-size: rem(1.8rem);
                 text-decoration: none;
                 color: $black;
             }
@@ -29,7 +29,7 @@
                 align-items: flex-end;
 
                 svg {
-                    height: 4.5rem;
+                    height: rem(4.5rem);
                 }
 
                 h2 {
@@ -37,14 +37,14 @@
                     font-family: $serif;
                     font-weight: 500;
                     color: $white;
-                    font-size: 3.4rem;
-                    margin-left: 1rem;
+                    font-size: rem(3.4rem);
+                    margin-left: rem(1rem);
                 }
             }
 
             svg {
-                height: 3rem;
-                width: 4.8rem;
+                height: rem(3rem);
+                width: rem(4.8rem);
                 vertical-align: middle;
             }
         }

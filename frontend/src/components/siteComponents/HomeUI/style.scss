@@ -3,7 +3,7 @@
 
 .keystone {
     display: flex;
-    margin-top: 3rem;
+    margin-top: rem(3rem);
 
     figure {
         display: flex;
@@ -12,11 +12,11 @@
 
     .intro {
         width: 50%;
-        margin-left: 3rem;
+        margin-left: rem(3rem);
 
         h1 {
             font-family: $serif;
-            font-size: 6.8rem;
+            font-size: rem(6.8rem);
         }
 
         h2 {
@@ -29,11 +29,11 @@
 
         p {
             font-weight: 100;
-            font-size: 1.6rem;
+            font-size: rem(1.6rem);
         }
 
         .cta {
-            margin: 1.5rem 0;
+            margin: rem(1.5rem) 0;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -43,8 +43,8 @@
             button {
                 flex-grow: 1;
                 width: 100%;
-                padding-top: 2rem;
-                padding-bottom: 2rem;
+                padding-top: rem(2rem);
+                padding-bottom: rem(2rem);
 
                 &.button-link {
                     color: $black;
@@ -53,16 +53,16 @@
             }
 
             button + button {
-                margin-top: 1rem;
+                margin-top: rem(1rem);
             }
         }
 
         .desktop-feature {
             display: flex;
             align-items: flex-start;
-            margin-top: 3rem;
-            border: solid .1rem $black;
-            padding: 1.5rem;
+            margin-top: rem(3rem);
+            border: solid rem(.1rem) $black;
+            padding: rem(1.5rem);
 
             a {
                 color: $black;
@@ -74,7 +74,7 @@
             }
 
             & > div {
-                margin-left: 1.5rem;
+                margin-left: rem(1.5rem);
 
                 h5 {
                     margin-top: 0;
@@ -90,7 +90,7 @@
         }
 
         .note + .note {
-            margin-top: 1rem;
+            margin-top: rem(1rem);
         }
     }
 
@@ -108,12 +108,12 @@
 }
 
 .landing-info {
-    padding: 1.5rem;
-    border-bottom: .1rem solid $gray300;
+    padding: rem(1.5rem);
+    border-bottom: rem(.1rem) solid $gray300;
 
     &:first-of-type {
-        border-top: .1rem solid $gray300;
-        margin-top: 4rem;
+        border-top: rem(.1rem) solid $gray300;
+        margin-top: rem(4rem);
     }
 
     & > div {
@@ -122,7 +122,7 @@
     }
 
     @media (max-width: $mobile) {
-        padding: 2rem;
+        padding: rem(2rem);
     }
 
     video {
@@ -131,22 +131,22 @@
 }
 
 .advanced-features {
-    border-bottom: .1rem solid $gray300;
+    border-bottom: rem(.1rem) solid $gray300;
 
     h3 {
-        font-size: 2.8rem;
+        font-size: rem(2.8rem);
         font-weight: 300;
     }
 
     dt {
-        font-size: 1.8rem;
+        font-size: rem(1.8rem);
         line-height: 1.4;
         font-weight: 500;
-        margin-top: 1.5rem;
+        margin-top: rem(1.5rem);
     }
 
     dd {
-        font-size: 1.6rem;
+        font-size: rem(1.6rem);
         line-height: 1.6;
     }
 }
@@ -154,18 +154,18 @@
 .supporter {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-gap: 3rem;
+    grid-gap: rem(3rem);
 
     @media (max-width: $xs) {
         grid-template-columns: 1fr;
-        grid-gap: 1.5rem 1rem;
+        grid-gap: rem(1.5rem) rem(1rem);
     }
 
     header {
-        margin-top: 3rem;
+        margin-top: rem(3rem);
         text-align: center;
         color: $deep-pine;
-        height: 15rem;
+        height: rem(15rem);
         text-shadow: 2px 2px 0 $pine;
 
         grid-column: 1/span 2;
@@ -185,13 +185,13 @@
 
     h2 {
         font-weight: 100;
-        font-size: 1.8rem;
+        font-size: rem(1.8rem);
         line-height: 1.6;
     }
 
     p {
         font-weight: 100;
-        font-size: 1.6rem;
+        font-size: rem(1.6rem);
         line-height: 1.6;
     }
 
@@ -199,21 +199,21 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 3rem;
-        border: solid .3rem $pine-sap;
+        padding: rem(3rem);
+        border: solid rem(.3rem) $pine-sap;
 
         h3 {
             margin-top: 0;
         }
 
         button {
-            margin: 1.5rem 0;
+            margin: rem(1.5rem) 0;
             flex-grow: 0;
-            padding: 2rem 3rem;
+            padding: rem(2rem) rem(3rem);
         }
 
         a {
-            margin-bottom: 1.5rem;
+            margin-bottom: rem(1.5rem);
         }
 
         p {
@@ -225,7 +225,7 @@
         grid-column: 1 / span 2;
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
-        grid-gap: 1.5rem;
+        grid-gap: rem(1.5rem);
 
         div:nth-last-child(-n+3) {
             display: flex;
@@ -234,7 +234,7 @@
             align-items: flex-start;
 
             h4 {
-                margin-top: 1.5rem;
+                margin-top: rem(1.5rem);
             }
 
             button {

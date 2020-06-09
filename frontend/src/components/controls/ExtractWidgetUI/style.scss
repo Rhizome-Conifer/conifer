@@ -4,8 +4,8 @@
     .btn-primary.dropdown-toggle {
         border: 0;
         padding: 0;
-        height: 3.2rem;
-        font-size: 1rem;
+        height: rem(3.2rem);
+        font-size: rem(1rem);
 
         &:hover, &:not(:disabled):not(.disabled):active, &:not(:disabled):not(.disabled):active:focus, &:focus {
             border: none;
@@ -18,32 +18,32 @@
     }
 
     .dropdown-menu {
-        padding: 1.5rem;
+        padding: rem(1.5rem);
         border-radius: 0;
-        min-width: 35rem;
+        min-width: rem(35rem);
     }
 
     .archive-toggle {
         transition: border-color $quickShift ease-in-out;
         white-space: initial;
-        border: solid .1rem;
+        border: solid rem(.1rem);
         display: flex;
         border-color: rgb(204,204,204);
-        margin-top: 1.5rem;
+        margin-top: rem(1.5rem);
 
         .checkbox-block {
             transition: background-color $quickShift ease-in-out;
-            width: 7.5rem;
+            width: rem(7.5rem);
 
             display: flex;
             justify-content: center;
             align-items: flex-start;
             background-color: rgb(204,204,204);
-            margin-right: 1rem;
+            margin-right: rem(1rem);
 
             input {
-                margin-top: 1rem;
-                font-size: 5rem;
+                margin-top: rem(1rem);
+                font-size: rem(5rem);
             }
         }
 
@@ -56,19 +56,19 @@
         }
 
         & > label {
-            padding: .5rem 0;
+            padding: rem(.5rem) 0;
             font-weight: normal;
         }
     }
 
     img {
-        width: 1.6rem;
-        height: 1.6rem;
+        width: rem(1.6rem);
+        height: rem(1.6rem);
     }
 
     .ra-collection {
         text-decoration: underline;
-        margin-left: .5rem;
+        margin-left: rem(.5rem);
         white-space: normal;
     }
 
@@ -78,16 +78,16 @@
 
     .ra-info {
         display: flex;
-        border-left: 1rem solid rgb(242,242,242);
-        padding-left: 1.5rem;
-        margin-top: 1.5rem;
+        border-left: rem(1rem) solid rgb(242,242,242);
+        padding-left: rem(1.5rem);
+        margin-top: rem(1.5rem);
 
         & > div:first-of-type {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: flex-end;
-            margin-right: 1rem;
+            margin-right: rem(1rem);
         }
 
         & > div:last-of-type {
@@ -100,7 +100,7 @@
 
     .ra-mode-badge.extract {
         background-color: #265a88;
-        margin-right: .5rem;
+        margin-right: rem(.5rem);
     }
 
     .ra-mode-row {
@@ -109,7 +109,7 @@
     }
 
     .ra-recording-block {
-        margin-top: 1.5rem;
+        margin-top: rem(1.5rem);
 
         h5 {
             display: inline-block;
@@ -118,15 +118,15 @@
 
     .ra-replay-info-label {
         color: rgb(153,153,153);
-        font-size: 1.2rem;
+        font-size: rem(1.2rem);
         font-weight: 300;
-        letter-spacing: .1rem
+        letter-spacing: rem(.1rem)
     }
 
     .ra-resources {
-        border: solid .1rem rgb(204,204,204);
-        padding: .5rem 1rem;
-        margin-top: 1.5rem;
+        border: solid rem(.1rem) rgb(204,204,204);
+        padding: rem(.5rem) rem(1rem);
+        margin-top: rem(1.5rem);
 
         & > ul {
             padding: 0;
@@ -143,7 +143,7 @@
             text-decoration: underline;
 
             .glyphicon-new-window {
-                margin-left: .5rem;
+                margin-left: rem(.5rem);
             }
 
             &:hover {
@@ -154,8 +154,8 @@
     }
 
     &.sources-widget {
-        // min-width: 15rem;
-        // padding: 0 1.5rem 0 .8rem;
+        // min-width: rem(15rem);
+        // padding: 0 rem(1.5rem) 0 rem(.8rem);
         // height: 100%;
 
         ul {
@@ -165,10 +165,10 @@
             justify-content: center;
             list-style-type: none;
             margin: 0;
-            padding: 0 1rem;
+            padding: 0 rem(1rem);
 
             li {
-                font-size: 1.1rem;
+                font-size: rem(1.1rem);
 
                 &.ts {
                    font-weight: 300;
@@ -176,7 +176,7 @@
 
                 &.mnt-label {
                     font-weight: 400;
-                    letter-spacing: .1rem;
+                    letter-spacing: rem(.1rem);
                 }
             }
         }

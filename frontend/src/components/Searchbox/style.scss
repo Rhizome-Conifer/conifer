@@ -5,8 +5,8 @@
     width: 100%;
 
     .input-group {
-        border: solid .4rem $pine;
-        border-width: 0 0 .4rem 0;
+        border: solid rem(.4rem) $pine;
+        border-width: 0 0 rem(.4rem) 0;
 
         .input-group-text {
             background-color: transparent;
@@ -14,7 +14,7 @@
         }
 
         input {
-            padding-right: 4rem;
+            padding-right: rem(4rem);
             flex-grow: 1;
             border: none;
             outline: none;
@@ -39,22 +39,22 @@
 
     .adv-search-filters {
         position: absolute;
-        top: 3.5rem;
+        top: rem(3.5rem);
         right: 0;
         z-index: 100;
-        border: solid .1rem $gray500;
+        border: solid rem(.1rem) $gray500;
         width: 100%;
-        padding: 1rem 1rem 0 1rem;
+        padding: rem(1rem) rem(1rem) 0 rem(1rem);
         background: #FFF;
 
         display: grid;
         grid-template-columns: max-content 1fr;
-        grid-gap: 1.5rem;
+        grid-gap: rem(1.5rem);
 
         .label {
             color: $gray600;
             font-weight: 300;
-            font-size: 1.4rem;
+            font-size: rem(1.4rem);
             flex-shrink: 0;
             display: block;
             margin: 0;
@@ -62,7 +62,7 @@
         }
 
         input[name=searchFrag], input[name=urlFrag] {
-            border-width: 0 0 .1rem 0;
+            border-width: 0 0 rem(.1rem) 0;
             width: 100%;
         }
 
@@ -70,13 +70,13 @@
             width: 100%;
 
             .dropdown-menu {
-                max-height: 30rem;
+                max-height: rem(30rem);
                 overflow: auto;
             }
         }
 
         .dropdown + .dropdown {
-            margin-top: .5rem;
+            margin-top: rem(.5rem);
         }
 
         ul {
@@ -86,17 +86,17 @@
             label {
                 color: $gray600;
                 font-weight: 300;
-                font-size: 1.4rem;
+                font-size: rem(1.4rem);
             }
         }
 
         .sub-filters {
             display: flex;
-            margin-top: .5rem;
+            margin-top: rem(.5rem);
         }
 
         .date-select {
-            margin-top: 1.5rem;
+            margin-top: rem(1.5rem);
 
             .label {
                 text-align: left;
@@ -104,17 +104,17 @@
             }
 
             .react-datepicker-wrapper + .react-datepicker-wrapper {
-                margin-top: .5rem;
+                margin-top: rem(.5rem);
             }
 
 
             .end-date {
-                margin-top: 1.5rem;
+                margin-top: rem(1.5rem);
             }
         }
 
         .actions {
-            margin: 1.5rem;
+            margin: rem(1.5rem);
             grid-column: 2;
             justify-self: end;
 
@@ -123,7 +123,7 @@
             }
 
             button + button {
-                margin-left: 1.5rem;
+                margin-left: rem(1.5rem);
             }
         }
     }

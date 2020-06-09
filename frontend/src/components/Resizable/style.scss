@@ -1,5 +1,6 @@
+@import 'src/vars';
 
-$buffer: .8rem;
+$buffer: rem(.8rem);
 
 .wr-resizeable {
     position: relative;
@@ -20,7 +21,7 @@ $buffer: .8rem;
             &:after {
                 content: '';
                 display: block;
-                width: .1rem;
+                width: rem(.1rem);
                 height: 100%;
                 background-color: #CCC;
             }
@@ -32,12 +33,12 @@ $buffer: .8rem;
             right: 0;
             bottom: -$buffer;
             cursor: ns-resize;
-            margin-bottom: .5rem;
+            margin-bottom: rem(.5rem);
 
             &:after {
                 content: '';
                 display: block;
-                height: .1rem;
+                height: rem(.1rem);
                 width: 100%;
                 background-color: #CCC;
             }

@@ -6,7 +6,7 @@
     display: inline-block;
     vertical-align: bottom;
     text-align: center;
-    border-width: .1rem 0 .1rem .1rem;
+    border-width: rem(.1rem) 0 rem(.1rem) rem(.1rem);
     border-radius: 0;
     font-feature-settings: "tnum";
     background: #FFF;
@@ -54,7 +54,7 @@
     position: relative;
 
     .replay-date > span {
-        margin-left: .5rem;
+        margin-left: rem(.5rem);
     }
 
     .form-control {
@@ -77,11 +77,11 @@
     -ms-flex-align: center;
     position: absolute;
     right: 0;
-    top: .4rem;
+    top: rem(.4rem);
     height: calc(100% - .8rem);
     z-index: 10;
-    padding-left: 4rem;
-    margin-right: 1rem;
+    padding-left: rem(4rem);
+    margin-right: rem(1rem);
 
     background: linear-gradient(90deg, rgba(255,255,255,0), #FFF 15%, #FFF);
 }

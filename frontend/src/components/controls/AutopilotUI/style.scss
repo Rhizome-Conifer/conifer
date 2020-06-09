@@ -5,15 +5,15 @@
     right: 0;
     top: 0;
     bottom: 0;
-    width: 35rem;
+    width: rem(35rem);
     background: rgba(0,0,0,.6);
     color: $white;
-    padding: 1.5rem;
+    padding: rem(1.5rem);
     overflow: auto;
     pointer-events: auto;
 
     p {
-        margin-bottom: 1.5rem;
+        margin-bottom: rem(1.5rem);
     }
 
     h4 {
@@ -34,21 +34,21 @@
         li {
             display: flex;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: rem(1rem);
 
             input {
-                margin-right: 1rem;
+                margin-right: rem(1rem);
             }
 
             .desc {
 
                 .heading {
-                    font-size: 2rem;
+                    font-size: rem(2rem);
                 }
 
                 .last-modified {
-                    font-size: 1.2rem;
-                    margin-bottom: .5rem;
+                    font-size: rem(1.2rem);
+                    margin-bottom: rem(.5rem);
                 }
             }
         }
@@ -65,8 +65,8 @@
     .behavior-log {
         background: #000;
         list-style-type: none;
-        padding: 1rem;
-        height: 15rem;
+        padding: rem(1rem);
+        height: rem(15rem);
         overflow: auto;
 
         li {
@@ -75,7 +75,7 @@
     }
 
     .browser-selection {
-        margin: 1.5rem 0;
+        margin: rem(1.5rem) 0;
 
         .browser-label {
             display: block;
@@ -99,14 +99,14 @@
 
             img {
                 vertical-align: text-top;
-                margin-right: .5rem;
+                margin-right: rem(.5rem);
             }
         }
     }
 
     button{
         svg {
-            margin-right: 1rem;
+            margin-right: rem(1rem);
 
             path {
                 fill: #FFF;
@@ -124,8 +124,8 @@
             border: none;
 
             svg {
-                width: 1.5rem;
-                height: 1.5rem;
+                width: rem(1.5rem);
+                height: rem(1.5rem);
 
                 path {
                     fill: $white;
@@ -136,10 +136,10 @@
     }
 
     .best-practices {
-        border: solid .1rem $white;
-        border-width: .1rem 0 0 0;
-        margin-top: 5rem;
-        padding-top: 2.5rem;
+        border: solid rem(.1rem) $white;
+        border-width: rem(.1rem) 0 0 0;
+        margin-top: rem(5rem);
+        padding-top: rem(2.5rem);
 
         a {
             color: $white;
@@ -149,7 +149,7 @@
 
     .autopilot-message {
         text-align: center;
-        margin: 1.5rem 0;
+        margin: rem(1.5rem) 0;
     }
 
     .behaviorInfo {
@@ -157,7 +157,7 @@
         color: $white;
 
         h4 {
-            margin-bottom: .5rem;
+            margin-bottom: rem(.5rem);
         }
 
         .behaviorStats {
@@ -167,7 +167,7 @@
 
             li {
                 font-weight: 300;
-                font-size: 1.6rem;
+                font-size: rem(1.6rem);
             }
         }
 

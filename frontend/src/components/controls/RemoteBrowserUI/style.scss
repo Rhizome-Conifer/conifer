@@ -1,3 +1,4 @@
+@import 'src/vars';
 
 #browserMsg, #message {
     margin-top: 20px;
@@ -59,10 +60,10 @@
 
 .rb-countdown, .rb-message {
     position: absolute;
-    max-width: 40rem;
-    top: 1.5rem;
-    right: 1.5rem;
-    box-shadow: .2rem .2rem .8rem rgba(0,0,0,0.4);
+    max-width: rem(40rem);
+    top: rem(1.5rem);
+    right: rem(1.5rem);
+    box-shadow: rem(.2rem) rem(.2rem) rem(.8rem) rgba(0,0,0,0.4);
     z-index: 1000;
 }
 

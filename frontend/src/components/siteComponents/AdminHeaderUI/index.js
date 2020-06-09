@@ -37,14 +37,16 @@ class AdminHeaderUI extends PureComponent {
 
       return (
         <React.Fragment>
-          <div className="managing-collection">
+          <div className="managing-collection d-none d-lg-block">
             Collection Manager:
           </div>
-          <CollectionDropdown
-            label={false}
-            canCreateCollection={false}
-            fromCollection={collection.get('id')}
-            setCollectionCallback={this.goToCollection} />
+          <div className="d-none d-sm-block">
+            <CollectionDropdown
+              label={false}
+              canCreateCollection={false}
+              fromCollection={collection.get('id')}
+              setCollectionCallback={this.goToCollection} />
+          </div>
         </React.Fragment>
       );
     }

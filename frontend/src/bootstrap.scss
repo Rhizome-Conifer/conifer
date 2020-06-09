@@ -57,19 +57,22 @@ $font-family-base: $sans;
 
 .btn {
 
+    $b: .3rem;
+    $b-diff: (3 - 1); // border diff for normal button
     &.btn-primary {
-        border: solid .3rem transparent;
+        border: solid rem($b) transparent;
         box-sizing: border-box;
         transition: border-color .25s ease-in-out;
         font-weight: 600;
-        font-size: 1.4rem;
+
 
         &:not(.btn-lg) {
-            padding: .175rem .55rem;
+            /* subtract custom border from padding */
+            padding: ($input-btn-padding-y - $b-diff * .0625) ($input-btn-padding-x - $b-diff * .0625);
         }
 
         #{$bs-button-interactive} {
-          border: solid .3rem $pine-accent;
+          border: solid rem($b) $pine-accent;
           background-color: $pine;
           box-shadow: none;
         }
@@ -101,14 +104,13 @@ $font-family-base: $sans;
     // }
 
     &.btn-secondary {
-        border: solid .3rem transparent;
+        border: solid rem(.3rem) transparent;
         box-sizing: border-box;
         transition: border-color .25s ease-in-out;
         font-weight: 600;
-        font-size: 1.4rem;
 
         #{$bs-button-interactive} {
-          border: solid .3rem $gray650;
+          border: solid rem(.3rem) $gray650;
           background-color: $gray600;
           box-shadow: none;
         }

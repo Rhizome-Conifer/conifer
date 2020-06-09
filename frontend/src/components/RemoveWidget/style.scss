@@ -11,7 +11,7 @@
 .wr-remove-widget {
     button {
         transition: fill $midShift ease-in-out;
-        margin: 0 .5rem;
+        margin: 0 rem(.5rem);
 
         &.remove-widget-icon {
             transition: fill $slowShift ease-in-out;

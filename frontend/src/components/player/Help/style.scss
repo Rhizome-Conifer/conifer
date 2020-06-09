@@ -3,46 +3,46 @@
 .help-container {
   background-image: url('../../../shared/images/Bg.png');
   background-repeat: repeat;
-  padding-top: 2rem;
+  padding-top: rem(2rem);
 
   .help {
     padding: 25px;
     width: 75vw;
-    padding-bottom: 10rem;
+    padding-bottom: rem(10rem);
     background: #FFF;
     font-family: $sans;
-    margin: 2.5rem auto;
+    margin: rem(2.5rem) auto;
 
     h3 {
-      font-size: 2rem;
-      margin: 0 0 0.8rem 0;
+      font-size: rem(2rem);
+      margin: 0 0 rem(0.8rem) 0;
     }
 
     h4 {
-      font-size: 1.1rem;
-      margin: 0 0 0.5rem 0;
+      font-size: rem(1.1rem);
+      margin: 0 0 rem(0.5rem) 0;
       font-weight: lighter;
     }
 
     h5 {
-      font-size: 1.9rem;
-      margin: 3rem 0 0.3rem 0;
+      font-size: rem(1.9rem);
+      margin: rem(3rem) 0 rem(0.3rem) 0;
       color: $pine;
 
       &:first-child {
-        margin: 0 0 0.3rem 0;
+        margin: 0 0 rem(0.3rem) 0;
       }
     }
 
     p {
-      font-size: 1.4rem;
-      line-height: 2.2rem;
-      margin: 1.2rem auto;
+      font-size: rem(1.4rem);
+      line-height: rem(2.2rem);
+      margin: rem(1.2rem) auto;
     }
 
     li {
-      font-size: 1.5rem;
-      margin-bottom: 0.8rem;
+      font-size: rem(1.5rem);
+      margin-bottom: rem(0.8rem);
     }
 
     a {
@@ -51,12 +51,12 @@
 
       &:hover{
         color: $blue !important;
-        box-shadow: 0 .3rem 0 $pine;
+        box-shadow: 0 rem(.3rem) 0 $pine;
       }
 
       &:active{
         color: $pine;
-        box-shadow: 0 .4rem 0 $pine;
+        box-shadow: 0 rem(.4rem) 0 $pine;
       }
 
       &:visited{
@@ -67,18 +67,18 @@
   }
 
   .support {
-    margin-top: 2rem;
+    margin-top: rem(2rem);
     font-style: italic;
     width: 70%;
 
     hr {
       border: transparent;
-      border-top: .1rem solid #ccc;
-      height: .1rem;
+      border-top: rem(.1rem) solid #ccc;
+      height: rem(.1rem);
     }
 
     p {
-      font-size: 1.3rem;
+      font-size: rem(1.3rem);
     }
   }
 
@@ -92,10 +92,10 @@
     background: none;
     border: solid 1px black;
     color: black;
-    margin-left: 1rem;
-    border-radius: .3rem;
+    margin-left: rem(1rem);
+    border-radius: rem(.3rem);
     vertical-align: text-bottom;
-    padding: 0 .5rem;
+    padding: 0 rem(.5rem);
 
     &:hover {
       color: blue;
@@ -106,8 +106,8 @@
   .stdout-debug {
     transition: height 300ms ease-in-out;
     background-color: rgb(240,240,240);
-    max-height: 50rem;
-    margin-top: 1rem;
+    max-height: rem(50rem);
+    margin-top: rem(1rem);
 
     &.open {
       overflow: auto;
@@ -119,7 +119,7 @@
 
     & > p {
       margin: 0;
-      padding: 1.5rem;
+      padding: rem(1.5rem);
     }
   }
 

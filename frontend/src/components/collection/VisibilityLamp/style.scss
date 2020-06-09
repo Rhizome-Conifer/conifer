@@ -32,15 +32,15 @@
     right: 0;
     display: flex;
     justify-content: flex-end;
-    margin-right: .5rem;
+    margin-right: rem(.5rem);
     cursor: pointer;
 
     transition: background $quickShift ease-in-out;
-    min-width: 2.4rem;
+    min-width: rem(2.4rem);
     text-align: center;
-    height: 2.4rem;
-    padding: 0.4rem;
-    border-radius: 2.4rem;
+    height: rem(2.4rem);
+    padding: rem(0.4rem);
+    border-radius: rem(2.4rem);
     border: 1px solid rgba(0,0,0,0);
 
     &.open {
@@ -77,9 +77,9 @@
 
     .lamp {
          background: $brightGreen;
-         border-radius: 1.4rem;
-         width: 1.4rem;
-         height: 1.4rem;
+         border-radius: rem(1.4rem);
+         width: rem(1.4rem);
+         height: rem(1.4rem);
          display: inline-block;
     }
 
@@ -94,9 +94,9 @@
 
     .bulb {
         transition: width $midShift ease-in-out;
-        height: 1.4rem;
+        height: rem(1.4rem);
         overflow:hidden;
-        font-size: 1rem;
+        font-size: rem(1rem);
         text-transform: uppercase;
         display: inline-block;
         text-align: center;
@@ -104,8 +104,8 @@
         align-items: center;
 
         svg {
-            width: 1rem;
-            height: 1rem;
+            width: rem(1rem);
+            height: rem(1rem);
 
             path {
                 fill: #FFF;
@@ -120,7 +120,7 @@
 
         span {
             transition: opacity $midShift ease-in-out;
-            padding-right: 0.4rem;
+            padding-right: rem(0.4rem);
             opacity: 0;
         }
     }

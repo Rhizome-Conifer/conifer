@@ -1,14 +1,14 @@
-
+@import 'src/vars';
 
 .wr-delete-modal {
     label {
         display: block;
-        margin-top: 2.5rem;
+        margin-top: rem(2.5rem);
     }
 
     button {
         svg {
-            margin-right: .5rem;
+            margin-right: rem(.5rem);
             vertical-align: text-top;
 
             path {

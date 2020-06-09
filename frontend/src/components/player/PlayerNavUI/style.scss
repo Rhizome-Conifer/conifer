@@ -5,8 +5,8 @@
 
   #help {
     position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
+    top: rem(1.5rem);
+    right: rem(1.5rem);
     border: none;
     background: none;
     display: flex;
@@ -14,7 +14,7 @@
     font-family: $sans;
 
     svg {
-      margin-right: .5rem;
+      margin-right: rem(.5rem);
     }
   }
 }
@@ -23,13 +23,13 @@ nav.topBar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 4rem;
-  padding: 0 .8rem;
+  height: rem(4rem);
+  padding: 0 rem(.8rem);
   flex-shrink: 0;
 
   background: $sidebarBg;
   color: #e8e8e8;
-  border-bottom: .1rem solid $gray350;
+  border-bottom: rem(.1rem) solid $gray350;
 
   .source {
     color: #000;
@@ -72,20 +72,20 @@ nav.topBar {
   }
 
   .logotype {
-    margin-left: 1rem;
+    margin-left: rem(1rem);
   }
 
   .wrLogoImg {
-    height: 2rem;
-    padding-right: .8rem;
+    height: rem(2rem);
+    padding-right: rem(.8rem);
   }
 
   .openFile {
-    height: 3rem;
+    height: rem(3rem);
   }
 
   .halp {
-    height: 2rem;
+    height: rem(2rem);
   }
 
 }

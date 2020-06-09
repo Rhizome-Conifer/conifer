@@ -22,9 +22,9 @@
         display: block;
         border-radius: 0;
 
-        width: 50rem;
-        padding: 1.5rem;
-        margin-top: 1rem;
+        width: rem(50rem);
+        padding: rem(1.5rem);
+        margin-top: rem(1rem);
 
         h5 {
             margin: 0;
@@ -40,8 +40,8 @@
         align-items: center;
 
         & > svg {
-            width: 1.4rem;
-            height: 1.4rem;
+            width: rem(1.4rem);
+            height: rem(1.4rem);
             vertical-align: baseline;
 
             path {
@@ -100,7 +100,7 @@
         position: absolute;
         right: 0;
         top: 0;
-        padding: .5rem 1.5rem;
+        padding: rem(.5rem) rem(1.5rem);
 
         svg {
             path {
@@ -120,7 +120,7 @@
     @media (max-width: 1200px) {
         .arrow_box:before, .arrow_box:after {
             left: initial;
-            right: 1.8rem;
+            right: rem(1.8rem);
         }
     }
 }
@@ -134,6 +134,6 @@
 @media (max-width: 767px) {
     .wr-info-widget.open > .dropdown-menu {
         left: initial;
-        right: -1.9rem;
+        right: rem(-1.9rem);
     }
 }

@@ -5,10 +5,10 @@
 }
 
 .wr-radio-target {
-    margin: 2rem 0;
+    margin: rem(2rem) 0;
 
     label {
-        margin-left: .5rem;
+        margin-left: rem(.5rem);
     }
 }
 
@@ -18,23 +18,23 @@
     align-items: center;
     position: relative;
     width: 100%;
-    height: 2.5rem;
+    height: rem(2.5rem);
     overflow: hidden;
-    margin-top: 2rem;
-    border-radius: .4rem;
-    border: solid #CCC .1rem;
+    margin-top: rem(2rem);
+    border-radius: rem(.4rem);
+    border: solid #CCC rem(.1rem);
     background: rgb(245, 245, 245);
 
     .progress {
         transition: width $slowShift ease-in-out;
         position: absolute;
         left: 0;
-        height: 5rem;
+        height: rem(5rem);
         background: rgb(116, 180, 90);
     }
 
     .progress-readout {
         z-index: 10;
-        font-size: 1.5rem;
+        font-size: rem(1.5rem);
     }
 }

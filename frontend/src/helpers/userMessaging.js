@@ -121,5 +121,8 @@ export default {
     incomplete_upload: 'The file upload was incomplete',
     no_file_specified: 'No upload file specified',
     upload_expired: 'Upload already finished',
+  },
+  settings: {
+    invalid_password: 'The current password you provided did not work.'
   }
 };

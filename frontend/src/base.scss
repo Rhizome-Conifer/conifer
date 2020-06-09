@@ -4,20 +4,13 @@
 @import './bootstrap';
 
 
-html {
-  font-size: 62.5%;
-}
+// html {
+//  font-size: 62.5%;
+// }
 
-html, body {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-size: $font-size-base;
-  font-family: $sans;
-  display: flex;
-}
+// body {
+//     display: flex;
+// }
 
 a {
   &:link, &:visited {
@@ -42,7 +35,7 @@ a {
 }
 
 .alert {
-  margin-top: 2.5rem;
+  margin-top: rem(2.5rem);
 }
 
 .caret {
@@ -74,28 +67,28 @@ a {
 button.btn-cta {
   background: $pine;
   color: $slate;
-  border: solid .3rem transparent;
+  border: solid rem(.3rem) transparent;
   box-sizing: border-box;
   transition: border-color .25s ease-in-out;
   font-weight: 600;
-  font-size: 1.4rem;
+  font-size: rem(1.4rem);
 
   &:hover {
-    border: solid .3rem $dusty-pine;
+    border: solid rem(.3rem) $dusty-pine;
   }
 }
 
 button.primary {
     background-color: $gray600;
-    border: solid .3rem transparent;
+    border: solid rem(.3rem) transparent;
     transition: border-color .25s ease-in-out;
     box-sizing: border-box;
     color: $white;
     font-weight: 600;
-    font-size: 1.4rem;
+    font-size: rem(1.4rem);
 
     &:hover {
-      border: solid .3rem $gray700;
+      border: solid rem(.3rem) $gray700;
     }
 }
 
@@ -108,19 +101,19 @@ button.primary {
 
 .click-highlight {
   transition: box-shadow .25s ease-in-out, border-color .25s ease-in-out;
-  border: solid .1rem transparent;
-  border-radius: .5rem;
-  padding: .3rem;
+  border: solid rem(.1rem) transparent;
+  border-radius: rem(.5rem);
+  padding: rem(.3rem);
   cursor: pointer;
 
   &:hover {
     border-color: #E0E3E3;
-    box-shadow: 0 0 .5rem #E0E3E3;
+    box-shadow: 0 0 rem(.5rem) #E0E3E3;
   }
 }
 
 .react-tabs__tab:first-of-type {
-    margin-left: 1rem;
+    margin-left: rem(1rem);
 }
 
 .form-group-recorder-url {
@@ -136,51 +129,51 @@ button.primary {
 }
 
 .top-buffer-sm {
-    margin-top: .5rem;
+    margin-top: rem(.5rem);
 }
 
 .top-buffer-md {
-    margin-top: 1rem;
+    margin-top: rem(1rem);
 }
 
 .top-buffer {
-    margin-top: 2rem;
+    margin-top: rem(2rem);
 }
 
 .top-buffer-lg {
-    margin-top: 4rem;
+    margin-top: rem(4rem);
 }
 
 .left-buffer {
-    margin-left: 2rem;
+    margin-left: rem(2rem);
 }
 
 .left-buffer-md {
-    margin-left: 1rem;
+    margin-left: rem(1rem);
 }
 
 .left-buffer-sm {
-  margin-left: .5rem;
+  margin-left: rem(.5rem);
 }
 
 .left-buffer-xs {
-    margin-left: .1rem;
+    margin-left: rem(.1rem);
 }
 
 .right-padding {
-  padding-right: 2rem;
+  padding-right: rem(2rem);
 }
 
 .right-buffer {
-  margin-right: 2rem;
+  margin-right: rem(2rem);
 }
 
 .right-buffer-sm {
-  margin-right: .5rem;
+  margin-right: rem(.5rem);
 }
 
 .bottom-buffer-lg {
-  margin-bottom: 4rem;
+  margin-bottom: rem(4rem);
 }
 
 .glyphicon.glyphicon-dot:before {
@@ -210,13 +203,13 @@ button.primary {
 }
 
 .ra-mode-badge {
-  padding: 0 .5rem;
-  font-size: 1.3rem;
-  border-radius: .2rem;
+  padding: 0 rem(.5rem);
+  font-size: rem(1.3rem);
+  border-radius: rem(.2rem);
   text-transform: uppercase;
   color: #FFF;
   font-weight: 300;
-  letter-spacing: .1rem;
+  letter-spacing: rem(.1rem);
 }
 
 .wr-content {
@@ -246,8 +239,8 @@ button.primary {
 .rounded {
   color: $gray600;
   border-radius: 0;
-  padding: 0.7rem 3rem;
-  font-size: 1.15rem;
+  padding: rem(0.7rem) rem(3rem);
+  font-size: rem(1.15rem);
   background: transparent;
 }
 
@@ -328,12 +321,12 @@ button.primary {
   }
 }
 .navbar-user-links li.navbar-right{
-  margin-left:0.5rem;
+  margin-left:rem(0.5rem);
   text-align: center;
 }
 #wr-popover-delete {
-    max-width: 40rem;
-    min-width: 20rem;
+    max-width: rem(40rem);
+    min-width: rem(20rem);
 
     h4 {
         font-weight: 300;
@@ -341,7 +334,7 @@ button.primary {
 
     .warning {
         color: $warning;
-        margin: 1rem 0;
+        margin: rem(1rem) 0;
     }
 
     .action-row {
@@ -351,8 +344,8 @@ button.primary {
 
     .wr-loader {
         vertical-align: middle;
-        width: 1.8rem;
-        height: 1.8rem;
+        width: rem(1.8rem);
+        height: rem(1.8rem);
 
         path {
             fill: #FFF;

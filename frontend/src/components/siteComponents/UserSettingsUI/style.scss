@@ -7,7 +7,7 @@
 
     span {
         font-style: italic;
-        margin-left: 1rem;
+        margin-left: rem(1rem);
     }
 }
 
@@ -26,30 +26,31 @@
             border-color: $pine;
         }
 
-        margin-bottom: 5rem;
+        margin-bottom: rem(5rem);
     }
 
     .admin-options {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 2.5rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-gap: 1.5rem;
+        margin-top: rem(2.5rem);
 
         h5 {
-            border-bottom: solid .1rem;
-            padding-bottom: .5rem;
-            margin-bottom: 1.5rem;
+            border-bottom: solid rem(.1rem);
+            padding-bottom: rem(.5rem);
+            margin-bottom: rem(1.5rem);
         }
 
         .admin-section {
             &.suspend {
                 p {
-                    width: 20rem;
+                    width: rem(20rem);
                 }
             }
 
             &.update-role {
                 h5 {
-                    margin-bottom: 1rem;
+                    margin-bottom: rem(1rem);
                 }
             }
         }
@@ -62,12 +63,12 @@
     }
 
     .settings-block {
-        margin-bottom: 5rem;
+        margin-bottom: rem(5rem);
 
         h3 {
-            padding: 0 0 .5rem 1.5rem;
-            margin-left: -1.5rem;
-            border-bottom: solid .1rem $mgmt-gray;
+            padding: 0 0 rem(.5rem) rem(1.5rem);
+            margin-left: rem(-1.5rem);
+            border-bottom: solid rem(.1rem) $mgmt-gray;
         }
 
         .progress-bar {
@@ -77,25 +78,26 @@
         .upgrade {
             display: flex;
             justify-content: space-between;
+            margin-top: rem(1.5rem);
         }
     }
 
     .profile {
         .username {
-            margin: 1.5rem 0;
+            margin: rem(1.5rem) 0;
         }
 
         .rounded {
             svg {
                 vertical-align: middle;
-                margin: 0 .5rem 0 -.5rem;
+                margin: 0 rem(.5rem) 0 rem(-.5rem);
             }
         }
     }
 
     .security {
         .account-email {
-            margin: 1.5rem 0;
+            margin: rem(1.5rem) 0;
         }
 
         .rounded {
@@ -130,7 +132,7 @@
 
         svg {
             vertical-align: text-top;
-            margin-right: .5rem;
+            margin-right: rem(.5rem);
 
             path {
                 fill: $warning;

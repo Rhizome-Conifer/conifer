@@ -36,19 +36,19 @@
     }
 
     img {
-        width: 1.6rem;
-        height: 1.6rem;
+        width: rem(1.6rem);
+        height: rem(1.6rem);
     }
 
     .ra-recording {
         text-decoration: underline;
-        margin-left: .5rem;
+        margin-left: rem(.5rem);
         white-space: normal;
     }
 
     .ra-mode-badge.patch {
         background-color: rgb(204,204,204);
-        margin-right: .5rem;
+        margin-right: rem(.5rem);
     }
 
     .ra-mode-row {
@@ -58,15 +58,15 @@
 
     .ra-replay-info-label {
         color: rgb(153,153,153);
-        font-size: 1.2rem;
+        font-size: rem(1.2rem);
         font-weight: 300;
-        letter-spacing: .1rem
+        letter-spacing: rem(.1rem)
     }
 
     .ra-resources {
-        border: solid .1rem rgb(204,204,204);
-        padding: .5rem 1rem;
-        margin-top: 1.5rem;
+        border: solid rem(.1rem) rgb(204,204,204);
+        padding: rem(.5rem) rem(1rem);
+        margin-top: rem(1.5rem);
 
         & > ul {
             padding: 0;
@@ -76,8 +76,8 @@
     }
 
     .sources-widget {
-        min-width: 15rem;
-        padding: 0 1.5rem 0 .8rem;
+        min-width: rem(15rem);
+        padding: 0 rem(1.5rem) 0 rem(.8rem);
         height: 100%;
         border-radius: 0;
 
@@ -88,7 +88,7 @@
             justify-content: center;
 
             li {
-                font-size: 1.1rem;
+                font-size: rem(1.1rem);
 
                 &.ts {
                    font-weight: 300;
@@ -96,7 +96,7 @@
 
                 &.mnt-label {
                     font-weight: 400;
-                    letter-spacing: .1rem;
+                    letter-spacing: rem(.1rem);
                 }
             }
         }
@@ -113,13 +113,13 @@
     display: flex;
     border-radius: 0;
     margin: 0;
-    min-width: 40rem;
-    padding: 1.5rem;
+    min-width: rem(40rem);
+    padding: rem(1.5rem);
 
     flex-direction: column;
     justify-content: space-between;
 
     @media (max-width: 768px) {
-        min-width: 30rem;
+        min-width: rem(30rem);
     }
 }

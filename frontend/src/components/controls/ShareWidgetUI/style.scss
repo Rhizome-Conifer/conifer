@@ -1,7 +1,7 @@
 @import 'src/vars';
 
 #share-widget .dropdown-menu {
-    padding: 1rem;
+    padding: rem(1rem);
 }
 
 .share-container {
@@ -11,16 +11,16 @@
         display: flex;
 
         & > div {
-            margin-left: 1rem;
+            margin-left: rem(1rem);
         }
     }
 
     .dropdown-menu {
-        min-width: 35rem;
+        min-width: rem(35rem);
     }
 
     .share-modal {
-        min-width: 30rem;
+        min-width: rem(30rem);
 
         label {
             display: block;
@@ -28,18 +28,18 @@
         }
 
         input {
-            margin-bottom: 1rem;
+            margin-bottom: rem(1rem);
         }
 
         p {
-            margin: 0 4rem 1rem 0;
+            margin: 0 rem(4rem) rem(1rem) 0;
         }
     }
 
     .shareables {
         transition: height $midShift ease-out;
         overflow: hidden;
-        margin-top: 1.5rem;
+        margin-top: rem(1.5rem);
 
         &.disabled {
             height: 0 !important;

@@ -4,14 +4,14 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding-bottom: 1.5rem;
+    padding-bottom: rem(1.5rem);
     //user-select: none;
 
     nav {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0 1rem;
+        padding: 0 rem(1rem);
 
         button {
             padding: 0;
@@ -23,24 +23,24 @@
     }
 
     .list-header {
-        border: solid .1rem $gray500;
-        border-width: 0 0 .1rem 0;
-        padding: 0 1rem;
-        max-height: 30rem;
+        border: solid rem(.1rem) $gray500;
+        border-width: 0 0 rem(.1rem) 0;
+        padding: 0 rem(1rem);
+        max-height: rem(30rem);
         overflow: auto;
 
         h4 {
             display: flex;
-            font-size: 1.6rem;
+            font-size: rem(1.6rem);
             font-weight: 400;
-            line-height: 2.2rem;
-            margin: 1rem 0 0.5rem 0;
+            line-height: rem(2.2rem);
+            margin: rem(1rem) 0 rem(0.5rem) 0;
 
             & > svg {
-                width: 1.5rem;
-                height: 1.5rem;
+                width: rem(1.5rem);
+                height: rem(1.5rem);
                 flex-shrink: 0;
-                margin-right: 1.5rem;
+                margin-right: rem(1.5rem);
                 align-self: center;
                 g {
                   fill: $gray600;
@@ -57,11 +57,11 @@
         position: relative;
         flex-grow: 1;
         // sidebar handle buffer
-        margin-right: .4rem;
+        margin-right: rem(.4rem);
 
         .row-index-container {
             align-self: flex-start;
-            margin-top: .6rem;
+            margin-top: rem(.6rem);
         }
     }
 
@@ -70,7 +70,7 @@
                     color $tableRowFade ease-in-out;
         color: $bookmarkListDefault;
         cursor: pointer;
-        padding-left: .75rem;
+        padding-left: rem(.75rem);
         position: relative;
 
         &:before {
@@ -78,7 +78,7 @@
             position: absolute;
             left: 0;
             content: '';
-            width: .75rem;
+            width: rem(.75rem);
             height: 100%;
         }
 
@@ -92,14 +92,14 @@
 
         .bookmark-title {
             h2 {
-                font-size: 1.5rem;
+                font-size: rem(1.5rem);
                 font-weight: 400;
                 margin: 0;
-                line-height: 1.3rem;
+                line-height: rem(1.3rem);
             }
 
             span {
-                font-size: 1rem;
+                font-size: rem(1rem);
             }
         }
 

@@ -12,14 +12,14 @@
         flex-grow: 1;
 
         // sidebar handle buffer
-        margin: 0 .4rem 1rem 0;
+        margin: 0 rem(.4rem) rem(1rem) 0;
 
         .row-index-container {
             align-self: flex-start;
-            margin-top: .5rem;
+            margin-top: rem(.5rem);
 
             .row-index {
-                font-size: 1rem;
+                font-size: rem(1rem);
                 color: #B2B2B2;
             }
         }
@@ -30,7 +30,7 @@
                     color $tableRowFade ease-in-out;
         color: $bookmarkListDefault;
         cursor: pointer;
-        padding-left: .75rem;
+        padding-left: rem(.75rem);
         position: relative;
 
         &:before {
@@ -38,7 +38,7 @@
             position: absolute;
             left: 0;
             content: '';
-            width: .75rem;
+            width: rem(.75rem);
             height: 100%;
         }
 
@@ -52,14 +52,14 @@
 
         .page-title {
             h2 {
-                font-size: 1.5rem;
+                font-size: rem(1.5rem);
                 font-weight: 400;
                 margin: 0;
-                line-height: 1.3rem;
+                line-height: rem(1.3rem);
             }
 
             span {
-                font-size: 1rem;
+                font-size: rem(1rem);
             }
         }
 

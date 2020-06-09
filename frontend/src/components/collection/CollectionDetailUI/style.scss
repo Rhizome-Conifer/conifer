@@ -2,7 +2,7 @@
 
 .add-to-lists-modal {
     width: 30vw;
-    max-width: 45rem;
+    max-width: rem(45rem);
 
     h4 {
         margin: 0;
@@ -16,7 +16,7 @@
 
         li {
             label {
-                margin-left: 1rem;
+                margin-left: rem(1rem);
             }
         }
     }
@@ -26,13 +26,13 @@
     pointer-events: none;
     position: fixed;
     z-index: 100;
-    font-size: 1.8rem;
+    font-size: rem(1.8rem);
     background: #FFF;
-    padding: 0 .8rem;
-    border: solid .4rem $success-color;
+    padding: 0 rem(.8rem);
+    border: solid rem(.4rem) $success-color;
     font-weight: 600;
     color: $gray600;
-    border-radius: 2.7rem;
+    border-radius: rem(2.7rem);
 }
 
 .table-header-modal {
@@ -47,7 +47,7 @@
             text-transform: uppercase;
 
             input {
-                margin-right: 1rem;
+                margin-right: rem(1rem);
             }
         }
     }
@@ -57,12 +57,12 @@
     flex-grow: 1;
     display: flex;
     width: 100%;
-    padding: 0rem .5rem 0 0;
+    padding: rem(0rem) rem(.5rem) 0 0;
     font-family: $sans;
 
     &.with-list {
         .wr-coll-detail-table .ReactVirtualized__Table__headerColumn > div {
-            font-size: 1rem;
+            font-size: rem(1rem);
             font-weight: 500;
             letter-spacing: 0.5pt;
         }

@@ -22,7 +22,7 @@
 
     .dropdown-menu {
         width: 100%;
-        max-height: 40rem;
+        max-height: rem(40rem);
         overflow: auto;
         padding: 0;
         border-radius: 0;
@@ -33,7 +33,7 @@
 
 
         .dropdown-item {
-            padding: 1rem 1rem;
+            padding: rem(1rem) rem(1rem);
 
             &.make-wrap a {
                 white-space: normal;

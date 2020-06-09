@@ -4,11 +4,11 @@
 .wr-coll-session {
     display: flex;
     position: relative;
-    border: solid .1rem $mgmt-gray;
-    border-width: 0 0 .1rem 0;
+    border: solid rem(.1rem) $mgmt-gray;
+    border-width: 0 0 rem(.1rem) 0;
 
     &:nth-child(2) {
-        border-width: .1rem 0 .1rem 0;
+        border-width: rem(.1rem) 0 rem(.1rem) 0;
     }
 
     .Collapsible {
@@ -21,7 +21,7 @@
                 display: flex;
                 position: relative;
                 align-items: center;
-                padding: 1rem 1rem 1rem 2rem;
+                padding: rem(1rem) rem(1rem) rem(1rem) rem(2rem);
 
                 &:before {
                     transition: background $quickShift ease-in-out;
@@ -31,14 +31,14 @@
                     left: 0;
                     top: 0;
                     bottom: 0;
-                    width: 1.5rem;
+                    width: rem(1.5rem);
                 }
 
                 &.collapsible {
                     cursor: pointer;
 
                     h2 {
-                        margin-left: 2.5rem;
+                        margin-left: rem(2.5rem);
                         flex-grow: 0;
                         width: 25%;
                     }
@@ -57,16 +57,16 @@
 
                     .delete-action {
                         svg {
-                            width: .8rem;
-                            height: .8rem;
+                            width: rem(.8rem);
+                            height: rem(.8rem);
                         }
                     }
 
                     button {
                         background: none;
-                        border-radius: .3rem;
-                        margin-left: .5rem;
-                        border: solid .1rem #CCC;
+                        border-radius: rem(.3rem);
+                        margin-left: rem(.5rem);
+                        border: solid rem(.1rem) #CCC;
                     }
                 }
 
@@ -77,7 +77,7 @@
 
                 h2 {
                     transition: color $quickShift ease-in-out;
-                    font-size: 1.4rem;
+                    font-size: rem(1.4rem);
                     margin: 0;
                 }
             }
@@ -108,12 +108,12 @@
         .Collapsible__contentInner {
             display: flex;
             justify-content: space-around;
-            min-height: 20rem;
-            padding: 1.5rem 1.5rem 3rem 1.5rem;
+            min-height: rem(20rem);
+            padding: rem(1.5rem) rem(1.5rem) rem(3rem) rem(1.5rem);
 
             h4 {
-                margin: 0 0 .5rem 0;
-                font-size: 1.3rem;
+                margin: 0 0 rem(.5rem) 0;
+                font-size: rem(1.3rem);
                 font-weight: 400;
             }
 
@@ -127,28 +127,28 @@
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                width: 10rem;
+                width: rem(10rem);
 
                 .date-header {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    margin-bottom: 2.5rem;
+                    margin-bottom: rem(2.5rem);
 
                     .dom {
-                        font-size: 2.9rem;
-                        line-height: 2.9rem;
-                        margin-bottom: .5rem;
+                        font-size: rem(2.9rem);
+                        line-height: rem(2.9rem);
+                        margin-bottom: rem(.5rem);
                     }
 
                     .mon {
-                        font-size: 1.9rem;
-                        line-height: 1.9rem;
+                        font-size: rem(1.9rem);
+                        line-height: rem(1.9rem);
                     }
 
                     .dow {
-                        font-size: 1.5rem;
-                        line-height: 1.5rem;
+                        font-size: rem(1.5rem);
+                        line-height: rem(1.5rem);
                         text-transform: uppercase;
                     }
 
@@ -165,7 +165,7 @@
                         width: 100%;
 
                         &:first-of-type {
-                            margin: 0 0 .5rem 0;
+                            margin: 0 0 rem(.5rem) 0;
                         }
                     }
                 }
@@ -178,7 +178,7 @@
             }
 
             .session-notes {
-                margin: 0 2.5rem;
+                margin: 0 rem(2.5rem);
                 width: 25%;
             }
 

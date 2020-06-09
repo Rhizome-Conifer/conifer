@@ -2,8 +2,8 @@
 
 footer {
     width: 100%;
-    margin-top: 5rem;
-    padding: 4rem 0 3rem 0;
+    margin-top: rem(5rem);
+    padding: rem(4rem) 0 rem(3rem) 0;
     color: $white;
     background: $slate;
 
@@ -22,7 +22,7 @@ footer {
                 }
 
                 li {
-                    margin-bottom: 1rem;
+                    margin-bottom: rem(1rem);
 
                     a {
                         color: $white;
@@ -32,21 +32,21 @@ footer {
         }
 
         #email-signup {
-            margin-bottom: 2rem;
+            margin-bottom: rem(2rem);
             padding-left: 0;
 
             .form-group-sm {
                 display: flex;
 
                 input {
-                    width: 15rem;
+                    width: rem(15rem);
                 }
             }
 
             input {
                 border: none;
                 border-radius: 0;
-                height: 4rem;
+                height: rem(4rem);
             }
         }
     }
@@ -58,7 +58,7 @@ footer {
         padding: 0 10%;
 
         button {
-            margin: 1rem 0 1.5rem 0;
+            margin: rem(1rem) 0 rem(1.5rem) 0;
         }
     }
 }
