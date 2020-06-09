@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { Dropdown, InputGroup } from 'react-bootstrap';
 
 import OutsideClick from 'components/OutsideClick';
 import TimeFormat from 'components/TimeFormat';
@@ -62,8 +63,8 @@ class ExtractWidgetUI extends Component {
     );
 
     return (
-      <OutsideClick classes={classes} handleClick={this.close}>
-        <button className="btn btn-primary sources-widget dropdown-toggle" onClick={this.toggle} type="button" id="timePicker" aria-haspopup="true" aria-expanded="true">
+      <Dropdown size="sm" alignRight as={InputGroup.Append} className="extract-selector sources-widget">
+        <Dropdown.Toggle>
           <ul>
             <li className="ts main-replay-date">{timestamp ? <TimeFormat dt={timestamp} gmt /> : 'Most Recent'}</li>
             <li className="mnt-label">
@@ -72,8 +73,8 @@ class ExtractWidgetUI extends Component {
               <span className="caret" />
             </li>
           </ul>
-        </button>
-        <div className="dropdown-menu" aria-labelledby="timePicker">
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
           <div className="ra-mode-row">
             <span className="ra-mode-badge extract">extracting</span> to <div className="ra-collection">{ toCollection || 'Choose a collection' }</div>
           </div>
@@ -132,8 +133,8 @@ class ExtractWidgetUI extends Component {
                 <label htmlFor="all-archives">Automatically attempt recovery of missing resources using public archives and the live web.</label>
               </div>
           }
-        </div>
-      </OutsideClick>
+        </Dropdown.Menu>
+      </Dropdown>
     );
   }
 }

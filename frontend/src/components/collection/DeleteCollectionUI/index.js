@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Button, ControlLabel, FormControl, FormGroup, HelpBlock } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 
 import { getCollectionLink } from 'helpers/utils';
 import { collection as collectionErr } from 'helpers/userMessaging';
@@ -21,7 +21,8 @@ class DeleteCollectionUI extends Component {
     deleting: PropTypes.bool,
     deleteColl: PropTypes.func,
     error: PropTypes.string,
-    wrapper: PropTypes.func
+    trigger: PropTypes.node,
+    wrapper: PropTypes.func,
   };
 
   constructor(props) {
@@ -47,7 +48,7 @@ class DeleteCollectionUI extends Component {
     const { collection, user } = this.props;
     const { confirmDelete } = this.state;
 
-    if (this.validateConfirmDelete() === 'success' || this.context.isAnon) {
+    if (this.validateConfirmDelete() || this.context.isAnon) {
       this.handle = setTimeout(() => this.setState({ indicator: true }), 300);
       this.props.deleteColl(collection.get('owner'), collection.get('id'), user.get('anon'));
     }
@@ -62,23 +63,27 @@ class DeleteCollectionUI extends Component {
     }
 
     if (confirmDelete && collection.get('title').toLowerCase() !== confirmDelete.toLowerCase()) {
-      return 'error';
+      return false;
     }
 
-    return 'success';
+    return true;
   }
 
   render() {
     const { isAnon } = this.context;
-    const { collection, deleting, error, wrapper } = this.props;
+    const { collection, deleting, error, trigger, wrapper } = this.props;
 
     const Wrapper = wrapper || Button;
 
     return (
       <React.Fragment>
-        <Wrapper onClick={this.toggleDeleteModal}>
-          {this.props.children}
-        </Wrapper>
+        {
+          trigger ?
+            <div onClick={this.toggleDeleteModal}>{trigger}</div> :
+            <Wrapper onClick={this.toggleDeleteModal}>
+              {this.props.children}
+            </Wrapper>
+        }
         <Modal
           visible={this.state.deleteModal}
           closeCb={this.toggleDeleteModal}
@@ -86,8 +91,8 @@ class DeleteCollectionUI extends Component {
           header={<h4>Confirm Delete Collection</h4>}
           footer={
             <React.Fragment>
-              <Button onClick={!deleting ? this.toggleDeleteModal : undefined} disabled={deleting} style={{ marginRight: 5 }}>Cancel</Button>
-              <Button onClick={!deleting ? this.deleteCollection : undefined} disabled={!isAnon && (deleting || this.validateConfirmDelete() !== 'success')} variant="danger">
+              <Button variant="outline-secondary" onClick={!deleting ? this.toggleDeleteModal : undefined} disabled={deleting} style={{ marginRight: 5 }}>Cancel</Button>
+              <Button onClick={!deleting ? this.deleteCollection : undefined} disabled={!isAnon && (deleting || !this.validateConfirmDelete())} variant="danger">
                 {
                   deleting && this.state.indicator &&
                     <LoaderIcon />
@@ -101,22 +106,24 @@ class DeleteCollectionUI extends Component {
           <p>Be sure to download the collection first if you would like to keep any data.</p>
           {
             !isAnon &&
-              <FormGroup validationState={this.validateConfirmDelete()}>
-                <ControlLabel>Type the collection title to confirm:</ControlLabel>
-                <FormControl
+              <Form.Group>
+                <Form.Label>Type the collection title to confirm:</Form.Label>
+                <Form.Control
                   autoFocus
+                  required
                   disabled={deleting}
                   id="confirm-delete"
                   name="confirmDelete"
                   onChange={this.handleChange}
                   placeholder={collection.get('title')}
+                  isInvalid={!this.validateConfirmDelete()}
                   type="text"
                   value={this.state.confirmDelete} />
-              </FormGroup>
+              </Form.Group>
           }
           {
             error &&
-              <HelpBlock style={{ color: 'red' }}>{ collectionErr[error] || 'Error encountered' }</HelpBlock>
+              <Form.Text style={{ color: 'red' }}>{ collectionErr[error] || 'Error encountered' }</Form.Text>
           }
         </Modal>
       </React.Fragment>

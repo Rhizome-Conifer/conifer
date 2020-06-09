@@ -5,13 +5,7 @@
     padding-right:0;
 }
 
-.rb-dropdown, .extract-selector, .patch-selector  {
-    // .container {
-    //     width: 60vw;
-    // }
-    #cnt-button {
-        border-width: .1rem 0 .1rem .1rem;
-    }
+.rb-dropdown, .patch-selector  { //.extract-selector
 
     .rb-dropdown .dropdown-toggle {
         background-image: none;
@@ -46,6 +40,8 @@
     .row {
         padding: 1rem 0;
         margin: 0 -1.5rem 0 -1.5rem;
+        display: flex;
+        width: auto;
 
         &:first-child {
             padding: .5rem 0;
@@ -70,12 +66,16 @@
         float: right;
     }
 
-    button + button {
-        margin-right: .5rem;
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+
+        button + button {
+            margin-right: .5rem;
+        }
     }
 
     button#prepare {
-        float: right;
         margin-top: 1.5rem;
         padding: 1rem 2rem;
         margin-right: 8px;
@@ -108,23 +108,11 @@
     }
 
     .rb-dropdown {
-       .dropdown {
+       .dropdown-menu {
            width: 100%;
 
-           #cnt-button {
-               display: flex;
-               justify-content: space-between;
-               align-items: center;
+           .container {
                width: 100%;
-               border-width: .1rem;
-           }
-
-           .dropdown-menu {
-               width: 100%;
-
-               .container {
-                   width: 100%;
-               }
            }
        }
     }

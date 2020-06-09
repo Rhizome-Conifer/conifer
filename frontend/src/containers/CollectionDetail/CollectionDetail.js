@@ -101,7 +101,7 @@ const mapStateToProps = (outerState) => {
     loaded: reduxAsyncConnect.loaded,
     pages,
     publicIndex: app.getIn(['collection', 'public_index']),
-    searchText: app.getIn(['collection', 'search'])
+    searched: app.getIn(['collection', 'searched'])
   };
 };
 

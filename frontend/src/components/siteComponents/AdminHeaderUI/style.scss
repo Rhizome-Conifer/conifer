@@ -5,6 +5,10 @@
     display: flex;
     align-items: center;
 
+    .active-collection {
+        margin-left: .5rem;
+    }
+
     .managing-collection {
         flex-shrink: 0;
         margin-right: 1rem;
@@ -51,6 +55,16 @@
                     text-overflow: elipsis;
                     overflow: hidden;
                 }
+
+                svg {
+                    path, polyline, polygon {
+                        stroke: $white;
+                    }
+
+                    .w-letter {
+                        fill: $white;
+                    }
+                }
             }
 
             &.open > .dropdown-toggle {
@@ -70,15 +84,22 @@
                     outline: none;
                     box-shadow: none;
                 }
-            }
 
-            svg {
-                path, polyline, polygon {
-                    stroke: $white;
-                }
+                .dropdown-item {
 
-                .w-letter {
-                    fill: $white;
+                    &:not(:hover):not(.active) {
+                        color: $white;
+
+                        svg {
+                            path, polyline, polygon {
+                                stroke: $white;
+                            }
+
+                            .w-letter {
+                                fill: $white;
+                            }
+                        }
+                    }
                 }
             }
         }

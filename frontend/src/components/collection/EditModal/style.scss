@@ -5,10 +5,18 @@
         border: none;
     }
 
+    .modal-body {
+        padding: 0;
+    }
+
     .modal-footer {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         border: none;
+
+        button+button {
+            margin-left: 1.5rem;
+        }
 
         &:before, &:after {
             content: none;

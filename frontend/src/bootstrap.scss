@@ -13,6 +13,7 @@ $input-border-color: $gray400;
 $input-focus-border-color: $input-border-color;
 $form-feedback-invalid-color: $warning;
 $input-btn-focus-color: rgba($pine-accent, .25);
+$component-active-color: $slate;
 
 @import "~bootstrap/scss/bootstrap";
 
@@ -20,6 +21,16 @@ $input-btn-focus-color: rgba($pine-accent, .25);
 
 .form-control {
     border-radius: 0;
+}
+
+.dropdown-toggle {
+    text-align: left;
+
+    &.btn-block {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 }
 
 .btn {
@@ -32,12 +43,43 @@ $input-btn-focus-color: rgba($pine-accent, .25);
         font-weight: 600;
         font-size: 1.4rem;
 
-        &:not(:disabled):not(.disabled):active, &:not(:disabled):not(.disabled):active:focus, &:focus, &:hover {
+        &:not(.btn-lg) {
+            padding: .175rem .55rem;
+        }
+
+
+        #{$bs-button-interactive} {
           border: solid .3rem $pine-accent;
           background-color: $pine;
           box-shadow: none;
+          box-shadow: none;
         }
     }
+
+    &.btn-dark {
+        background-color: $slate;
+        border-color: $gray700;
+
+        &:hover {
+            border-color: $gray500;
+        }
+    }
+
+    &.btn-link {
+        color: $slate;
+    }
+
+    // &.btn-outline-secondary {
+    //     &:hover {
+    //         path {
+    //             stroke: $white;
+    //         }
+    //         polygon {
+    //             fill: $white;
+    //             stroke: $white;
+    //         }
+    //     }
+    // }
 
     &.btn-secondary {
         border: solid .3rem transparent;

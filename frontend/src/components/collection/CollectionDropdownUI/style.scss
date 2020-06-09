@@ -10,13 +10,13 @@
     }
 
     .dropdown-toggle {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
+        // display: flex;
+        // justify-content: space-between;
+        // align-items: center;
+        // width: 100%;
 
         svg {
-            vertical-align: bottom;
+            vertical-align: middle;
         }
     }
 
@@ -27,42 +27,21 @@
         padding: 0;
         border-radius: 0;
 
-        li {
-            a {
-                padding: 1rem 1rem;
+        .dropdown-divider {
+            margin: 0;
+        }
 
-                &:focus {
-                    outline: none;
-                }
 
-            }
-
-            &.active {
-                a {
-                    background: $pine;
-                }
-
-                polygon, polyline, path {
-                    stroke: #FFF;
-                }
-
-                #W {
-                    fill: #FFF;
-                }
-            }
-
-            &.divider {
-                margin: 0;
-            }
+        .dropdown-item {
+            padding: 1rem 1rem;
 
             &.make-wrap a {
                 white-space: normal;
             }
 
             svg {
-                vertical-align: bottom;
+                vertical-align: top;
             }
         }
     }
 }
-

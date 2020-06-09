@@ -1,45 +1,8 @@
 @import 'src/vars';
 
-.mode-selector {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    .wr-mode-message .preview-mode {
-        width: 1rem;
-        height: 1rem;
-        margin-right: .5rem;
-    }
-}
-
-
-.wr-mode-selector.open > .dropdown-menu {
-    opacity: 1;
-    transform: scale(1, 1);
-    top: 100%;
-    left: auto;
-}
-
 .wr-mode-selector {
-    display: flex;
-
-    button {
-        border-radius: 0;
-    }
-
-    ul {
-        margin: 0;
-        padding: 1rem 0;
-
-        & > li {
-            list-style-type: none;
-        }
-    }
-
     .row {
         padding: 1rem 0;
-        display: table;
-        width: 100%;
     }
 
     li {
@@ -59,6 +22,15 @@
     }
 
     .wr-mode-message {
+        border-right-width: 0;
+        white-space: nowrap;
+
+        #{$bs-button-interactive} {
+            background-color: transparent;
+            color: $slate;
+            box-shadow: none;
+        }
+
         & > span {
             transition: opacity $midShift ease-in-out, transform $midShift ease-in-out;
             transition-delay: .045s;
@@ -81,42 +53,45 @@
             opacity: 1;
         }
 
-        .glyphicon {
-            vertical-align: text-top;
-        }
-
-        .glyphicon-stop {
-            font-size: 1.3rem;
-        }
-
         svg {
-            width: 1.4rem;
-            height: 1.4rem;
-            vertical-align: text-top;
-        }
-    }
+            width: 1.2rem;
+            height: 100%;
+            vertical-align: middle;
 
-    .dropdown-toggle .glyphicon {
-        vertical-align: sub;
+            &.stop-icon {
+                width: 1rem;
+            }
+        }
     }
 
     .wr-mode:not(.disabled):not(.active) { cursor: pointer; }
-    .wr-mode.active { background: #eef9ea; }
+    .wr-mode.active { background: $pine; }
     .wr-mode.disabled { opacity: 0.6; filter: grayscale(100%); }
     .wr-mode:not(.disabled):not(.active):hover { background-color: #E3E3E3; }
 }
 
-.wr-modes {
+.wr-mode {
     min-width: 35rem;
     position: relative;
 
+    &.active:before {
+        content: '';
+        position: absolute;
+        display: block;
+        width: 1rem;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background: $dusty-pine;
+    }
+
     .wr-mode-icon {
-        font-size: 2em;
+        font-size: 1em;
     }
 
     svg {
-        width: 2.8rem;
-        height: 2.8rem;
+        width: 1.8rem;
+        height: 1.8rem;
     }
 }
 
@@ -126,20 +101,4 @@
     width: 1.7rem;
     height: 1.7rem;
     border-radius: 50%;
-}
-
-
-.wr-mode {
-    position: relative;
-
-    &.active:after {
-        content: '';
-        position: absolute;
-        display: block;
-        width: 1rem;
-        height: 100%;
-        left: 0;
-        top: 0;
-        background: #5fd85f;
-    }
 }

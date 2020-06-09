@@ -4,64 +4,36 @@
     position: relative;
     width: 100%;
 
-    .search-box {
-        .input-wrapper {
-            position: relative;
+    .input-group {
+        border: solid .4rem $pine;
+        border-width: 0 0 .4rem 0;
 
-            .search-icon {
-                position: absolute;
-                left: 1rem;
-                height: 3rem;
-                z-index: 20;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
+        .input-group-text {
+            background-color: transparent;
+            border: none;
+        }
 
-                svg {
-                    width: 1.5rem;
-                    height: 1.5rem;
+        input {
+            padding-right: 4rem;
+            flex-grow: 1;
+            border: none;
+            outline: none;
+            box-shadow: none;
 
-                    path {
-                        fill: $gray500;
-                    }
-                }
-            }
-
-            input {
-                padding-left: 3.2rem;
-                padding-right: 4rem;
-                flex-grow: 1;
-                border: solid .4rem $pine;
-                border-width: 0 0 .4rem 0;
-                outline: none;
+            &:focus {
                 box-shadow: none;
             }
+        }
+    }
 
-            .searchbar-actions {
-                position: absolute;
-                right: .2rem;
-                height: 3rem;
-                z-index: 20;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+    svg {
+        height: 100%;
+    }
 
-                .advanced-options {
-                    // position: absolute;
-                    // right: .2rem;
-                    // top: .2rem;
-                    // height: 2.6rem;
-                    // z-index: 20;
-                    font-size: 1rem;
-                    background: linear-gradient(-90deg, #FFF 80%, rgba(255,255,255,0));
-                    // padding-left: 1rem;
-                    color: $gray600;
+    .input-group-append {
 
-                    .glyphicon {
-                        vertical-align: middle;
-                    }
-                }
-            }
+        .btn-link {
+            color: $slate;
         }
     }
 

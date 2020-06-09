@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
 import removeMd from 'remove-markdown';
-import { Button, DropdownButton, FormControl, MenuItem } from 'react-bootstrap';
+import { Button, Dropdown, FormControl, MenuItem } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { appHost, onboardingLink, truncSentence, truncWord } from 'config';
@@ -180,30 +180,35 @@ class CollectionHeaderUI extends Component {
             canAdmin &&
               <div className="menu-row">
                 <Button variant="outline-secondary" onClick={this.newSession}><PlusIcon /><span className="hidden-xs"> New Session</span></Button>
-                <DropdownButton id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
-                  <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
-                  {
-                    !isAnon &&
-                      <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>{ __DESKTOP__ ? 'Import' : 'Upload' } To Collection</Upload>
-                  }
-                  <MenuItem onClick={this.downloadCollection}>{ __DESKTOP__ ? 'Export' : 'Download' } Collection</MenuItem>
-                  <MenuItem divider />
-                  <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
-                  {
-                    allowDat && canAdmin && !isAnon && newFeatures &&
-                      <React.Fragment>
-                        <MenuItem divider />
-                        <MenuItem onClick={this.toggleDatModal}><p className="menu-label">More Sharing Options</p><DatIcon /> Share via Dat...</MenuItem>
-                      </React.Fragment>
-                  }
-                  {
-                    onboardingLink && !isMobile &&
-                      <React.Fragment>
-                        <MenuItem divider />
-                        <MenuItem onClick={this.showOnboarding}><span role="img" aria-label="tada emoji">&#127881;</span> Tour New Features</MenuItem>
-                      </React.Fragment>
-                  }
-                </DropdownButton>
+                <Dropdown id="coll-menu">
+                  <Dropdown.Toggle variant="outline-secondary">
+                    <MoreIcon />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    <Dropdown.Item onClick={this.manageCollection}>Manage Sessions</Dropdown.Item>
+                    {
+                      !isAnon &&
+                      <Upload classes="" fromCollection={collection.get('id')} wrapper={Dropdown.Item}>{ __DESKTOP__ ? 'Import' : 'Upload' } To Collection</Upload>
+                    }
+                    <Dropdown.Item onClick={this.downloadCollection}>{ __DESKTOP__ ? 'Export' : 'Download' } Collection</Dropdown.Item>
+                    <Dropdown.Divider />
+                    <DeleteCollection wrapper={Dropdown.Item}>Delete Collection</DeleteCollection>
+                    {
+                      allowDat && canAdmin && !isAnon && newFeatures &&
+                        <React.Fragment>
+                          <Dropdown.Divider />
+                          <Dropdown.Item onClick={this.toggleDatModal}><p className="menu-label">More Sharing Options</p><DatIcon /> Share via Dat...</Dropdown.Item>
+                        </React.Fragment>
+                    }
+                    {
+                      onboardingLink && !isMobile &&
+                        <React.Fragment>
+                          <Dropdown.Divider />
+                          <Dropdown.Item onClick={this.showOnboarding}><span role="img" aria-label="tada emoji">&#127881;</span> Tour New Features</Dropdown.Item>
+                        </React.Fragment>
+                    }
+                  </Dropdown.Menu>
+                </Dropdown>
               </div>
           }
           {

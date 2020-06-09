@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Button, ControlLabel, FormControl, FormGroup, HelpBlock } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 
 import { collection as collectionErrors } from 'helpers/userMessaging';
 
@@ -130,16 +130,16 @@ class InlineEditor extends PureComponent {
     }
   }
 
-  validation = (styles = false) => {
+  validation = () => {
     const { error, success } = this.props;
 
     if (success) {
-      return 'success';
+      return true;
     } else if (error || this.state.error) {
-      return styles ? 'danger' : 'error';
+      return false;
     }
 
-    return styles ? 'default' : null;
+    return null;
   }
 
   render() {
@@ -150,29 +150,30 @@ class InlineEditor extends PureComponent {
         {
           this.state.editMode ?
             <div key="formWrapper" className="form-wrapper" style={blockDisplay ? {} : { width: this.state.inputWidth }}>
-              <FormGroup validationState={this.validation()}>
+              <Form.Group>
                 {
                   label &&
-                    <ControlLabel>{label}</ControlLabel>
+                    <Form.Label>{label}</Form.Label>
                 }
                 <div className="control-container">
-                  <FormControl
+                  <Form.Control
                     type="text"
                     name="inputVal"
-                    inputRef={(obj) => { this.input = obj; }}
+                    ref={(obj) => { this.input = obj; }}
                     value={this.state.inputVal}
                     onChange={this.handleChange}
-                    onKeyPress={this.submitCheck} />
+                    onKeyPress={this.submitCheck}
+                    isInvalid={this.validation() === false} />
                   {
                     (error || this.state.error) &&
                     <div className="help-spanner">
-                      <HelpBlock>{ error ? collectionErrors[error] || 'Error encountered' : this.state.error }</HelpBlock>
+                      <Form.Control.Feedback type="invalid">{ error ? collectionErrors[error] || 'Error encountered' : this.state.error }</Form.Control.Feedback>
                     </div>
                   }
                 </div>
-                <Button aria-label="save" onClick={this._save} variant={this.validation(true)}><CheckIcon /></Button>
-                <Button aria-label="toggle edit mode" onClick={this.toggleEditMode}><XIcon /></Button>
-              </FormGroup>
+                <Button variant="outline-secondary" aria-label="toggle edit mode" onClick={this.toggleEditMode}><XIcon /></Button>
+                <Button variant="primary" aria-label="save" onClick={this._save} isInvalid={this.validation() === false}><CheckIcon /></Button>
+              </Form.Group>
             </div> :
             <div key="childWrapper" onClick={this.toggleEditMode} ref={(obj) => { this.childContainer = obj; }} className="child-container">
               {this.props.children}

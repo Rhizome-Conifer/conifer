@@ -1,13 +1,14 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { Button, ButtonGroup, Col, DropdownButton, Row } from 'react-bootstrap';
 
 import config from 'config';
 
 import { apiFetch, remoteBrowserMod } from 'helpers/utils';
 
 import OutsideClick from 'components/OutsideClick';
-import { PatchIcon, SnapshotIcon } from 'components/icons';
+import { PatchIcon, PlayIcon, StopIcon } from 'components/icons';
 import { Blinker, SizeCounter } from 'containers';
 
 import './style.scss';
@@ -138,25 +139,25 @@ class ModeSelectorUI extends PureComponent {
     switch(currMode) {
       case 'live':
         modeMessage = 'Previewing';
-        modeMarkup = <span className="btn-content"><span className="preview-mode" aria-label="Preview icon" /><span className="hidden-xs">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><span className="preview-mode" aria-label="Preview icon" /><span className="d-none d-sm-inline">{ modeMessage }</span></span>;
         break;
       case 'record':
         modeMessage = 'Capturing';
-        modeMarkup = <span className="btn-content"><Blinker /> <span className="hidden-xs">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><Blinker /> <span className="d-none d-sm-inline">{ modeMessage }</span></span>;
         break;
       case 'replay':
       case 'replay-coll':
         modeMessage = 'Browsing';
-        modeMarkup = <span className="btn-content"><span className="glyphicon glyphicon-play-circle" aria-hidden="true" /> <span className="hidden-xs">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><PlayIcon /> <span className="d-none d-sm-inline">{ modeMessage }</span></span>;
         break;
       case 'patch':
         modeMessage = 'Patching';
-        modeMarkup = <span className="btn-content"><PatchIcon /> <span className="hidden-xs">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><PatchIcon /> <span className="d-none d-sm-inline">{ modeMessage }</span></span>;
         break;
       case 'extract':
       case 'extract_only':
         modeMessage = 'Extracting';
-        modeMarkup = <span className="btn-content"><Blinker /> <span className="hidden-xs">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><Blinker /> <span className="d-none d-sm-inline">{ modeMessage }</span></span>;
         break;
       default:
         break;
@@ -166,80 +167,73 @@ class ModeSelectorUI extends PureComponent {
     const isLiveMsg = isLive ? 'Start Capturing' : 'Capture this URL again';
 
     return (
-      <OutsideClick handleClick={this.close}>
-        <div className="mode-selector">
-          <div className={modeSelectorClasses}>
-            <button onClick={this.onStop} className="btn btn-default wr-mode-message content-action" aria-label={`Finish ${modeMessage} session`} type="button">
-              <span className="btn-content"><span className="glyphicon glyphicon-stop" /> <span className="hidden-xs">Stop</span></span>
-              { modeMarkup }
-              { isWrite && <SizeCounter /> }
-            </button>
-            <button onClick={this.toggle} type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <span className="glyphicon glyphicon-triangle-bottom" />
-            </button>
-
-            <div className="dropdown-menu">
+      <div className="mode-selector">
+        <ButtonGroup className="wr-mode-selector">
+          <Button variant="outline-secondary" onClick={this.onStop} className="wr-mode-message content-action" aria-label={`Finish ${modeMessage} session`}>
+            <span className="btn-content"><StopIcon /> <span className="d-none d-sm-inline">Stop</span></span>
+            { modeMarkup }
+            { isWrite && <SizeCounter /> }
+          </Button>
+          <DropdownButton alignLeft variant="outline-secondary" title="">
+            <div className="container">
               {
                 isLive &&
-                  <div className="wr-modes">
-                    <ul className={classNames('row wr-mode')} onClick={this.onRecord} role="button" title="Stop preview mode and begin capturing">
-                      <li className="col-xs-3">
-                        <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
-                      </li>
-                      <li className="col-xs-9">
-                        <h5>Start Capture</h5>
-                      </li>
-                    </ul>
-                  </div>
+                  <Row className="wr-mode" onClick={this.onRecord} role="button" title="Stop preview mode and begin capturing">
+                    <Col xs={1}>
+                      <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
+                    </Col>
+                    <Col>
+                      <h5>Start Capture</h5>
+                    </Col>
+                  </Row>
               }
-
               {
                 !isLive &&
-                  <div className="wr-modes">
-                    <ul className={classNames('row wr-mode', { active: isRecord })} onClick={this.onRecord} role="button" title="Start a new recording session at the current URL">
-                      <li className="col-xs-3">
+                  <React.Fragment>
+                    <Row className={classNames('wr-mode', { active: isRecord })} onClick={this.onRecord} role="button" title="Start a new recording session at the current URL">
+                      <Col xs={1}>
                         <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
-                      </li>
-                      <li className="col-xs-9">
+                      </Col>
+                      <Col>
                         <h5>{ isRecord ? 'Currently Capturing' : isLiveMsg }</h5>
-                      </li>
-                    </ul>
+                      </Col>
+                    </Row>
 
-                    <ul className={classNames('row wr-mode', { active: isReplay, disabled: isLive })} onClick={this.onReplay} role="button" title="Access an archived version of this URL">
-                      <li className="col-xs-3">
-                        <span className="glyphicon glyphicon-play-circle wr-mode-icon" aria-hidden="true" />
-                      </li>
-                      <li className="col-xs-9">
+                    <Row className={classNames('wr-mode', { active: isReplay, disabled: isLive })} onClick={this.onReplay} role="button" title="Access an archived version of this URL">
+                      <Col xs={1}>
+                        <PlayIcon />
+                      </Col>
+                      <Col>
                         <h5>{ isReplay ? 'Currently Browsing' : 'Browse this URL' }</h5>
-                      </li>
-                    </ul>
+                      </Col>
+                    </Row>
 
-                    <ul className={classNames('row wr-mode', { active: isPatch, disabled: isRecord || isLive })} onClick={this.onPatch} role="button" title={isRecord ? 'Only available from replay after finishing a recording' : 'Record elements that are not yet in the collection'}>
-                      <li className="col-xs-3">
+                    <Row className={classNames('wr-mode', { active: isPatch, disabled: isRecord || isLive })} onClick={this.onPatch} role="button" title={isRecord ? 'Only available from replay after finishing a recording' : 'Record elements that are not yet in the collection'}>
+                      <Col xs={1}>
                         <PatchIcon />
-                      </li>
-                      <li className="col-xs-9">
+                      </Col>
+                      <Col>
                         <h5>{ isPatch ? 'Currently Patching' : 'Patch this URL' }</h5>
-                      </li>
-                    </ul>
+                      </Col>
+                    </Row>
 
                     {
                       isExtract &&
-                        <ul className={classNames('row wr-mode', { active: isExtract })} title="Start a new extraction at the current URL">
-                          <li className="col-xs-3">
+                        <Row className={classNames('wr-mode', { active: isExtract })} title="Start a new extraction at the current URL">
+                          <Col xs={1}>
                             <span className="glyphicon glyphicon-save glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
-                          </li>
-                          <li className="col-xs-9">
+                          </Col>
+                          <Col>
                             <h5>Currently Extracting</h5>
-                          </li>
-                        </ul>
+                          </Col>
+                        </Row>
                     }
-                  </div>
+                  </React.Fragment>
               }
             </div>
-          </div>
-        </div>
-      </OutsideClick>
+          </DropdownButton>
+        </ButtonGroup>
+      </div>
     );
   }
 }

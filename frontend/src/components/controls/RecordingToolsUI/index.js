@@ -107,12 +107,10 @@ class RecordingToolsUI extends PureComponent {
     const isNew = currMode === 'new';
     const isWrite = ['new', 'patch', 'record', 'extract', 'live'].includes(currMode);
     const modalFooter = <Button onClick={this._close}>Close</Button>;
-    const autopilotClasses = classNames('rounded autopilot-btn', {
-      'special-behavior': autopilotInfo && autopilotInfo.get('defaultBehavior') !== true
-    });
+    const specialBehavior = autopilotInfo && autopilotInfo.get('defaultBehavior') !== true;
 
     return (
-      <div className="recording-actions text-center hidden-xs">
+      <div className="recording-actions d-none d-sm-block">
         <Modal
           visible={this.state.clipboardOpen}
           header={<h4>Remote Browser Clipboard</h4>}
@@ -137,7 +135,7 @@ class RecordingToolsUI extends PureComponent {
 
         {
           isWrite && currMode !== 'live' &&
-            <button className={autopilotClasses} onClick={this.toggleAutopilotSidebar} type="button"><WandIcon />Autopilot</button>
+            <Button variant={specialBehavior ? "primary" : "outline-secondary"} className="autopilot-btn" onClick={this.toggleAutopilotSidebar}><WandIcon />Autopilot</Button>
         }
 
         {

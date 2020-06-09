@@ -265,8 +265,8 @@ class WYSIWYG extends Component {
         {
           _editMode && !contentSync &&
             <div className="editor-button-row">
-              <Button onClick={this.cancel} className="rounded" type="button">Cancel</Button>
-              <Button variant={this.props.success ? 'success' : 'default'} className="rounded" onClick={this.save} type="button">
+              <Button variant="outline-secondary" onClick={this.cancel}>Cancel</Button>
+              <Button variant="primary" onClick={this.save}>
                 { this.props.success ? 'Saved..' : 'Save' }
               </Button>
             </div>
@@ -274,9 +274,9 @@ class WYSIWYG extends Component {
         {
           _editMode && this.state.markdownEdit &&
             <React.Fragment>
-              <button onClick={this.toggleMarkdownMode} className="close-markdown borderless" type="button">
+              <Button variant="link" onClick={this.toggleMarkdownMode} className="close-markdown">
                 <XIcon />
-              </button>
+              </Button>
               <textarea
                 className={classNames('markdown-editor', { visible: this.state.markdownEdit })}
                 onChange={this.onChangeSource}

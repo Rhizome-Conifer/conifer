@@ -16,6 +16,7 @@ class ShareWidget extends Component {
     activeBrowser: PropTypes.string,
     activeBookmarkId: PropTypes.string,
     activeList: PropTypes.string,
+    canAdmin: PropTypes.bool,
     collection: PropTypes.object,
     match: PropTypes.object,
     setCollPublic: PropTypes.func,
@@ -29,6 +30,7 @@ class ShareWidget extends Component {
       activeBrowser,
       activeBookmarkId,
       activeList,
+      canAdmin,
       collection,
       match: { params: { user, coll } },
       showLoginModal,
@@ -46,6 +48,7 @@ class ShareWidget extends Component {
       <ShareWidgetUI
         isPublic={collection.get('public')}
         setPublic={this.props.setCollPublic}
+        canAdmin={canAdmin}
         collection={collection}
         shareUrl={shareUrl}
         embedUrl={embedUrl}

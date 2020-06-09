@@ -22,6 +22,7 @@ class RemoteBrowserUI extends Component {
     clipboard: PropTypes.bool,
     contentFrameUpdate: PropTypes.bool,
     creating: PropTypes.bool,
+    currMode: PropTypes.string,
     dispatch: PropTypes.func,
     history: PropTypes.object,
     inactiveTime: PropTypes.number,
@@ -34,12 +35,12 @@ class RemoteBrowserUI extends Component {
     url: PropTypes.string
   }
 
-  constructor(props, context) {
+  constructor(props) {
     super(props);
 
-    if (context.currMode.startsWith('extract')) {
+    if (props.currMode.startsWith('extract')) {
       const { archiveId, collId } = props.params;
-      this.currMode = `${context.currMode}`;
+      this.currMode = `${props.currMode}`;
 
       if (archiveId) {
         this.currMode = `${this.currMode}:${archiveId}`;
@@ -49,7 +50,7 @@ class RemoteBrowserUI extends Component {
         this.currMode = `${this.currMode}:${collId}`;
       }
     } else {
-      this.currMode = context.currMode;
+      this.currMode = props.currMode;
     }
 
     this.reloadHandle = null;

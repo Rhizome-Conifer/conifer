@@ -113,21 +113,13 @@ class ExtractWidget extends Component {
 
     return (
       extractable &&
-        <div className="input-group-btn extract-selector">
-          <ExtractWidgetUI
-            active={active}
-            extractable={extractable}
-            stats={stats}
-            toCollection={toCollection}
-            toggleAllSources={useAllSources}
-            url={url} />
-          {
-            includeButton &&
-              <button className="btn btn-default" type="submit" aria-label="Extract">
-                <span className="glyphicon glyphicon-save" aria-hidden="true" /><span className="hidden-xs"> extract</span>
-              </button>
-          }
-        </div>
+        <ExtractWidgetUI
+          active={active}
+          extractable={extractable}
+          stats={stats}
+          toCollection={toCollection}
+          toggleAllSources={useAllSources}
+          url={url} />
     );
   }
 }

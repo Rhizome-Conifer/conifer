@@ -237,32 +237,13 @@ a.collection-title:hover {
 
         .collection-delete-action {
         	button:last-of-type {
-                background: rgba(0,0,0,0);
-                border: none;
-                padding:1.5rem 0 0;
                 float:right;
 
                 svg {
 	                width:15px;
 	                height:15px;
-                    &:hover + .tooltip.top {
-                        display: block;
-                    }
 	            }
         	}
-        }
-
-        .tooltip.top {
-            position: absolute;
-            right: -8px;
-            top: -25px;
-            display: none;
-            .tooltip-arrow {
-                border-top-color: $gray600;
-            }
-            .tooltip-inner {
-                background: $gray600;
-            }
         }
     }
 }
@@ -277,11 +258,6 @@ a.collection-title:hover {
         }
         .visibility-button {
            margin-top: 1.8rem;
-        }
-        .collection-delete-action {
-            button:last-of-type {
-                padding:2.2rem 0 0;
-            }
         }
         .collection-list-description {
             margin-bottom: 0;

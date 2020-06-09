@@ -3,11 +3,9 @@ import PropTypes from 'prop-types';
 import DatePicker from 'react-datepicker';
 import querystring from 'querystring';
 import OutsideClick from 'components/OutsideClick';
-import { Button, DropdownButton, FormControl, InputGroup, MenuItem } from 'react-bootstrap';
-
-import { columns } from 'config';
-
+import { Button, Dropdown, DropdownButton, FormControl, InputGroup } from 'react-bootstrap';
 import { LoaderIcon, SearchIcon, XIcon } from 'components/icons';
+
 
 import "react-datepicker/dist/react-datepicker.css";
 import './style.scss';
@@ -389,24 +387,26 @@ class Searchbox extends PureComponent {
 
     return (
       <div className="search-box">
-        <InputGroup bsPrefix="input-group search-box" title="Search">
-          <div className="input-wrapper">
-            <span className="search-icon"><SearchIcon /></span>
-            <FormControl aria-label="filter" size="sm" onKeyUp={this.keyUp} onChange={this.handleChange} name="search" value={this.state.search} autoComplete="off" placeholder="Filter" />
-            <div className="searchbar-actions">
-              {
-                (searching || searched) &&
-                <React.Fragment>
-                  {
-                    searching ?
-                      <LoaderIcon /> :
-                      <button className="borderless" onClick={this.clear} type="button"><XIcon /></button>
-                  }
-                </React.Fragment>
-              }
-              <button className="borderless advanced-options" onClick={this.toggleAdvancedSearch} type="button"><span className="glyphicon glyphicon-triangle-bottom" /></button>
-            </div>
-          </div>
+        <InputGroup title="Search">
+          <InputGroup.Prepend>
+            <InputGroup.Text>
+              <SearchIcon />
+            </InputGroup.Text>
+          </InputGroup.Prepend>
+          <FormControl aria-label="filter" size="sm" onKeyUp={this.keyUp} onChange={this.handleChange} name="search" value={this.state.search} autoComplete="off" placeholder="Filter" />
+          <InputGroup.Append>
+            {
+              (searching || searched) &&
+              <React.Fragment>
+                {
+                  searching ?
+                    <LoaderIcon /> :
+                    <Button variant="link" onClick={this.clear}><XIcon /></Button>
+                }
+              </React.Fragment>
+            }
+            <Button variant="link" onClick={this.toggleAdvancedSearch}><span className="caret" /></Button>
+          </InputGroup.Append>
         </InputGroup>
 
         {
@@ -431,7 +431,7 @@ class Searchbox extends PureComponent {
                 <div>
                   <DropdownButton id="time-filter" title={this.labels[date]} onSelect={this.changeTimeframe}>
                     {
-                      Object.keys(this.labels).map(k => <MenuItem key={k} eventKey={k} active={date === k}>{this.labels[k]}</MenuItem>)
+                      Object.keys(this.labels).map(k => <Dropdown.Item key={k} eventKey={k} active={date === k}>{this.labels[k]}</Dropdown.Item>)
                     }
                   </DropdownButton>
                   {
@@ -477,14 +477,14 @@ class Searchbox extends PureComponent {
                     date === 'session' &&
                       <DropdownButton id="session-filter" title={this.state.session ? this.state.session : "Select a session"} onSelect={this.selectSession}>
                         {
-                          collection.get('recordings').map(rec => <MenuItem key={rec.get('id')} eventKey={rec.get('id')} active={this.state.session === rec.get('id')}>{rec.get('id')}</MenuItem>)
+                          collection.get('recordings').map(rec => <Dropdown.Item key={rec.get('id')} eventKey={rec.get('id')} active={this.state.session === rec.get('id')}>{rec.get('id')}</Dropdown.Item>)
                         }
                       </DropdownButton>
                   }
                 </div>
                 <div className="actions">
-                  <button type="button" className="button-link" onClick={this.reset}>Reset to Defaults</button>
-                  <button type="button" className="rounded" onClick={this.search}>Search</button>
+                  <Button variant="link" onClick={this.reset}>Reset to Defaults</Button>
+                  <Button variant="primary" onClick={this.search}>Search</Button>
                 </div>
               </section>
             </OutsideClick>

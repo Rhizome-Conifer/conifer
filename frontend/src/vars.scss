@@ -6,6 +6,8 @@ $md: 768px;
 $lg: 992px;
 $xl: 1200px;
 
+$bs-button-interactive: "&:not(:disabled):not(.disabled):active, &:not(:disabled):not(.disabled):active:focus, &:focus, &:hover";
+
 /* fonts */
 $font-size-base: 1.4rem;
 $serif: "GZA";

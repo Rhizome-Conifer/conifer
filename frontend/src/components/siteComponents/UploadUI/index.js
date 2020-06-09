@@ -191,7 +191,7 @@ class UploadUI extends PureComponent {
       <h4>{ __DESKTOP__ ? 'Import' : 'Upload' } Web Archive to { product }</h4>
     );
 
-    const Wrapper = this.props.wrapper || Button;
+    const Wrapper = this.props.wrapper || Button
 
     const modalFooter = (
       <React.Fragment>
@@ -202,7 +202,7 @@ class UploadUI extends PureComponent {
 
     return (
       <React.Fragment>
-        <Wrapper className={classes} onClick={this.open}>
+        <Wrapper variant="outline-secondary" onClick={this.open}>
           { this.props.children || 'Upload'}
         </Wrapper>
         <Modal

@@ -54,7 +54,6 @@ const initialState = fromJS({
   error: null,
   loading: false,
   loaded: false,
-  search: '',
   searching: false,
   searched: false,
   sortBy: defaultSort

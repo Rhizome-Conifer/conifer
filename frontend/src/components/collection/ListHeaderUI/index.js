@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Collapsible from 'react-collapsible';
+import { Button } from 'react-bootstrap';
 
 import { AccessContext } from 'store/contexts';
 
@@ -97,8 +98,8 @@ class ListHeaderUI extends Component {
             {
               canAdmin &&
                 <div className={classNames('list-sort-actions', { fade: !sorted })}>
-                  <button className="rounded" disabled={!sorted} onClick={this.saveSort} type="button">save this ordering</button>
-                  <button className="rounded" disabled={!sorted} onClick={this.props.clearSort} type="button">remove sort</button>
+                  <Button variant="outline-secondary" disabled={!sorted} onClick={this.props.clearSort} type="button">remove sort</Button>
+                  <Button variant="primary" disabled={!sorted} onClick={this.saveSort} type="button">save this ordering</Button>
                 </div>
             }
           </div>

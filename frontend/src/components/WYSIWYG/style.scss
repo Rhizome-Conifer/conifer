@@ -83,12 +83,13 @@
 
     .editor-button-row {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         margin-top: 1rem;
         text-transform: uppercase;
 
-        & > button:last-of-type {
-            margin-left: .5rem;
+
+        button+button {
+            margin-left: 1.5rem;
         }
     }
 

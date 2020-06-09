@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Button, DropdownButton, MenuItem } from 'react-bootstrap';
+import { Button, Dropdown, DropdownButton, MenuItem } from 'react-bootstrap';
 
 import { GlobeIcon, LockIcon } from 'components/icons';
 
@@ -22,14 +22,17 @@ class PublicSwitch extends PureComponent {
   render() {
     const { isPublic, label } = this.props;
 
-    const button = isPublic ? <span><GlobeIcon /><span className="hidden-xs"> Public</span></span> : <span className="is-private"><LockIcon /><span className="hidden-xs"> Private</span></span>;
+    const button = isPublic ? <span><GlobeIcon /><span className="hidden-xs"> Public</span></span> : <span><LockIcon /><span className="hidden-xs"> Private</span></span>;
 
     return (
       <div className="wr-coll-visibility">
-        <DropdownButton noCaret id="visibility-menu" className={classNames('rounded', { 'is-public': isPublic })} title={button}>
-          <MenuItem onClick={!isPublic ? this.setPublic : undefined} disabled={isPublic}><GlobeIcon /> Set {label} Public</MenuItem>
-          <MenuItem onClick={isPublic ? this.setPrivate : undefined} disabled={!isPublic}><LockIcon /> Set {label} Private</MenuItem>
-        </DropdownButton>
+        <Dropdown id="visibility-menu">
+          <Dropdown.Toggle variant="outline-secondary" bsPrefix={classNames('dropdown-toggle', { 'is-public': isPublic, 'is-private': !isPublic })}>{button}</Dropdown.Toggle>
+          <Dropdown.Menu>
+            <Dropdown.Item onClick={!isPublic ? this.setPublic : undefined} disabled={isPublic}><GlobeIcon /> Set {label} Public</Dropdown.Item>
+            <Dropdown.Item onClick={isPublic ? this.setPrivate : undefined} disabled={!isPublic}><LockIcon /> Set {label} Private</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
       </div>
     );
   }

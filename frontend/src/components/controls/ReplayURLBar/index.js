@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Form, InputGroup } from 'react-bootstrap';
 
 import { remoteBrowserMod } from 'helpers/utils';
 
@@ -54,32 +55,29 @@ class ReplayURLBar extends Component {
     const { url } = this.state;
 
     return (
-      <div className="main-bar">
-        <form className="form-group-recorder-url">
-          <div className="input-group containerized">
-            {
-              canAdmin && !__DESKTOP__ &&
-                <div className="input-group-btn rb-dropdown">
-                  <RemoteBrowserSelect
-                    active
-                    currMode={this.props.currMode}
-                    params={params} />
-                </div>
-            }
-
-            <div className="wr-app-url">
-              <input type="text" onChange={this.handleInput} onKeyPress={this.handleSubmit} style={{ height: '3.2rem' }} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
-              <div className="wr-replay-info">
-                <InfoWidget />
-                <span className="replay-date main-replay-date hidden-xs">
-                  <TimeFormat dt={timestamp} />
-                </span>
+      <Form className="form-group-recorder-url">
+        <InputGroup>
+          {
+            canAdmin && !__DESKTOP__ &&
+              <div className="rb-dropdown">
+                <RemoteBrowserSelect
+                  active
+                  currMode={this.props.currMode}
+                  params={params} />
               </div>
-            </div>
+          }
 
+          <div className="wr-app-url">
+            <input type="text" onChange={this.handleInput} onKeyPress={this.handleSubmit} style={{ height: '3.2rem' }} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
+            <div className="wr-replay-info">
+              <InfoWidget />
+              <span className="replay-date main-replay-date hidden-xs">
+                <TimeFormat dt={timestamp} />
+              </span>
+            </div>
           </div>
-        </form>
-      </div>
+        </InputGroup>
+      </Form>
     );
   }
 }

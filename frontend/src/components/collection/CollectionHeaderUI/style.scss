@@ -127,6 +127,7 @@ header.wr-collection-header {
         .menu-row {
             display: flex;
             justify-content: flex-start;
+            align-items: center;
             margin: 1.5rem 0;
 
             .new-session {
@@ -141,15 +142,24 @@ header.wr-collection-header {
                 margin-left: .5rem;
             }
 
-            .dropdown-menu > li > a{
+            .dropdown-menu > .dropdown-item {
               margin: 0;
               padding: 1rem 2rem;
             }
 
-            button#coll-menu {
-              width: 3.2rem;
-              height: 3.2rem;
-              padding: 0;
+            #coll-menu button {
+
+              &:after {
+                  display: none;
+              }
+
+              &:hover, &:active, &[aria-expanded=true] {
+                  svg {
+                      circle {
+                          fill: $white;
+                      }
+                  }
+              }
 
               svg {
                 width: 1.4rem;

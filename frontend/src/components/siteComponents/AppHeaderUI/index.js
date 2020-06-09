@@ -46,7 +46,10 @@ class AppHeader extends PureComponent {
               {
                 __DESKTOP__ ?
                   product :
-                  <LogoIcon darkMode={canAdmin} />
+                  <div className="logo-anchor">
+                    <LogoIcon darkMode={canAdmin} />
+                    <h2>Conifer</h2>
+                  </div>
               }
             </NavLink>
             {

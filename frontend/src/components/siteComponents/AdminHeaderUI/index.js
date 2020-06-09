@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import { Button } from 'react-bootstrap';
 
 import { truncWord } from 'config';
 import { getCollectionLink, truncate } from 'helpers/utils';
@@ -50,9 +51,9 @@ class AdminHeaderUI extends PureComponent {
 
     return (
       <React.Fragment>
-        <button className="rounded collection-manager" onClick={this.goToManager} type="button">
+        <Button variant="dark" onClick={this.goToManager}>
           Collection Manager
-        </button>
+        </Button>
         <span className="active-collection" title={collection.get('title')}>{truncate(collection.get('title'), 10, truncWord)}</span>
         {
           collection.get('public') &&

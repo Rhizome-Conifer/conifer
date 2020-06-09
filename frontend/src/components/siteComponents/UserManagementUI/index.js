@@ -204,7 +204,7 @@ class UserManagementUI extends PureComponent {
 
                 {
                   __DESKTOP__ &&
-                    <Dropdown.Item divider />
+                    <Dropdown.Divider />
                 }
 
                 {
@@ -215,10 +215,10 @@ class UserManagementUI extends PureComponent {
                 {
                   !__DESKTOP__ &&
                     <React.Fragment>
-                      <Dropdown.Item divider />
+                      <Dropdown.Divider />
                       <Dropdown.Item href="https://guide.webrecorder.io/" target="_blank">User Guide</Dropdown.Item>
                       <Dropdown.Item href="mailto:support@webrecorder.io" target="_blank">Contact Support</Dropdown.Item>
-                      <Dropdown.Item divider />
+                      <Dropdown.Divider />
                       <Dropdown.Item onClick={this.goToFAQ}>About Webrecorder</Dropdown.Item>
                       <Dropdown.Item href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</Dropdown.Item>
                     </React.Fragment>
@@ -227,14 +227,14 @@ class UserManagementUI extends PureComponent {
                 {
                   (!isAnon && !__DESKTOP__) &&
                     <React.Fragment>
-                      <Dropdown.Item divider />
+                      <Dropdown.Divider />
                       <Dropdown.Item onClick={this.goToLogout}><span className="glyphicon glyphicon-log-out" title="Logout" /> Logout</Dropdown.Item>
                     </React.Fragment>
                 }
                 {
                   isAnon &&
                     <React.Fragment>
-                      <Dropdown.Item divider />
+                      <Dropdown.Divider />
                       <Dropdown.Item onClick={this.goToSignup}>Sign Up</Dropdown.Item>
                       <Dropdown.Item onClick={this.showLogin}>Login</Dropdown.Item>
 

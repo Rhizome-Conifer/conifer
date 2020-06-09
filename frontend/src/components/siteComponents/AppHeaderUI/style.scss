@@ -2,28 +2,44 @@
 
 .app-header {
     height: 5.5rem;
-    border: solid 0;
-    border-bottom-width: .1rem;
-    border-color: $gray500;
 
     .header-webrecorder {
         display: flex;
         justify-content: space-between;
-        align-items: center;
         height: 100%;
         padding: 0 1.5rem;
 
         transition: background-color $quickShift ease-in-out;
-        background-color: white;
+        background-color: $deep-pine;
 
         .wr-logomark {
             margin-right: 1.5rem;
+            align-self: flex-end;
+            text-decoration: none;
 
             &.desktop {
                 font-family: $serif;
                 font-size: 1.8rem;
                 text-decoration: none;
                 color: $black;
+            }
+
+            .logo-anchor {
+                display: flex;
+                align-items: flex-end;
+
+                svg {
+                    height: 4.5rem;
+                }
+
+                h2 {
+                    margin: 0;
+                    font-family: $serif;
+                    font-weight: 600;
+                    color: $white;
+                    font-size: 3.4rem;
+                    margin-left: 1rem;
+                }
             }
 
             svg {
@@ -33,25 +49,25 @@
             }
         }
 
-        .navbar-user-links>li>button {
-            color: $gray600;
+        .custom-report {
+            color: $white;
         }
 
         .navbar-user-links>li>a:link,
         .navbar-user-links>li>a:visited {
-            color: $gray600;
+            color: $white;
         }
 
         .navbar-user-links>li>a:focus,
         .navbar-user-links>li>a:hover {
             text-decoration: underline;
             background-color: inherit;
-            color: $gray600;
+            color: $white;
         }
 
         .navbar-user-links>li>a:active {
             outline: 0;
-            color: $gray600;
+            color: $white;
         }
 
         .space-usage {

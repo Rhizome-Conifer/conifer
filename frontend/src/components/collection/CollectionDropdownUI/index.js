@@ -164,7 +164,7 @@ class CollectionDropdownUI extends Component {
                 id="wr-collection-dropdown"
                 onSelect={this.collectionChoice}
                 onToggle={this.dropdownToggle}>
-                <Dropdown.Toggle>
+                <Dropdown.Toggle block variant="outline-secondary">
                   {activeCollection.title ? <span><WarcIcon /> {activeCollection.title}</span> : 'Add to Collection...'}
                 </Dropdown.Toggle>
 
@@ -189,7 +189,7 @@ class CollectionDropdownUI extends Component {
                         value={this.state.filter} />
                     </Dropdown.Item>
                   }
-                  <Dropdown.Item key="divider" divider />
+                  <Dropdown.Divider key="divider" />
                   {
                     this.state.collections.map((coll) => {
                       const id = coll.get('id');

@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
-import { Alert, ControlLabel, FormGroup, FormControl } from 'react-bootstrap';
+import { Alert, Button, Form } from 'react-bootstrap';
 
 import { defaultCollectionTitle } from 'config';
 import { collection } from 'helpers/userMessaging';
+
+import { GlobeIcon } from 'components/icons';
 
 import Modal from 'components/Modal';
 
@@ -68,23 +70,25 @@ class NewCollection extends Component {
                 { collection[error] || 'Error encountered' }
               </Alert>
           }
-          <FormGroup bsPrefix="form-group col-xs-5" validationState={this.titleValidation()}>
-            <ControlLabel htmlFor="collection">Collection Name:</ControlLabel>
-            <FormControl type="text" inputRef={(obj) => { this.input = obj; }} id="title" name="title" onFocus={this.focusInput} onChange={this.handleInput} value={collTitle} />
-          </FormGroup>
+          <Form.Group bsPrefix="form-group col-xs-5" validationState={this.titleValidation()}>
+            <Form.Label htmlFor="collection">Collection Name:</Form.Label>
+            <Form.Control id="collection" type="text" ref={(obj) => { this.input = obj; }} name="title" onFocus={this.focusInput} onChange={this.handleInput} value={collTitle} />
+          </Form.Group>
 
           {
             !__DESKTOP__ &&
-              <span className="col-xs-6 col-xs-offset-1">
-                <div><label htmlFor="public-switch"><span className="glyphicon glyphicon-globe" style={{ marginRight: '4px' }} />Make public (visible to all)?</label></div>
-                <Toggle
-                  id="public-switch"
-                  defaultChecked={isPublic}
-                  onChange={this.togglePublic} />
-              </span>
+              <Form.Group>
+                <Form.Label htmlFor="public-switch"><GlobeIcon /> Make public (visible to all)?</Form.Label>
+                <div>
+                  <Toggle
+                    id="public-switch"
+                    defaultChecked={isPublic}
+                    onChange={this.togglePublic} />
+                </div>
+              </Form.Group>
           }
 
-          <button className="btn btn-lg btn-primary btn-block" onClick={this.submit} disabled={creatingCollection && !error} type="button">Create</button>
+          <Button variant="primary" block onClick={this.submit} disabled={creatingCollection && !error}>Create</Button>
         </form>
       </Modal>
     );

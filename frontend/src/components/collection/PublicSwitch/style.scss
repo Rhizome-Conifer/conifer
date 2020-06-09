@@ -5,15 +5,26 @@
 
     .is-private {
         font-style: italic;
-        color: $gray600;
 
         svg path {
             fill: $gray600;
+        }
+
+        &:hover, &:active, &[aria-expanded=true] {
+            svg {
+                path {
+                    fill: $white;
+                }
+            }
         }
     }
 
     .dropdown-toggle {
         color: #000;
+
+        &:after {
+            display: none;
+        }
 
         svg {
             vertical-align: top;
@@ -22,8 +33,8 @@
         &.is-public {
             color: white;
             font-weight: 600;
-            background: $brightGreen;
-            border: $brightGreen;
+            background-color: $brightGreen;
+
             svg g {
               fill: white;
             }

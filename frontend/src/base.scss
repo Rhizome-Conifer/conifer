@@ -47,12 +47,23 @@ a {
 
 .caret {
   transition: transform $quickShift ease-in-out;
+
+  &:after {
+      display: inline-block;
+      margin-left: 0.255em;
+      vertical-align: 0.255em;
+      content: "";
+      border-top: 0.3em solid;
+      border-right: 0.3em solid transparent;
+      border-bottom: 0;
+      border-left: 0.3em solid transparent;
+  }
 }
 
-.Collapsible__trigger .caret {
+.Collapsible__trigger .caret:after {
   transform: rotateZ(-90deg);
 }
-.Collapsible__trigger .caret-flip {
+.Collapsible__trigger .caret-flip:after {
   transform: rotateZ(0deg);
 }
 
@@ -86,14 +97,6 @@ button.primary {
     &:hover {
       border: solid .3rem $gray700;
     }
-}
-
-.sidebar-toggle {
-  border-radius: 0;
-
-  svg {
-    vertical-align: sub;
-  }
 }
 
 .wr-error-notice {

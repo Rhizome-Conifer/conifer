@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { Button } from 'react-bootstrap';
 
 import { autopilot as autopilotFields } from 'helpers/userMessaging';
 
@@ -177,7 +178,7 @@ class AutopilotUI extends Component {
                   </div>
               }
 
-              <button className={classNames('rounded', { complete: isComplete })} onClick={this.toggleAutomation} disabled={!autopilotReady || isComplete || isStopping || isStopped} type="button">
+              <Button block variant="primary" size="lg" className={classNames({ complete: isComplete })} onClick={this.toggleAutomation} disabled={!autopilotReady || isComplete || isStopping || isStopped}>
                 { (!autopilotReady || isRunning || isStopping) && <LoaderIcon /> }
                 { isComplete && <CheckIcon /> }
                 {
@@ -185,7 +186,7 @@ class AutopilotUI extends Component {
                     'page loading... please wait' :
                     buttonText
                 }
-              </button>
+              </Button>
               {
                 !isRunning && !isComplete &&
                   <div className="best-practices">

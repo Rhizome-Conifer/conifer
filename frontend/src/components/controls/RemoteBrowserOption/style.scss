@@ -1,7 +1,12 @@
-/* TODO: clean up containerized usage */
+
 .rb-dropdown {
 
-    li {
+    .dropdown-menu {
+        width: 66vw;
+        min-width: 35rem;
+    }
+
+    div {
         text-align: center;
         word-wrap: break-word;
         white-space: normal;
@@ -10,7 +15,7 @@
             text-align: left;
         }
 
-        & img {
+        img {
             margin-right: .5rem;
         }
     }

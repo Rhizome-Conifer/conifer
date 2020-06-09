@@ -12,7 +12,6 @@ import { getCollectionLink, getListLink, range, truncate } from 'helpers/utils';
 import { AppContext } from 'store/contexts';
 
 import {
-  Automation,
   CollectionHeader,
   InspectorPanel,
   Lists,
@@ -54,10 +53,22 @@ class CollectionDetailUI extends Component {
     publicIndex: PropTypes.bool,
     removeBookmark: PropTypes.func,
     saveBookmarkSort: PropTypes.func,
+    searched: PropTypes.bool,
     setMultiInspector: PropTypes.func,
     setBookmarkInspector: PropTypes.func,
     setPageInspector: PropTypes.func
   };
+
+  static getDerivedStateFromProps(props, state) {
+    if (props.bookmarks !== state.bookmarks) {
+      return {
+        bookmarks: props.bookmarks,
+        sortedBookmarks: props.bookmarks
+      };
+    }
+
+    return null;
+  }
 
   constructor(props) {
     super(props);
@@ -103,19 +114,9 @@ class CollectionDetailUI extends Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.loaded && !prevProps.loaded) {
-      if (this.props.searchText) {
+      if (this.props.searched) {
         this.props.clearSearch();
       }
-    }
-
-    if (this.props.list !== prevProps.list) {
-      const bookmarks = this.props.list.get('bookmarks');
-      this.setState({ listBookmarks: bookmarks, sortedBookmarks: bookmarks });
-    }
-
-    // clear querybox if removed from url
-    if (prevProps.location.search.includes('query') && !this.props.location.search.includes('query')) {
-      this.props.clearQuery();
     }
   }
 
@@ -370,7 +371,7 @@ class CollectionDetailUI extends Component {
         */}
 
         <Sidebar storageKey="collSidebar">
-          {/*<CollectionHeader />*/}
+          <CollectionHeader />
           <div className="resizable-container">
             <Resizable
               axis="y"

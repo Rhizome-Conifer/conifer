@@ -16,7 +16,7 @@ import RedirectWithStatus from 'components/RedirectWithStatus';
 import WYSIWYG from 'components/WYSIWYG';
 import { NewCollection } from 'components/siteComponents';
 import { Upload } from 'containers';
-import { LinkIcon, UploadIcon } from 'components/icons';
+import { LinkIcon, PlusIcon, UploadIcon } from 'components/icons';
 
 import CollectionItem from './CollectionItem';
 import './style.scss';
@@ -160,10 +160,10 @@ class CollectionListUI extends Component {
                 <Row>
                   <Col xs={12} className={classNames('collections-index-nav', { desktop: __DESKTOP__ })}>
                     { __DESKTOP__ && <h4>My Collections</h4> }
-                    <Button onClick={this.toggle} className="rounded">
-                      <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
+                    <Button onClick={this.toggle} variant="outline-secondary">
+                      <PlusIcon /> New Collection
                     </Button>
-                    <Upload classes="rounded">
+                    <Upload>
                       <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' }
                     </Upload>
                   </Col>
@@ -172,20 +172,22 @@ class CollectionListUI extends Component {
             {
               collections && collections.get('loaded') &&
                 <Row>
-                  <ul className="list-group collection-list">
-                    {
-                      orderedCollections.map((coll) => {
-                        return (
-                          <CollectionItem
-                            key={coll.get('id')}
-                            canAdmin={canAdmin}
-                            collection={coll}
-                            editCollection={editCollection}
-                            history={history} />
-                        );
-                      })
-                    }
-                  </ul>
+                  <Col>
+                    <ul className="list-group collection-list">
+                      {
+                        orderedCollections.map((coll) => {
+                          return (
+                            <CollectionItem
+                              key={coll.get('id')}
+                              canAdmin={canAdmin}
+                              collection={coll}
+                              editCollection={editCollection}
+                              history={history} />
+                          );
+                        })
+                      }
+                    </ul>
+                  </Col>
                 </Row>
             }
           </Col>

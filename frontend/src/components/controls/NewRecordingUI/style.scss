@@ -6,15 +6,3 @@
     display: inline-block;
     margin-top: 1rem;
 }
-
-.start-recording {
-    button.rounded {
-        margin-left: 1.5rem;
-    }
-
-    button[type='submit'] {
-        background: $pine;
-        color: $white;
-        border: none;
-    }
-}

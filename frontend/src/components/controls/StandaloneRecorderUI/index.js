@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Collapsible from 'react-collapsible';
-import { Button, ControlLabel, Form, Row } from 'react-bootstrap';
+import { Button, Col, Form, Row } from 'react-bootstrap';
 
 import { appHost, defaultRecDesc } from 'config';
 
@@ -138,43 +138,50 @@ class StandaloneRecorderUI extends Component {
 
     return (
       <Form className="start-recording-homepage" onSubmit={this.startRecording}>
-        <Form.Group className={classNames('col-md-8 col-md-offset-2', { 'input-group': extractable })}>
-          <Form.Label htmlFor="url" aria-label="url" srOnly>Url</Form.Label>
-          <Form.Control id="url" aria-label="url" type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to capture" title={isOutOfSpace ? 'Out of space' : 'Enter URL to capture'} required disabled={isOutOfSpace} />
-          <ExtractWidget
-            toCollection={activeCollection.title}
-            url={url} />
-        </Form.Group>
+        <Row>
+          <Col>
+            <Form.Group className={classNames({ 'input-group': extractable })}>
+              <Form.Label htmlFor="url" aria-label="url" srOnly>Url</Form.Label>
+              <Form.Control id="url" aria-label="url" type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to capture" title={isOutOfSpace ? 'Out of space' : 'Enter URL to capture'} required disabled={isOutOfSpace} />
+              <ExtractWidget
+                toCollection={activeCollection.title}
+                url={url} />
+            </Form.Group>
+          </Col>
+        </Row>
 
-        <div className="col-md-8 col-md-offset-2 top-buffer">
-          <Row>
-            <p className="col-md-2 standalone-dropdown-label">Add to collection </p>
-            <div className="col-md-10">
-              {
-                isAnon ?
-                  <Button onClick={this.triggerLogin} className="anon-button"><span>Login to add to Collection...</span></Button> :
-                  <CollectionDropdown label={false} />
-              }
-              {
-                this.state.setColl &&
-                  <Form.Text style={{ color: 'red' }}>
-                    Choose a collection
-                  </Form.Text>
-              }
-            </div>
-          </Row>
-        </div>
+        <Row className="top-buffer">
+          <Col xs={12} md={2}>
+            <p className="standalone-dropdown-label">Add to collection </p>
+          </Col>
+          <Col xs={12} md={10}>
+            {
+              isAnon ?
+                <Button block onClick={this.triggerLogin} variant="outline-secondary" className="anon-button"><span>Login to add to Collection...</span></Button> :
+                <CollectionDropdown label={false} />
+            }
+            {
+              this.state.setColl &&
+                <Form.Text style={{ color: 'red' }}>
+                  Choose a collection
+                </Form.Text>
+            }
+          </Col>
+        </Row>
 
         {
           !__DESKTOP__ &&
-            <div className="col-md-8 col-md-offset-2 top-buffer rb-dropdown">
-              <Row>
-                <p className="col-md-2 standalone-dropdown-label">Select browser</p><div className="col-md-10"><RemoteBrowserSelect /></div>
-              </Row>
-            </div>
+            <Row className="top-buffer rb-dropdown">
+              <Col xs={12} md={2}>
+                <p className="standalone-dropdown-label">Select browser</p>
+              </Col>
+              <Col xs={12} md={10}>
+                <RemoteBrowserSelect />
+              </Col>
+            </Row>
         }
 
-        <div className="col-md-8 col-md-offset-2 top-buffer">
+        <Col xs={12} className="top-buffer">
           <Collapsible
             easing="ease-in-out"
             lazyRender
@@ -191,15 +198,17 @@ class StandaloneRecorderUI extends Component {
               </div>
             </div>
           </Collapsible>
-          <Button type="submit" variant="primary" aria-label="start recording" disabled={isOutOfSpace}>
-            Start Capture
-          </Button>
-          {
-            __DESKTOP__ &&
-              <button onClick={this.startPreview} type="button" className="rounded" aria-label="start preview">Preview</button>
-          }
-        </div>
-        <div className="clearfix" />
+
+          <div className="actions">
+            {
+              __DESKTOP__ &&
+                <Button variant="outline-secondary" onClick={this.startPreview} aria-label="start preview">Preview</Button>
+            }
+            <Button type="submit" variant="primary" aria-label="start recording" disabled={isOutOfSpace}>
+              Start Capture
+            </Button>
+          </div>
+        </Col>
       </Form>
     );
   }
