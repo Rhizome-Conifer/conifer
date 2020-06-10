@@ -78,6 +78,14 @@ $font-family-base: $sans;
         }
     }
 
+    &.btn-danger {
+        svg {
+            path {
+                fill: $white;
+            }
+        }
+    }
+
     &.btn-dark {
         background-color: $slate;
         border-color: $gray700;

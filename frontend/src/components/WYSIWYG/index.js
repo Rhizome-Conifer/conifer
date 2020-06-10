@@ -286,7 +286,7 @@ class WYSIWYG extends Component {
         {
           canAdmin && !readOnly && !externalEditButton && !_editMode && !clickToEdit &&
             <div className="toggle-btn-row">
-              <Button className="rounded wr-edit-button" onClick={this.toggleEditMode}>edit</Button>
+              <Button variant="outline-secondary" onClick={this.toggleEditMode}>edit</Button>
             </div>
         }
         {

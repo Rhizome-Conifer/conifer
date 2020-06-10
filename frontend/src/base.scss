@@ -339,7 +339,11 @@ button.primary {
 
     .action-row {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
+
+        button + button {
+            margin-left: 1rem;
+        }
     }
 
     .wr-loader {

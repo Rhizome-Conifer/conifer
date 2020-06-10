@@ -155,8 +155,8 @@ class SessionCollapsibleUI extends PureComponent {
           <div className="function-coll">
             <DateHeader dt={recording.get('created_at')} />
             <div className="functions">
-              <Button ref={(o) => { this.expanded = o; }} onClick={this.toggleDeletePopover}><TrashIcon /> Delete</Button>
-              <Button onClick={this.downloadAction}><DownloadIcon /> { __DESKTOP__ ? 'Export' : 'Download' }</Button>
+              <Button variant="danger" ref={(o) => { this.expanded = o; }} onClick={this.toggleDeletePopover}><TrashIcon /> Delete</Button>
+              <Button variant="primary" onClick={this.downloadAction}><DownloadIcon /> { __DESKTOP__ ? 'Export' : 'Download' }</Button>
             </div>
           </div>
           <div className="session-notes">
@@ -187,18 +187,20 @@ class SessionCollapsibleUI extends PureComponent {
             </AutoSizer>
           </div>
         </Collapsible>
-        <Overlay shouldUpdatePosition target={this.state.open || expand ? this.expanded : this.collapsed} container={this} show={this.state.deletePopover} placement="right">
+        <Overlay target={this.state.open || expand ? this.expanded : this.collapsed} container={this.container} show={this.state.deletePopover} placement="right">
           <Popover id="wr-popover-delete" placement="right">
             <OutsideClick handleClick={this.closeDeletePopover}>
-              {
-                loadingRecBK ?
-                  <p>Checking for bookmarks...</p> :
-                  deleteMessage
-              }
-              <div className="action-row">
-                <Button onClick={this.closeDeletePopover}>Cancel</Button>
-                <Button variant="danger" onClick={this.confirmDelete} disabled={recordingDeleting}>{recordingDeleting ? <LoaderIcon /> : 'OK'}</Button>
-              </div>
+              <Popover.Content>
+                {
+                  loadingRecBK ?
+                    <p>Checking for bookmarks...</p> :
+                    deleteMessage
+                }
+                <div className="action-row">
+                  <Button variant="outline-secondary" onClick={this.closeDeletePopover}>Cancel</Button>
+                  <Button variant="danger" onClick={this.confirmDelete} disabled={recordingDeleting}>{recordingDeleting ? <LoaderIcon /> : 'OK'}</Button>
+                </div>
+              </Popover.Content>
             </OutsideClick>
           </Popover>
         </Overlay>

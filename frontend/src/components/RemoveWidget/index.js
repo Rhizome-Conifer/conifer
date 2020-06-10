@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Button, Popover } from 'react-bootstrap';
+import { Button, Overlay, Popover } from 'react-bootstrap';
 
 import { list as listErr } from 'helpers/userMessaging';
 import { stopPropagation } from 'helpers/utils';
 
-import Overlay from 'components/Overlay';
+// import Overlay from 'components/Overlay';
+
 import OutsideClick from 'components/OutsideClick';
 import { LoaderIcon, TrashIcon } from 'components/icons';
 
@@ -104,18 +105,20 @@ class RemoveWidget extends Component {
             type="button">
             { children || <TrashIcon />}
           </button>
-          <Overlay target={() => this.target} placement={placement} show={this.state.confirmRemove}>
+          <Overlay container={document.querySelector('#portal')} target={() => this.target} placement={placement} show={this.state.confirmRemove}>
             <Popover id="wr-popover-delete" placement={placement} onClick={stopPropagation}>
               <OutsideClick handleClick={this.outsideClickCheck} scrollCheck={this.props.scrollCheck}>
-                {
-                  error ?
-                    <p className="rm-error">{listErr[error] || 'Error Encountered'}</p> :
-                    <p>{deleteMsg}</p>
-                }
-                <div className="action-row">
-                  <Button onClick={this.outsideClickCheck} disabled={error || isDeleting}>Cancel</Button>
-                  <Button variant="danger" disabled={error || isDeleting} onClick={this.removeClick}>{isDeleting ? <LoaderIcon /> : 'OK'}</Button>
-                </div>
+                <Popover.Content>
+                  {
+                    error ?
+                      <p className="rm-error">{listErr[error] || 'Error Encountered'}</p> :
+                      <p>{deleteMsg}</p>
+                  }
+                  <div className="action-row">
+                    <Button variant="outline-secondary" onClick={this.outsideClickCheck} disabled={error || isDeleting}>Cancel</Button>
+                    <Button variant="danger" disabled={error || isDeleting} onClick={this.removeClick}>{isDeleting ? <LoaderIcon /> : 'OK'}</Button>
+                  </div>
+                </Popover.Content>
               </OutsideClick>
             </Popover>
           </Overlay>

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import querystring from 'querystring';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
+import { Button } from 'react-bootstrap';
 
 import { apiPath, supportEmail } from 'config';
 import { apiFetch } from 'helpers/utils';
@@ -68,7 +69,7 @@ class RegisterAccount extends Component {
           !submitted &&
             <React.Fragment>
               <h4>Please click the button to complete your registration:</h4>
-              <button className="rounded btn-primary" onClick={this.finalizeRegistration} type="button">Complete Registration</button>
+              <Button variant="primary" onClick={this.finalizeRegistration}>Complete Registration</Button>
             </React.Fragment>
         }
         {
@@ -86,14 +87,14 @@ class RegisterAccount extends Component {
           finished && error === 'already_registered' &&
             <React.Fragment>
               <h4>This user has already been verified.</h4>
-              <button onClick={this.props.toggleLogin} className="rounded" type="button">Login</button>
+              <Button variant="primary" onClick={this.props.toggleLogin}>Login</Button>
             </React.Fragment>
         }
         {
           finished && success &&
             <React.Fragment>
               <h4>Thank you {this.state.username}, your email is now verified.</h4>
-              <button onClick={this.goHome} className="rounded" type="button">Proceed to Homepage</button>
+              <Button variant="primary" onClick={this.goHome}>Proceed to Homepage</Button>
             </React.Fragment>
         }
       </div>
