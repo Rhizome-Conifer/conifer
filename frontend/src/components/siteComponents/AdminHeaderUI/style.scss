@@ -15,16 +15,8 @@
         margin-right: rem(1rem);
     }
 
-    .collection-manager.rounded {
-        padding: rem(.5rem) rem(1.5rem);
+    .collection-manager {
         margin-right: rem(1.5rem);
-        color: $white;
-        border-color: $mgmt-gray;
-
-        .caret {
-            transform: rotateZ(90deg);
-            margin-right: rem(.5rem);
-        }
     }
 
     .visibility-badge {

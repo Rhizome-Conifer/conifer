@@ -54,12 +54,6 @@
                 }
             }
         }
-
-        .rounded {
-            svg {
-                vertical-align: middle;
-            }
-        }
     }
 
     .settings-block {
@@ -86,24 +80,11 @@
         .username {
             margin: rem(1.5rem) 0;
         }
-
-        .rounded {
-            svg {
-                vertical-align: middle;
-                margin: 0 rem(.5rem) 0 rem(-.5rem);
-            }
-        }
     }
 
     .security {
         .account-email {
             margin: rem(1.5rem) 0;
-        }
-
-        .rounded {
-            background: $pine;
-            border: none;
-            color: #FFF;
         }
     }
 
@@ -123,31 +104,6 @@
             background: $lightWarning;
             color: $warning;
             border-radius: 0;
-        }
-    }
-
-    .rounded.btn-danger {
-        color: $warning;
-        border-color: $warning;
-
-        svg {
-            vertical-align: text-top;
-            margin-right: rem(.5rem);
-
-            path {
-                fill: $warning;
-            }
-        }
-
-        &:hover {
-            background: $warning;
-            color: #FFF;
-
-            svg {
-                path {
-                    fill: #FFF;
-                }
-            }
         }
     }
 }

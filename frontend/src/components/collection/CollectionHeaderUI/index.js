@@ -226,7 +226,7 @@ class CollectionHeaderUI extends Component {
                       <Button onClick={this.copyDat} className="rounded copy-dat"><ClipboardIcon />Copy</Button>
                       {
                         collection.get('dat_updated_at') && new Date(collection.get('updated_at')) > new Date(collection.get('dat_updated_at')) ?
-                          <div><div className="dat-current update-dat">Dat file is not up-to-date with collection.</div><Button className="rounded" onClick={this.datShare} variant="success">Update</Button></div> :
+                          <div><div className="dat-current update-dat">Dat file is not up-to-date with collection.</div><Button className="rounded" onClick={this.datShare} variant="primary">Update</Button></div> :
                           <div className="dat-current">Dat dataset is up-to-date with collection.</div>
 
                       }

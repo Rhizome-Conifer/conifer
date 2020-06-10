@@ -52,11 +52,6 @@ class ShareWidgetUI extends Component {
       this.thirdPartyJS();
       this.buildSocialWidgets();
     }
-
-    if (this.props.isPublic && this.props.collection !== prevProps.collection) {
-      this.thirdPartyJS();
-      this.buildSocialWidgets();
-    }
   }
 
   setPublic = () => {
