@@ -9,7 +9,7 @@ import { apiFetch } from 'helpers/utils';
 import { ShareWidget } from 'containers';
 
 import Modal from 'components/Modal';
-import { WandIcon } from 'components/icons';
+import { ClipboardIcon, WandIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -110,7 +110,7 @@ class RecordingToolsUI extends PureComponent {
     const specialBehavior = autopilotInfo && autopilotInfo.get('defaultBehavior') !== true;
 
     return (
-      <div className="recording-actions d-none d-sm-block">
+      <div className="recording-actions d-none d-sm-flex">
         <Modal
           visible={this.state.clipboardOpen}
           header={<h4>Remote Browser Clipboard</h4>}
@@ -124,13 +124,13 @@ class RecordingToolsUI extends PureComponent {
 
         {
           canAdmin && !isNew && activeBrowser &&
-            <button
-              type="button"
-              className="rounded clipboard-btn"
+            <Button
+              variant="outline-secondary"
+              className="clipboard-btn"
               aria-label="Remote browser clipboard"
               onClick={this._open}>
-              <span className="glyphicon glyphicon-paste" />
-            </button>
+              <ClipboardIcon />
+            </Button>
         }
 
         {

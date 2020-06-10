@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Button } from 'react-bootstrap';
+import { Button, Form, InputGroup } from 'react-bootstrap';
 
 import { product, apiPath } from 'config';
 import { apiFormatUrl } from 'helpers/utils';
@@ -12,6 +12,7 @@ import { incrementCollCount } from 'store/modules/auth';
 
 import { CollectionDropdown } from 'containers';
 import Modal from 'components/Modal';
+import { FileIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -19,15 +20,10 @@ import './style.scss';
 class UploadUI extends PureComponent {
   static propTypes = {
     activeCollection: PropTypes.string,
-    classes: PropTypes.string,
     dispatch: PropTypes.func,
     fromCollection: PropTypes.string,
     history: PropTypes.object,
     wrapper: PropTypes.func
-  };
-
-  static defaultProps = {
-    classes: 'btn btn-sm btn-primary'
   };
 
   constructor(props) {
@@ -184,7 +180,6 @@ class UploadUI extends PureComponent {
   }
 
   render() {
-    const { classes } = this.props;
     const { file, isUploading, progress, status, targetColl } = this.state;
 
     const modalHeader = (
@@ -195,7 +190,7 @@ class UploadUI extends PureComponent {
 
     const modalFooter = (
       <React.Fragment>
-        <Button onClick={this.close} disabled={!this.state.canCancel}>Cancel</Button>
+        <Button variant="outline-secondary" onClick={this.close} disabled={!this.state.canCancel}>Cancel</Button>
         <Button onClick={this.submitUpload} disabled={isUploading} variant="primary">{ __DESKTOP__ ? 'Import' : 'Upload' }</Button>
       </React.Fragment>
     );
@@ -214,24 +209,22 @@ class UploadUI extends PureComponent {
           visible={this.state.open}>
           <label htmlFor="upload-file">WARC/ARC file to upload: </label>
 
-          <div className="input-group">
-            <input type="text" id="upload-file" value={file} name="upload-file-text" className="form-control" placeholder="Click Pick File to select a web archive file" required readOnly onClick={this.triggerFile} style={{ backgroundColor: 'white' }} />
-            <span className="input-group-btn">
-              <button aria-label="pick file..." type="button" className="btn btn-default" onClick={this.triggerFile}>
-                <span className="glyphicon glyphicon-file glyphicon-button" />Pick File...
-              </button>
-            </span>
+          <InputGroup>
+            <Form.Control type="text" id="upload-file" value={file} name="upload-file-text" placeholder="Click Pick File to select a web archive file" required readOnly onClick={this.triggerFile} />
+            <InputGroup.Append>
+              <Button aria-label="pick file..." type="button" className="cf-ul-button" onClick={this.triggerFile}>
+                <FileIcon />&nbsp;Pick File...
+              </Button>
+            </InputGroup.Append>
             <input type="file" onChange={this.filePicker} ref={(obj) => { this.fileField = obj; }} name="uploadFile" style={{ display: "none" }} accept=".gz,.warc,.arc,.har" />
+          </InputGroup>
+
+          <div className="wr-radio-target">
+            <Form.Check type="radio" name="targetColl" id="target-auto" value="auto" checked={targetColl === 'auto'} onChange={this.handleInput} label="Automatically create new collection." />
           </div>
 
           <div className="wr-radio-target">
-            <input type="radio" name="targetColl" id="target-auto" value="auto" checked={targetColl === 'auto'} onChange={this.handleInput} />
-            <label htmlFor="target-auto">Automatically create new collection.</label>
-          </div>
-
-          <div className="wr-radio-target">
-            <input type="radio" name="targetColl" id="target-chosen" value="chosen" checked={targetColl === 'chosen'} onChange={this.handleInput} />
-            <label htmlFor="target-chosen">Add to existing collection:&emsp;</label>
+            <Form.Check type="radio" name="targetColl" id="target-chosen" value="chosen" checked={targetColl === 'chosen'} onChange={this.handleInput} label="Add to existing collection:" />
             <CollectionDropdown
               canCreateCollection={false}
               fromCollection={this.props.fromCollection}

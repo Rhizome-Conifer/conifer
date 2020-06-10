@@ -88,8 +88,8 @@ a.collection-title:hover {
         color: $gray550;
         margin: 0 auto;
 
-        .glyphicon {
-            font-size: rem(1.1rem);
+        svg {
+            margin-right: rem(.5rem);
         }
     }
 

@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import { Dropdown, InputGroup } from 'react-bootstrap';
 
 import TimeFormat from 'components/TimeFormat';
+import { LinkIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -74,7 +75,7 @@ class ExtractWidgetUI extends PureComponent {
               <span className="ra-source-name">
                 <a href={extractable.getIn(['archive', 'about'])} target="_blank">
                   {archiveName}
-                  <span className="glyphicon glyphicon-new-window" />
+                  <LinkIcon />
                 </a>
               </span>
               {

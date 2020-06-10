@@ -9,7 +9,7 @@ import { Button, DropdownButton, InputGroup, Form } from 'react-bootstrap';
 import { AppContext } from 'store/contexts';
 
 import OutsideClick from 'components/OutsideClick';
-import { ShareIcon } from 'components/icons';
+import { GlobeIcon, ShareIcon } from 'components/icons';
 
 import 'shared/scss/toggle.scss';
 import './style.scss';
@@ -165,7 +165,7 @@ class ShareWidgetUI extends Component {
                         Collection <strong>{ collection.get('title') }</strong> is set to private. To get a share link, make the collection public:
                       </p>
                       <div className="access-switch">
-                        <span className="glyphicon glyphicon-globe" aria-hidden="true" />
+                        <GlobeIcon />
                         <span className="left-buffer-sm hidden-xs">Collection Public?</span>
                         <Toggle
                           icons={false}

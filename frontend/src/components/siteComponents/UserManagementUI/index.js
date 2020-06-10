@@ -9,7 +9,7 @@ import { BugReport } from 'containers';
 
 import Modal from 'components/Modal';
 import SizeFormat from 'components/SizeFormat';
-import { UserIcon } from 'components/icons';
+import { GearIcon, UserIcon } from 'components/icons';
 
 import LoginForm from './loginForm';
 import './style.scss';
@@ -182,7 +182,7 @@ class UserManagementUI extends PureComponent {
                     <li className="display login-display">
                       <span className="sm-label">{ isAnon ? 'Active as' : 'Signed in as'}</span>
                       <h5>{user.get('full_name') || username}</h5>
-                      <span className="username"><span className="glyphicon glyphicon-user right-buffer-sm" />{ username }</span>
+                      <span className="username"><UserIcon />&nbsp;{ username }</span>
                     </li>
                 }
 
@@ -209,7 +209,7 @@ class UserManagementUI extends PureComponent {
 
                 {
                   !isAnon &&
-                    <Dropdown.Item onClick={this.goToSettings}><span className="glyphicon glyphicon-wrench" /> { __DESKTOP__ ? 'App' : 'Account' } Settings</Dropdown.Item>
+                    <Dropdown.Item onClick={this.goToSettings}><GearIcon /> { __DESKTOP__ ? 'App' : 'Account' } Settings</Dropdown.Item>
                 }
 
                 {
@@ -228,7 +228,7 @@ class UserManagementUI extends PureComponent {
                   (!isAnon && !__DESKTOP__) &&
                     <React.Fragment>
                       <Dropdown.Divider />
-                      <Dropdown.Item onClick={this.goToLogout}><span className="glyphicon glyphicon-log-out" title="Logout" /> Logout</Dropdown.Item>
+                      <Dropdown.Item onClick={this.goToLogout}>Logout</Dropdown.Item>
                     </React.Fragment>
                 }
                 {

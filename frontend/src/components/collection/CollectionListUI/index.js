@@ -16,7 +16,7 @@ import RedirectWithStatus from 'components/RedirectWithStatus';
 import WYSIWYG from 'components/WYSIWYG';
 import { NewCollection } from 'components/siteComponents';
 import { Upload } from 'containers';
-import { LinkIcon, PlusIcon, UploadIcon } from 'components/icons';
+import { LinkIcon, PlusIcon, UploadIcon, UserIcon } from 'components/icons';
 
 import CollectionItem from './CollectionItem';
 import './style.scss';
@@ -118,7 +118,7 @@ class CollectionListUI extends Component {
                   success={this.props.edited}>
                   <h2>{displayName}</h2>
                 </InlineEditor>
-                <p className="collection-username"><span className="glyphicon glyphicon-user right-buffer-sm" />{ userParam }</p>
+                <p className="collection-username"><UserIcon />{ userParam }</p>
                 {
                   (user.get('display_url') || canAdmin) &&
                     <InlineEditor
