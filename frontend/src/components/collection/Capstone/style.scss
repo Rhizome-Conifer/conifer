@@ -20,11 +20,12 @@
     }
 
     .user-link {
+        font-size: b16(12);
+
         a {
             &:link, &:visited, &:active, &:hover {
               color: $gray500;
               font-weight: 400;
-              font-size: rem(1.2rem);
               text-decoration: underline;
             }
         }

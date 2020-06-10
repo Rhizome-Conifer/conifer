@@ -30,13 +30,15 @@ class CollectionDropdownUI extends Component {
     mostRecent: PropTypes.string,
     newCollection: PropTypes.string,
     setCollection: PropTypes.func,
-    setCollectionCallback: PropTypes.func
+    setCollectionCallback: PropTypes.func,
+    size: PropTypes.string
   };
 
   static defaultProps = {
     canCreateCollection: true,
     collections: List(),
-    label: 'Add to collection:&emsp;'
+    label: 'Add to collection:&emsp;',
+    size: ''
   };
 
   constructor(props) {
@@ -164,7 +166,7 @@ class CollectionDropdownUI extends Component {
                 id="wr-collection-dropdown"
                 onSelect={this.collectionChoice}
                 onToggle={this.dropdownToggle}>
-                <Dropdown.Toggle block variant="outline-secondary">
+                <Dropdown.Toggle block variant="outline-secondary" size={this.props.size}>
                   {activeCollection.title ? <span><WarcIcon /> {activeCollection.title}</span> : 'Add to Collection...'}
                 </Dropdown.Toggle>
 

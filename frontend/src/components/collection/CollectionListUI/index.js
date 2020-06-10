@@ -160,10 +160,10 @@ class CollectionListUI extends Component {
                 <Row>
                   <Col xs={12} className={classNames('collections-index-nav', { desktop: __DESKTOP__ })}>
                     { __DESKTOP__ && <h4>My Collections</h4> }
-                    <Button onClick={this.toggle} variant="outline-secondary">
+                    <Button size="lg" onClick={this.toggle} variant="outline-secondary">
                       <PlusIcon /> New Collection
                     </Button>
-                    <Upload>
+                    <Upload size="lg">
                       <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' }
                     </Upload>
                   </Col>

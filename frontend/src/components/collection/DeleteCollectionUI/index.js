@@ -21,8 +21,13 @@ class DeleteCollectionUI extends Component {
     deleting: PropTypes.bool,
     deleteColl: PropTypes.func,
     error: PropTypes.string,
+    size: PropTypes.string,
     trigger: PropTypes.node,
     wrapper: PropTypes.func,
+  };
+
+  static defaultProps = {
+    size: ''
   };
 
   constructor(props) {
@@ -80,7 +85,7 @@ class DeleteCollectionUI extends Component {
         {
           trigger ?
             <div onClick={this.toggleDeleteModal}>{trigger}</div> :
-            <Wrapper onClick={this.toggleDeleteModal}>
+            <Wrapper size={this.props.size} onClick={this.toggleDeleteModal}>
               {this.props.children}
             </Wrapper>
         }
@@ -91,8 +96,8 @@ class DeleteCollectionUI extends Component {
           header={<h4>Confirm Delete Collection</h4>}
           footer={
             <React.Fragment>
-              <Button variant="outline-secondary" onClick={!deleting ? this.toggleDeleteModal : undefined} disabled={deleting} style={{ marginRight: 5 }}>Cancel</Button>
-              <Button onClick={!deleting ? this.deleteCollection : undefined} disabled={!isAnon && (deleting || !this.validateConfirmDelete())} variant="danger">
+              <Button size="lg" variant="outline-secondary" onClick={!deleting ? this.toggleDeleteModal : undefined} disabled={deleting} style={{ marginRight: 5 }}>Cancel</Button>
+              <Button size="lg" onClick={!deleting ? this.deleteCollection : undefined} disabled={!isAnon && (deleting || !this.validateConfirmDelete())} variant="danger">
                 {
                   deleting && this.state.indicator &&
                     <LoaderIcon />

@@ -8,6 +8,10 @@
     border-bottom: solid rem(.1rem) #97989A;
     width: 100%;
 
+    .rb-dropdown button {
+        border-right: 0;
+    }
+
     .form-group-recorder-url {
         flex-grow: 1;
 

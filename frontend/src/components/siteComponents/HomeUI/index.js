@@ -194,14 +194,14 @@ class HomeUI extends PureComponent {
               <img src={require('shared/images/homepage/desktop.png')} alt="Desktop Logo" />
               <h4>Webrecorder Desktop App</h4>
               <p>Create, manage and store web archives on your local computer; import them to Conifer for public presentation.</p>
-              <Button variant="primary" onClick={this.desktopApp}>Download Desktop App</Button>
+              <Button size="lg" variant="primary" onClick={this.desktopApp}>Download Desktop App</Button>
             </div>
 
             <div className="tool">
               <img src={require('shared/images/homepage/player.png')} alt="Player Logo" />
               <h4>Webrecorder Player App</h4>
               <p>Export Conifer collections and access them offline.</p>
-              <Button variant="primary" onClick={this.playerApp}>Download Player App</Button>
+              <Button size="lg" variant="primary" onClick={this.playerApp}>Download Player App</Button>
             </div>
           </Col>
         </Row>

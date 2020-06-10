@@ -157,8 +157,8 @@ class StandaloneRecorderUI extends Component {
           <Col xs={12} md={10}>
             {
               isAnon ?
-                <Button block onClick={this.triggerLogin} variant="outline-secondary" className="anon-button"><span>Login to add to Collection...</span></Button> :
-                <CollectionDropdown label={false} />
+                <Button size="lg" block onClick={this.triggerLogin} variant="outline-secondary" className="anon-button"><span>Login to add to Collection...</span></Button> :
+                <CollectionDropdown size="lg" label={false} />
             }
             {
               this.state.setColl &&
@@ -176,7 +176,7 @@ class StandaloneRecorderUI extends Component {
                 <p className="standalone-dropdown-label">Select browser</p>
               </Col>
               <Col xs={12} md={10}>
-                <RemoteBrowserSelect />
+                <RemoteBrowserSelect size="lg" />
               </Col>
             </Row>
         }
@@ -204,7 +204,7 @@ class StandaloneRecorderUI extends Component {
               __DESKTOP__ &&
                 <Button variant="outline-secondary" onClick={this.startPreview} aria-label="start preview">Preview</Button>
             }
-            <Button type="submit" variant="primary" aria-label="start recording" disabled={isOutOfSpace}>
+            <Button size="lg" type="submit" variant="primary" aria-label="start recording" disabled={isOutOfSpace}>
               Start Capture
             </Button>
           </div>

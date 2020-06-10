@@ -82,11 +82,16 @@ $tableRowFade: 150ms;
 
 @function rem($size) {
     /*
-        scale rems to base 16
+        scale rems from legacy base 10 to base 16
 
         regex to replace old settings
         find: (:|\s)([0-9.]+rem)(;|\s)
         repl: $1rem($2)$3
     */
-    @return $size * .625
+    @return $size * .625;
+}
+
+@function b16($size) {
+    /* scale units from px to base 16 rem */
+    @return $size * .0625rem;
 }

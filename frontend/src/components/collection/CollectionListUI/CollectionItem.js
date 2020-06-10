@@ -69,10 +69,10 @@ class CollectionItem extends PureComponent {
             {
               canAdmin &&
                 <React.Fragment>
-                  <Button size="sm" variant="outline-secondary" onClick={this.manageCollection}>
+                  <Button size="lg" variant="outline-secondary" onClick={this.manageCollection}>
                     Manage Collection
                   </Button>
-                  <Button size="sm" variant="outline-secondary" onClick={this.newSession}><PlusIcon /> New Session</Button>
+                  <Button size="lg" variant="outline-secondary" onClick={this.newSession}><PlusIcon /> New Session</Button>
                 </React.Fragment>
             }
           </Col>

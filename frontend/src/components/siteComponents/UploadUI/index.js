@@ -23,7 +23,12 @@ class UploadUI extends PureComponent {
     dispatch: PropTypes.func,
     fromCollection: PropTypes.string,
     history: PropTypes.object,
-    wrapper: PropTypes.func
+    wrapper: PropTypes.func,
+    size: PropTypes.string,
+  };
+
+  static defaultProps = {
+    size: ''
   };
 
   constructor(props) {
@@ -190,14 +195,14 @@ class UploadUI extends PureComponent {
 
     const modalFooter = (
       <React.Fragment>
-        <Button variant="outline-secondary" onClick={this.close} disabled={!this.state.canCancel}>Cancel</Button>
-        <Button onClick={this.submitUpload} disabled={isUploading} variant="primary">{ __DESKTOP__ ? 'Import' : 'Upload' }</Button>
+        <Button size="lg" variant="outline-secondary" onClick={this.close} disabled={!this.state.canCancel}>Cancel</Button>
+        <Button size="lg" onClick={this.submitUpload} disabled={isUploading} variant="primary">{ __DESKTOP__ ? 'Import' : 'Upload' }</Button>
       </React.Fragment>
     );
 
     return (
       <React.Fragment>
-        <Wrapper variant="outline-secondary" onClick={this.open}>
+        <Wrapper size={this.props.size} variant="outline-secondary" onClick={this.open}>
           { this.props.children || 'Upload'}
         </Wrapper>
         <Modal

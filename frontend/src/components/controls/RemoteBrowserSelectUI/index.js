@@ -26,12 +26,14 @@ class RemoteBrowserSelectUI extends PureComponent {
     params: PropTypes.object,
     selectRemoteBrowser: PropTypes.func,
     selectedBrowser: PropTypes.string,
+    size: PropTypes.string,
     timestamp: PropTypes.string,
     url: PropTypes.string
   };
 
   static defaultProps = {
-    active: false
+    active: false,
+    size: ''
   };
 
   constructor(props) {
@@ -112,7 +114,7 @@ class RemoteBrowserSelectUI extends PureComponent {
         variant="outline-secondary"
         disabled={autopilotRunning}
         onToggle={this.getRemoteBrowsers}>
-        <Dropdown.Toggle block variant="outline-secondary">{btn}</Dropdown.Toggle>
+        <Dropdown.Toggle block variant="outline-secondary" size={this.props.size}>{btn}</Dropdown.Toggle>
         <Dropdown.Menu>
           <div className="container">
             <Row>

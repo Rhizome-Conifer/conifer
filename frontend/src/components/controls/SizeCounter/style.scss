@@ -1,7 +1,7 @@
 @import 'src/vars';
 
 .size-counter {
-    font-family: sans-serif;
+    font-family: $sans;
     margin-left: rem(1rem);
-    font-size: rem(1.4rem);
+    font-size: b16(14);
 }

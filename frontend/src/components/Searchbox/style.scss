@@ -5,8 +5,8 @@
     width: 100%;
 
     .input-group {
-        border: solid rem(.4rem) $pine;
-        border-width: 0 0 rem(.4rem) 0;
+        border: b16(1) solid $gray400;
+        border-width: b16(1) b16(1) b16(4) b16(1);
 
         .input-group-text {
             background-color: transparent;

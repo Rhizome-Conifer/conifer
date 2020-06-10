@@ -377,7 +377,7 @@ class UserSettingsUI extends Component {
                     initial={user.get('desc') || ''}
                     placeholder={defaultCollDesc} />
                 </div>
-                <Button variant="primary" type="submit" disabled={editing}>{(editing || edited) && (edited ? <CheckIcon success /> : <LoaderIcon />)}Update Profile</Button>
+                <Button size="lg" variant="primary" type="submit" disabled={editing}>{(editing || edited) && (edited ? <CheckIcon success /> : <LoaderIcon />)}Update Profile</Button>
               </Form>
             </div>
 
@@ -436,7 +436,7 @@ class UserSettingsUI extends Component {
                     onChange={this.handleChange} />
                   <Form.Control.Feedback type="invalid">Password confirmation does not match</Form.Control.Feedback>
                 </Form.Group>
-                <Button variant="primary" disabled={!canAdmin} type="submit">Update Password</Button>
+                <Button size="lg" variant="primary" disabled={!canAdmin} type="submit">Update Password</Button>
               </Form>
             </div>
 
@@ -449,7 +449,7 @@ class UserSettingsUI extends Component {
                   <div>
                     <b>Permanently delete this account and all archived data for this user</b>
                     <p>This action <u>can not</u> be undone!</p>
-                    <Button variant="danger" disabled={!canAdmin} onClick={this.toggleDelete}><TrashIcon /> Delete Account</Button>
+                    <Button size="lg" variant="danger" disabled={!canAdmin} onClick={this.toggleDelete}><TrashIcon /> Delete Account</Button>
                   </div>
                 </div>
               </Card.Body>

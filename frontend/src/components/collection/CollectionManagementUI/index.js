@@ -110,15 +110,15 @@ class CollectionManagementUI extends Component {
                 </dl>
               </div>
               <div className="function-row">
-                <DeleteCollection>
+                <DeleteCollection size="lg">
                   <TrashIcon /> Delete Entire Collection
                 </DeleteCollection>
-                <Button onClick={this.downloadAction}>
+                <Button size="lg" onClick={this.downloadAction}>
                   <DownloadIcon /> { __DESKTOP__ ? 'Export' : 'Download' } Collection as WARC
                 </Button>
                 {
                   !this.context.isAnon &&
-                    <Upload fromCollection={collection.get('id')} classes="btn btn-default">
+                    <Upload size="lg" fromCollection={collection.get('id')} classes="btn btn-default">
                       <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' } WARC to Collection
                     </Upload>
                 }
@@ -129,7 +129,7 @@ class CollectionManagementUI extends Component {
         <section>
           <div className="session-head">
             <h3>Sessions</h3>
-            <Button size="sm" onClick={this.toggleAll}>
+            <Button size="lg" onClick={this.toggleAll}>
               { expandAll ? 'Collapse All' : 'Expand All' }
             </Button>
           </div>
