@@ -4,6 +4,7 @@
 .keystone {
     display: flex;
     margin-top: rem(3rem);
+    padding: rem(10rem) rem(2.5rem) rem(5rem) rem(2.5rem);
 
     figure {
         display: flex;
@@ -17,6 +18,7 @@
     .intro {
         width: 50%;
         margin-left: rem(3rem);
+        color: $slate;
 
         h1 {
             font-family: $serif;
@@ -24,7 +26,9 @@
         }
 
         h2 {
+            font-size: rem(2.8rem);
             font-weight: 100;
+            margin-bottom: rem(1.6rem);
         }
 
         h4 {
@@ -51,8 +55,13 @@
                 padding-bottom: rem(2rem);
 
                 &.button-link {
-                    color: $black;
+                    font-size: rem(1.4rem);
+                    color: $slate;
                     text-decoration: underline;
+                    &.existing-users-btn {
+                      padding-top: rem(0.5rem);
+                      padding-bottom: rem(1.5rem);
+                    }
                 }
             }
 
@@ -87,6 +96,7 @@
         }
 
         .note {
+            font-size: rem(1.4rem);
             a {
                 color: $black;
                 text-decoration: underline;
@@ -112,7 +122,7 @@
 }
 
 .landing-info {
-    padding: rem(1.5rem);
+    padding: rem(10rem) rem(2.5rem);
     border-bottom: rem(.1rem) solid $gray300;
 
     &:first-of-type {
@@ -137,6 +147,7 @@
 .advanced-features {
     border-bottom: rem(.1rem) solid $gray300;
     margin-top: rem(1.5rem);
+    padding: rem(10rem) rem(2.5rem);
 
     h3 {
         font-size: rem(2.8rem);
@@ -153,10 +164,12 @@
     dd {
         font-size: rem(1.6rem);
         line-height: 1.6;
+        margin-bottom: rem(1.6rem);
     }
 }
 
 .supporter {
+    margin-top: rem(8rem);
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: rem(3rem);

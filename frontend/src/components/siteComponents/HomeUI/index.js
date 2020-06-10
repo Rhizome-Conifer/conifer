@@ -87,8 +87,8 @@ class HomeUI extends PureComponent {
             <p>{product} Conifer is a web archiving service that creates an interactive copy of any web page that you browse, including content revealed by your interactions such as playing video and audio, scrolling, clicking buttons, and so forth.</p>
 
             <div className="cta">
-              <Button variant="primary" size="lg" onClick={this.signup}>Create a Free Account</Button>
-              <button className="button-link" onClick={this.login} type="button">Existing Users Login</button>
+              <Button variant="primary" size="md" onClick={this.signup}>Create a Free Account</Button>
+              <button className="button-link existing-users-btn" onClick={this.login} type="button">Existing Users Login</button>
             </div>
 
             { supporterPortal && <div className="note">Free accounts with 5GB of storage. Get more and support this project by <a href={supporterPortal} target="_blank">becoming a supporter</a>.</div> }
@@ -104,11 +104,11 @@ class HomeUI extends PureComponent {
 
         <section className="row landing-info">
           <div>
-            <div className="col-sm-6">
+            <div className="col-sm-5">
               <h3>Online Now ≠ Online Tomorrow</h3>
               <p>Links break. Information is removed from the web. Services disappear and redesigns happen. Make sure that what’s important to you will stay available.</p>
             </div>
-            <div className="col-sm-6 hidden-xs">
+            <div className="col-sm-6 offset-sm-1 hidden-xs">
               <img src={require('shared/images/homepage/broken_link.svg')} className="center-block" alt="An illustration of three browser windows, one has a graphic of a missing content and has fallen over" />
             </div>
           </div>
@@ -117,11 +117,11 @@ class HomeUI extends PureComponent {
         {/* For Web Media */}
         <section className="row landing-info">
           <div>
-            <div className="col-sm-6">
+            <div className="col-sm-5">
               <h3>Capture Complex Webpages</h3>
               <p>Unlike conventional crawler-based web archiving methods, {product}’s approach allows even intricate websites, such as those with embedded media, complex Javascript, user-specific content and interactions, and other dynamic elements, to be captured and restaged.</p>
             </div>
-            <div className="col-sm-6 hidden-xs">
+            <div className="col-sm-6  offset-md-1 hidden-xs">
               <object data={require('shared/images/homepage/complex_dynamic_webpages-w-pause.svg')} type="image/svg+xml" aria-label="An animated graphic of assets being capture as someone browses a website">
                 <img src={require('shared/images/homepage/complex_webpages.png')} className="center-block" alt="Illustration of media being captured from a browser" />
               </object>
@@ -132,11 +132,11 @@ class HomeUI extends PureComponent {
         {/* autopilot */}
         <section className="row landing-info">
           <div>
-            <div className="col-sm-6">
+            <div className="col-sm-5">
               <h3>Autopilot Your Captures</h3>
               <p>Capturing pages on a popular web platform? Autopilot behaviors may be able to speed up your capture via automation.</p>
             </div>
-            <div className="col-sm-6 hidden-xs">
+            <div className="col-sm-6 offset-md-1 hidden-xs">
               <figure>
                 {
                   !__DESKTOP__ &&
