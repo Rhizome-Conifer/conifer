@@ -8,11 +8,12 @@
 //  font-size: 62.5%;
 // }
 
-// body {
-//     display: flex;
-// }
+body {
+  color: $slate;
+}
 
 a {
+  color: $black;
   &:link, &:visited {
     color: $slate;
   }
@@ -320,9 +321,15 @@ button.primary {
     }
   }
 }
-.navbar-user-links li.navbar-right{
-  margin-left:rem(0.5rem);
-  text-align: center;
+.navbar-user-links {
+  font-size: rem(1.4rem);
+  li>button {
+    font-size: rem(1.4rem);
+  }
+  li.navbar-right{
+    margin-left:rem(0.5rem);
+    text-align: center;
+  }
 }
 #wr-popover-delete {
     max-width: rem(40rem);

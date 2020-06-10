@@ -69,24 +69,24 @@ $font-family-base: $sans;
 
     $b: .3rem;
     $b-diff: (3 - 1); // border diff for normal button
-    &.btn-primary {
-        border: solid rem($b) transparent;
-        box-sizing: border-box;
-        transition: border-color .25s ease-in-out;
-        font-weight: 600;
-
-
-        &:not(.btn-lg) {
-            /* subtract custom border from padding */
-            padding: ($input-btn-padding-y - $b-diff * .0625) ($input-btn-padding-x - $b-diff * .0625);
-        }
-
-        #{$bs-button-interactive} {
-          border: solid rem($b) $pine-accent;
-          background-color: $pine;
-          box-shadow: none;
-        }
-    }
+    // &.btn-primary {
+    //     border: solid rem($b) transparent;
+    //     box-sizing: border-box;
+    //     transition: border-color .25s ease-in-out;
+    //     font-weight: 600;
+    //
+    //
+    //     &:not(.btn-lg) {
+    //         /* subtract custom border from padding */
+    //         padding: ($input-btn-padding-y - $b-diff * .0625) ($input-btn-padding-x - $b-diff * .0625);
+    //     }
+    //
+    //     #{$bs-button-interactive} {
+    //       border: solid rem($b) $pine-accent;
+    //       background-color: $pine;
+    //       box-shadow: none;
+    //     }
+    // }
 
     &.btn-danger {
         svg {
