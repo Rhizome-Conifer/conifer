@@ -4,7 +4,7 @@ import { homepageAnnouncement } from 'config';
 
 import './style.scss';
 
-const logo = require('shared/images/logo.svg');
+const logo = require('shared/images/Conifer-SVG.svg');
 
 
 function HomepageAnnouncement() {

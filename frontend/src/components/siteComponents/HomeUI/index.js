@@ -77,7 +77,9 @@ class HomeUI extends PureComponent {
 
         <div className="keystone">
           <figure>
-            <img src={require('shared/images/homepage/conifer-chest-anim.svg')} alt="Illustration of browser windows in a chest" />
+            <object data={require('shared/images/homepage/conifer-chest-anim.svg')} type="image/svg+xml" aria-label="Illustration of browser windows in a chest">
+              <img src={require('shared/images/homepage/conifer-chest.png')} alt="Illustration of browser windows in a chest" />
+            </object>
           </figure>
           <div className="intro">
             <h1>{product}</h1>
@@ -108,7 +110,7 @@ class HomeUI extends PureComponent {
               <p>Links break. Information is removed from the web. Services disappear and redesigns happen. Make sure that what’s important to you will stay available.</p>
             </div>
             <div className="col-sm-6 hidden-xs">
-              <img src={require('shared/images/homepage/broken_link.svg')} className="center-block" alt="Online Now ≠ Online Forever" />
+              <img src={require('shared/images/homepage/broken_link.svg')} className="center-block" alt="An illustration of three browser windows, one has a graphic of a missing content and has fallen over" />
             </div>
           </div>
         </section>
@@ -121,7 +123,9 @@ class HomeUI extends PureComponent {
               <p>Unlike conventional crawler-based web archiving methods, {product}’s approach allows even intricate websites, such as those with embedded media, complex Javascript, user-specific content and interactions, and other dynamic elements, to be captured and restaged.</p>
             </div>
             <div className="col-sm-6 hidden-xs">
-              <img src={require('shared/images/homepage/complex_dynamic_webpages-w-pause.svg')} className="center-block" alt="Web Preservation for Web Media" />
+              <object data={require('shared/images/homepage/complex_dynamic_webpages-w-pause.svg')} type="image/svg+xml" aria-label="An animated graphic of assets being capture as someone browses a website">
+                <img src={require('shared/images/homepage/complex_webpages.png')} className="center-block" alt="Illustration of media being captured from a browser" />
+              </object>
             </div>
           </div>
         </section>

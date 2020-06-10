@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import { Col, Row } from 'react-bootstrap';
 
 import { product } from 'config';
 
@@ -13,17 +14,15 @@ function FAQ() {
       <Helmet>
         <title>About</title>
       </Helmet>
-      <div className="row heading">
-        <aside className="col-sm-3 hidden-xs">
-          <img src={require('shared/images/logo.svg')} alt={`${product}'s logo`} />
-        </aside>
-        <div className="col-xs-10 col-xs-push-1 col-sm-9 col-sm-push-0">
+      <Row className="heading">
+        <Col as="aside" sm={3} className="d-none d-md-block" />
+        <Col xs={12} md={9}>
           <h2>{product} is both a tool to create high-fidelity, interactive captures of any web site you browse and a platform to make those captured websites accessible.</h2>
-        </div>
-      </div>
+        </Col>
+      </Row>
 
-      <div className="row">
-        <aside className="col-sm-3 hidden-xs">
+      <Row>
+        <Col as="aside" md={3} className="d-none d-md-block">
           <p className="credit">
             <span>A project by</span>
             <a href="https://rhizome.org" target="_blank">
@@ -44,8 +43,8 @@ function FAQ() {
               <img src={require('shared/images/KF_logo-stacked.svg')} className="knight-fnd" alt="James S. and John L. Knight Foundation" />
             </a>
           </p>
-        </aside>
-        <div className="col-xs-10 col-xs-push-1 col-sm-9 col-sm-push-0">
+        </Col>
+        <Col xs={12} md={9}>
           <h4 className="q">What are Web Archives?</h4>
           <p className="a">
             A web archive is a record of web resources. It may include HTML and images, scripts, stylesheets, as well as video, audio and other elements that web pages and web apps are made of, all in one file.<br />
@@ -102,8 +101,8 @@ function FAQ() {
               <img src={require('shared/images/KF_logo-stacked.svg')} width="100" alt="James S. and John L. Knight Foundation" />
             </a>
           </div>
-        </div>
-      </div>
+        </Col>
+      </Row>
     </div>
   );
 }

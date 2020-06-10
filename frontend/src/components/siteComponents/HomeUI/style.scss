@@ -8,6 +8,10 @@
     figure {
         display: flex;
         width: 50%;
+
+        img {
+            width: 100%;
+        }
     }
 
     .intro {
@@ -201,6 +205,7 @@
         align-items: center;
         padding: rem(3rem);
         border: solid rem(.3rem) $pine-sap;
+        justify-content: center;
 
         h3 {
             margin-top: 0;
