@@ -16,6 +16,10 @@
             display: inline-block;
         }
     }
+    
+    a:link, a:visited {
+        text-decoration: underline;
+    }
 
     aside {
         padding-right: 7%;
@@ -42,7 +46,6 @@
 
         a:link, a:visited {
             color: #CCC;
-            text-decoration: underline;
         }
 
         a:hover {

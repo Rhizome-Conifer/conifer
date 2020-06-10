@@ -5,6 +5,10 @@
         padding: rem(1rem) 0;
     }
 
+    .glyphicon-recording-status {
+        font-size: rem(1em);
+    }
+
     li {
         word-wrap: break-word;
         white-space: normal;
@@ -74,6 +78,11 @@
     min-width: rem(35rem);
     position: relative;
 
+    h5 {
+        font-size: rem(1.8rem);
+        font-weight: normal;
+    }
+
     &.active:before {
         content: '';
         position: absolute;
@@ -86,7 +95,7 @@
     }
 
     .wr-mode-icon {
-        font-size: 1em;
+        font-size: rem(1em);
     }
 
     svg {

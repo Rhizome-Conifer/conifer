@@ -5,34 +5,25 @@
 }
 
 .patch-selector {
-    display: table-cell;
-    height: 100%;
+    .btn.btn-warning:not(.btn-lg) {
+        border: 0;
+        padding: 0;
+        font-size: rem(.9rem);
 
-    & > button {
-        border-bottom-left-radius: 0;
-        border-top-left-radius: 0;
+        #{$bs-button-interactive} {
+            border: none;
+            box-shadow: none !important;
+        }
 
-        & > span {
-            &:last-child {
-                display:inline-block;
-
-                &::first-letter {
-                    text-transform: uppercase;
-                }
-            }
+        &:after {
+            display: none;
         }
     }
 
-    .btn-group.open > .dropdown-menu {
-        opacity: 1;
-        transform: scale(1, 1);
-        top: 100%;
-        left: inherit;
-        right: 0;
-    }
-
-    .btn-group {
-        height: 100%;
+    .dropdown-menu {
+        padding: rem(1.5rem);
+        border-radius: 0;
+        min-width: rem(25rem);
     }
 
     img {
@@ -75,17 +66,16 @@
         }
     }
 
-    .sources-widget {
-        min-width: rem(15rem);
-        padding: 0 rem(1.5rem) 0 rem(.8rem);
-        height: 100%;
-        border-radius: 0;
+    &.sources-widget {
 
         ul {
-            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            list-style-type: none;
+            margin: 0;
+            padding: 0 rem(1rem);
+
 
             li {
                 font-size: rem(1.1rem);
@@ -100,26 +90,5 @@
                 }
             }
         }
-    }
-}
-
-.containerized .patch-selector .dropdown-menu {
-    transition: opacity $midShift ease-in-out, transform $midShift ease-in-out;
-    transform: scale(0.98, 0.98);
-
-    top: -9999px;
-    left: -9999px;
-    opacity: 0;
-    display: flex;
-    border-radius: 0;
-    margin: 0;
-    min-width: rem(40rem);
-    padding: rem(1.5rem);
-
-    flex-direction: column;
-    justify-content: space-between;
-
-    @media (max-width: 768px) {
-        min-width: rem(30rem);
     }
 }

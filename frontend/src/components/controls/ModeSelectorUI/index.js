@@ -40,8 +40,7 @@ class ModeSelectorUI extends PureComponent {
       //window.location.href = `/${user}/${coll}/index`;
       this.props.history.push(`/${user}/${coll}/manage`);
     } else {
-      //window.location.href = `/${user}/${coll}/index?query=session:${rec}`;
-      this.props.history.push(`/${user}/${coll}/manage?query=session:${rec}`);
+      this.props.history.push(`/${user}/${coll}/manage?search=&session=${rec}`);
     }
   }
 
@@ -139,25 +138,25 @@ class ModeSelectorUI extends PureComponent {
     switch(currMode) {
       case 'live':
         modeMessage = 'Previewing';
-        modeMarkup = <span className="btn-content"><span className="preview-mode" aria-label="Preview icon" /><span className="d-none d-sm-inline">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><span className="preview-mode" aria-label="Preview icon" /><span className="d-none d-lg-inline">{ modeMessage }</span></span>;
         break;
       case 'record':
         modeMessage = 'Capturing';
-        modeMarkup = <span className="btn-content"><Blinker /> <span className="d-none d-sm-inline">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><Blinker /> <span className="d-none d-lg-inline">{ modeMessage }</span></span>;
         break;
       case 'replay':
       case 'replay-coll':
         modeMessage = 'Browsing';
-        modeMarkup = <span className="btn-content"><PlayIcon /> <span className="d-none d-sm-inline">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><PlayIcon /> <span className="d-none d-lg-inline">{ modeMessage }</span></span>;
         break;
       case 'patch':
         modeMessage = 'Patching';
-        modeMarkup = <span className="btn-content"><PatchIcon /> <span className="d-none d-sm-inline">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><PatchIcon /> <span className="d-none d-lg-inline">{ modeMessage }</span></span>;
         break;
       case 'extract':
       case 'extract_only':
         modeMessage = 'Extracting';
-        modeMarkup = <span className="btn-content"><Blinker /> <span className="d-none d-sm-inline">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><Blinker /> <span className="d-none d-lg-inline">{ modeMessage }</span></span>;
         break;
       default:
         break;
@@ -170,7 +169,7 @@ class ModeSelectorUI extends PureComponent {
       <div className="mode-selector">
         <ButtonGroup className="wr-mode-selector">
           <Button variant="outline-secondary" onClick={this.onStop} className="wr-mode-message content-action" aria-label={`Finish ${modeMessage} session`}>
-            <span className="btn-content"><StopIcon /> <span className="d-none d-sm-inline">Stop</span></span>
+            <span className="btn-content"><StopIcon /> <span className="d-none d-lg-inline">Stop</span></span>
             { modeMarkup }
             { isWrite && <SizeCounter /> }
           </Button>

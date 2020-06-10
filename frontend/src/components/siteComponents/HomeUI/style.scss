@@ -13,12 +13,21 @@
         object, img {
             width: 100%;
         }
+
+        @media (max-width: $xs) {
+            width: 75%;
+            margin: 0 auto;
+        }
     }
 
     .intro {
         width: 50%;
         margin-left: rem(3rem);
         color: $slate;
+
+        @media (max-width: $xs) {
+            width: 100%;
+        }
 
         h1 {
             font-family: $serif;
@@ -47,12 +56,16 @@
             justify-content: space-between;
             align-items: flex-start;
 
-
             button {
                 flex-grow: 1;
                 width: 100%;
                 padding-top: rem(2rem);
                 padding-bottom: rem(2rem);
+
+                @media (max-width: $xs) {
+                    padding-top: rem(1rem);
+                    padding-bottom: rem(1rem);
+                }
 
                 &.button-link {
                     font-size: rem(1.4rem);
@@ -130,10 +143,10 @@
         margin-top: rem(4rem);
     }
 
-    & > div {
-        display: flex;
-        align-items: center;
-    }
+    // & > div {
+    display: flex;
+    align-items: center;
+    // }
 
     @media (max-width: $mobile) {
         padding: rem(2rem);
@@ -175,7 +188,6 @@
     grid-gap: rem(3rem);
 
     @media (max-width: $xs) {
-        grid-template-columns: 1fr;
         grid-gap: rem(1.5rem) rem(1rem);
     }
 
@@ -186,18 +198,14 @@
         height: rem(15rem);
         text-shadow: 2px 2px 0 $pine;
 
-        grid-column: 1/span 2;
-
-        @media (max-width: $xs) {
-            grid-column: auto;
-        }
+        grid-column: 1 / span 2;
     }
 
     .oss-intro {
         grid-column: 1;
 
         @media (max-width: $xs) {
-            grid-column: auto;
+            grid-column: 1 / span 2;
         }
     }
 
@@ -224,6 +232,10 @@
         padding: rem(3rem);
         border: solid rem(.3rem) $pine-sap;
         justify-content: center;
+
+        @media (max-width: $xs) {
+            grid-column: 1 / span 2;
+        }
 
         h3 {
             margin-top: 0;
@@ -261,10 +273,6 @@
             width: 90%;
             object-fit: contain;
             justify-self: center;
-        }
-
-        @media (max-width: $xs) {
-            align-items: center;
         }
     }
 

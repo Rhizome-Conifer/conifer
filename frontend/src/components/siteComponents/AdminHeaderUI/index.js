@@ -53,13 +53,13 @@ class AdminHeaderUI extends PureComponent {
 
     return (
       <React.Fragment>
-        <Button variant="dark" onClick={this.goToManager}>
+        <Button variant="dark" onClick={this.goToManager} className="d-none d-md-block">
           Collection Manager
         </Button>
-        <span className="active-collection" title={collection.get('title')}>{truncate(collection.get('title'), 10, truncWord)}</span>
+        <span className="active-collection d-none d-sm-block" title={collection.get('title')}>{truncate(collection.get('title'), 10, truncWord)}</span>
         {
           collection.get('public') &&
-            <span className="visibility-badge">PUBLIC</span>
+            <span className="visibility-badge d-none d-sm-block">PUBLIC</span>
         }
       </React.Fragment>
     );

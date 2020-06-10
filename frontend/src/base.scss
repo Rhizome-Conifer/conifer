@@ -340,7 +340,7 @@ button.primary {
         justify-content: flex-end;
 
         button + button {
-            margin-left: 1rem;
+            margin-left: rem(1rem);
         }
     }
 

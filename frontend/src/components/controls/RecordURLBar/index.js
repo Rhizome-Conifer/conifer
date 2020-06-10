@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
+import { Form, InputGroup } from 'react-bootstrap';
 
 import { ExtractWidget, PatchWidget, RemoteBrowserSelect } from 'containers';
 
@@ -75,38 +76,35 @@ class RecordURLBar extends Component {
     const isPatch = currMode === 'patch';
 
     return (
-      <div className="main-bar">
-        <form className={classNames('form-group-recorder-url', { 'start-recording': isNew, 'content-form': !isNew, 'remote-archive': isPatch || isExtract })}>
-          <div className="input-group containerized">
-            {
-              !__DESKTOP__ && canAdmin &&
-                <div className="input-group-btn rb-dropdown">
-                  {
-                    <RemoteBrowserSelect
-                      active
-                      autopilotRunning={autopilotRunning}
-                      currMode={currMode}
-                      params={params} />
-                  }
-                </div>
-            }
-            {
-              /* {% if not browser %}autofocus{% endif %} */
-              <input type="text" disabled={autopilotRunning} onChange={this.handleChange} onKeyPress={this.handleSubmit} className="url-input-recorder form-control" name="url" value={url} style={{ height: '3.2rem' }} autoFocus required />
-            }
-            {
-              isExtract &&
-                <ExtractWidget
-                  active
-                  toCollection={activeCollection.title} />
-            }
-            {
-              isPatch &&
-                <PatchWidget params={params} />
-            }
-          </div>
-        </form>
-      </div>
+      <Form className={classNames('form-group-recorder-url', { 'start-recording': isNew, 'content-form': !isNew, 'remote-archive': isPatch || isExtract })}>
+        <InputGroup>
+          {
+            canAdmin && !__DESKTOP__ &&
+              <div className="rb-dropdown">
+                {
+                  <RemoteBrowserSelect
+                    active
+                    autopilotRunning={autopilotRunning}
+                    currMode={currMode}
+                    params={params} />
+                }
+              </div>
+          }
+          {
+            <Form.Control type="text" disabled={autopilotRunning} onChange={this.handleChange} onKeyPress={this.handleSubmit} name="url" value={url} autoFocus required />
+          }
+          {
+            isExtract &&
+              <ExtractWidget
+                active
+                toCollection={activeCollection.title} />
+          }
+          {
+            isPatch &&
+              <PatchWidget params={params} />
+          }
+        </InputGroup>
+      </Form>
     );
   }
 }

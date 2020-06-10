@@ -17,12 +17,10 @@ class PatchWidget extends Component {
     const { params: { rec, ts }, stats } = this.props;
 
     return (
-      <div className="input-group-btn patch-selector">
-        <PatchWidgetUI
-          toRecording={rec}
-          timestamp={ts}
-          stats={stats} />
-      </div>
+      <PatchWidgetUI
+        toRecording={rec}
+        timestamp={ts}
+        stats={stats} />
     );
   }
 }

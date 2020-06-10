@@ -1,45 +1,24 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import { Dropdown, InputGroup } from 'react-bootstrap';
 
 import { capitalize } from 'helpers/utils';
 
-import OutsideClick from 'components/OutsideClick';
 import TimeFormat from 'components/TimeFormat';
 
 import './style.scss';
 
 
-class PatchWidgetUI extends Component {
+class PatchWidgetUI extends PureComponent {
   static propTypes = {
     toRecording: PropTypes.string,
     timestamp: PropTypes.string,
     stats: PropTypes.object
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      open: false
-    };
-  }
-
-  toggle = () => {
-    this.setState({ open: !this.state.open });
-  }
-
-  close = () => {
-    if (this.state.open) {
-      this.setState({ open: false });
-    }
-  }
-
   render() {
     const { toRecording, stats, timestamp } = this.props;
-    const { open } = this.state;
 
-    const classes = classNames('btn-group', { open });
     const archiveName = (
       stats && stats.length ?
         `Patched from ${stats.length} source${stats.length === 1 ? '' : 's'}` :
@@ -47,8 +26,8 @@ class PatchWidgetUI extends Component {
     );
 
     return (
-      <OutsideClick classes={classes} handleClick={this.close}>
-        <button className="btn btn-warning sources-widget dropdown-toggle" onClick={this.toggle} type="button" id="timePicker" aria-haspopup="true" aria-expanded="true">
+      <Dropdown alignRight as={InputGroup.Append} className="patch-selector sources-widget d-none d-md-flex">
+        <Dropdown.Toggle variant="warning">
           <ul>
             <li className="ts main-replay-date">{timestamp ? <TimeFormat dt={timestamp} gmt /> : 'Most Recent'}</li>
             <li className="mnt-label">
@@ -59,8 +38,8 @@ class PatchWidgetUI extends Component {
               }
             </li>
           </ul>
-        </button>
-        <div className="dropdown-menu" aria-labelledby="timePicker">
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
           <div className="ra-mode-row">
             <span className="ra-mode-badge patch">patching</span> to <div className="ra-recording">{ capitalize(toRecording.replace('-', ' ')) }</div>
           </div>
@@ -75,8 +54,8 @@ class PatchWidgetUI extends Component {
                 </ul>
               </div>
           }
-        </div>
-      </OutsideClick>
+        </Dropdown.Menu>
+      </Dropdown>
     );
   }
 }
