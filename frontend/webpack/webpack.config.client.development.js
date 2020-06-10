@@ -117,7 +117,7 @@ const devConfig = {
   plugins: [
     new CopyWebpackPlugin([
       'src/shared/images/favicon.ico',
-      'src/shared/images/webrecorder-social.png'
+      'src/shared/images/conifer-social.jpg'
     ]),
     new CircularDependencyPlugin({
       exclude: /node_modules/,

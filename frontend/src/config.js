@@ -111,13 +111,19 @@ export default Object.assign({
     head: {
       titleTemplate: 'Conifer | %s',
       meta: [
-        { name: 'description', content: '' },
+        { name: 'title', content: 'Conifer' },
+        { name: 'description', content: 'Collect and revisit web pages — Free, open-source web archiving service.' },
         { charset: 'utf-8' },
+        { property: 'og:type', content: 'website'},
         { property: 'og:site_name', content: 'Conifer' },
         { property: 'og:locale', content: 'en_US' },
         { property: 'og:title', content: 'Conifer' },
-        { property: 'og:description', content: 'Create high-fidelity, interactive web archives of any web site you browse.' },
-        { property: 'og:image', content: `${hostScheme}://${appHost}/static/webrecorder-social.png`, width: '1200', height: '630' }
+        { property: 'og:description', content: 'Collect and revisit web pages — Free, open-source web archiving service.' },
+        { property: 'og:image', content: `${hostScheme}://${appHost}/static/conifer-social.jpg`, width: '1200', height: '628' },
+        { property: 'twitter:card', content: 'summary_large_image'},
+        { property: 'twitter:title', content: 'Conifer'},
+        { property: 'twitter:description', content: 'Collect and revisit web pages — Free, open-source web archiving service.'},
+        { property: 'twitter:image', content: `${hostScheme}://${appHost}/static/conifer-social.jpg`},
       ]
     }
   },

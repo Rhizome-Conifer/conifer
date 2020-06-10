@@ -156,7 +156,7 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin([
       'src/shared/images/favicon.png',
-      'src/shared/images/webrecorder-social.png',
+      'src/shared/images/conifer-social.jpg',
     ]),
     new CleanPlugin([assetsPath], { root: projectRootPath }),
 
