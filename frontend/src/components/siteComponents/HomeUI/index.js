@@ -102,54 +102,48 @@ class HomeUI extends PureComponent {
           </div>
         </div>
 
-        <section className="row landing-info">
-          <div>
-            <div className="col-sm-5">
-              <h3>Online Now ≠ Online Tomorrow</h3>
-              <p>Links break. Information is removed from the web. Services disappear and redesigns happen. Make sure that what’s important to you will stay available.</p>
-            </div>
-            <div className="col-sm-6 offset-sm-1 hidden-xs">
-              <img src={require('shared/images/homepage/broken_link.svg')} className="center-block" alt="An illustration of three browser windows, one has a graphic of a missing content and has fallen over" />
-            </div>
-          </div>
-        </section>
+        <Row as="section" className="landing-info">
+          <Col sm={5}>
+            <h3>Online Now ≠ Online Tomorrow</h3>
+            <p>Links break. Information is removed from the web. Services disappear and redesigns happen. Make sure that what’s important to you will stay available.</p>
+          </Col>
+          <Col sm={6} md={{ offset: 1 }} className="d-none d-sm-block">
+            <img src={require('shared/images/homepage/broken_link.svg')} className="center-block" alt="An illustration of three browser windows, one has a graphic of a missing content and has fallen over" />
+          </Col>
+        </Row>
 
         {/* For Web Media */}
-        <section className="row landing-info">
-          <div>
-            <div className="col-sm-5">
-              <h3>Capture Complex Webpages</h3>
-              <p>Unlike conventional crawler-based web archiving methods, {product}’s approach allows even intricate websites, such as those with embedded media, complex Javascript, user-specific content and interactions, and other dynamic elements, to be captured and restaged.</p>
-            </div>
-            <div className="col-sm-6  offset-md-1 hidden-xs">
-              <object data={require('shared/images/homepage/complex_dynamic_webpages-w-pause.svg')} type="image/svg+xml" aria-label="An animated graphic of assets being capture as someone browses a website">
-                <img src={require('shared/images/homepage/complex_webpages.png')} className="center-block" alt="Illustration of media being captured from a browser" />
-              </object>
-            </div>
-          </div>
-        </section>
+        <Row as="section" className="landing-info">
+          <Col sm={5}>
+            <h3>Capture Complex Webpages</h3>
+            <p>Unlike conventional crawler-based web archiving methods, {product}’s approach allows even intricate websites, such as those with embedded media, complex Javascript, user-specific content and interactions, and other dynamic elements, to be captured and restaged.</p>
+          </Col>
+          <Col sm={6} md={{ offset: 1 }} className="d-none d-sm-block">
+            <object data={require('shared/images/homepage/complex_dynamic_webpages-w-pause.svg')} type="image/svg+xml" aria-label="An animated graphic of assets being capture as someone browses a website">
+              <img src={require('shared/images/homepage/complex_webpages.png')} className="center-block" alt="Illustration of media being captured from a browser" />
+            </object>
+          </Col>
+        </Row>
 
         {/* autopilot */}
-        <section className="row landing-info">
-          <div>
-            <div className="col-sm-5">
-              <h3>Autopilot Your Captures</h3>
-              <p>Capturing pages on a popular web platform? Autopilot behaviors may be able to speed up your capture via automation.</p>
-            </div>
-            <div className="col-sm-6 offset-md-1 hidden-xs">
-              <figure>
-                {
-                  !__DESKTOP__ &&
-                    <video autoPlay loop muted poster={require('shared/images/homepage/autopilot.jpg')}>
-                      <source src={require('shared/media/autopilot.mp4')} type="video/mp4" />
-                      <source src={require('shared/media/autopilot.webm')} type="video/webm" />
-                      <source src={require('shared/media/autopilot.ogv')} type="video/ogg" />
-                    </video>
-                }
-              </figure>
-            </div>
-          </div>
-        </section>
+        <Row as="section" className="landing-info">
+          <Col sm={5}>
+            <h3>Autopilot Your Captures</h3>
+            <p>Capturing pages on a popular web platform? Autopilot behaviors may be able to speed up your capture via automation.</p>
+          </Col>
+          <Col sm={6} md={{ offset: 1 }} className="d-none d-sm-block">
+            <figure>
+              {
+                !__DESKTOP__ &&
+                  <video autoPlay loop muted poster={require('shared/images/homepage/autopilot.jpg')}>
+                    <source src={require('shared/media/autopilot.mp4')} type="video/mp4" />
+                    <source src={require('shared/media/autopilot.webm')} type="video/webm" />
+                    <source src={require('shared/media/autopilot.ogv')} type="video/ogg" />
+                  </video>
+              }
+            </figure>
+          </Col>
+        </Row>
 
         <Row as="section" className="advanced-features">
           <Col xs={{ span: 10, offset: 1}}>

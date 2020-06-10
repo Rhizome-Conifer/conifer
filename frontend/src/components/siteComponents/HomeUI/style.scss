@@ -143,10 +143,10 @@
         margin-top: rem(4rem);
     }
 
-    & > div {
-        display: flex;
-        align-items: center;
-    }
+    // & > div {
+    display: flex;
+    align-items: center;
+    // }
 
     @media (max-width: $mobile) {
         padding: rem(2rem);
