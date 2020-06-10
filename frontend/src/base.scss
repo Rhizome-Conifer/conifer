@@ -8,11 +8,12 @@
 //  font-size: 62.5%;
 // }
 
-// body {
-//     display: flex;
-// }
+body {
+  color: $slate;
+}
 
 a {
+  color: $black;
   &:link, &:visited {
     color: $slate;
   }
