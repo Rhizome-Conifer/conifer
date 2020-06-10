@@ -179,7 +179,7 @@ class HomeUI extends PureComponent {
               supporterPortal &&
                 <div className="supportCTA">
                   {/*<h3>You can support free, open source tools for archiving the web.</h3>*/}
-                  <Button variant="primary" size="lg" onClick={this.gotToSupporterSite}>Become a Supporter</Button>
+                  <Button variant="primary" size="lg" onClick={this.goToSupporterSite}>Become a Supporter</Button>
                   <a href={supporterPortal} target="_blank">Learn more</a>
                   <p>{product} is a project of Rhizome, a registered 501(c)(3) non-profit organization. Your donations are tax-deductible.</p>
                 </div>
