@@ -150,7 +150,7 @@ class UserManagementUI extends PureComponent {
 
           {
             !__DESKTOP__ &&
-              <li className="navbar-text d-none d-md-block">
+              <li className="navbar-text d-none d-lg-block">
                 <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
               </li>
           }
@@ -165,7 +165,7 @@ class UserManagementUI extends PureComponent {
 
           {
             supporterPortal &&
-              <li className="d-none d-lg-block">
+              <li className="d-none d-xl-block">
                 <a href={supporterPortal} target="_blank">{user.get('customer_id') ? 'Manage Support' : 'Support Us'}</a>
               </li>
           }

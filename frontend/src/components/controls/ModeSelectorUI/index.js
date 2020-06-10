@@ -40,8 +40,7 @@ class ModeSelectorUI extends PureComponent {
       //window.location.href = `/${user}/${coll}/index`;
       this.props.history.push(`/${user}/${coll}/manage`);
     } else {
-      //window.location.href = `/${user}/${coll}/index?query=session:${rec}`;
-      this.props.history.push(`/${user}/${coll}/manage?query=session:${rec}`);
+      this.props.history.push(`/${user}/${coll}/manage?search=&session=${rec}`);
     }
   }
 

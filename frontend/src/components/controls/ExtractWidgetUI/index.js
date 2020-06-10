@@ -1,15 +1,14 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Dropdown, InputGroup } from 'react-bootstrap';
 
-import OutsideClick from 'components/OutsideClick';
 import TimeFormat from 'components/TimeFormat';
 
 import './style.scss';
 
 
-class ExtractWidgetUI extends Component {
+class ExtractWidgetUI extends PureComponent {
   static propTypes = {
     active: PropTypes.bool,
     extractable: PropTypes.object,
@@ -24,24 +23,6 @@ class ExtractWidgetUI extends Component {
     active: false
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      open: false
-    };
-  }
-
-  toggle = () => {
-    this.setState({ open: !this.state.open });
-  }
-
-  close = () => {
-    if (this.state.open) {
-      this.setState({ open: false });
-    }
-  }
-
   toggleSources = (evt) => {
     const { toggleAllSources, extractable } = this.props;
     toggleAllSources(!extractable.get('allSources'));
@@ -49,13 +30,11 @@ class ExtractWidgetUI extends Component {
 
   render() {
     const { active, extractable, stats, toCollection } = this.props;
-    const { open } = this.state;
     const allSources = extractable.get('allSources');
 
     const requestedTimestamp = extractable.get('timestamp');
     const timestamp = this.props.timestamp ? this.props.timestamp : requestedTimestamp;
 
-    const classes = classNames('btn-group', { open });
     const archiveToggleClasses = classNames('archive-toggle', { on: allSources });
     const archiveName = (
       `${extractable.getIn(['archive', 'name'])}
@@ -63,7 +42,7 @@ class ExtractWidgetUI extends Component {
     );
 
     return (
-      <Dropdown size="sm" alignRight as={InputGroup.Append} className="extract-selector sources-widget">
+      <Dropdown alignRight as={InputGroup.Append} className="extract-selector sources-widget d-none d-md-flex">
         <Dropdown.Toggle>
           <ul>
             <li className="ts main-replay-date">{timestamp ? <TimeFormat dt={timestamp} gmt /> : 'Most Recent'}</li>
