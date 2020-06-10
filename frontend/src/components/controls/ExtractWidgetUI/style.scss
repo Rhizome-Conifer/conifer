@@ -1,13 +1,12 @@
 @import 'src/vars';
 
 .extract-selector {
-    .btn-primary.dropdown-toggle {
+    .btn.btn-primary:not(.btn-lg) {
         border: 0;
         padding: 0;
-        height: rem(3.2rem);
-        font-size: rem(1rem);
+        font-size: rem(.9rem);
 
-        &:hover, &:not(:disabled):not(.disabled):active, &:not(:disabled):not(.disabled):active:focus, &:focus {
+        #{$bs-button-interactive} {
             border: none;
             box-shadow: none !important;
         }

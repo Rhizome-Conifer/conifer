@@ -22,6 +22,9 @@ $input-border-color: $gray400;
 $input-focus-border-color: $input-border-color;
 $form-feedback-invalid-color: $warning;
 $input-btn-focus-color: rgba($pine-accent, .25);
+// $btn-focus-box-shadow: none;
+// $input-btn-focus-box-shadow: none;
+// $custom-select-focus-box-shadow: none;
 
 /* buttons */
 $btn-border-radius: 0;
@@ -53,6 +56,13 @@ $font-family-base: $sans;
         justify-content: space-between;
         align-items: center;
     }
+}
+
+/* dropdown focus removal */
+.btn-outline-secondary:not(:disabled):not(.disabled):active:focus,
+.btn-outline-secondary:focus,
+.show > .btn-outline-secondary.dropdown-toggle:focus {
+    box-shadow: none;
 }
 
 .btn {

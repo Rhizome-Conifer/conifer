@@ -32,7 +32,7 @@
     .admin-options {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
-        grid-gap: 1.5rem;
+        grid-gap: rem(1.5rem);
         margin-top: rem(2.5rem);
 
         h5 {
