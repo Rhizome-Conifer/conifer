@@ -325,7 +325,7 @@ class UserSettingsUI extends Component {
                     {
                       user.get('customer_id') ?
                         <React.Fragment>
-                          <p>Thank you, your support makes Webrecorder possibile. <a href="#">Learn more about our sustainability strategy.</a></p>
+                          <p>Thank you, your support makes {product} possibile.</p>
                           <Button variant="primary" onClick={this.goToSupporterPortal}>Manage Billing and Subscription</Button>
                         </React.Fragment> :
                         <div className="upgrade">

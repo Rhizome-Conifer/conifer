@@ -3,7 +3,7 @@
 .app-header {
     height: rem(5.5rem);
 
-    .header-webrecorder {
+    .header-conifer {
         display: flex;
         justify-content: space-between;
         height: 100%;
@@ -78,7 +78,7 @@
 
 
     &.dark {
-        .header-webrecorder {
+        .header-conifer {
             background-color: $slate;
             color: $white;
 

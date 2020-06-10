@@ -285,7 +285,7 @@ const infoRoutes = [
     exact: true,
   },
   {
-    breadcrumb: 'Webrecorder API Docs',
+    breadcrumb: 'Conifer API Docs',
     path: '/docs/api',
     component: ApiDocs,
     name: 'apidocs',

@@ -105,7 +105,7 @@ class ShareWidgetUI extends Component {
           {
             text: '',
             size: 'large',
-            via: 'webrecorder_io'
+            via: 'RhizomeConifer'
           }
         )
       ));

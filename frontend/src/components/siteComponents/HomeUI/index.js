@@ -187,7 +187,7 @@ class HomeUI extends PureComponent {
 
             <div className="tools-intro">
               <h2>Desktop Tools</h2>
-              <p>In partnership with the Webrecorder project, we aim to make web archiving accessible to all, and ensure interoperability in between tools. Here are some apps we have developed together:</p>
+              <p>In partnership with the <a href="https://webrecorder.net" target="_blank">Webrecorder project</a>, we aim to make web archiving accessible to all, and ensure interoperability in between tools. Here are some apps we have developed together:</p>
             </div>
 
             <div className="tool">

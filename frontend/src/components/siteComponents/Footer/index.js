@@ -25,10 +25,10 @@ function Footer() {
                 <li><Link to="/_policies">Terms & Policies</Link></li>
               </ul>
               <ul>
-                <li><a href="https://blog.webrecorder.io" target="_blank">Blog</a></li>
+                <li><a href="https://blog.conifer.rhizome.org" target="_blank">Blog</a></li>
                 <li><a href={`mailto:${supportEmail}`} className="contact">Contact</a></li>
-                <li><a href="https://twitter.com/webrecorder_io" aria-label="Twitter" target="_blank">Twitter</a></li>
-                <li><a href="https://github.com/webrecorder/webrecorder" aria-label="Github" target="_blank">Github</a></li>
+                <li><a href="https://twitter.com/RhizomeConifer" aria-label="Twitter" target="_blank">Twitter</a></li>
+                <li><a href="https://github.com/rhizome-conifer/conifer" aria-label="Github" target="_blank">Github</a></li>
                 <li><a href="https://rhizome.org" target="_blank">Rhizome.org</a></li>
               </ul>
             </div>

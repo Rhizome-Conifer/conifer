@@ -217,10 +217,10 @@ class UserManagementUI extends PureComponent {
                     <React.Fragment>
                       <Dropdown.Divider />
                       <Dropdown.Item href="https://guide.conifer.rhizome.org/" target="_blank">User Guide</Dropdown.Item>
-                      <Dropdown.Item href="mailto:support@webrecorder.io" target="_blank">Contact Support</Dropdown.Item>
+                      <Dropdown.Item href="mailto:support@conifer.rhizome.org" target="_blank">Contact Support</Dropdown.Item>
                       <Dropdown.Divider />
-                      <Dropdown.Item onClick={this.goToFAQ}>About Webrecorder</Dropdown.Item>
-                      <Dropdown.Item href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</Dropdown.Item>
+                      <Dropdown.Item onClick={this.goToFAQ}>About {product}</Dropdown.Item>
+                      <Dropdown.Item href="https://blog.conifer.rhizome.org" target="_blank">{product} Blog</Dropdown.Item>
                     </React.Fragment>
                 }
 
