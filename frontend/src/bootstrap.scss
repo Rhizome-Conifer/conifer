@@ -17,19 +17,43 @@ $theme-colors: (
   "success": $cf-success,
 );
 
+$body-color:   $slate;
+
 /* forms */
 $input-border-color: $gray400;
 $input-focus-border-color: $input-border-color;
 $form-feedback-invalid-color: $warning;
 $input-btn-focus-color: rgba($pine-accent, .25);
-// $btn-focus-box-shadow: none;
-// $input-btn-focus-box-shadow: none;
-// $custom-select-focus-box-shadow: none;
 
 /* buttons */
+$btn-input-font-size: 0.85rem;
+
 $btn-border-radius: 0;
 $btn-border-radius-lg: 0;
 $btn-border-radius-sm: 0;
+
+$btn-padding-y:   0.75rem;
+$btn-padding-x:   1.75rem;
+$btn-font-size: 0.85rem;
+$btn-font-size-sm:  0.85rem;
+
+$btn-padding-y-sm:  0.5rem;
+$btn-padding-x-sm:  1.5rem;
+
+$btn-padding-y-lg:  .5rem;
+$btn-padding-x-lg:  1rem;
+$btn-font-size-lg:  0.85rem;
+
+
+/* forms */
+// $input-padding-y: 1.5rem;
+$input-padding-x: 0.5rem;
+
+$input-padding-y-sm: 0.75rem;
+$input-padding-x-sm: 0.5rem;
+
+$input-padding-y-lg: 0.75rem;
+$input-padding-x-lg: 0.5rem;
 
 /* misc */
 $component-active-color: $slate;
@@ -56,13 +80,6 @@ $font-family-base: $sans;
         justify-content: space-between;
         align-items: center;
     }
-}
-
-/* dropdown focus removal */
-.btn-outline-secondary:not(:disabled):not(.disabled):active:focus,
-.btn-outline-secondary:focus,
-.show > .btn-outline-secondary.dropdown-toggle:focus {
-    box-shadow: none;
 }
 
 .btn {
