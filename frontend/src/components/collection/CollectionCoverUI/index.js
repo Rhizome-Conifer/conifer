@@ -190,7 +190,7 @@ class CollectionCoverUI extends Component {
                       </TabList>
 
                       <TabPanel className="react-tabs__tab-panel overview-tab">
-                        <div className="scroll-wrapper scrollspy-scrollable hidden-xs">
+                        <div className="scroll-wrapper scrollspy-scrollable d-none d-sm-block">
                           <ul className="scrollspy" ref={(obj) => { this.scrollSpy = obj; }}>
                             {
                               !isMobile && lists && lists.map((list, idx) => {

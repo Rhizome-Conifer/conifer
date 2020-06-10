@@ -249,7 +249,7 @@ export class App extends Component {
         <AppContext.Provider value={contextValues}>
           {
             error ?
-              <div>
+              <div className="wr-content">
                 <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
                   <Card variant="danger" className="error-panel">
                     <Card.Header><InfoIcon /> Oops!</Card.Header>

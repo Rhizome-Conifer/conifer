@@ -93,7 +93,15 @@ $tableRowFade: 150ms;
     @return $size * .625;
 }
 
+@function strip-unit($number) {
+  @if type-of($number) == 'number' and not unitless($number) {
+    @return $number / ($number * 0 + 1);
+  }
+
+  @return $number;
+}
+
 @function b16($size) {
     /* scale units from px to base 16 rem */
-    @return $size * .0625rem;
+    @return strip-unit($size) * .0625rem;
 }

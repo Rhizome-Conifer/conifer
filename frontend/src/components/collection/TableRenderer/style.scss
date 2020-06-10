@@ -195,8 +195,13 @@
             .ReactVirtualized__Table__rowColumn {
                 a {
                     display: inline-block;
+                    text-decoration: none;
                     padding: rem(1rem);
                     color: $slate;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
                 }
             }
         }

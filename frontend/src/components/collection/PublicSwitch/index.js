@@ -22,7 +22,7 @@ class PublicSwitch extends PureComponent {
   render() {
     const { isPublic, label } = this.props;
 
-    const button = isPublic ? <span><GlobeIcon /><span className="hidden-xs"> Public</span></span> : <span><LockIcon /><span className="hidden-xs"> Private</span></span>;
+    const button = isPublic ? <span><GlobeIcon /><span className="d-none d-sm-inline"> Public</span></span> : <span><LockIcon /><span className="d-none d-sm-inline"> Private</span></span>;
 
     return (
       <div className="wr-coll-visibility">

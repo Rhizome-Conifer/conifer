@@ -71,9 +71,15 @@
                     font-size: rem(1.4rem);
                     color: $slate;
                     text-decoration: underline;
+                    transition: color $quickShift ease-in-out;
+
                     &.existing-users-btn {
                       padding-top: rem(0.5rem);
                       padding-bottom: rem(1.5rem);
+                    }
+
+                    &:hover {
+                        color: $vivid-pine;
                     }
                 }
             }
@@ -90,11 +96,6 @@
             border: solid rem(.1rem) $black;
             padding: rem(1.5rem);
 
-            a {
-                color: $black;
-                text-decoration: underline;
-            }
-
             img {
                 flex-shrink: 0;
             }
@@ -110,10 +111,7 @@
 
         .note {
             font-size: rem(1.4rem);
-            a {
-                color: $black;
-                text-decoration: underline;
-            }
+
         }
 
         .note + .note {

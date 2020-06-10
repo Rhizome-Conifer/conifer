@@ -166,7 +166,7 @@ class ShareWidgetUI extends Component {
                       </p>
                       <div className="access-switch">
                         <GlobeIcon />
-                        <span className="left-buffer-sm hidden-xs">Collection Public?</span>
+                        <span className="left-buffer-sm d-none d-sm-inline">Collection Public?</span>
                         <Toggle
                           icons={false}
                           defaultChecked={isPublic}

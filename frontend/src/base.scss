@@ -3,15 +3,18 @@
 /* custom bootstrap */
 @import './bootstrap';
 
-a {
-  color: $black;
-  &:link, &:visited {
-    color: $slate;
-  }
+.wr-content, .modal {
+    a, .button-link {
+      &:link, &:visited {
+        color: $slate;
+        text-decoration: underline;
+        transition: color $quickShift ease-in-out;
+      }
 
-  &:hover {
-    color: $slate;
-  }
+      &:hover {
+        color: $vivid-pine;
+      }
+    }
 }
 
 #app {

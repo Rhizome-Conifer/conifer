@@ -4,7 +4,7 @@
     .heading {
         display: flex;
         align-items: center;
-        margin: rem(5rem) 0;
+        margin: b16(100px) 0 b16(50px) 0;
 
         aside  {
             text-align: right;
@@ -15,10 +15,6 @@
             max-width: rem(15.6rem);
             display: inline-block;
         }
-    }
-    
-    a:link, a:visited {
-        text-decoration: underline;
     }
 
     aside {

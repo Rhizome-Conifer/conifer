@@ -40,7 +40,7 @@ class AdminHeaderUI extends PureComponent {
           <div className="managing-collection d-none d-lg-block">
             Collection Manager:
           </div>
-          <div className="d-none d-sm-block">
+          <div className="d-none d-sm-block" style={{ flexGrow: 1 }}>
             <CollectionDropdown
               label={false}
               canCreateCollection={false}

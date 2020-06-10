@@ -69,7 +69,7 @@ class RegisterAccount extends Component {
           !submitted &&
             <React.Fragment>
               <h4>Please click the button to complete your registration:</h4>
-              <Button variant="primary" onClick={this.finalizeRegistration}>Complete Registration</Button>
+              <Button size="lg" variant="primary" onClick={this.finalizeRegistration}>Complete Registration</Button>
             </React.Fragment>
         }
         {
@@ -87,14 +87,14 @@ class RegisterAccount extends Component {
           finished && error === 'already_registered' &&
             <React.Fragment>
               <h4>This user has already been verified.</h4>
-              <Button variant="primary" onClick={this.props.toggleLogin}>Login</Button>
+              <Button size="lig" variant="primary" onClick={this.props.toggleLogin}>Login</Button>
             </React.Fragment>
         }
         {
           finished && success &&
             <React.Fragment>
               <h4>Thank you {this.state.username}, your email is now verified.</h4>
-              <Button variant="primary" onClick={this.goHome}>Proceed to Homepage</Button>
+              <Button size="lg" variant="primary" onClick={this.goHome}>Proceed to Homepage</Button>
             </React.Fragment>
         }
       </div>
