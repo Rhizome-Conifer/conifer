@@ -24,27 +24,25 @@ $input-border-color: $gray400;
 $input-focus-border-color: $input-border-color;
 $form-feedback-invalid-color: $warning;
 $input-btn-focus-color: rgba($pine-accent, .25);
-// $btn-focus-box-shadow: none;
-// $input-btn-focus-box-shadow: none;
-// $custom-select-focus-box-shadow: none;
 
 /* buttons */
+$btn-input-font-size: 0.85rem;
+
 $btn-border-radius: 0;
 $btn-border-radius-lg: 0;
 $btn-border-radius-sm: 0;
 
-
 $btn-padding-y:   0.75rem;
 $btn-padding-x:   1.75rem;
-$btn-font-size:   1.4rem;
-//
+$btn-font-size: 0.85rem;
+$btn-font-size-sm:  0.85rem;
+
 $btn-padding-y-sm:  0.5rem;
 $btn-padding-x-sm:  1.5rem;
-$btn-font-size-sm:   0.9rem;
 
 $btn-padding-y-lg:  .5rem;
 $btn-padding-x-lg:  1rem;
-$bth-font-size-lg:  1.6rem;
+$btn-font-size-lg:  0.85rem;
 
 
 /* forms */
@@ -82,13 +80,6 @@ $font-family-base: $sans;
         justify-content: space-between;
         align-items: center;
     }
-}
-
-/* dropdown focus removal */
-.btn-outline-secondary:not(:disabled):not(.disabled):active:focus,
-.btn-outline-secondary:focus,
-.show > .btn-outline-secondary.dropdown-toggle:focus {
-    box-shadow: none;
 }
 
 .btn {
