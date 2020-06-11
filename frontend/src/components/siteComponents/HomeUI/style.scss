@@ -3,60 +3,105 @@
 
 .keystone {
     display: flex;
-    margin-top: 3rem;
+    margin-top: rem(3rem);
+    padding: rem(10rem) rem(2.5rem) rem(5rem) rem(2.5rem);
+
+    figure {
+        display: flex;
+        width: 50%;
+
+        object, img {
+            width: 100%;
+        }
+
+        @media (max-width: $xs) {
+            width: 75%;
+            margin: 0 auto;
+        }
+    }
 
     .intro {
-        margin-left: 3rem;
+        width: 50%;
+        margin-left: rem(3rem);
+        color: $slate;
+
+        @media (max-width: $xs) {
+            width: 100%;
+        }
+
+        h1 {
+            font-family: $serif;
+            font-size: rem(6.8rem);
+        }
 
         h2 {
+            font-size: rem(2.8rem);
+            font-weight: 100;
+            margin-bottom: rem(1.6rem);
+        }
+
+        h4 {
             font-weight: 100;
         }
 
         p {
             font-weight: 100;
-            font-size: 1.6rem;
+            font-size: rem(1.6rem);
         }
 
         .cta {
-            margin: 1.5rem 0;
+            margin: rem(1.5rem) 0;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: flex-start;
 
-
             button {
                 flex-grow: 1;
+                width: 100%;
+                padding-top: rem(2rem);
+                padding-bottom: rem(2rem);
+
+                @media (max-width: $xs) {
+                    padding-top: rem(1rem);
+                    padding-bottom: rem(1rem);
+                }
 
                 &.button-link {
-                    color: $black;
+                    font-size: rem(1.4rem);
+                    color: $slate;
                     text-decoration: underline;
+                    transition: color $quickShift ease-in-out;
+
+                    &.existing-users-btn {
+                      padding-top: rem(0.5rem);
+                      padding-bottom: rem(1.5rem);
+                    }
+
+                    &:hover {
+                        color: $vivid-pine;
+                    }
                 }
             }
 
             button + button {
-                margin-top: 1rem;
+                margin-top: rem(1rem);
             }
         }
 
         .desktop-feature {
             display: flex;
             align-items: flex-start;
-            margin-top: 3rem;
-            border: solid .1rem $black;
-            padding: 1.5rem;
-
-            a {
-                color: $black;
-                text-decoration: underline;
-            }
+            margin-top: rem(3rem);
+            border: solid rem(.1rem) $black;
+            padding: rem(1.5rem);
 
             img {
                 flex-shrink: 0;
             }
 
             & > div {
-                margin-left: 1.5rem;
+                margin-left: rem(1.5rem);
 
                 h5 {
                     margin-top: 0;
@@ -65,14 +110,12 @@
         }
 
         .note {
-            a {
-                color: $black;
-                text-decoration: underline;
-            }
+            font-size: rem(1.4rem);
+
         }
 
         .note + .note {
-            margin-top: 1rem;
+            margin-top: rem(1rem);
         }
     }
 
@@ -90,21 +133,21 @@
 }
 
 .landing-info {
-    padding: 1.5rem;
-    border-bottom: .1rem solid $gray300;
+    padding: rem(10rem) rem(2.5rem);
+    border-bottom: rem(.1rem) solid $gray300;
 
     &:first-of-type {
-        border-top: .1rem solid $gray300;
-        margin-top: 4rem;
+        border-top: rem(.1rem) solid $gray300;
+        margin-top: rem(4rem);
     }
 
-    & > div {
-        display: flex;
-        align-items: center;
-    }
+    // & > div {
+    display: flex;
+    align-items: center;
+    // }
 
     @media (max-width: $mobile) {
-        padding: 2rem;
+        padding: rem(2rem);
     }
 
     video {
@@ -113,79 +156,98 @@
 }
 
 .advanced-features {
-    border-bottom: .1rem solid $gray300;
+    border-bottom: rem(.1rem) solid $gray300;
+    margin-top: rem(1.5rem);
+    padding: rem(10rem) rem(2.5rem);
+
+    h3 {
+        font-size: rem(2.8rem);
+        font-weight: 300;
+    }
 
     dt {
-        margin-top: 1.5rem;
+        font-size: rem(1.8rem);
+        line-height: 1.4;
+        font-weight: 500;
+        margin-top: rem(1.5rem);
+    }
+
+    dd {
+        font-size: rem(1.6rem);
+        line-height: 1.6;
+        margin-bottom: rem(1.6rem);
     }
 }
 
 .supporter {
+    margin-top: rem(8rem);
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-gap: 3rem;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: rem(3rem);
 
     @media (max-width: $xs) {
-        grid-template-columns: 1fr;
-        grid-gap: 1.5rem 1rem;
+        grid-gap: rem(1.5rem) rem(1rem);
     }
 
     header {
-        margin-top: 3rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        margin-top: rem(3rem);
         text-align: center;
-        background-color: #0000ee;
-        color: white;
-        height: 15rem;
-        background-image: url('../../../shared/images/donor-page-banner.jpg');
-        background-position: center;
-        background-size: cover;
+        color: $deep-pine;
+        height: rem(15rem);
+        text-shadow: 2px 2px 0 $pine;
 
-        grid-column: 1/span 3;
-
-        @media (max-width: $xs) {
-            grid-column: auto;
-        }
+        grid-column: 1 / span 2;
     }
 
     .oss-intro {
-        grid-column: 1/span 2;
+        grid-column: 1;
 
         @media (max-width: $xs) {
-            grid-column: auto;
+            grid-column: 1 / span 2;
         }
     }
 
-    h2 {
+    .tools-intro {
+        margin-top: b16(35px);
+        grid-column: 1 / span 2;
+    }
+
+    h3 {
         font-weight: 100;
+        font-size: rem(1.8rem);
+        line-height: 1.6;
     }
 
     p {
         font-weight: 100;
-        font-size: 1.6rem;
+        font-size: rem(1.6rem);
+        line-height: 1.6;
     }
 
     .supportCTA {
         display: flex;
         flex-direction: column;
         align-items: center;
-        background: $gray200;
-        padding: 3rem;
+        padding: rem(3rem);
+        border: solid rem(.3rem) $pine-sap;
+        justify-content: center;
+
+        @media (max-width: $xs) {
+            grid-column: 1 / span 2;
+        }
 
         h3 {
             margin-top: 0;
         }
 
         button {
-            margin: 1.5rem 0;
+            margin: rem(1.5rem) 0;
             flex-grow: 0;
-            background: $white;
+            padding: rem(2rem) rem(3rem);
         }
 
         a {
-            margin-bottom: 1.5rem;
+            margin-bottom: rem(1.5rem);
         }
 
         p {
@@ -193,28 +255,24 @@
         }
     }
 
-    div:nth-last-child(-n+3) {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        // align-items: center;
-        align-items: flex-start;
+    .tool {
+        display: grid;
+        grid-template-rows: rem(20rem) min-content 1fr min-content;
 
         h4 {
-            margin-top: 1.5rem;
+            margin-top: rem(1.5rem);
         }
 
         button {
-            margin-top: auto;
+            justify-self: center;
         }
 
         img {
-            margin: 0 10%;
-            width: 80%;
-        }
-
-        @media (max-width: $xs) {
-            align-items: center;
+            height: 100%;
+            width: 90%;
+            object-fit: contain;
+            justify-self: center;
         }
     }
+
 }

@@ -1,16 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Checkbox } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 
 
 export function CheckboxField(props) {
   const { cb, label, name } = props;
 
   return (
-    <Checkbox name={name} onChange={cb}>
-      { label }
-    </Checkbox>
+    <Form.Check type="checkbox" id={name} name={name} onChange={cb} label={label} />
   );
 }
 

@@ -3,11 +3,12 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
 import removeMd from 'remove-markdown';
-import { Button, DropdownButton, FormControl, MenuItem } from 'react-bootstrap';
+import { Button, Dropdown, FormControl, MenuItem } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { appHost, onboardingLink, truncSentence, truncWord } from 'config';
 import { doubleRAF, getCollectionLink, truncate } from 'helpers/utils';
+
 
 import { DeleteCollection, Upload } from 'containers';
 import Modal from 'components/Modal';
@@ -21,16 +22,10 @@ import './style.scss';
 
 
 class CollectionHeaderUI extends Component {
-
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool,
-    isMobile: PropTypes.bool
-  };
-
   static propTypes = {
     auth: PropTypes.object,
     autoId: PropTypes.string,
+    canAdmin: PropTypes.bool,
     collection: PropTypes.object,
     collEdited: PropTypes.bool,
     collEditing: PropTypes.bool,
@@ -38,6 +33,8 @@ class CollectionHeaderUI extends Component {
     deleteColl: PropTypes.func,
     editCollection: PropTypes.func,
     history: PropTypes.object,
+    isAdmin: PropTypes.bool,
+    isMobile: PropTypes.bool,
     shareToDat: PropTypes.func,
     stopAutomation: PropTypes.func,
     unshareFromDat: PropTypes.func
@@ -125,8 +122,7 @@ class CollectionHeaderUI extends Component {
   }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
-    const { collection } = this.props;
+    const { canAdmin, collection, isAnon, isMobile } = this.props;
     const { onBoarding } = this.state;
 
     const containerClasses = classNames('wr-collection-header');
@@ -141,7 +137,7 @@ class CollectionHeaderUI extends Component {
     return (
       <header className={containerClasses}>
         {
-          onboardingLink && !this.context.isMobile &&
+          onboardingLink && !isMobile &&
             <OnBoarding open={onBoarding} />
         }
         {
@@ -157,7 +153,7 @@ class CollectionHeaderUI extends Component {
               label="Collection"
               name={collection.get('title')}
               open={this.state.editModal}
-              readOnlyName={this.context.isAnon} />
+              readOnlyName={isAnon} />
         }
         <div className="overview" key="collOverview">
           <div className={classNames('heading-row', { 'is-public': !canAdmin })}>
@@ -183,33 +179,36 @@ class CollectionHeaderUI extends Component {
           {
             canAdmin &&
               <div className="menu-row">
-                <Button className="rounded new-session" onClick={this.newSession}><PlusIcon /><span className="hidden-xs"> New Session</span></Button>
-                <DropdownButton id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
-                  <MenuItem onClick={this.newSession}>New Session</MenuItem>
-                  <MenuItem divider />
-                  <MenuItem onClick={this.togglePublicView}>Cover</MenuItem>
-                  <MenuItem divider />
-                  <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
-                  {
-                    !isAnon &&
-                      <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>{ __DESKTOP__ ? 'Import' : 'Upload' } To Collection</Upload>
-                  }
-                  <MenuItem onClick={this.downloadCollection}>{ __DESKTOP__ ? 'Export' : 'Download' } Collection</MenuItem>
-                  <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
-                  {
-                    allowDat && canAdmin && !isAnon && newFeatures &&
-                      <React.Fragment>
-                        <MenuItem divider />
-                        <MenuItem onClick={this.toggleDatModal}><p className="menu-label">More Sharing Options</p><DatIcon /> Share via Dat...</MenuItem>
-                      </React.Fragment>
-                  }
-                  <MenuItem divider />
-                  {
-                    onboardingLink && !this.context.isMobile &&
-                      <MenuItem onClick={this.showOnboarding}><span role="img" aria-label="tada emoji">&#127881;</span> Tour New Features</MenuItem>
-                  }
-                  <MenuItem href="https://guide.webrecorder.io/" target="_blank">Help</MenuItem>
-                </DropdownButton>
+                <Button variant="outline-secondary" onClick={this.newSession}><PlusIcon /><span className="d-none d-sm-inline"> New Session</span></Button>
+                <Dropdown id="coll-menu">
+                  <Dropdown.Toggle variant="outline-secondary">
+                    <MoreIcon />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    <Dropdown.Item onClick={this.manageCollection}>Manage Sessions</Dropdown.Item>
+                    {
+                      !isAnon &&
+                      <Upload classes="" fromCollection={collection.get('id')} wrapper={Dropdown.Item}>{ __DESKTOP__ ? 'Import' : 'Upload' } To Collection</Upload>
+                    }
+                    <Dropdown.Item onClick={this.downloadCollection}>{ __DESKTOP__ ? 'Export' : 'Download' } Collection</Dropdown.Item>
+                    <Dropdown.Divider />
+                    <DeleteCollection wrapper={Dropdown.Item}>Delete Collection</DeleteCollection>
+                    {
+                      allowDat && canAdmin && !isAnon && newFeatures &&
+                        <React.Fragment>
+                          <Dropdown.Divider />
+                          <Dropdown.Item onClick={this.toggleDatModal}><p className="menu-label">More Sharing Options</p><DatIcon /> Share via Dat...</Dropdown.Item>
+                        </React.Fragment>
+                    }
+                    {
+                      onboardingLink && !isMobile &&
+                        <React.Fragment>
+                          <Dropdown.Divider />
+                          <Dropdown.Item onClick={this.showOnboarding}><span role="img" aria-label="tada emoji">&#127881;</span> Tour New Features</Dropdown.Item>
+                        </React.Fragment>
+                    }
+                  </Dropdown.Menu>
+                </Dropdown>
               </div>
           }
           {
@@ -227,12 +226,12 @@ class CollectionHeaderUI extends Component {
                       <Button onClick={this.copyDat} className="rounded copy-dat"><ClipboardIcon />Copy</Button>
                       {
                         collection.get('dat_updated_at') && new Date(collection.get('updated_at')) > new Date(collection.get('dat_updated_at')) ?
-                          <div><div className="dat-current update-dat">Dat file is not up-to-date with collection.</div><Button className="rounded" onClick={this.datShare} bsStyle="success">Update</Button></div> :
+                          <div><div className="dat-current update-dat">Dat file is not up-to-date with collection.</div><Button className="rounded" onClick={this.datShare} variant="primary">Update</Button></div> :
                           <div className="dat-current">Dat dataset is up-to-date with collection.</div>
 
                       }
                     </div>
-                    <Button className="rectangular" bsStyle="warning" onClick={this.datUnshare}>Stop Sharing</Button>
+                    <Button className="rectangular" variant="warning" onClick={this.datUnshare}>Stop Sharing</Button>
                   </React.Fragment> :
                   <React.Fragment>
                     <h4>Make Available as a Dat archive</h4>
@@ -245,7 +244,7 @@ class CollectionHeaderUI extends Component {
                           <div className="dat-note">This may take a minute, depending on the size of your collection.</div>
                         </div> :
                         <React.Fragment>
-                          <Button className="rectangular" bsStyle="success" onClick={this.datShare}> Make this Collection Available via Dat </Button>
+                          <Button className="rectangular" variant="success" onClick={this.datShare}> Make this Collection Available via Dat </Button>
                         </React.Fragment>
                     }
                   </React.Fragment>

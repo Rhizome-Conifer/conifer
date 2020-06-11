@@ -1,147 +1,158 @@
 @import 'src/vars';
 
-.list-entry {
-    width: 100%;
-    margin-top: 3.5rem;
+.wr-content {
 
-    .wr-editor {
-        .DraftEditor-editorContainer {
-            max-height: inherit;
+    .list-entry {
+        width: 100%;
+        margin-top: rem(3.5rem);
+
+        a {
+            &:link, &:visited {
+                text-decoration: none;
+            }
         }
-    }
 
-    .list-title {
-        display: flex;
-        align-items: flex-start;
-        border: solid 0 $gray500;
-        border-width: 0 0 .2rem 0;
-        padding: 0 1.5rem 1rem 0;
+        .wr-editor {
+            .DraftEditor-editorContainer {
+                max-height: inherit;
+            }
+        }
 
-        .list-metadata {
-            a {
-                &:link, &:visited {
+        .list-title {
+            display: flex;
+            align-items: flex-start;
+            border: solid 0 $gray500;
+            border-width: 0 0 rem(.2rem) 0;
+            padding: 0 rem(1.5rem) rem(1rem) 0;
+
+            .list-metadata {
+                a {
+                    &:link, &:visited {
+                        color: $gray600;
+                        text-decoration: underline;
+                    }
+                }
+            }
+
+            .title-container {
+                display: flex;
+                align-items: center;
+
+                h1 {
+                    display: inline-block;
+                    margin: 0;
+                    font-size: rem(2.6rem);
+                }
+
+                .visibility-badge {
+                    background: $brightGreen;
+                    color: $white;
+                    font-size: rem(1rem);
+                    border-radius: rem(.3rem);
+                    padding: rem(.1rem) rem(.4rem);
+                    margin-left: rem(1rem);
+                }
+            }
+
+            h3 {
+                font-weight: 400;
+                margin: 0;
+
+                & > a {
+                    transition: color $quickShift ease-in-out;
+                    text-decoration: none;
+                    display: inline-block;
+
+                    &:link, &:visited {
+                        color: #000;
+                    }
+
+                    &:hover {
+                        color: $vivid-pine;
+                    }
+                }
+            }
+
+            svg {
+                width: rem(1.5rem);
+                height: rem(1.5rem);
+                vertical-align: bottom;
+                margin-right: rem(1rem);
+
+                g {
+                  fill: $gray600;
+                }
+            }
+        }
+
+        .desc {
+            padding: rem(1rem) 0 0 rem(2.5rem);
+            margin-bottom: rem(3rem);
+            font-size: rem(1.6rem);
+            word-break: break-word;
+
+            .wr-truncate {
+                align-items: flex-start;
+            }
+
+            div + .list-link {
+                display: inline-block;
+                margin-top: rem(0.2rem);
+            }
+
+            .list-link {
+              &:link, &:visited {
+                  color: $gray600;
+              }
+
+              &:hover, &:active {
+                  color: $pine;
+              }
+            }
+        }
+
+        & > ol {
+            li {
+                margin-bottom: rem(3.5rem);
+
+                a.link-group {
+                    display: block;
+                    width: fit-content;
+
+                    &:hover {
+
+                        h4 {
+                            text-decoration: underline;
+                        }
+
+                        .source-link {
+                            color: $vivid-pine;
+                        }
+                    }
+                }
+
+                h4 {
+                    margin-bottom: rem(.2rem);
+                    color: $vivid-pine;
+
+                }
+
+                .source-link {
+                    display: inline-block;
                     color: $gray600;
                     text-decoration: underline;
                 }
-            }
-        }
 
-        .title-container {
-            display: flex;
-            align-items: center;
-
-            h1 {
-                display: inline-block;
-                margin: 0;
-                font-size: 2.6rem;
-            }
-
-            .visibility-badge {
-                background: $brightGreen;
-                color: $white;
-                font-size: 1rem;
-                border-radius: .3rem;
-                padding: .1rem .4rem;
-                margin-left: 1rem;
-            }
-        }
-
-        h3 {
-            font-weight: 400;
-            margin: 0;
-
-            & > a {
-                transition: color $quickShift ease-in-out;
-                text-decoration: none;
-                display: inline-block;
-
-                &:link, &:visited {
-                    color: #000;
+                .bk-timestamp {
+                    display: block;
+                    margin: rem(0.5rem) 0;
+                    color: $gray525;
+                    font-weight: 300;
                 }
 
-                &:hover {
-                    color: blue;
+                .wr-editor {
+                    margin-top: rem(1rem);
                 }
-            }
-        }
-
-        svg {
-            width: 1.5rem;
-            height: 1.5rem;
-            vertical-align: bottom;
-            margin-right: 1rem;
-
-            g {
-              fill: $gray600;
-            }
-        }
-    }
-
-    .desc {
-        padding: 1rem 0 0 2.5rem;
-        margin-bottom: 3rem;
-        font-size: 1.6rem;
-        word-break: break-word;
-
-        .wr-truncate {
-            align-items: flex-start;
-        }
-
-        div + .list-link {
-            display: inline-block;
-            margin-top: 0.2rem;
-        }
-
-        .list-link {
-          &:link, &:visited {
-              color: $gray600;
-          }
-
-          &:hover, &:active {
-              color: $blue;
-          }
-        }
-    }
-
-    & > ol {
-        li {
-            margin-bottom: 3.5rem;
-
-            .link-group {
-                display: block;
-                width: fit-content;
-
-                &:hover {
-
-                    h4 {
-                        text-decoration: underline;
-                    }
-
-                    .source-link {
-                        color: $blue;
-                    }
-                }
-            }
-
-            h4 {
-                margin-bottom: .2rem;
-            }
-
-            .source-link {
-                display: inline-block;
-                color: $gray600;
-                text-decoration: underline;
-            }
-
-            .bk-timestamp {
-                display: block;
-                margin: 0.5rem 0;
-                color: $gray525;
-                font-weight: 300;
-            }
-
-            .wr-editor {
-                margin-top: 1rem;
             }
         }
     }

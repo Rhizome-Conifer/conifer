@@ -2,7 +2,6 @@ import Raven from 'raven-js';
 import createRavenMiddleware from 'raven-for-redux';
 import config from 'config';
 import { createStore as _createStore, applyMiddleware, compose } from 'redux';
-import { reduxSearch } from 'redux-search';
 import { fromJS } from 'immutable';
 import { enableBatching } from 'redux-batched-actions';
 
@@ -17,24 +16,6 @@ export default function createStore(client, data) {
     middleware.push(createRavenMiddleware(Raven));
   }
 
-  const searchConfig = reduxSearch({
-    resourceIndexes: {
-      'collection.pages': ({ resources, indexDocument, state }) => {
-        if (resources && !__SERVER__) {
-          resources.forEach((pg) => {
-            const id = pg.get('id');
-            indexDocument(id, pg.get('title') || '');
-            indexDocument(id, pg.get('url').split('?')[0]);
-          });
-        }
-      }
-    }
-    // manually index in CollectionFiltersUI
-    // resourceSelector: (resourceName, state) => {
-    //   return state.app.getIn(resourceName.split('.'));
-    // }
-  });
-
   let finalCreateStore;
   if (__DEVELOPMENT__ && __CLIENT__ && __DEVTOOLS__) {
     // eslint-disable-next-line global-require, import/no-extraneous-dependencies
@@ -46,13 +27,11 @@ export default function createStore(client, data) {
 
     finalCreateStore = composeEnhancer(
       applyMiddleware(...middleware),
-      searchConfig,
       persistState(window.location.href.match(/[?&]debug_session=([^&]+)\b/))
     )(_createStore);
   } else {
     finalCreateStore = compose(
       applyMiddleware(...middleware),
-      searchConfig
     )(_createStore);
   }
   // eslint-disable-next-line global-require

@@ -569,6 +569,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         data['public'] = self.is_public()
         data['public_index'] = self.get_bool_prop('public_index', False)
+        data['autoindexed'] = self.get_bool_prop('autoindexed', False)
 
         if DatShare.DAT_SHARE in data:
             data[DatShare.DAT_SHARE] = self.get_bool_prop(DatShare.DAT_SHARE, False)
@@ -772,6 +773,11 @@ class Collection(PagesMixin, RedisUniqueComponent):
             self.redis.expire(key, self.COLL_CDXJ_TTL)
             return True
         return False
+
+    def get_cdxj_iter(self):
+        self.sync_coll_index(exists=False, do_async=False)
+        coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)
+        return self.redis.zscan_iter(coll_cdxj_key, match='*', count=100)
 
     def sync_coll_index(self, exists=False, do_async=False):
         coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)

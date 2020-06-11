@@ -16,15 +16,13 @@ const CBrowser = !__DESKTOP__ && !__PLAYER__ && __CLIENT__ && require('shepherd-
 
 
 class RemoteBrowserUI extends Component {
-  static contextTypes = {
-    currMode: PropTypes.string
-  };
 
   static propTypes = {
     behavior: PropTypes.string,
     clipboard: PropTypes.bool,
     contentFrameUpdate: PropTypes.bool,
     creating: PropTypes.bool,
+    currMode: PropTypes.string,
     dispatch: PropTypes.func,
     history: PropTypes.object,
     inactiveTime: PropTypes.number,
@@ -37,12 +35,12 @@ class RemoteBrowserUI extends Component {
     url: PropTypes.string
   }
 
-  constructor(props, context) {
+  constructor(props) {
     super(props);
 
-    if (context.currMode.startsWith('extract')) {
+    if (props.currMode.startsWith('extract')) {
       const { archiveId, collId } = props.params;
-      this.currMode = `${context.currMode}`;
+      this.currMode = `${props.currMode}`;
 
       if (archiveId) {
         this.currMode = `${this.currMode}:${archiveId}`;
@@ -52,7 +50,7 @@ class RemoteBrowserUI extends Component {
         this.currMode = `${this.currMode}:${collId}`;
       }
     } else {
-      this.currMode = context.currMode;
+      this.currMode = props.currMode;
     }
 
     this.reloadHandle = null;
@@ -119,7 +117,7 @@ class RemoteBrowserUI extends Component {
       this.socket.doBehavior(url, behavior);
     }
 
-    if (url != prevProps.url) {
+    if (url !== prevProps.url && this.socket) {
       this.socket.setRemoteUrl(url);
     }
 
@@ -232,8 +230,7 @@ class RemoteBrowserUI extends Component {
   connectToRemoteBrowser = (reqId, inactiveTime) => {
     /* Connect to the initialized remote browser session and open the websocket
     */
-    const { dispatch, params } = this.props;
-    const { currMode } = this.context;
+    const { currMode, dispatch, params } = this.props;
 
     this.pywbParams.inactiveSecs = inactiveTime;
 
@@ -248,8 +245,7 @@ class RemoteBrowserUI extends Component {
   }
 
   onExpire = () => {
-    const { currMode } = this.context;
-    const { params: { user, coll, rec }, rb, timestamp, url } = this.props;
+    const { currMode, params: { user, coll, rec }, rb, timestamp, url } = this.props;
     let message;
 
     if (!currMode.includes('replay')) {
@@ -302,7 +298,7 @@ class RemoteBrowserUI extends Component {
         }
         {
           !message && countdownLabel && !dismissCountdown &&
-            <Alert bsStyle="warning" className="rb-countdown" onDismiss={this.hideCountdown}>
+            <Alert variant="warning" className="rb-countdown" onDismiss={this.hideCountdown}>
               Browser Time Left: <b>{countdown}</b>
             </Alert>
         }

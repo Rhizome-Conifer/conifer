@@ -127,7 +127,7 @@ class UserManager(object):
 
             self.cork.register(username, input_data['password'], email, role='archivist',
                           max_level=50,
-                          subject='webrecorder.io Account Creation',
+                          subject='Conifer account creation',
                           email_template='webrecorder/templates/emailconfirm.html',
                           description=desc,
                           host=host)
@@ -155,7 +155,7 @@ class UserManager(object):
 
         if not msg:
             msg['success'] = ('A confirmation e-mail has been sent to <b>{0}</b>. ' +
-                              'Please check your e-mail to complete the registration!').format(username)
+                              'Please check your e-mail to complete the registration!').format(email)
 
         return msg, redir_extra
 
@@ -886,5 +886,3 @@ class CLIUserManager(UserManager):
 
     def _get_access(self):
         return self.base_access
-
-

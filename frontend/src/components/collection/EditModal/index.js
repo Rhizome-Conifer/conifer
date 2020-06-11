@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Col, ControlLabel, Form, FormControl, FormGroup, HelpBlock } from 'react-bootstrap';
+import { Button, Col, Form } from 'react-bootstrap';
 
 import { defaultCollDesc } from 'config';
 import { collection as collectionErr } from 'helpers/userMessaging';
@@ -43,19 +43,19 @@ class EditModal extends Component {
     };
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.open && prevProps.edited && !this.props.edited) {
-      clearTimeout(this.handle);
-      this.props.closeCb();
-    }
-  }
-
   shouldComponentUpdate(nextProps) {
     if (!this.props.open && !nextProps.open) {
       return false;
     }
 
     return true;
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.open && prevProps.edited && !this.props.edited) {
+      clearTimeout(this.handle);
+      this.props.closeCb();
+    }
   }
 
   componentWillUnmount() {
@@ -93,11 +93,11 @@ class EditModal extends Component {
         visible={this.props.open}
         closeCb={this.props.closeCb}
         dialogClassName="wr-edit-modal"
-        header={<h2>Edit {label} Details</h2>}
+        header={<Col><h2>Edit {label} Details</h2></Col>}
         footer={
           <React.Fragment>
-            <Button className="rounded" onClick={!editing ? this.props.closeCb : undefined} disabled={editing}>Cancel</Button>
-            <Button onClick={!editing ? this.edit : undefined} disabled={editing} bsStyle="success">
+            <Button variant="outline-secondary" onClick={!editing ? this.props.closeCb : undefined} disabled={editing}>Cancel</Button>
+            <Button variant="primary" onClick={!editing ? this.edit : undefined} disabled={editing}>
               {
                 editing && this.state.indicator &&
                   <LoaderIcon />
@@ -106,21 +106,21 @@ class EditModal extends Component {
             </Button>
           </React.Fragment>
         }>
-        <Form horizontal onSubmit={this.edit}>
-          <FormGroup controlId="formHorizontalName" validationState={error ? 'error' : null}>
-            <Col componentClass={ControlLabel} sm={2}>
+        <Form onSubmit={this.edit}>
+          <Form.Group controlId="formHorizontalName" validationState={error ? 'error' : null}>
+            <Col as={Form.Label}>
               {label} Name:
             </Col>
-            <Col sm={10}>
-              <FormControl readOnly={this.props.readOnlyName} type="input" onChange={this.editName} value={this.state.name} />
-              <HelpBlock>{ error && (collectionErr[error] || 'Error encountered') }</HelpBlock>
+            <Col>
+              <Form.Control readOnly={this.props.readOnlyName} type="input" onChange={this.editName} value={this.state.name} isInvalid={error} />
+              <Form.Control.Feedback type="invalid">{ error && (collectionErr[error] || 'Error encountered') }</Form.Control.Feedback>
             </Col>
-          </FormGroup>
-          <FormGroup controlId="formHorizontalDesc">
-            <Col componentClass={ControlLabel} sm={2}>
+          </Form.Group>
+          <Form.Group controlId="formHorizontalDesc">
+            <Col as={Form.Label}>
               {label} Description:
             </Col>
-            <Col sm={10}>
+            <Col>
               <WYSIWYG
                 editMode
                 externalEditButton
@@ -129,7 +129,7 @@ class EditModal extends Component {
                 onSave={this.editDesc}
                 placeholder={defaultCollDesc} />
             </Col>
-          </FormGroup>
+          </Form.Group>
         </Form>
       </Modal>);
   }

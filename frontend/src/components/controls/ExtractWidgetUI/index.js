@@ -1,14 +1,15 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { Dropdown, InputGroup } from 'react-bootstrap';
 
-import OutsideClick from 'components/OutsideClick';
 import TimeFormat from 'components/TimeFormat';
+import { LinkIcon } from 'components/icons';
 
 import './style.scss';
 
 
-class ExtractWidgetUI extends Component {
+class ExtractWidgetUI extends PureComponent {
   static propTypes = {
     active: PropTypes.bool,
     extractable: PropTypes.object,
@@ -23,24 +24,6 @@ class ExtractWidgetUI extends Component {
     active: false
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      open: false
-    };
-  }
-
-  toggle = () => {
-    this.setState({ open: !this.state.open });
-  }
-
-  close = () => {
-    if (this.state.open) {
-      this.setState({ open: false });
-    }
-  }
-
   toggleSources = (evt) => {
     const { toggleAllSources, extractable } = this.props;
     toggleAllSources(!extractable.get('allSources'));
@@ -48,13 +31,11 @@ class ExtractWidgetUI extends Component {
 
   render() {
     const { active, extractable, stats, toCollection } = this.props;
-    const { open } = this.state;
     const allSources = extractable.get('allSources');
 
     const requestedTimestamp = extractable.get('timestamp');
     const timestamp = this.props.timestamp ? this.props.timestamp : requestedTimestamp;
 
-    const classes = classNames('btn-group', { open });
     const archiveToggleClasses = classNames('archive-toggle', { on: allSources });
     const archiveName = (
       `${extractable.getIn(['archive', 'name'])}
@@ -62,8 +43,8 @@ class ExtractWidgetUI extends Component {
     );
 
     return (
-      <OutsideClick classes={classes} handleClick={this.close}>
-        <button className="btn btn-primary sources-widget dropdown-toggle" onClick={this.toggle} type="button" id="timePicker" aria-haspopup="true" aria-expanded="true">
+      <Dropdown alignRight as={InputGroup.Append} className="extract-selector sources-widget d-none d-md-flex">
+        <Dropdown.Toggle>
           <ul>
             <li className="ts main-replay-date">{timestamp ? <TimeFormat dt={timestamp} gmt /> : 'Most Recent'}</li>
             <li className="mnt-label">
@@ -72,8 +53,8 @@ class ExtractWidgetUI extends Component {
               <span className="caret" />
             </li>
           </ul>
-        </button>
-        <div className="dropdown-menu" aria-labelledby="timePicker">
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
           <div className="ra-mode-row">
             <span className="ra-mode-badge extract">extracting</span> to <div className="ra-collection">{ toCollection || 'Choose a collection' }</div>
           </div>
@@ -94,7 +75,7 @@ class ExtractWidgetUI extends Component {
               <span className="ra-source-name">
                 <a href={extractable.getIn(['archive', 'about'])} target="_blank">
                   {archiveName}
-                  <span className="glyphicon glyphicon-new-window" />
+                  <LinkIcon />
                 </a>
               </span>
               {
@@ -132,8 +113,8 @@ class ExtractWidgetUI extends Component {
                 <label htmlFor="all-archives">Automatically attempt recovery of missing resources using public archives and the live web.</label>
               </div>
           }
-        </div>
-      </OutsideClick>
+        </Dropdown.Menu>
+      </Dropdown>
     );
   }
 }

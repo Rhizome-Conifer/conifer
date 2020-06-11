@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import querystring from 'querystring';
 import { Button } from 'react-bootstrap';
 
 import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
 import config from 'config';
+import { AppContext } from 'store/contexts';
 
 import { DeleteCollection, SessionCollapsible, Upload } from 'containers';
 
@@ -18,15 +19,13 @@ import './style.scss';
 
 
 class CollectionManagementUI extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
-  };
+  static contextType = AppContext;
 
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
     location: PropTypes.object,
+    match: PropTypes.object,
     recordings: PropTypes.object,
     totalDuration: PropTypes.number
   };
@@ -49,8 +48,16 @@ class CollectionManagementUI extends Component {
   }
 
   render() {
-    const { collection, recordings, location: { search } } = this.props;
+    const {
+      auth,
+      collection,
+      recordings,
+      location: { search },
+      match: { params: { user } }
+    } = this.props;
     const { expandAll } = this.state;
+
+    const canAdmin = auth.getIn(['user', 'username']) === user;
 
     let activeSession = null;
     if (search) {
@@ -58,7 +65,7 @@ class CollectionManagementUI extends Component {
       activeSession = qs.session;
     }
 
-    if (!this.context.canAdmin) {
+    if (!canAdmin) {
       return <HttpStatus status={401} />;
     }
 
@@ -103,15 +110,15 @@ class CollectionManagementUI extends Component {
                 </dl>
               </div>
               <div className="function-row">
-                <DeleteCollection>
+                <DeleteCollection size="lg">
                   <TrashIcon /> Delete Entire Collection
                 </DeleteCollection>
-                <Button onClick={this.downloadAction}>
+                <Button size="lg" onClick={this.downloadAction}>
                   <DownloadIcon /> { __DESKTOP__ ? 'Export' : 'Download' } Collection as WARC
                 </Button>
                 {
                   !this.context.isAnon &&
-                    <Upload fromCollection={collection.get('id')} classes="btn btn-default">
+                    <Upload size="lg" fromCollection={collection.get('id')} classes="btn btn-default">
                       <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' } WARC to Collection
                     </Upload>
                 }
@@ -122,7 +129,7 @@ class CollectionManagementUI extends Component {
         <section>
           <div className="session-head">
             <h3>Sessions</h3>
-            <Button bsSize="sm" onClick={this.toggleAll}>
+            <Button size="lg" onClick={this.toggleAll}>
               { expandAll ? 'Collapse All' : 'Expand All' }
             </Button>
           </div>

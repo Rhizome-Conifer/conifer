@@ -19,10 +19,6 @@ import { IFrame, ReplayUI } from 'components/controls';
 
 
 class Extract extends Component {
-  static contextTypes = {
-    product: PropTypes.string
-  };
-
   static propTypes = {
     activeBrowser: PropTypes.string,
     activeCollection: PropTypes.object,
@@ -37,26 +33,10 @@ class Extract extends Component {
     url: PropTypes.string
   };
 
-  // TODO move to HOC
-  static childContextTypes = {
-    currMode: PropTypes.string,
-    canAdmin: PropTypes.bool,
-    product: PropTypes.string
-  };
-
   constructor(props) {
     super(props);
 
     this.mode = props.match.params.extractMode;
-  }
-
-  getChildContext() {
-    const { auth, match: { params: { extractMode, user } } } = this.props;
-
-    return {
-      currMode: extractMode,
-      canAdmin: auth.getIn(['user', 'username']) === user
-    };
   }
 
   componentWillUnmount() {
@@ -65,9 +45,20 @@ class Extract extends Component {
   }
 
   render() {
-    const { activeBrowser, activeCollection, autopilotRunning, dispatch, extractable, match: { params }, timestamp, url } = this.props;
+    const {
+      activeBrowser,
+      activeCollection,
+      auth,
+      autopilotRunning,
+      dispatch,
+      extractable,
+      match: { params },
+      timestamp,
+      url
+    } = this.props;
     const { user, coll, rec } = params;
 
+    const canAdmin = auth.getIn(['user', 'username']) === user;
     const archId = extractable.get('id');
     const extractFrag = `${extractable.get('allSources') ? 'extract' : 'extract_only'}:${archId}`;
     const appPrefix = `${config.appHost}/${user}/${coll}/${rec}/${extractFrag}/`;
@@ -79,6 +70,8 @@ class Extract extends Component {
           activeBrowser={activeBrowser}
           activeCollection={activeCollection}
           autopilotRunning={autopilotRunning}
+          canAdmin={canAdmin}
+          currMode={this.mode}
           params={params}
           timestamp={timestamp}
           url={url} />
@@ -97,6 +90,7 @@ class Extract extends Component {
                 auth={this.props.auth}
                 behavior={this.props.behavior}
                 contentPrefix={contentPrefix}
+                currMode={this.mode}
                 dispatch={dispatch}
                 params={params}
                 timestamp={timestamp}

@@ -3,38 +3,17 @@ import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
 import { isLoaded, load as loadColl } from 'store/modules/collection';
-import { truncate } from 'helpers/utils';
 
 import { NewRecordingUI } from 'components/controls';
 
 
 class NewRecording extends Component {
-  static contextTypes = {
-    product: PropTypes.string
-  };
-
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
     extractable: PropTypes.object,
     match: PropTypes.object
   };
-
-  // TODO move to HOC
-  static childContextTypes = {
-    currMode: PropTypes.string,
-    canAdmin: PropTypes.bool,
-    product: PropTypes.string
-  };
-
-  getChildContext() {
-    const { auth, match: { params } } = this.props;
-
-    return {
-      currMode: 'new',
-      canAdmin: auth.getIn(['user', 'username']) === params.user
-    };
-  }
 
   render() {
     return (

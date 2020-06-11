@@ -11,12 +11,14 @@ class Logout extends Component {
     loggingOut: PropTypes.bool
   }
 
-  componentWillMount() {
+  constructor(props) {
+    super(props);
+
     this.props.logout();
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.loggingOut && !nextProps.loggingOut) {
+  componentDidUpdate(prevProps) {
+    if (prevProps.loggingOut && !this.props.loggingOut) {
       window.location = '/';
     }
   }

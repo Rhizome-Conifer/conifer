@@ -2,8 +2,8 @@ export const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 
 export const getActiveBookmarkId = state => (state.app ? state.app : state).getIn(['controls', 'activeBookmarkId']);
 export const getArchives = state => state.getIn(['controls', 'archives']);
 export const getCollections = state => state.getIn(['collections', 'collections']);
-export const getColumn = state => (state.app ? state.app : state).getIn(['pageQuery', 'column']);
-export const getQuery = state => (state.app ? state.app : state).getIn(['pageQuery', 'query']);
+// export const getColumn = state => (state.app ? state.app : state).getIn(['pageQuery', 'column']);
+// export const getQuery = state => (state.app ? state.app : state).getIn(['pageQuery', 'query']);
 export const getListBookmarks = state => (state.app ? state.app : state).getIn(['list', 'bookmarks']);
 export const getPages = state => (state.app ? state.app : state).getIn(['collection', 'pages']);
 export const getRecordings = state => state.getIn(['collection', 'recordings']);
@@ -14,5 +14,7 @@ export const getTimestamp = state => (state.app ? state.app : state).getIn(['con
 export const getUrl = state => (state.app ? state.app : state).getIn(['controls', 'url']);
 export const getUserCollections = state => state.getIn(['auth', 'user', 'collections']);
 export const selectedCollection = state => state.getIn(['auth', 'activeCollection']);
-export const userSortBy = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'sort']);
-export const userSortDir = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'dir']);
+export const collSortBy = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'sort']);
+export const collSortDir = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'dir']);
+export const listSortBy = state => (state.app ? state.app : state).getIn(['list', 'sortBy', 'sort']);
+export const listSortDir = state => (state.app ? state.app : state).getIn(['list', 'sortBy', 'dir']);

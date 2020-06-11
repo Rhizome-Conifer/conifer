@@ -12,11 +12,6 @@ const { ipcRenderer } = window.require('electron');
 
 
 class Indexing extends Component {
-
-  static contextTypes = {
-    router: PropTypes.object
-  };
-
   static propTypes = {
     dispatch: PropTypes.func,
     history: PropTypes.object,
@@ -29,15 +24,10 @@ class Indexing extends Component {
     this.interval = null;
     this.finishedCount = 0;
     this.state = {
-      data: null,
       debugModal: false,
       stalled: false,
       stdout: null
     };
-  }
-
-  componentWillMount() {
-    //this.props.dispatch(clearColl());
   }
 
   componentDidMount() {
@@ -45,9 +35,10 @@ class Indexing extends Component {
     const reqUrl = `${host}/_upload/@INIT?user=local`;
 
     this.interval = setInterval(() => {
-      fetch(reqUrl).then(res => res.json())
-                   .then(this.displayProgress)
-                   .catch(err => console.log(err));
+      fetch(reqUrl)
+        .then(res => res.json())
+        .then(this.displayProgress)
+        .catch(err => console.log(err));
     }, 250);
   }
 

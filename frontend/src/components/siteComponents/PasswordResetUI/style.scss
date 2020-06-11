@@ -2,10 +2,10 @@
 
 .pw-reset-form {
     transition: opacity $slowShift ease-in-out;
-    margin-top: 2.5rem;
+    margin: b16(100px) 0;
 
     h4 {
-        margin-bottom: 2.5rem;
+        margin-bottom: rem(2.5rem);
     }
 
     &.success {
@@ -14,18 +14,18 @@
 
     .form-option {
         display: flex;
-        margin-bottom: 1rem;
+        margin-bottom: rem(1rem);
 
         span{
             flex-grow: 1;
-            margin: 1rem 0;
-            border-bottom: solid .1rem $gray500;
+            margin: rem(1rem) 0;
+            border-bottom: solid rem(.1rem) $gray500;
         }
 
         .opt {
             flex-grow: 0;
             border: none;
-            margin: 0 1.5rem;
+            margin: 0 rem(1.5rem);
         }
     }
 }

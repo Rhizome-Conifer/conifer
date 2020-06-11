@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom/server';
 import PropTypes from 'prop-types';
 import serialize from 'serialize-javascript';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 
 
 export default class BaseHtml extends Component {
@@ -29,7 +29,7 @@ export default class BaseHtml extends Component {
           {head.link.toComponent()}
           {head.script.toComponent()}
 
-          <link rel="shortcut icon" href="/static/favicon.png?v=3" />
+          <link rel="shortcut icon" href="/static/favicon.ico?v=1" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           {/* styles (will be present only in production with webpack extract text plugin) */}
           {Object.keys(assets.styles).map((style, key) => (

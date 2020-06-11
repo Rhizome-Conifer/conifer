@@ -1,21 +1,15 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { fromJS } from 'immutable';
-import { DropdownButton } from 'react-bootstrap';
+import { Col, Dropdown, Row } from 'react-bootstrap';
 
 import { remoteBrowserMod } from 'helpers/utils';
 
 import { RemoteBrowserOption } from 'components/controls';
 
-import 'shared/scss/dropdown.scss';
-
 import { filterBrowsers } from 'config';
 
 class RemoteBrowserSelectUI extends PureComponent {
-  static contextTypes = {
-    currMode: PropTypes.string
-  };
-
   static propTypes = {
     accessed: PropTypes.number,
     active: PropTypes.bool,
@@ -24,6 +18,7 @@ class RemoteBrowserSelectUI extends PureComponent {
     activeList: PropTypes.string,
     autopilotRunning: PropTypes.bool,
     browsers: PropTypes.object,
+    currMode: PropTypes.bool,
     getBrowsers: PropTypes.func,
     history: PropTypes.object,
     loading: PropTypes.bool,
@@ -31,12 +26,14 @@ class RemoteBrowserSelectUI extends PureComponent {
     params: PropTypes.object,
     selectRemoteBrowser: PropTypes.func,
     selectedBrowser: PropTypes.string,
+    size: PropTypes.string,
     timestamp: PropTypes.string,
     url: PropTypes.string
   };
 
   static defaultProps = {
-    active: false
+    active: false,
+    size: ''
   };
 
   constructor(props) {
@@ -51,15 +48,12 @@ class RemoteBrowserSelectUI extends PureComponent {
     if (!this.props.browsers || !this.props.accessed || Date.now() - this.props.accessed > 15 * 60 * 1000) {
       this.props.getBrowsers();
     }
-
-    this.setState({ open: !this.state.open });
   }
 
   selectBrowser = (id) => {
-    const { active, activeBookmarkId, activeList, history, params, timestamp, url } = this.props;
-    const { currMode } = this.context;
+    const { active, activeBookmarkId, activeList, currMode, history, params, timestamp, url } = this.props;
 
-    this.setState({ open: false});
+    // this.setState({ open: false });
 
     if (active) {
       const { archiveId, coll, collId, extractMode, rec, user } = params;
@@ -115,32 +109,33 @@ class RemoteBrowserSelectUI extends PureComponent {
       (<span className="btn-content">{active ? 'Current Browser' : 'Use Current Browser'}</span>);
 
     return (
-      <DropdownButton
+      <Dropdown
         id="cnt-button"
-        title={btn}
-        bsStyle="default"
+        variant="outline-secondary"
         disabled={autopilotRunning}
-        open={open}
         onToggle={this.getRemoteBrowsers}>
-        <div className="container">
-          <ul className="row">
-            <li className="col-sm-2 col-xs-4"><h6 className="dropdown-header">browser</h6></li>
-            <li className="col-sm-2 col-xs-4"><h6 className="dropdown-header">version</h6></li>
-            <li className="col-sm-2"><h6 className="dropdown-header hidden-xs">release</h6></li>
-            <li className="col-sm-2"><h6 className="dropdown-header hidden-xs">OS</h6></li>
-            <li className="col-sm-4 col-xs-4"><h6 className="dropdown-header">capabilities</h6></li>
-          </ul>
-          { loading &&
-            <div>loading options..</div>
-          }
-          { loaded && showBrowsers &&
-              showBrowsers.map(browser => <RemoteBrowserOption browser={browser} key={browser.get('id') ? browser.get('id') : 'native'} selectBrowser={this.selectBrowser} isActive={instanceContext === browser.get('id')} />)
-          }
-          {
-            <RemoteBrowserOption browser={fromJS({ id: null, name: 'Use Current Browser' })} selectBrowser={this.selectBrowser} isActive={instanceContext === null} />
-          }
-        </div>
-      </DropdownButton>
+        <Dropdown.Toggle block variant="outline-secondary" size={this.props.size}>{btn}</Dropdown.Toggle>
+        <Dropdown.Menu>
+          <div className="container">
+            <Row>
+              <Col><h6 className="dropdown-header">browser</h6></Col>
+              <Col><h6 className="dropdown-header">version</h6></Col>
+              <Col className="d-none d-lg-block"><h6 className="dropdown-header">release</h6></Col>
+              <Col className="d-none d-lg-block"><h6 className="dropdown-header">OS</h6></Col>
+              <Col><h6 className="dropdown-header">capabilities</h6></Col>
+            </Row>
+            { loading &&
+              <div>loading options..</div>
+            }
+            { loaded && showBrowsers &&
+                showBrowsers.map(browser => <RemoteBrowserOption browser={browser} key={browser.get('id') ? browser.get('id') : 'native'} selectBrowser={this.selectBrowser} isActive={instanceContext === browser.get('id')} />)
+            }
+            {
+              <RemoteBrowserOption browser={fromJS({ id: null, name: 'Use Current Browser' })} selectBrowser={this.selectBrowser} isActive={instanceContext === null} />
+            }
+          </div>
+        </Dropdown.Menu>
+      </Dropdown>
     );
   }
 }

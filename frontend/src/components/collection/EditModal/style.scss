@@ -1,27 +1,35 @@
-
+@import 'src/vars';
 
 .wr-edit-modal {
     .modal-header {
         border: none;
     }
 
+    .modal-body {
+        padding: 0;
+    }
+
     .modal-footer {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         border: none;
+
+        button+button {
+            margin-left: rem(1.5rem);
+        }
 
         &:before, &:after {
             content: none;
         }
 
         .btn-success {
-            border-radius: 2.7rem;
-            padding: 0.7rem 3rem;
-            font-size: 1.15rem;
+            border-radius: rem(2.7rem);
+            padding: rem(0.7rem) rem(3rem);
+            font-size: rem(1.15rem);
 
             svg {
                 vertical-align: text-bottom;
-                margin-right: .5rem;
+                margin-right: rem(.5rem);
 
                 path {
                     fill: #FFF;

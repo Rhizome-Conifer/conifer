@@ -1,7 +1,6 @@
 import { combineReducers } from 'redux';
 import { combineReducers as combineImmutableReduers } from 'redux-immutable';
 import { reducer as reduxAsyncConnect } from 'redux-connect';
-import { reducer as searchReducer } from 'redux-search';
 
 import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './modules/auth';
 
@@ -15,7 +14,6 @@ import infoStats from './modules/infoStats';
 import inspector from './modules/inspector';
 import list from './modules/list';
 import passwordReset from './modules/passwordReset';
-import pageQuery from './modules/pageQuery';
 import recordings from './modules/recordings';
 import remoteBrowsers from './modules/remoteBrowsers';
 import sidebar from './modules/sidebar';
@@ -36,7 +34,6 @@ const makeAppReducer = () => {
     infoStats,
     inspector,
     list,
-    pageQuery,
     passwordReset,
     recordings,
     remoteBrowsers,
@@ -56,7 +53,6 @@ const makeAppReducer = () => {
 
 
 const appReducer = combineReducers({
-  search: searchReducer,
   reduxAsyncConnect,
   app: makeAppReducer()
 });

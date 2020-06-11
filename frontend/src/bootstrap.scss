@@ -1,0 +1,148 @@
+@import './vars';
+
+/*
+    ~*~ update bootstrap variables here ~*~
+    Variables available to be set can be found
+    in the bootstrap folder (node_modules/bootstrap/scss/_variables.scss)
+
+    This is the prefered way to make changes~
+*/
+
+// gobal theme
+$theme-colors: (
+  "primary": $pine,
+  "secondary": $gray600,
+  "danger": $cf-danger,
+  "warning": $redwood,
+  "success": $vivid-pine,
+);
+
+$body-color:   $slate;
+
+/* forms */
+$input-border-color: $gray400;
+$input-focus-border-color: $input-border-color;
+$form-feedback-invalid-color: $warning;
+$input-btn-focus-color: rgba($pine-accent, .25);
+
+/* buttons */
+//$btn-input-font-size: b16(14);
+
+$btn-border-radius: 0;
+$btn-border-radius-lg: 0;
+$btn-border-radius-sm: 0;
+
+$btn-font-size: b16(14);
+$btn-font-size-sm: b16(14);
+$btn-font-size-lg: b16(14);
+
+// adjust regular button size to account for 2px difference with font size
+$btn-padding-y: b16(7.5);
+
+$btn-padding-y-lg:  b16(12);
+$btn-padding-x-lg:  b16(22);
+
+/* misc */
+$component-active-color: $slate;
+$font-family-base: $sans;
+
+/* import bootstrap from node_modules */
+@import "~bootstrap/scss/bootstrap";
+
+/*
+    ~*~ bootstrap overrides ~*~
+    Here is where you can extend the global bootstrap styles
+    with your own settings.
+*/
+
+.form-control {
+    border-radius: 0;
+}
+
+.dropdown-toggle {
+    text-align: left;
+
+    &.btn-block {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+.btn {
+
+    $b: 3;
+    $b-diff: ($b - 1); // border diff for normal button
+    &.btn-primary {
+        border: solid b16($b) transparent;
+        box-sizing: border-box;
+        transition: border-color .25s ease-in-out;
+        font-weight: 600;
+
+
+        &:not(.btn-lg) {
+            /* subtract custom border from padding */
+            padding: ($btn-padding-y - $b-diff * .0625) ($btn-padding-x - $b-diff * .0625);
+        }
+
+        #{$bs-button-interactive} {
+          border: solid b16($b) $pine-accent;
+          background-color: $pine;
+          box-shadow: none;
+        }
+    }
+
+    &.btn-danger {
+        svg {
+            path {
+                fill: $white;
+            }
+        }
+    }
+
+    &.btn-dark {
+        background-color: $slate;
+        border-color: $gray700;
+
+        &:hover {
+            border-color: $gray500;
+        }
+    }
+
+    &.btn-link {
+        color: $slate;
+    }
+
+    // &.btn-outline-secondary {
+    //     &:hover {
+    //         path {
+    //             stroke: $white;
+    //         }
+    //         polygon {
+    //             fill: $white;
+    //             stroke: $white;
+    //         }
+    //     }
+    // }
+
+    &.btn-outline-secondary {
+        border-color: $gray400;
+
+        #{$bs-button-interactive} {
+            border-color: $gray600;
+        }
+    }
+
+    &.btn-secondary {
+        border: solid rem(.3rem) transparent;
+        box-sizing: border-box;
+        transition: border-color .25s ease-in-out;
+        font-weight: 600;
+
+        #{$bs-button-interactive} {
+          border: solid rem(.3rem) $gray650;
+          background-color: $gray600;
+          box-shadow: none;
+        }
+    }
+}

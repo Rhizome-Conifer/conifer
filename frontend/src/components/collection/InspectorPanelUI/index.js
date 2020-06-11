@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-import { defaultBookmarkDesc, untitledEntry } from 'config';
+import { untitledEntry } from 'config';
 import { getCollectionLink } from 'helpers/utils';
 
 import InlineEditor from 'components/InlineEditor';
@@ -16,13 +16,10 @@ import './style.scss';
 
 
 class InspectorPanelUI extends PureComponent {
-  static contextTypes = {
-    canAdmin: PropTypes.bool
-  };
-
   static propTypes = {
     bkEdited: PropTypes.bool,
     browsers: PropTypes.object,
+    canAdmin: PropTypes.bool,
     collection: PropTypes.object,
     list: PropTypes.object,
     multiSelect: PropTypes.number,
@@ -53,14 +50,19 @@ class InspectorPanelUI extends PureComponent {
   editBookmarkDesc = desc => this.saveEdit({ desc })
 
   render() {
-    const { canAdmin } = this.context;
     const {
-      bkEdited, browsers, collection, list, multiSelect,
-      selectedPage, selectedBk
+      bkEdited,
+      browsers,
+      canAdmin,
+      collection,
+      list,
+      multiSelect,
+      selectedPage,
+      selectedBk
     } = this.props;
 
     const bk = selectedBk ? list.get('bookmarks').find(o => o.get('id') === selectedBk) : false;
-    const pg = bk ? bk.get('page') : collection.getIn(['pages', selectedPage]);
+    const pg = bk ? bk.get('page') : collection.get('pages').find(p => p.get('id') === selectedPage);
     const selectedIndex = selectedBk ? list.get('bookmarks').findIndex(o => o.get('id') === selectedBk) : null;
 
     return (
@@ -130,7 +132,7 @@ class InspectorPanelUI extends PureComponent {
                               {
                                 canAdmin ?
                                   <Link to={`${getCollectionLink(collection)}/management?session=${pg.get('rec')}`}>{pg.get('rec')}</Link> :
-                                  <Link to={`${getCollectionLink(collection, true)}?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
+                                  <Link to={`${getCollectionLink(collection)}?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
                               }
                             </span>
                           </li>

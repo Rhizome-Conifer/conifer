@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import { List } from 'immutable';
 
 import config from 'config';
 
-import { setSort } from 'store/modules/collection';
+import { setSort as collSetSort } from 'store/modules/collection';
+import { setSort as listSetSort } from 'store/modules/list';
 import { getCollectionLink, getListLink, range, truncate } from 'helpers/utils';
+import { AppContext } from 'store/contexts';
 
 import {
-  Automation,
   CollectionHeader,
   InspectorPanel,
   Lists,
@@ -31,14 +32,11 @@ import './style.scss';
 
 
 class CollectionDetailUI extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool,
-    isMobile: PropTypes.bool
-  };
+  static contextType = AppContext;
 
   static propTypes = {
     auth: PropTypes.object,
+    bookmarks: PropTypes.object,
     browsers: PropTypes.object,
     bkDeleting: PropTypes.bool,
     bkDeleteError: PropTypes.oneOfType([
@@ -46,7 +44,6 @@ class CollectionDetailUI extends Component {
       PropTypes.string
     ]),
     clearInspector: PropTypes.func,
-    clearQuery: PropTypes.func,
     clearSearch: PropTypes.func,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
@@ -56,10 +53,22 @@ class CollectionDetailUI extends Component {
     publicIndex: PropTypes.bool,
     removeBookmark: PropTypes.func,
     saveBookmarkSort: PropTypes.func,
+    searched: PropTypes.bool,
     setMultiInspector: PropTypes.func,
     setBookmarkInspector: PropTypes.func,
     setPageInspector: PropTypes.func
   };
+
+  static getDerivedStateFromProps(props, state) {
+    if (props.bookmarks !== state.bookmarks) {
+      return {
+        bookmarks: props.bookmarks,
+        sortedBookmarks: props.bookmarks
+      };
+    }
+
+    return null;
+  }
 
   constructor(props) {
     super(props);
@@ -79,14 +88,12 @@ class CollectionDetailUI extends Component {
     ];
 
     this.state = {
-      listBookmarks: props.list.get('bookmarks'),
-      sortedBookmarks: props.list.get('bookmarks'),
+      listBookmarks: props.bookmarks,
+      sortedBookmarks: props.bookmarks,
       overrideHeight: null,
       selectedPageIdx: null
     };
-  }
 
-  componentWillMount() {
     this.props.clearInspector();
   }
 
@@ -96,21 +103,9 @@ class CollectionDetailUI extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.list !== this.props.list) {
-      const bookmarks = nextProps.list.get('bookmarks');
-      this.setState({ listBookmarks: bookmarks, sortedBookmarks: bookmarks });
-    }
-
-    // clear querybox if removed from url
-    if (this.props.location.search.includes('query') && !nextProps.location.search.includes('query')) {
-      this.props.clearQuery();
-    }
-  }
-
   shouldComponentUpdate(nextProps) {
     // don't rerender for loading changes
-    if (!nextProps.loaded) {
+    if (!nextProps.loaded && this.props.list === nextProps.list) {
       return false;
     }
 
@@ -119,8 +114,7 @@ class CollectionDetailUI extends Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.loaded && !prevProps.loaded) {
-      this.props.clearQuery();
-      if (this.props.searchText) {
+      if (this.props.searched) {
         this.props.clearSearch();
       }
     }
@@ -147,8 +141,12 @@ class CollectionDetailUI extends Component {
 
   onSelectRow = ({ event, index }) => {
     const {
-      clearInspector, match: { params: { list } }, pages, setBookmarkInspector,
-      setMultiInspector, setPageInspector
+      clearInspector,
+      match: { params: { list } },
+      pages,
+      setBookmarkInspector,
+      setMultiInspector,
+      setPageInspector
     } = this.props;
     const { listBookmarks, selectedPageIdx } = this.state;
 
@@ -241,17 +239,25 @@ class CollectionDetailUI extends Component {
   }
 
   sort = ({ sortBy, sortDirection }) => {
-    const { collection, dispatch } = this.props;
-    const prevSort = collection.getIn(['sortBy', 'sort']);
-    const prevDir = collection.getIn(['sortBy', 'dir']);
+    const { collection, dispatch, list, match: { params } } = this.props;
+    const activeList = Boolean(params.list);
+
+    const access = activeList ? list : collection;
+    const prevSort = access.getIn(['sortBy', 'sort']);
+    const prevDir = access.getIn(['sortBy', 'dir']);
 
     // clear selected pages
     this.setState({ selectedPageIdx: null });
 
+    if (activeList && prevSort === sortBy && prevDir === 'DESC') {
+      return dispatch(listSetSort({ sort: null, dir: null }));
+    }
+
+    const sortFn = activeList ? listSetSort : collSetSort;
     if (prevSort !== sortBy) {
-      dispatch(setSort({ sort: sortBy, dir: sortDirection }));
+      dispatch(sortFn({ sort: sortBy, dir: sortDirection }));
     } else {
-      dispatch(setSort({ sort: sortBy, dir: prevDir === 'ASC' ? 'DESC' : 'ASC' }));
+      dispatch(sortFn({ sort: sortBy, dir: prevDir === 'ASC' ? 'DESC' : 'ASC' }));
     }
   }
 
@@ -277,10 +283,11 @@ class CollectionDetailUI extends Component {
   }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
-    const { pages, browsers, collection, list, match: { params }, publicIndex, removeBookmark } = this.props;
+    const { isAnon } = this.context;
+    const { auth, pages, browsers, collection, list, match: { params }, publicIndex, removeBookmark } = this.props;
     const { listBookmarks, selectedPageIdx, sortedBookmarks } = this.state;
     const activeList = Boolean(params.list);
+    const canAdmin = auth.getIn(['user', 'username']) === params.user;
 
     const collRedirect = collection.get('loaded') && !collection.get('slug_matched') && params.coll !== collection.get('slug');
 
@@ -358,10 +365,10 @@ class CollectionDetailUI extends Component {
             <TempUserAlert />
         }
 
-        {
+        {/*
           canAdmin &&
             <Automation collection={collection} />
-        }
+        */}
 
         <Sidebar storageKey="collSidebar">
           <CollectionHeader />
@@ -378,7 +385,7 @@ class CollectionDetailUI extends Component {
                 pages={objects}
                 pageSelection={selectedPageIdx} />
             </Resizable>
-            <InspectorPanel />
+            <InspectorPanel canAdmin={canAdmin} />
           </div>
         </Sidebar>
 
@@ -388,6 +395,7 @@ class CollectionDetailUI extends Component {
           collection,
           deselect: this.deselect,
           displayObjects,
+          isMobile: this.context.isMobile,
           list,
           onKeyNavigate: this.onKeyNavigate,
           onSelectRow: this.onSelectRow,

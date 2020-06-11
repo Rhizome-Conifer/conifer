@@ -1,10 +1,10 @@
 @import 'src/vars';
 
 .wr-coll-meta {
-    margin-top: 3.5rem;
+    margin-top: rem(3.5rem);
 
     button + button {
-        margin-left: 1.6rem;
+        margin-left: rem(1.6rem);
     }
 }
 
@@ -12,7 +12,7 @@
 
     & > h4 {
         margin-top: 0;
-        padding-left: 1.5rem;
+        padding-left: rem(1.5rem);
     }
 
     .start-recording-homepage > div {
@@ -24,27 +24,23 @@
         content: '';
         display: block;
         width: 100%;
-        border: solid .1rem $black;
-        border-width: 0 0 .1rem 0;
-        padding-top: 3.5rem;
-        margin-bottom: 3.5rem;
+        border: solid rem(.1rem) $black;
+        border-width: 0 0 rem(.1rem) 0;
+        padding-top: rem(3.5rem);
+        margin-bottom: rem(3.5rem);
     }
 }
 
 .collection-time {
-    font-size:1.2rem;
+    font-size:rem(1.2rem);
     color: $gray550;
-    padding: 1.4rem 0 0 0;
+    padding: rem(1.4rem) 0 0 0;
     text-align: center;
 }
 
 .collection-title {
-    font-size: 2rem;
-    margin-bottom: 0.4rem;
-}
-
-a:link.collection-title, a:visited.collection-title {
-    color: $blue;
+    font-size: rem(2rem);
+    margin-bottom: rem(0.4rem);
 }
 
 a.collection-title:hover {
@@ -52,7 +48,7 @@ a.collection-title:hover {
 }
 
 .collections-index-nav {
-    margin: 1rem 0;
+    margin: rem(1rem) 0;
 
     h4 {
         display: inline-block;
@@ -65,7 +61,7 @@ a.collection-title:hover {
     }
 
     button + button {
-        margin-right: .5rem;
+        margin-right: rem(.5rem);
     }
 
     .btn-default:hover {
@@ -73,8 +69,8 @@ a.collection-title:hover {
     }
 
     svg {
-        width: 1.5rem;
-        height: 1.5rem;
+        width: rem(1.5rem);
+        height: rem(1.5rem);
         vertical-align: sub;
 
         path,polygon {
@@ -85,21 +81,21 @@ a.collection-title:hover {
 }
 
 .collection-description {
-    margin-top: 3.5rem;
+    margin-top: rem(3.5rem);
 
     .collection-username {
-        font-size: 1.8rem;
+        font-size: rem(1.8rem);
         color: $gray550;
         margin: 0 auto;
 
-        .glyphicon {
-            font-size: 1.1rem;
+        svg {
+            margin-right: rem(.5rem);
         }
     }
 
     .wr-editor {
         color: $gray550;
-        max-width: 35rem;
+        max-width: rem(35rem);
         word-break: break-word;
 
         &:not(.click-to-edit) > div {
@@ -107,11 +103,11 @@ a.collection-title:hover {
         }
 
         * {
-            max-width: 35rem;
+            max-width: rem(35rem);
         }
 
         .public-DraftEditor-content {
-            font-size: 1.2rem;
+            font-size: rem(1.2rem);
         }
 
         .DraftEditor-editorContainer {
@@ -140,18 +136,18 @@ a.collection-title:hover {
     }
 
     .user-link {
-        margin: 1.5rem 0;
+        margin: rem(1.5rem) 0;
         word-break: break-all;
         display: flex;
 
         svg {
-            margin-right: 0.3rem;
-            color: $gray500;
+            margin-right: rem(0.3rem);
+            color: $gray600;
         }
 
         span {
             word-wrap: break-word;
-            color:$gray500;
+            color:$gray600;
         }
 
         a {
@@ -164,13 +160,13 @@ a.collection-title:hover {
         color: #000;
         font-weight: normal;
         margin-bottom: 0;
-        font-size: 3.4rem;
+        font-size: rem(3.4rem);
         word-break: break-word;
     }
 }
 
 .collection-list {
-    margin: 1rem 0;
+    margin: rem(1rem) 0;
 
     .btn-default:hover {
         background: rgba(0,0,0,0);
@@ -184,10 +180,10 @@ a.collection-title:hover {
         .visibility-button {
             background: $gray500;
             color: $white;
-            font-size: 1.2rem;
-            padding: 0.3rem 0.8rem;
-            border-radius: 0.7rem;
-            margin-top: 1rem;
+            font-size: rem(1.2rem);
+            padding: rem(0.3rem) rem(0.8rem);
+            border-radius: rem(0.7rem);
+            margin-top: rem(1rem);
             display: inline-block;
 
             &.is-public {
@@ -200,27 +196,15 @@ a.collection-title:hover {
         }
 
         p {
-            padding: .8rem 0rem 0rem;
+            padding: rem(.8rem) rem(0rem) rem(0rem);
             margin-bottom: 5px;
         }
 
         .collection-list-description {
             color: $gray550;
-            font-size: 1.2rem;
-            margin-bottom: 1.4rem;
+            font-size: rem(1.2rem);
+            margin-bottom: rem(1.4rem);
             padding:0;
-        }
-
-        .rounded {
-            font-size: 1.2rem;
-            padding: 0.6rem 2rem;
-            color: $gray550;
-            text-decoration: none;
-            background: $white;
-        }
-
-        .rounded + .rounded {
-            margin-left: .6rem;
         }
 
         a {
@@ -229,9 +213,9 @@ a.collection-title:hover {
         }
 
         .collection-list-size span {
-            font-size: 1.2rem;
+            font-size: rem(1.2rem);
             color: $gray550;
-            padding: 1.4rem 0 0 0;
+            padding: rem(1.4rem) 0 0 0;
             display: inline-block;
 
             @media (min-width: 1200px) {
@@ -240,77 +224,21 @@ a.collection-title:hover {
         }
 
         .collection-delete-action {
-        	button:last-of-type {
-                background: rgba(0,0,0,0);
-                border: none;
-                padding:1.5rem 0 0;
-                float:right;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
 
+            .visibility-button {
+                display: inline-block;
+                margin-top: b16(10px);
+            }
+
+        	button {
                 svg {
-	                width:15px;
-	                height:15px;
-                    &:hover + .tooltip.top {
-                        display: block;
-                    }
+	                width: b16(15px);
+	                height: b16(15px);
 	            }
         	}
-        }
-
-        .tooltip.top {
-            position: absolute;
-            right: -8px;
-            top: -25px;
-            display: none;
-            .tooltip-arrow {
-                border-top-color: $gray600;
-            }
-            .tooltip-inner {
-                background: $gray600;
-            }
-        }
-    }
-}
-
-@media (min-width: 768px){
-    .collection-list li {
-        .collection-list-size span {
-            padding: 2rem 0;
-        }
-        .collection-time {
-            padding: 2rem 0;
-        }
-        .visibility-button {
-           margin-top: 1.8rem;
-        }
-        .collection-delete-action {
-            button:last-of-type {
-                padding:2.2rem 0 0;
-            }
-        }
-        .collection-list-description {
-            margin-bottom: 0;
-            padding:0;
-        }
-    }
-
-    .collection-list li.has-description {
-        .collection-list-size span {
-            padding: 0.7rem 0;
-        }
-        .collection-time {
-            padding: 0.7rem 0;
-        }
-        .visibility-button {
-            margin-top: 0.3rem;
-        }
-        .collection-delete-action {
-            button:last-of-type {
-                padding:0.7rem 0;
-            }
-        }
-        .collection-list-description {
-            margin-bottom: 1.5rem;
-            padding: 0;
         }
     }
 }

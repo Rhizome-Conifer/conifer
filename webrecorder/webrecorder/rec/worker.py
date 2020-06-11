@@ -10,10 +10,10 @@ logger = logging.getLogger('wr.io')
 
 # ============================================================================
 class Worker(object):
-    def __init__(self, worker_cls):
+    def __init__(self, worker_cls, sleep_secs=None):
         self._running = True
 
-        self.sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
+        self.sleep_secs = sleep_secs or int(os.environ.get('TEMP_SLEEP_CHECK', 30))
         logger.info('Worker: Running {0} every {1}'.format(worker_cls.__name__, self.sleep_secs))
 
         config = load_wr_config()

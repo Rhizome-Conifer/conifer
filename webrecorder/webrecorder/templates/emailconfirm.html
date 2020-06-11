@@ -2,22 +2,21 @@
 <body>
 <p>Hello {{username}},</p>
 
-<p>You are receiving this email to confirm that you registered for an account at <b>Webrecorder</b></p>
+<p>Click the button below to complete your registration. If you did not sign up for Conifer, you can ignore this message.</p>
+<p><b><a href="{{host}}/_valreg/{{registration_code}}?username={{username}}">Confirm</a></b>.</p>
 
-<p>Since your username is <b>{{username}}</b>, your collections will be located at
-<a href="{{host}}/{{username}}"<b>/{{username}}</b></a> once you complete this registration.</p>
-
-<p>To complete this registration, please click:</p>
-<p><b><a href="{{host}}/_valreg/{{registration_code}}?username={{username}}">Confirm</a></b></p>
-
-<p>If the above link is not working, point your browser to the following url: {{host}}/_valreg/{{registration_code}}?username={{username}}
+<p>Or paste the link below into your browser:
+{{host}}/_valreg/{{registration_code}}?username={{username}}
 </p>
+
+<p>Your username is <b>{{username}}</b>.</p>
+<p>Your collections will be located at <a href="{{host}}/{{username}}"<b>{{host}}/{{username}}</b></a></p>
 
 <p>Happy Archiving!</p>
 
-<p>Please don't hesitate to contact us at <a href="mailto:support@webrecorder.io">support@webrecorder.io</a> if you have any questions, issues or comments!
+<p>Please don't hesitate to contact us at <a href="mailto:support@conifer.rhizome.org">support@conifer.rhizome.org</a> if you have any questions, issues or comments.
 
-<p>The Webrecorder Team</p>
+<p>The Conifer Team</p>
 
 </body>
 </html>

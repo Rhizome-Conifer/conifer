@@ -4,17 +4,5 @@
 .title-inline {
     width: 300px;
     display: inline-block;
-    margin-top: 1rem;
-}
-
-.start-recording {
-    button.rounded {
-        margin-left: 1.5rem;
-    }
-
-    button[type='submit'] {
-        background: $blue;
-        color: $white;
-        border: none;
-    }
+    margin-top: rem(1rem);
 }

@@ -5,13 +5,7 @@
     padding-right:0;
 }
 
-.rb-dropdown, .extract-selector, .patch-selector  {
-    // .container {
-    //     width: 60vw;
-    // }
-    #cnt-button {
-        border-width: .1rem 0 .1rem .1rem;
-    }
+.rb-dropdown, .patch-selector  { //.extract-selector
 
     .rb-dropdown .dropdown-toggle {
         background-image: none;
@@ -24,7 +18,7 @@
     }
 
     .dropdown-header {
-        padding: .5rem 0;
+        padding: rem(.5rem) 0;
     }
 
     ul {
@@ -38,30 +32,32 @@
 
     h6 {
         margin: 0;
-        font-size: 1.6rem;
+        font-size: rem(1.6rem);
         color: #353535;
         font-weight: bold;
     }
 
     .row {
-        padding: 1rem 0;
-        margin: 0 -1.5rem 0 -1.5rem;
+        padding: rem(1rem) 0;
+        margin: 0 rem(-1.5rem) 0 rem(-1.5rem);
+        display: flex;
+        width: auto;
 
         &:first-child {
-            padding: .5rem 0;
+            padding: rem(.5rem) 0;
         }
     }
 
     .btn img {
-        margin-right: .5rem;
+        margin-right: rem(.5rem);
     }
 }
 
 .record-action button {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-    border-top-right-radius: 2.7rem;
-    border-bottom-right-radius: 2.7rem;
+    border-top-right-radius: rem(2.7rem);
+    border-bottom-right-radius: rem(2.7rem);
     border-left-width: 0;
 }
 
@@ -70,14 +66,18 @@
         float: right;
     }
 
-    button + button {
-        margin-right: .5rem;
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+
+        button + button {
+            margin-right: rem(.5rem);
+        }
     }
 
     button#prepare {
-        float: right;
-        margin-top: 1.5rem;
-        padding: 1rem 2rem;
+        margin-top: rem(1.5rem);
+        padding: rem(1rem) rem(2rem);
         margin-right: 8px;
     }
 
@@ -86,18 +86,18 @@
     }
 
     h4 {
-        font-size: 1.4rem;
+        font-size: rem(1.4rem);
         font-weight: 600;
     }
 
     .input-group {
-        padding: 0 1.5rem;
+        padding: 0 rem(1.5rem);
     }
 
     .wr-editor {
         width: 100%;
         max-width: inherit;
-        margin-bottom: 1.5rem;
+        margin-bottom: rem(1.5rem);
     }
 
     .anon-button {
@@ -108,30 +108,18 @@
     }
 
     .rb-dropdown {
-       .dropdown {
+       .dropdown-menu {
            width: 100%;
 
-           #cnt-button {
-               display: flex;
-               justify-content: space-between;
-               align-items: center;
+           .container {
                width: 100%;
-               border-width: .1rem;
-           }
-
-           .dropdown-menu {
-               width: 100%;
-
-               .container {
-                   width: 100%;
-               }
            }
        }
     }
 
     textarea {
         width: 100%;
-        padding: .5rem;
+        padding: rem(.5rem);
     }
 }
 
@@ -148,7 +136,7 @@
     }
 
     .divider {
-        margin: 0 2rem;
+        margin: 0 rem(2rem);
         border: solid 1px #CCC;
     }
 
@@ -158,7 +146,7 @@
         align-items: flex-start;
 
         button + button {
-            margin-top: .5rem;
+            margin-top: rem(.5rem);
         }
     }
 }

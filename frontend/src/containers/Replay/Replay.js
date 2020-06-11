@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 import { batchActions } from 'redux-batched-actions';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
@@ -16,6 +16,7 @@ import { resetStats } from 'store/modules/infoStats';
 import { listLoaded, load as loadList } from 'store/modules/list';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
 import { toggle as toggleSidebar } from 'store/modules/sidebar';
+import { AppContext } from 'store/contexts';
 
 import EmbedFooter from 'components/EmbedFooter';
 import HttpStatus from 'components/HttpStatus';
@@ -32,10 +33,7 @@ if (__DESKTOP__) {
 
 
 class Replay extends Component {
-  static contextTypes = {
-    isEmbed: PropTypes.bool,
-    isMobile: PropTypes.bool
-  };
+  static contextType = AppContext;
 
   static propTypes = {
     activeBookmarkId: PropTypes.string,
@@ -56,40 +54,12 @@ class Replay extends Component {
     url: PropTypes.string
   };
 
-  // TODO move to HOC
-  static childContextTypes = {
-    currMode: PropTypes.string,
-    canAdmin: PropTypes.bool,
-    coll: PropTypes.string,
-    rec: PropTypes.string,
-    user: PropTypes.string
-  };
-
   constructor(props) {
     super(props);
 
     // TODO: unify replay and replay-coll
     this.mode = 'replay-coll';
     this.state = { collectionNav: !props.match.params.listSlug };
-  }
-
-  getChildContext() {
-    const { auth, match: { params: { user, coll, rec } } } = this.props;
-
-    return {
-      currMode: this.mode,
-      canAdmin: auth.getIn(['user', 'username']) === user,
-      user,
-      coll,
-      rec,
-    };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    const { match: { params: { listSlug } } } = this.props;
-    if (listSlug !== nextProps.match.params.listSlug && this.state.collectionNav) {
-      this.setState({ collectionNav: false });
-    }
   }
 
   shouldComponentUpdate(nextProps) {
@@ -99,6 +69,14 @@ class Replay extends Component {
     }
 
     return true;
+  }
+
+  componentDidUpdate(prevProps) {
+    const { match: { params: { listSlug } } } = prevProps;
+
+    if (listSlug !== this.props.match.params.listSlug && this.state.collectionNav) {
+      this.setState({ collectionNav: false });
+    }
   }
 
   componentWillUnmount() {
@@ -139,6 +117,9 @@ class Replay extends Component {
       timestamp,
       url
     } = this.props;
+    const { coll, rec, user } = params;
+
+    const canAdmin = auth.getIn(['user', 'username']) === user;
 
     // coll access
     if (collection.get('error')) {
@@ -147,7 +128,7 @@ class Replay extends Component {
           {collection.getIn(['error', 'error_message'])}
         </HttpStatus>
       );
-    } else if (collection.get('loaded') && !collection.get('slug_matched') && params.coll !== collection.get('slug')) {
+    } else if (collection.get('loaded') && !collection.get('slug_matched') && coll !== collection.get('slug')) {
       return (
         <RedirectWithStatus
           to={`${isEmbed ? `/${params.embed}` : ''}${getCollectionLink(collection)}/${remoteBrowserMod(activeBrowser, timestamp)}/${url}`}
@@ -174,14 +155,13 @@ class Replay extends Component {
       );
     }
 
-    const canAdmin = auth.getIn(['user', 'username']) === params.user;
     const tsMod = remoteBrowserMod(activeBrowser, timestamp);
     const { listSlug } = params;
     const bkId = params.bookmarkId;
 
     const shareUrl = listSlug ?
-      `${config.appHost}${params.user}/${params.coll}/list/${listSlug}/b${bkId}/${tsMod}/${url}` :
-      `${config.appHost}${params.user}/${params.coll}/${tsMod}/${url}`;
+      `${config.appHost}${user}/${coll}/list/${listSlug}/b${bkId}/${tsMod}/${url}` :
+      `${config.appHost}${user}/${coll}/${tsMod}/${url}`;
 
     if (!collection.get('loaded')) {
       return null;
@@ -205,6 +185,8 @@ class Replay extends Component {
           !isEmbed &&
             <ReplayUI
               activeBrowser={activeBrowser}
+              canAdmin={canAdmin}
+              currMode={this.mode}
               canGoBackward={__DESKTOP__ ? appSettings.get('canGoBackward') : false}
               canGoForward={__DESKTOP__ ? appSettings.get('canGoForward') : false}
               params={params}
@@ -232,7 +214,7 @@ class Replay extends Component {
                           (<SidebarCollectionViewer
                             activeList={listSlug}
                             showNavigator={this.showCollectionNav} />) :
-                          <SidebarListViewer showNavigator={this.showCollectionNav} />
+                          <SidebarListViewer canAdmin={canAdmin} showNavigator={this.showCollectionNav} />
                       }
                     </TabPanel>
                     <TabPanel>
@@ -240,12 +222,13 @@ class Replay extends Component {
                     </TabPanel>
                   </Tabs>
                 </Resizable>
-                <InspectorPanel />
+                <InspectorPanel canAdmin={canAdmin} />
               </Sidebar>
           }
           {
             __DESKTOP__ &&
               <Webview
+                currMode={this.mode}
                 key="webview"
                 host={appSettings.get('host')}
                 params={params}
@@ -253,8 +236,9 @@ class Replay extends Component {
                 timestamp={timestamp}
                 canGoBackward={appSettings.get('canGoBackward')}
                 canGoForward={appSettings.get('canGoForward')}
-                partition={`persist:${params.user}-replay`}
-                url={url} />
+                partition={`persist:${user}-replay`}
+                url={url}
+                {...{ coll, user, rec }} />
           }
           {
 
@@ -265,6 +249,7 @@ class Replay extends Component {
             !__DESKTOP__ && (
               activeBrowser ?
                 <RemoteBrowser
+                  currMode={this.mode}
                   params={params}
                   rb={activeBrowser}
                   rec={recording}
@@ -272,10 +257,11 @@ class Replay extends Component {
                   url={url} /> :
                 <IFrame
                   activeBookmarkId={activeBookmarkId}
+                  appPrefix={this.getAppPrefix}
                   auth={this.props.auth}
                   behavior={this.props.behavior}
-                  appPrefix={this.getAppPrefix}
                   contentPrefix={this.getContentPrefix}
+                  currMode={this.mode}
                   dispatch={dispatch}
                   params={params}
                   passEvents={this.props.sidebarResize}

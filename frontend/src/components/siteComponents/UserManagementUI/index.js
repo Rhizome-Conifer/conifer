@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { DropdownButton, MenuItem } from 'react-bootstrap';
+import { Button, DropdownButton, Dropdown } from 'react-bootstrap';
 
 import { product, supporterPortal } from 'config';
 
@@ -9,7 +9,7 @@ import { BugReport } from 'containers';
 
 import Modal from 'components/Modal';
 import SizeFormat from 'components/SizeFormat';
-import { UserIcon } from 'components/icons';
+import { GearIcon, UserIcon } from 'components/icons';
 
 import LoginForm from './loginForm';
 import './style.scss';
@@ -44,15 +44,15 @@ class UserManagementUI extends PureComponent {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.auth.get('loggingIn') && !nextProps.auth.get('loggingIn')) {
-      if (!nextProps.auth.get('loginError')) {
+  componentDidUpdate(prevProps) {
+    if (prevProps.auth.get('loggingIn') && !this.props.auth.get('loggingIn')) {
+      if (!this.props.auth.get('loginError')) {
         //this.closeLogin();
         if (this.state.formError) {
           this.setState({ formError: false });
         }
 
-        const next = this.props.next !== null ? this.props.next : `/${nextProps.auth.getIn(['user', 'username'])}`;
+        const next = prevProps.next !== null ? prevProps.next : `/${this.props.auth.getIn(['user', 'username'])}`;
         if (next.startsWith('http')) {
           window.location.href = next;
         } else {
@@ -143,29 +143,29 @@ class UserManagementUI extends PureComponent {
         <ul className="navbar-user-links">
           {
             isAnon &&
-              <li>
+              <li className="d-none d-sm-block">
                 <Link to="/_faq">About</Link>
               </li>
           }
 
           {
             !__DESKTOP__ &&
-              <li className="navbar-text hidden-xs">
+              <li className="navbar-text d-none d-lg-block">
                 <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
               </li>
           }
 
-          <li className="hidden-xs">
+          <li className="d-none d-lg-block">
             {
               __DESKTOP__ ?
                 <button className="button-link" onClick={this.openDesktopHelp} type="button">Help</button> :
-                <a href="https://guide.webrecorder.io/" target="_blank">Help</a>
+                <a href="https://guide.conifer.rhizome.org/" target="_blank">Help</a>
             }
           </li>
 
           {
             supporterPortal &&
-              <li className="hidden-xs">
+              <li className="d-none d-xl-block">
                 <a href={supporterPortal} target="_blank">{user.get('customer_id') ? 'Manage Support' : 'Support Us'}</a>
               </li>
           }
@@ -173,7 +173,7 @@ class UserManagementUI extends PureComponent {
           { !auth.get('loaded') || !username || (isAnon && collCount === 0) ?
             <React.Fragment>
               <li><Link to="/_register">Sign Up</Link></li>
-              <li><button className="rounded login-link" onClick={this.showLogin} type="button">Login</button></li>
+              <li><Button variant="primary" onClick={this.showLogin}>Login</Button></li>
             </React.Fragment> :
             <li className="navbar-text">
               <DropdownButton pullRight id="user-dropdown" title={userDropdown} onToggle={this.toggleDropdown}>
@@ -182,15 +182,15 @@ class UserManagementUI extends PureComponent {
                     <li className="display login-display">
                       <span className="sm-label">{ isAnon ? 'Active as' : 'Signed in as'}</span>
                       <h5>{user.get('full_name') || username}</h5>
-                      <span className="username"><span className="glyphicon glyphicon-user right-buffer-sm" />{ username }</span>
+                      <span className="username"><UserIcon />&nbsp;{ username }</span>
                     </li>
                 }
 
                 {
                   hasCollections &&
-                    <MenuItem onClick={this.goToCollections}>
+                    <Dropdown.Item onClick={this.goToCollections}>
                       Your Collections<span className="num-collection">{ collCount }</span>
-                    </MenuItem>
+                    </Dropdown.Item>
                 }
                 {
                   hasCollections &&
@@ -204,39 +204,39 @@ class UserManagementUI extends PureComponent {
 
                 {
                   __DESKTOP__ &&
-                    <MenuItem divider />
+                    <Dropdown.Divider />
                 }
 
                 {
                   !isAnon &&
-                    <MenuItem onClick={this.goToSettings}><span className="glyphicon glyphicon-wrench" /> { __DESKTOP__ ? 'App' : 'Account' } Settings</MenuItem>
+                    <Dropdown.Item onClick={this.goToSettings}><GearIcon /> { __DESKTOP__ ? 'App' : 'Account' } Settings</Dropdown.Item>
                 }
 
                 {
                   !__DESKTOP__ &&
                     <React.Fragment>
-                      <MenuItem divider />
-                      <MenuItem href="https://guide.webrecorder.io/" target="_blank">User Guide</MenuItem>
-                      <MenuItem href="mailto:support@webrecorder.io" target="_blank">Contact Support</MenuItem>
-                      <MenuItem divider />
-                      <MenuItem onClick={this.goToFAQ}>About Webrecorder</MenuItem>
-                      <MenuItem href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</MenuItem>
+                      <Dropdown.Divider />
+                      <Dropdown.Item href="https://guide.conifer.rhizome.org/" target="_blank">User Guide</Dropdown.Item>
+                      <Dropdown.Item href="mailto:support@conifer.rhizome.org" target="_blank">Contact Support</Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item onClick={this.goToFAQ}>About {product}</Dropdown.Item>
+                      <Dropdown.Item href="https://blog.conifer.rhizome.org" target="_blank">{product} Blog</Dropdown.Item>
                     </React.Fragment>
                 }
 
                 {
                   (!isAnon && !__DESKTOP__) &&
                     <React.Fragment>
-                      <MenuItem divider />
-                      <MenuItem onClick={this.goToLogout}><span className="glyphicon glyphicon-log-out" title="Logout" /> Logout</MenuItem>
+                      <Dropdown.Divider />
+                      <Dropdown.Item onClick={this.goToLogout}>Logout</Dropdown.Item>
                     </React.Fragment>
                 }
                 {
                   isAnon &&
                     <React.Fragment>
-                      <MenuItem divider />
-                      <MenuItem onClick={this.goToSignup}>Sign Up</MenuItem>
-                      <MenuItem onClick={this.showLogin}>Login</MenuItem>
+                      <Dropdown.Divider />
+                      <Dropdown.Item onClick={this.goToSignup}>Sign Up</Dropdown.Item>
+                      <Dropdown.Item onClick={this.showLogin}>Login</Dropdown.Item>
 
                     </React.Fragment>
                 }

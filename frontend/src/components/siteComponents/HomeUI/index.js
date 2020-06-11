@@ -1,8 +1,9 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
+import { Button, Col, Row } from 'react-bootstrap';
 
-import { anonDisabled, homepageAnnouncement, supporterPortal } from 'config';
+import { anonDisabled, homepageAnnouncement, product, supporterPortal } from 'config';
 
 import { StandaloneRecorder } from 'containers';
 import RedirectWithStatus from 'components/RedirectWithStatus';
@@ -76,22 +77,23 @@ class HomeUI extends PureComponent {
 
         <div className="keystone">
           <figure>
-            <a href="https://webrecorder.io/pelicanbomb/pelican-bomb">
-              <img src={require('shared/images/homepage/keystone-figure.png')} alt="Screenshots of Webrecorder.io" />
-            </a>
+            <object data={require('shared/images/homepage/conifer-chest-anim.svg')} type="image/svg+xml" aria-label="Illustration of browser windows in a chest">
+              <img src={require('shared/images/homepage/conifer-chest.png')} alt="Illustration of browser windows in a chest" />
+            </object>
           </figure>
           <div className="intro">
-            <h2>Webrecorder.io is a web archiving service to collect and revisit web pages.</h2>
-            <p>Webrecorder creates an interactive copy of any web page that you browse, including content revealed by your interactions such as playing video and audio, scrolling, clicking buttons, and so forth.</p>
+            <h1>{product}</h1>
+            <h2>Collect and revisit web pages.</h2>
+            <p>{product} Conifer is a web archiving service that creates an interactive copy of any web page that you browse, including content revealed by your interactions such as playing video and audio, scrolling, clicking buttons, and so forth.</p>
 
             <div className="cta">
-              <button className="rounded btn-primary" onClick={this.signup} type="button">Create a Free Account</button>
-              <button className="button-link" onClick={this.login} type="button">Existing Users Login</button>
+              <Button variant="primary" size="md" onClick={this.signup}>Create a Free Account</Button>
+              <button className="button-link existing-users-btn" onClick={this.login} type="button">Existing Users Login</button>
             </div>
 
-            { supporterPortal && <div className="note">Webrecorder.io offers free accounts with 5GB of storage. Get more and contribute to Webrecorder's development by <a href={supporterPortal} target="_blank">becoming a supporter</a>.</div> }
+            { supporterPortal && <div className="note">Free accounts with 5GB of storage. Get more and support this project by <a href={supporterPortal} target="_blank">becoming a supporter</a>.</div> }
 
-            <div className="note">Don't want to register? <a href="https://github.com/webrecorder/webrecorder-desktop/releases/latest">Download Desktop App</a> to collect and access archived web pages on your own computer, no account necessary.</div>
+            <div className="note">Conifer is an online service based on <a href="https://webrecorder.net" target="_blank">Webrecorder software</a>.</div>
 
             {
               homepageAnnouncement &&
@@ -100,55 +102,50 @@ class HomeUI extends PureComponent {
           </div>
         </div>
 
-        <section className="row landing-info">
-          <div>
-            <div className="col-sm-6">
-              <h3>Online Now ≠ Online Tomorrow</h3>
-              <p>Links break. Information is removed from the web. Services disappear and redesigns happen. Make sure that what’s important to you will stay available.</p>
-            </div>
-            <div className="col-sm-6 hidden-xs">
-              <img src={require('shared/images/homepage/link.png')} className="center-block" alt="Online Now ≠ Online Forever" />
-            </div>
-          </div>
-        </section>
+        <Row as="section" className="landing-info">
+          <Col sm={5}>
+            <h3>Online Now ≠ Online Tomorrow</h3>
+            <p>Links break. Information is removed from the web. Services disappear and redesigns happen. Make sure that what’s important to you will stay available.</p>
+          </Col>
+          <Col sm={6} md={{ offset: 1 }} className="d-none d-sm-block">
+            <img src={require('shared/images/homepage/broken_link.svg')} className="center-block" alt="An illustration of three browser windows, one has a graphic of a missing content and has fallen over" />
+          </Col>
+        </Row>
 
         {/* For Web Media */}
-        <section className="row landing-info">
-          <div>
-            <div className="col-sm-6">
-              <h3>Capture Complex Webpages</h3>
-              <p>Webrecorder takes a new approach to web archiving by capturing ("recording") network traffic and processes within the browser while you interact with a web page. Unlike conventional crawler-based web archiving methods, this allows even intricate websites, such as those with embedded media, complex Javascript, user-specific content and interactions, and other dynamic elements, to be captured and faithfully restaged.</p>
-            </div>
-            <div className="col-sm-6 hidden-xs">
-              <img src={require('shared/images/homepage/belljar.png')} className="center-block" alt="Web Preservation for Web Media" />
-            </div>
-          </div>
-        </section>
+        <Row as="section" className="landing-info">
+          <Col sm={5}>
+            <h3>Capture Complex Webpages</h3>
+            <p>Unlike conventional crawler-based web archiving methods, {product}’s approach allows even intricate websites, such as those with embedded media, complex Javascript, user-specific content and interactions, and other dynamic elements, to be captured and restaged.</p>
+          </Col>
+          <Col sm={6} md={{ offset: 1 }} className="d-none d-sm-block">
+            <object data={require('shared/images/homepage/complex_dynamic_webpages-w-pause.svg')} type="image/svg+xml" aria-label="An animated graphic of assets being capture as someone browses a website">
+              <img src={require('shared/images/homepage/complex_webpages.png')} className="center-block" alt="Illustration of media being captured from a browser" />
+            </object>
+          </Col>
+        </Row>
 
         {/* autopilot */}
-        <section className="row landing-info">
-          <div>
-            <div className="col-sm-6">
-              <h3>Autopilot Your Captures</h3>
-              <p>Capturing pages on a popular web platform? Autopilot behaviors may be able to speed up your capture via automation.</p>
-            </div>
-            <div className="col-sm-6 hidden-xs">
-              <figure>
-                {
-                  !__DESKTOP__ &&
-                    <video autoPlay loop muted poster={require('shared/images/homepage/autopilot.jpg')}>
-                      <source src={require('shared/media/autopilot.mp4')} type="video/mp4" />
-                      <source src={require('shared/media/autopilot.webm')} type="video/webm" />
-                      <source src={require('shared/media/autopilot.ogv')} type="video/ogg" />
-                    </video>
-                }
-              </figure>
-            </div>
-          </div>
-        </section>
+        <Row as="section" className="landing-info">
+          <Col sm={5}>
+            <h3>Autopilot Your Captures</h3>
+            <p>Capturing pages on a popular web platform? Autopilot behaviors may be able to speed up your capture via automation.</p>
+          </Col>
+          <Col sm={6} md={{ offset: 1 }} className="d-none d-sm-block">
+            <figure>
+              {
+                !__DESKTOP__ &&
+                  <video autoPlay loop muted poster={require('shared/images/homepage/autopilot.jpg')}>
+                    <source src={require('shared/media/autopilot.mp4')} type="video/mp4" />
+                    <source src={require('shared/media/autopilot.webm')} type="video/webm" />
+                  </video>
+              }
+            </figure>
+          </Col>
+        </Row>
 
-        <section className="advanced-features">
-          <div className="col-xs-8 col-xs-offset-2">
+        <Row as="section" className="advanced-features">
+          <Col xs={{ span: 10, offset: 1}}>
             <h3>Advanced Features</h3>
             <dl>
               <dt>Login and Capture</dt>
@@ -161,52 +158,52 @@ class HomeUI extends PureComponent {
               <dd>Download your web archives in the ISO standard WARC file format.</dd>
 
               <dt>Pre-configured browsers for best capturing results</dt>
-              <dd>Webrecorder's Remote Browser feature provides access to a range of preconfigured browsers running on the Webrecorder server. They offer for the most thorough capture of network traffic, and support for Flash.</dd>
+              <dd>{product}'s Remote Browser feature provides access to a range of preconfigured browsers running on the {product} server. They offer for the most thorough capture of network traffic, and support for Flash.</dd>
             </dl>
-          </div>
-        </section>
+          </Col>
+        </Row>
 
-        <section className="supporter">
-          <header>
-            <h1>You can support free, open source tools for archiving the web.</h1>
-          </header>
+        <Row as="section">
+          <Col xs={12} lg={{ span: 10, offset: 1 }} className="supporter">
+            <header>
+              <h1>You can support a free platform for archiving the web.</h1>
+            </header>
 
-          <div className="oss-intro">
-            <h2>The Webrecorder project is an open source initiative by Rhizome at the New Museum. Our mission is to make high-fidelity web archiving accessible to all.</h2>
-            <p>Here are some other tools we have developed. An extensive lists of re-usable software components produced by Webrecorder is available here.</p>
-          </div>
+            <div className="oss-intro">
+              <h3>{product} is an open source web archiving initiative by Rhizome, an institution supporting born-digital art and culture</h3>
+              <p>Becoming a supporter or donor helps us offset our operational costs, keeping Conifer a sustainable project.</p>
+            </div>
 
-          {
-            supporterPortal &&
-              <div className="supportCTA">
-                <h3>You can support free, open source tools for archiving the web.</h3>
-                <button className="rounded" onClick={this.goToSupporterSite} type="button">Become a Supporter</button>
-                <a href="https://supporter.webrecorder.io" target="_blank">Learn more</a>
-                <p>Webrecorder is a project of Rhizome, a registered 501(c)(3) non-profit organization. Your donations are tax-deductible.</p>
-              </div>
-          }
+            {
+              supporterPortal &&
+                <div className="supportCTA">
+                  {/*<h3>You can support free, open source tools for archiving the web.</h3>*/}
+                  <Button variant="primary" size="lg" onClick={this.goToSupporterSite}>Become a Supporter</Button>
+                  <a href={supporterPortal} target="_blank">Learn more</a>
+                  <p>{product} is a project of Rhizome, a registered 501(c)(3) non-profit organization. Your donations are tax-deductible.</p>
+                </div>
+            }
 
-          <div>
-            <img src={require('shared/images/homepage/desktop.png')} alt="Desktop Logo" />
-            <h4>Webrecorder Desktop App</h4>
-            <p>Create, manage, and store web archives on your local computer.</p>
-            <button className="rounded" onClick={this.desktopApp} type="button">Download Desktop App</button>
-          </div>
+            <div className="tools-intro">
+              <h2>Desktop Tools</h2>
+              <p>In partnership with the <a href="https://webrecorder.net" target="_blank">Webrecorder project</a>, we aim to make web archiving accessible to all, and ensure interoperability in between tools. Here are some apps we have developed together:</p>
+            </div>
 
-          <div>
-            <img src={require('shared/images/homepage/player.png')} alt="Player Logo" />
-            <h4>Webrecorder Player App</h4>
-            <p>Use this desktop web archive viewer to browse exported collections, even when you are offline.</p>
-            <button className="rounded" onClick={this.playerApp} type="button">Download Player App</button>
-          </div>
+            <div className="tool">
+              <img src={require('shared/images/homepage/desktop.png')} alt="Desktop Logo" />
+              <h4>Webrecorder Desktop App</h4>
+              <p>Create, manage and store web archives on your local computer; import them to Conifer for public presentation.</p>
+              <Button size="lg" variant="primary" onClick={this.desktopApp}>Download Desktop App</Button>
+            </div>
 
-          <div>
-            <img src={require('shared/images/homepage/oss.png')} alt="Group of open source software logos" />
-            <h4>Other Software Components</h4>
-            <p>Webrecorder produces a range of re-usable open source software components for web archiving, all of which are available on GitHub.</p>
-            <button className="rounded" onClick={this.github} type="button">Visit Our Github</button>
-          </div>
-        </section>
+            <div className="tool">
+              <img src={require('shared/images/homepage/player.png')} alt="Player Logo" />
+              <h4>Webrecorder Player App</h4>
+              <p>Export Conifer collections and access them offline.</p>
+              <Button size="lg" variant="primary" onClick={this.playerApp}>Download Player App</Button>
+            </div>
+          </Col>
+        </Row>
       </React.Fragment>
     );
   }

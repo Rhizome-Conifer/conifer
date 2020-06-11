@@ -4,27 +4,19 @@ import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
-import { Link } from 'react-router-dom';
 import { batchActions } from 'redux-batched-actions';
 
 import { untitledEntry } from 'config';
-import { getCollectionLink } from 'helpers/utils';
 
 import { updateUrlAndTimestamp } from 'store/modules/controls';
 import { setBrowser } from 'store/modules/remoteBrowsers';
 
-import SidebarHeader from 'components/SidebarHeader';
-import { CatalogIcon, WarcIcon } from 'components/icons';
 
 import { PageIndex, PageRenderer } from './renderers';
 import './style.scss';
 
 
 class SidebarPageViewer extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool
-  };
-
   static propTypes = {
     activePage: PropTypes.number,
     collection: PropTypes.object,
@@ -36,8 +28,10 @@ class SidebarPageViewer extends Component {
     showNavigator: PropTypes.func
   }
 
-  componentWillMount() {
-    const { activePage, pages, setInspector } = this.props;
+  constructor(props) {
+    super(props);
+
+    const { activePage, pages, setInspector } = props;
     setInspector(pages.getIn([activePage, 'id']));
   }
 

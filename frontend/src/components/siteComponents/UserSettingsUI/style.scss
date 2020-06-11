@@ -7,7 +7,7 @@
 
     span {
         font-style: italic;
-        margin-left: 1rem;
+        margin-left: rem(1rem);
     }
 }
 
@@ -22,86 +22,69 @@
     .panel-default {
         .panel-heading {
             background-color: $lightBlue;
-            color: $blue;
-            border-color: $blue;
+            color: $pine;
+            border-color: $pine;
         }
 
-        margin-bottom: 5rem;
+        margin-bottom: rem(5rem);
     }
 
     .admin-options {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 2.5rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-gap: rem(1.5rem);
+        margin-top: rem(2.5rem);
 
         h5 {
-            border-bottom: solid .1rem;
-            padding-bottom: .5rem;
-            margin-bottom: 1.5rem;
+            border-bottom: solid rem(.1rem);
+            padding-bottom: rem(.5rem);
+            margin-bottom: rem(1.5rem);
         }
 
         .admin-section {
             &.suspend {
                 p {
-                    width: 20rem;
+                    width: rem(20rem);
                 }
             }
 
             &.update-role {
                 h5 {
-                    margin-bottom: 1rem;
+                    margin-bottom: rem(1rem);
                 }
-            }
-        }
-
-        .rounded {
-            svg {
-                vertical-align: middle;
             }
         }
     }
 
     .settings-block {
-        margin-bottom: 5rem;
+        margin-bottom: rem(5rem);
 
         h3 {
-            padding: 0 0 .5rem 1.5rem;
-            margin-left: -1.5rem;
-            border-bottom: solid .1rem $mgmt-gray;
+            padding: 0 0 rem(.5rem) rem(1.5rem);
+            margin-left: rem(-1.5rem);
+            border-bottom: solid rem(.1rem) $mgmt-gray;
         }
 
         .progress-bar {
-            background-color: $blue;
+            background-color: $pine;
         }
 
         .upgrade {
             display: flex;
             justify-content: space-between;
+            margin-top: rem(1.5rem);
         }
     }
 
     .profile {
         .username {
-            margin: 1.5rem 0;
-        }
-
-        .rounded {
-            svg {
-                vertical-align: middle;
-                margin: 0 .5rem 0 -.5rem;
-            }
+            margin: rem(1.5rem) 0;
         }
     }
 
     .security {
         .account-email {
-            margin: 1.5rem 0;
-        }
-
-        .rounded {
-            background: $blue;
-            border: none;
-            color: #FFF;
+            margin: rem(1.5rem) 0;
         }
     }
 
@@ -121,31 +104,6 @@
             background: $lightWarning;
             color: $warning;
             border-radius: 0;
-        }
-    }
-
-    .rounded.btn-danger {
-        color: $warning;
-        border-color: $warning;
-
-        svg {
-            vertical-align: text-top;
-            margin-right: .5rem;
-
-            path {
-                fill: $warning;
-            }
-        }
-
-        &:hover {
-            background: $warning;
-            color: #FFF;
-
-            svg {
-                path {
-                    fill: #FFF;
-                }
-            }
         }
     }
 }

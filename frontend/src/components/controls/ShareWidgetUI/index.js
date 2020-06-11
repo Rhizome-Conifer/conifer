@@ -4,23 +4,22 @@ import classNames from 'classnames';
 import Toggle from 'react-toggle';
 import { fromJS } from 'immutable';
 import { Link } from 'react-router-dom';
+import { Button, DropdownButton, InputGroup, Form } from 'react-bootstrap';
+
+import { AppContext } from 'store/contexts';
 
 import OutsideClick from 'components/OutsideClick';
-import { ShareIcon } from 'components/icons';
+import { GlobeIcon, ShareIcon } from 'components/icons';
 
 import 'shared/scss/toggle.scss';
 import './style.scss';
 
 
 class ShareWidgetUI extends Component {
-
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
-  };
+  static contextType = AppContext;
 
   static propTypes = {
-    bsSize: PropTypes.string,
+    canAdmin: PropTypes.bool,
     collection: PropTypes.object,
     embedUrl: PropTypes.string,
     isPublic: PropTypes.bool,
@@ -28,10 +27,6 @@ class ShareWidgetUI extends Component {
     shareUrl: PropTypes.string,
     showLoginModal: PropTypes.func,
   };
-
-  static defaultProps = fromJS({
-    bsSize: ''
-  });
 
   constructor(props) {
     super(props);
@@ -44,7 +39,7 @@ class ShareWidgetUI extends Component {
   }
 
   componentDidMount() {
-    if (!this.props.isPublic) {
+    if (!this.props.isPublic && this.shareables) {
       this.setState({
         sizeSet: true,
         widgetHeight: this.shareables.getBoundingClientRect().height
@@ -52,15 +47,8 @@ class ShareWidgetUI extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps, nextState) {
-    if (nextProps.isPublic && nextProps.collection !== this.props.collection) {
-      this.thirdPartyJS();
-      this.buildSocialWidgets();
-    }
-  }
-
   componentDidUpdate(prevProps, prevState) {
-    if (!prevState.open && this.state.open) {
+    if (!prevState.open && this.state.open && this.props.isPublic) {
       this.thirdPartyJS();
       this.buildSocialWidgets();
     }
@@ -117,7 +105,7 @@ class ShareWidgetUI extends Component {
           {
             text: '',
             size: 'large',
-            via: 'webrecorder_io'
+            via: 'RhizomeConifer'
           }
         )
       ));
@@ -143,13 +131,13 @@ class ShareWidgetUI extends Component {
     }
   }
 
-  toggle = () => {
-    this.setState({ open: !this.state.open });
+  toggle = (open) => {
+    this.setState({ open });
   }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
-    const { bsSize, collection, embedUrl, isPublic, shareUrl, showLoginModal } = this.props;
+    const { isAnon } = this.context;
+    const { canAdmin, collection, embedUrl, isPublic, shareUrl, showLoginModal } = this.props;
     const { open, sizeSet, widgetHeight } = this.state;
 
     const shareClasses = classNames('share-container', { open });
@@ -157,64 +145,63 @@ class ShareWidgetUI extends Component {
     const shareableClasses = classNames('shareables', { disabled: !isPublic && sizeSet });
 
     return (
-      <OutsideClick handleClick={this.close}>
-        <div id="share-widget" className={shareClasses} title="Sharing options">
-          <div id="fb-root" />
-          <button
-            type="button"
-            className={`btn btn-default btn-${bsSize} dropdown-toggle`}
-            data-toggle="dropdown"
-            aria-label="Sharing widget"
-            onClick={this.toggle}>
-            <ShareIcon />
-            { bsSize === 'xs' && <span>&nbsp;Share</span> }
-          </button>
-          <div className="dropdown-menu share-modal arrow_box">
-            <span onClick={this.close} role="button" className="glyphicon glyphicon-remove-circle" tabIndex={0} />
-            {
-              canAdmin &&
-                <div className={widgetClasses}>
-                  {
-                    isAnon ?
+      <div id="share-widget" className={shareClasses} title="Sharing options">
+        <div id="fb-root" />
+        <DropdownButton
+          title={<ShareIcon />}
+          variant="outline-secondary"
+          aria-label="Sharing widget"
+          onToggle={this.toggle}>
+          {
+            canAdmin && !isPublic &&
+              <div className={widgetClasses}>
+                {
+                  isAnon ?
+                    <p className="make-public-desc">
+                      This is a temporary collection. To preserve and share, <Link to="/_register">Sign Up</Link> or <button className="button-link" onClick={showLoginModal} type="button">Login</button>.
+                    </p> :
+                    <div>
                       <p className="make-public-desc">
-                        This is a temporary collection. To preserve and share, <Link to="/_register">Sign Up</Link> or <button className="button-link" onClick={showLoginModal} type="button">Login</button>.
-                      </p> :
-                      <div>
-                        <p className="make-public-desc">
-                          Collection <strong>{ collection.get('title') }</strong> is set to private. To get a share link, make the collection public:
-                        </p>
-                        <div className="access-switch">
-                          <span className="glyphicon glyphicon-globe" aria-hidden="true" />
-                          <span className="left-buffer-sm hidden-xs">Collection Public?</span>
-                          <Toggle
-                            icons={false}
-                            defaultChecked={isPublic}
-                            onChange={this.setPublic} />
-                        </div>
+                        Collection <strong>{ collection.get('title') }</strong> is set to private. To get a share link, make the collection public:
+                      </p>
+                      <div className="access-switch">
+                        <GlobeIcon />
+                        <span className="left-buffer-sm d-none d-sm-inline">Collection Public?</span>
+                        <Toggle
+                          icons={false}
+                          defaultChecked={isPublic}
+                          onChange={this.setPublic} />
                       </div>
-                  }
-                </div>
-            }
-            <div
-              className={shareableClasses}
-              ref={(obj) => { this.shareables = obj; }}
-              style={widgetHeight !== 0 ? { height: widgetHeight } : {}}>
-              <div className="platforms clearfix">
-                <div id="wr-tw" ref={(obj) => { this.wrTW = obj; }} />
-                <div id="wr-fb" ref={(obj) => { this.wrFB = obj; }}>
-                  <div className="fb-share-button" data-href={shareUrl} data-layout="button" data-size="large" data-mobile-iframe="true" />
-                </div>
+                    </div>
+                }
               </div>
+          }
+          {
+            isPublic &&
+              <div
+                className={shareableClasses}
+                ref={(obj) => { this.shareables = obj; }}
+                style={widgetHeight !== 0 ? { height: widgetHeight } : {}}>
+                <div className="platforms clearfix">
+                  <div id="wr-tw" ref={(obj) => { this.wrTW = obj; }} />
+                  <div id="wr-fb" ref={(obj) => { this.wrFB = obj; }}>
+                    <div className="fb-share-button" data-href={shareUrl} data-layout="button" data-size="large" data-mobile-iframe="true" />
+                  </div>
+                </div>
 
-              <label htmlFor="shareable-url">Copy and paste to share:</label>
-              <input type="text" id="shareable-url" value={shareUrl} readOnly />
+                <InputGroup className="mb-3">
+                  <Form.Label htmlFor="shareable-url">Copy and paste to share:</Form.Label>
+                  <Form.Control type="text" id="shareable-url" value={shareUrl} readOnly />
+                </InputGroup>
 
-              <label htmlFor="shareable-embed-code">Embed code:</label>
-              <textarea id="shareable-embed-code" readOnly value={`<iframe  src="${embedUrl}" onload="" width='640' height='480' seamless="seamless" frameborder="0" scrolling="yes" className="pager_iframe"></iframe>`} />
-            </div>
-          </div>
-        </div>
-      </OutsideClick>
+                <InputGroup>
+                  <Form.Label htmlFor="shareable-embed-code">Embed code:</Form.Label>
+                  <Form.Control as="textarea" id="shareable-embed-code" readOnly value={`<iframe  src="${embedUrl}" onload="" width='640' height='480' seamless="seamless" frameborder="0" scrolling="yes" className="pager_iframe"></iframe>`} />
+                </InputGroup>
+              </div>
+          }
+        </DropdownButton>
+      </div>
     );
   }
 }

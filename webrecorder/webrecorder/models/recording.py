@@ -381,6 +381,24 @@ class Recording(RedisUniqueComponent):
         if patch_rec:
             return self.get_owner().get_recording(patch_rec)
 
+    def set_derivs_recording(self, derivs_recording, update_ts=True):
+        """Set derivatives recording.
+
+        :param Recording derivs_recording: recording building block
+        :param bool update_ts: whether to update timestamp
+        """
+        self.set_prop('derivs_rec', derivs_recording.my_id, update_ts=update_ts)
+
+    def get_derivs_recording(self):
+        """Get derivatives recording associated with this recording.
+
+        :returns: derivatives recording
+        :rtype: Recording
+        """
+        derivs_rec = self.get_prop('derivs_rec')
+        if derivs_rec:
+            return self.get_owner().get_recording(derivs_rec)
+
     def write_cdxj(self, user, cdxj_key):
         """Write CDX index lines to file.
 

@@ -1,15 +1,17 @@
 @import 'src/vars';
 
-.embed-footer {
-    text-align: center;
-    color: #FFF;
-    background: $blue;
-    padding: .5rem 0;
-    order: 1;
+.wr-content {
+    .embed-footer {
+        text-align: center;
+        color: #FFF;
+        background: $deep-pine;
+        padding: rem(.5rem) 0;
+        order: 1;
 
-    a {
-        &:link, &:visited {
-            color: #FFF;
+        a {
+            &:link, &:visited {
+                color: $white;
+            }
         }
     }
 }

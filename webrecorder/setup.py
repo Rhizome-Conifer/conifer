@@ -77,7 +77,7 @@ setup(
     version=__version__,
     url='https://webrecorder.io',
     author='rhizome.org',
-    author_email='support@webrecorder.io',
+    author_email='support@conifer.rhizome.org',
     description='Webrecorder Archiving Platform',
     long_description=long_description,
     packages=find_packages(),

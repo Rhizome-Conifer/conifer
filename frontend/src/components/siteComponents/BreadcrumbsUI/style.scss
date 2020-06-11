@@ -3,7 +3,7 @@
 .wr-breadcrumb {
     background-color: transparent;
     padding: 0;
-    margin: .1rem;
+    margin: rem(.1rem);
     border: none;
     display: inline-block;
 
@@ -12,13 +12,13 @@
 
         &:not(:first-of-type):before {
             content: '/';
-            color: $body-gray;
-            padding:0 1rem;
+            color: $white;
+            padding:0 rem(1rem);
         }
 
         a, span {
-            color: $body-gray;
-            max-width: 10rem !important;
+            color: $white;
+            max-width: rem(10rem) !important;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;

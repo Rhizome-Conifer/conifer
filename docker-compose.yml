@@ -159,8 +159,45 @@ services:
             - redis
 
         volumes:
+            - ./webrecorder/webrecorder/config/auto-headless.yaml:/app/flocks/auto-headless.yaml
+            - ./webrecorder/webrecorder/config/pool_config.yaml:/app/pool_config.yaml
             - /var/run/docker.sock:/var/run/docker.sock
 
+    browsertrix:
+        container_name: browsertrix
+        image: webrecorder/browsertrix:0.2.0
+        #build:
+        #    context: .
+        environment:
+            - REDIS_URL=redis://redis/0
+            - DEFAULT_POOL=auto-pool
+            - DEFAULT_FLOCK=auto-headless
+            - SCREENSHOT_API_URL=http://app:8088/api/v1/remote/put-record
+            - EXTRACTED_RAW_DOM_API_URL=http://app:8088/api/v1/remote/put-record
+            - PROXY_HOST=app
+            - PROXY_PORT=8088
+
+        depends_on:
+            - redis
+            - app
+
+        ports:
+            - 8000:8000
+
+    solr:
+        container_name: solr
+        image: solr
+
+        volumes:
+          - ./data/solr:/var/solr
+
+        entrypoint:
+          - docker-entrypoint.sh
+          - solr-precreate
+          - webrecorder
+
+        ports:
+          - 8983:8983
 
     redis:
         container_name: redis

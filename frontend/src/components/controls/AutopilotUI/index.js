@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { Button } from 'react-bootstrap';
 
 import { autopilot as autopilotFields } from 'helpers/userMessaging';
 
@@ -33,14 +34,12 @@ class AutopilotUI extends Component {
   constructor(props) {
     super(props);
 
+    this.props.checkAvailability(this.props.url);
+
     this.state = {
       behavior: 'autoScrollBehavior',
       unsupported: false
     };
-  }
-
-  componentWillMount() {
-    this.props.checkAvailability(this.props.url);
   }
 
   componentDidMount() {
@@ -204,7 +203,7 @@ class AutopilotUI extends Component {
                   </div>
               }
 
-              <button className={classNames('rounded', { complete: isComplete })} onClick={this.toggleAutomation} disabled={!autopilotReady || isComplete || isStopping || isStopped} type="button">
+              <Button block variant={isComplete ? "success" : "primary"} size="lg" className={classNames({ complete: isComplete })} onClick={this.toggleAutomation} disabled={!autopilotReady || isComplete || isStopping || isStopped}>
                 { (!autopilotReady || isRunning || isStopping) && <LoaderIcon /> }
                 { isComplete && <CheckIcon /> }
                 {
@@ -212,13 +211,13 @@ class AutopilotUI extends Component {
                     'page loading... please wait' :
                     buttonText
                 }
-              </button>
+              </Button>
               {
                 !isRunning && !isComplete &&
                   <div className="best-practices">
                     <h5>Best Practices</h5>
                     <p>
-                      Learn more about how to achieve the best results when using Autopilot capture in <a href="https://guide.webrecorder.io/autopilot/#for-best-results" target="_blank">this user guide</a>
+                      Learn more about how to achieve the best results when using Autopilot capture in <a href="https://guide.conifer.rhizome.org/autopilot/#for-best-results" target="_blank">this user guide</a>
                     </p>
                   </div>
               }

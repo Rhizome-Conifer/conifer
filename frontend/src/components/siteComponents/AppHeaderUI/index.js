@@ -4,9 +4,10 @@ import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { matchPath, NavLink } from 'react-router-dom';
 
+import { product } from 'config';
+
 import { AdminHeader, UserManagement } from 'containers';
 
-import BreadcrumbsUI from 'components/siteComponents/BreadcrumbsUI';
 import { LogoIcon } from 'components/icons';
 
 import './style.scss';
@@ -38,19 +39,23 @@ class AppHeader extends PureComponent {
 
     return (
       <header className={classNames('app-header', { dark: canAdmin })}>
-        <nav className="header-webrecorder" role="navigation">
+        <nav className="header-conifer" role="navigation">
           <div className="navbar-tools">
             <NavLink to={__DESKTOP__ ? `/${authUser.get('username')}` : hostedLink} className={classNames('wr-logomark', { desktop: __DESKTOP__ })}>
               {
                 __DESKTOP__ ?
-                  'Webrecorder' :
-                  <LogoIcon darkMode={canAdmin} />
+                  product :
+                  <div className="logo-anchor">
+                    <LogoIcon darkMode={canAdmin} />
+                    {
+                      route && (!canAdmin || !match.params.coll) &&
+                        <h2>Conifer</h2>
+                    }
+                  </div>
               }
             </NavLink>
             {
-              canAdmin ?
-                match.params.coll && <AdminHeader managing={route.managementView} /> :
-                <BreadcrumbsUI is404={is404} url={pathname} />
+              canAdmin && match.params.coll && <AdminHeader managing={route.managementView} />
             }
           </div>
           <UserManagement route={route} canAdmin={canAdmin} />

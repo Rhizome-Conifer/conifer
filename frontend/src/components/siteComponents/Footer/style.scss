@@ -2,10 +2,10 @@
 
 footer {
     width: 100%;
-    margin-top: 5rem;
-    padding: 4rem 0 3rem 0;
-    background: $gray350;
-
+    margin-top: rem(5rem);
+    padding: rem(4rem) 0 rem(3rem) 0;
+    color: $white;
+    background: $slate;
 
     .project-info {
 
@@ -22,41 +22,31 @@ footer {
                 }
 
                 li {
-                    margin-bottom: 1rem;
+                    margin-bottom: rem(1rem);
 
                     a {
-                        color: $body-gray;
+                        color: $white;
                     }
                 }
             }
         }
 
         #email-signup {
-            margin-bottom: 4rem;
+            margin-bottom: rem(2rem);
             padding-left: 0;
 
             .form-group-sm {
                 display: flex;
 
                 input {
-                    width: 15rem;
+                    width: rem(15rem);
                 }
             }
 
             input {
-                border-right: 0;
-                border-bottom-left-radius: 2.5rem;
-                border-top-left-radius: 2.5rem;
-            }
-
-            button {
-                border-left: 0;
-                border-bottom-left-radius: 0;
-                border-top-left-radius: 0;
-                border-top-right-radius: 2.5rem;
-                border-bottom-right-radius: 2.5rem;
-                background: $gray600;
-                color: $white;
+                border: none;
+                border-radius: 0;
+                height: rem(4rem);
             }
         }
     }
@@ -68,8 +58,11 @@ footer {
         padding: 0 10%;
 
         button {
-            background: $white;
-            margin: 1rem 0 1.5rem 0;
+            margin: rem(1rem) 0 rem(1.5rem) 0;
+        }
+
+        a {
+            display: block;
         }
     }
 }

@@ -5,33 +5,25 @@ import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
 import classNames from 'classnames';
-import { Link } from 'react-router-dom';
 import { batchActions } from 'redux-batched-actions';
 
-import { defaultListDesc, untitledEntry } from 'config';
-import { getListLink, remoteBrowserMod } from 'helpers/utils';
+import { untitledEntry } from 'config';
 
 import { setBookmarkId, updateUrlAndTimestamp } from 'store/modules/controls';
 import { setBrowser } from 'store/modules/remoteBrowsers';
 
 import InlineEditor from 'components/InlineEditor';
-import SidebarHeader from 'components/SidebarHeader';
-import Truncate from 'components/Truncate';
-import WYSIWYG from 'components/WYSIWYG';
-import { CatalogIcon, ListIcon } from 'components/icons';
+import { ListIcon } from 'components/icons';
 
 import { BookmarkRenderer, PageIndex } from './renderers';
 import './style.scss';
 
 
 class SidebarListViewer extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool
-  }
-
   static propTypes = {
     activeBookmark: PropTypes.number,
     bookmarks: PropTypes.object,
+    canAdmin: PropTypes.bool,
     clearInspector: PropTypes.func,
     collection: PropTypes.object,
     list: PropTypes.object,
@@ -47,26 +39,12 @@ class SidebarListViewer extends Component {
   constructor(props) {
     super(props);
 
+    const { activeBookmark, bookmarks, setInspector } = props;
+    setInspector(bookmarks.getIn([activeBookmark, 'id']));
+
     this.state = {
       navigated: false
     };
-  }
-
-  componentWillMount() {
-    const { activeBookmark, bookmarks, setInspector } = this.props;
-    setInspector(bookmarks.getIn([activeBookmark, 'id']));
-  }
-
-  componentWillReceiveProps(nextProps) {
-    const { activeBookmark, bookmarks, timestamp, url } = this.props;
-
-    // change in iframe source, active bookmark with no bookmark id change
-    if ((url !== nextProps.url || timestamp !== nextProps.timestamp) && activeBookmark > -1 && activeBookmark === nextProps.activeBookmark) {
-      const bkObj = bookmarks.get(activeBookmark);
-      if (bkObj.get('url') !== nextProps.url || bkObj.get('timestamp') !== nextProps.timestamp) {
-        this.setState({ navigated: true });
-      }
-    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -79,9 +57,17 @@ class SidebarListViewer extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { activeBookmark, bookmarks, setInspector } = this.props;
+    const { activeBookmark, bookmarks, setInspector, timestamp, url } = this.props;
+
     if (activeBookmark !== prevProps.activeBookmark) {
       setInspector(bookmarks.getIn([activeBookmark, 'id']));
+    }
+
+    if ((prevProps.url !== url || prevProps.timestamp !== timestamp) && activeBookmark > -1 && prevProps.activeBookmark === activeBookmark) {
+      const bkObj = bookmarks.get(activeBookmark);
+      if (bkObj.get('url') !== url || bkObj.get('timestamp') !== timestamp) {
+        this.setState({ navigated: true });
+      }
     }
   }
 
@@ -160,7 +146,7 @@ class SidebarListViewer extends Component {
             <ListIcon />
             <InlineEditor
               blockDisplay
-              canAdmin={this.context.canAdmin}
+              canAdmin={this.props.canAdmin}
               initial={list.get('title')}
               onSave={this.editListTitle}
               success={listEdited}>

@@ -11,7 +11,7 @@
   .logo {
     width: 35vw;
     align-self: end;
-    margin-bottom: 2rem;
+    margin-bottom: rem(2rem);
   }
 
   .dat-container {
@@ -22,7 +22,7 @@
 
 #loadingGif {
   animation: spin 2s linear infinite;
-  height: 4.5rem;
+  height: rem(4.5rem);
 }
 
 
@@ -33,12 +33,12 @@
     display: flex;
 
     input {
-      border-radius: .3rem 0 0 .3rem;
+      border-radius: rem(.3rem) 0 0 rem(.3rem);
     }
 
     button {
       border-left-width: 0;
-      border-radius: 0 .3rem .3rem 0;
+      border-radius: 0 rem(.3rem) rem(.3rem) 0;
     }
   }
 }
@@ -49,44 +49,44 @@
   flex-direction: column;
 
   button {
-    background-color: $blue;
+    background-color: $pine;
     position: relative;
     color: #FFF;
-    border-radius: 3rem;
-    padding: 1.2rem 4.5rem;
+    border-radius: rem(3rem);
+    padding: rem(1.2rem) rem(4.5rem);
     border-style: none;
-    font-size: 1.8rem;
+    font-size: rem(1.8rem);
     font-family: $sans;
     font-weight: 500;
   }
 
   a {
-    margin-top: 1.5rem;
+    margin-top: rem(1.5rem);
   }
 }
 
 
 #loadWarc {
-  margin: 2rem 8rem;
-  width: 10rem;
+  margin: rem(2rem) rem(8rem);
+  width: rem(10rem);
 }
 
 .projectByRhizome {
   align-self: end;
 
   p {
-    width: 22rem;
+    width: rem(22rem);
     margin: 0 auto;
     text-align: left;
     text-transform: uppercase;
-    font-size: .9rem;
+    font-size: rem(.9rem);
     letter-spacing: 1;
     font-family: sans-serif;
   }
 
   img {
     display: block;
-    margin: 1rem auto;
-    width: 22rem;
+    margin: rem(1rem) auto;
+    width: rem(22rem);
   }
 }

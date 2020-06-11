@@ -32,9 +32,11 @@ class ExtractWidget extends Component {
     active: false
   };
 
-  componentWillMount() {
-    if (!this.props.active && this.props.extractable) {
-      this.props.setExtractWidget(null);
+  constructor(props) {
+    super(props);
+
+    if (!props.active && props.extractable) {
+      props.setExtractWidget(null);
     }
   }
 
@@ -46,9 +48,9 @@ class ExtractWidget extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (!this.props.active && nextProps.url !== this.props.url) {
-      this.parseURL(nextProps.url);
+  componentDidUpdate(prevProps) {
+    if (!this.props.active && this.props.url !== prevProps.url) {
+      this.parseURL(this.props.url);
     }
   }
 
@@ -111,21 +113,13 @@ class ExtractWidget extends Component {
 
     return (
       extractable &&
-        <div className="input-group-btn extract-selector">
-          <ExtractWidgetUI
-            active={active}
-            extractable={extractable}
-            stats={stats}
-            toCollection={toCollection}
-            toggleAllSources={useAllSources}
-            url={url} />
-          {
-            includeButton &&
-              <button className="btn btn-default" type="submit" aria-label="Extract">
-                <span className="glyphicon glyphicon-save" aria-hidden="true" /><span className="hidden-xs"> extract</span>
-              </button>
-          }
-        </div>
+        <ExtractWidgetUI
+          active={active}
+          extractable={extractable}
+          stats={stats}
+          toCollection={toCollection}
+          toggleAllSources={useAllSources}
+          url={url} />
     );
   }
 }

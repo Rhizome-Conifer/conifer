@@ -1,7 +1,13 @@
-/* TODO: clean up containerized usage */
+@import 'src/vars';
+
 .rb-dropdown {
 
-    li {
+    .dropdown-menu {
+        width: 66vw;
+        min-width: rem(35rem);
+    }
+
+    div {
         text-align: center;
         word-wrap: break-word;
         white-space: normal;
@@ -10,8 +16,8 @@
             text-align: left;
         }
 
-        & img {
-            margin-right: .5rem;
+        img {
+            margin-right: rem(.5rem);
         }
     }
 

@@ -1,6 +1,7 @@
 from bottle import request, response
 from six.moves.urllib.parse import quote
 import os
+import datetime
 
 from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.webreccork import ValidationException
@@ -8,6 +9,7 @@ from webrecorder.webreccork import ValidationException
 from webrecorder.models.base import DupeNameException
 from webrecorder.models.datshare import DatShare
 from webrecorder.utils import get_bool
+from pywb.warcserver.index.cdxobject import CDXObject
 
 
 # ============================================================================
@@ -16,7 +18,10 @@ class CollsController(BaseController):
         super(CollsController, self).__init__(*args, **kwargs)
         config = kwargs['config']
 
+        self.solr_mgr = kwargs.get('solr_mgr')
+
         self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
+        self.is_search_auto = get_bool(os.environ.get('SEARCH_AUTO', False))
 
     def init_routes(self):
         wr_api_spec.set_curr_tag('Collections')
@@ -67,6 +72,10 @@ class CollsController(BaseController):
 
                 if is_external:
                     collection.set_external(True)
+
+                # if auto-indexing is on, mark new collections as auto-indexed to distinguish from prev collections
+                if self.is_search_auto:
+                    collection.set_bool_prop('autoindexed', True)
 
                 user.mark_updated()
 
@@ -209,6 +218,105 @@ class CollsController(BaseController):
 
             return {'page_bookmarks': collection.get_all_page_bookmarks(rec_pages)}
 
+        @self.app.get('/api/v1/url_search')
+        def do_url_search():
+            user, collection = self.load_user_coll()
+            results = []
+
+            search = request.query.getunicode('search', '').lower()
+            url_query = request.query.getunicode('url', '').lower()
+            has_query = search or url_query
+            ts_from = request.query.getunicode('from')
+            ts_to = request.query.getunicode('to')
+            date_filter = ts_from and ts_to
+
+            if date_filter:
+                try:
+                    ts_from = int(ts_from)
+                    ts_to = int(ts_to)
+                except ValueError:
+                    date_filter = False
+
+            session = request.query.getunicode('session')
+
+            # remove trailing comma,
+            mimes = request.query.getunicode('mime', '').rstrip(',')
+            mimes = mimes.split(',') if mimes else []
+
+            # search pages or default to page search if no mime supplied
+            if 'text/html' in mimes or len(mimes) == 0:
+                try:
+                    mimes.remove('text/html')
+                except ValueError:
+                    pass
+
+                # shortcut empty search
+                if not has_query and not date_filter and not session:
+                    results = collection.list_pages()
+                else:
+                    for page in collection.list_pages():
+                        # check for legacy hidden flag
+                        if page.get('hidden', False):
+                            continue
+
+                        if date_filter:
+                            try:
+                                # trim seconds
+                                ts = int(page['timestamp'][:12])
+                            except ValueError:
+                                continue
+                            if ts < ts_from or ts > ts_to:
+                                continue
+
+                        if session and page['rec'] != session:
+                            continue
+
+                        if search and search not in page.get('title', '').lower():
+                            continue
+
+                        if url_query and url_query not in page['url'].lower():
+                            continue
+
+                        results.append(page)
+
+            # search non-page cdx
+            if len(mimes):
+                for line, _ in collection.get_cdxj_iter():
+                    cdxj = CDXObject(line.encode('utf-8'))
+
+                    if date_filter:
+                        try:
+                            # trim seconds
+                            ts = int(cdxj['timestamp'][:12])
+                        except ValueError:
+                            continue
+                        if ts < ts_from or ts > ts_to:
+                            continue
+
+                    if search and search not in cdxj['url'].lower():
+                        continue
+
+                    if url_query and url_query not in cdxj['url'].lower():
+                        continue
+
+                    if mimes and not any(cdxj['mime'].startswith(mime) for mime in mimes):
+                        continue
+
+                    results.append({'url': cdxj['url'],
+                                    'timestamp': cdxj['timestamp'],
+                                    'mime': cdxj['mime']})
+
+            return {'results': results}
+
+        @self.app.get('/api/v1/text_search')
+        def do_text_search():
+            if not self.solr_mgr:
+                self._raise_error(400, 'not_supported')
+
+            user, collection = self.load_user_coll()
+
+            return self.solr_mgr.query_solr(collection.my_id, request.query)
+
         # DAT
         @self.app.post('/api/v1/collection/<coll_name>/dat/share')
         def dat_do_share(coll_name):
@@ -259,6 +367,27 @@ class CollsController(BaseController):
             else:
                 return {'commit_id': res}
 
+
+        @self.app.post('/api/v1/collection/<coll_name>/generate_derivs')
+        def generate_derivs(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            self.access.assert_can_admin_coll(collection)
+
+            if not self.is_search_auto:
+                self._raise_error(400, 'not_supported')
+
+            title = 'Derivates Regenerated on ' + datetime.datetime.now().isoformat()
+            derivs_recording = collection.create_recording(title=title,
+                                                           rec_type='derivs')
+
+            res = collection.requeue_pages_for_derivs(derivs_recording.my_id, get_bool(request.query.get('include_existing')))
+
+            if res > 0:
+                collection.set_bool_prop('autoindexed', True)
+
+            return {'queued': res}
+
         # LEGACY ENDPOINTS (to remove)
         # Collection view (all recordings)
         @self.app.get(['/<user>/<coll_name>', '/<user>/<coll_name>/'])
@@ -301,4 +430,3 @@ class CollsController(BaseController):
         result['size_remaining'] = user.get_size_remaining()
 
         return result
-

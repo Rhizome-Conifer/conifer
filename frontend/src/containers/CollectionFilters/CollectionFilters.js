@@ -1,36 +1,33 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { createSearchAction } from 'redux-search';
+import { withRouter } from 'react-router';
 
-import { setQueryMode } from 'store/modules/pageQuery';
-
-import { getSearchText } from 'store/selectors/search';
+import { clearSearch, load, search } from 'store/modules/collection';
 
 import CollectionFiltersUI from 'components/collection/CollectionFiltersUI';
 
 
-const mapStateToProps = (outerState) => {
-  const { app } = outerState;
-  const searchKey = outerState.search['collection.pages'];
-  const isIndexing = searchKey.isSearching && searchKey.text === '';
-
+const mapStateToProps = ({ app }) => {
   return {
+    user: app.getIn(['auth', 'user']),
     collection: app.get('collection'),
-    isIndexing,
-    querying: app.getIn(['pageQuery', 'querying']),
-    searchText: getSearchText(outerState)
+    searching: app.getIn(['collection', 'searching']),
+    searched: app.getIn(['collection', 'searched'])
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    searchPages: createSearchAction('collection.pages'),
-    setPageQuery: coll => dispatch(setQueryMode(true, coll)),
+    searchCollection: (user, coll, params, fullText) => dispatch(search(user, coll, params, fullText)),
+    clearSearch: async (user, coll) => {
+      await dispatch(clearSearch());
+      await dispatch(load(user, coll));
+    },
     dispatch
   };
 };
 
-export default connect(
+export default withRouter(connect(
   mapStateToProps,
   mapDispatchToProps
-)(CollectionFiltersUI);
+)(CollectionFiltersUI));
