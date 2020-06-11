@@ -178,7 +178,7 @@ class AutopilotUI extends Component {
                   </div>
               }
 
-              <Button block variant="primary" size="lg" className={classNames({ complete: isComplete })} onClick={this.toggleAutomation} disabled={!autopilotReady || isComplete || isStopping || isStopped}>
+              <Button block variant={isComplete ? "success" : "primary"} size="lg" className={classNames({ complete: isComplete })} onClick={this.toggleAutomation} disabled={!autopilotReady || isComplete || isStopping || isStopped}>
                 { (!autopilotReady || isRunning || isStopping) && <LoaderIcon /> }
                 { isComplete && <CheckIcon /> }
                 {

@@ -69,9 +69,6 @@
         height: rem(15rem);
         overflow: auto;
 
-        li {
-
-        }
     }
 
     .browser-selection {
@@ -109,7 +106,7 @@
             margin-right: rem(1rem);
 
             path {
-                fill: #FFF;
+                fill: $slate;
             }
         }
 
@@ -118,10 +115,7 @@
         }
 
         &.complete {
-            color: $white;
-            background-color: $bright-green-highlight;
             opacity: 1;
-            border: none;
 
             svg {
                 width: rem(1.5rem);
@@ -162,7 +156,7 @@
 
         .behaviorStats {
             list-style-type: none;
-            margin: 0;
+            margin: 0 0 b16(15px) 0;
             padding: 0;
 
             li {
