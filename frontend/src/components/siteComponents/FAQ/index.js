@@ -50,6 +50,10 @@ function FAQ() {
             A web archive is a record of web resources. It may include HTML and images, scripts, stylesheets, as well as video, audio and other elements that web pages and web apps are made of, all in one file.<br />
           </p>
 
+          <p className="a">
+            Web archives can provide better context than isolated screenshots. They can capture not only content but the behaviors of users and their relationships to one another. They can also offer vivid windows into a moment in time. At the same time, web archives should be made with great care and consideration. Keep in mind that what you archive might become public, and what you publish might be used in ways you do not anticipate.
+          </p>
+
           <h4 className="q">What makes {product} different?</h4>
           <p className="a">
             While most web archive projects automatically create copies of material found on the public web, {product} is a user-driven platform. Users can create, curate, and share their own collections of web materials. This can even include items that would be only revealed after logging in or performing complicated actions on a web site.
