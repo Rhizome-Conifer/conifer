@@ -287,7 +287,7 @@ class CollsController(BaseController):
                     if date_filter:
                         try:
                             # trim seconds
-                            ts = int(page['timestamp'][:12])
+                            ts = int(cdxj['timestamp'][:12])
                         except ValueError:
                             continue
                         if ts < ts_from or ts > ts_to:
