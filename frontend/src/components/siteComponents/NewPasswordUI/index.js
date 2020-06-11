@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import querystring from 'querystring';
-import { Alert, Button, ControlLabel, Form, HelpBlock, FormControl, FormGroup } from 'react-bootstrap';
+import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
 
 import { product } from 'config';
 import { passwordPassRegex } from 'helpers/utils';
@@ -26,8 +26,7 @@ class NewPasswordUI extends Component {
 
     this.state = {
       newPass: '',
-      newPass2: '',
-      error: false
+      newPass2: ''
     };
   }
 
@@ -36,11 +35,8 @@ class NewPasswordUI extends Component {
     const { match: { params: { resetCode } } } = this.props;
     const { newPass, newPass2 } = this.state;
 
-    if (newPass && newPass === newPass2) {
-      this.setState({ error: false });
+    if (this.validateItem() && newPass === newPass2) {
       this.props.setPassword({ newPass, newPass2, resetCode });
-    } else {
-      this.setState({ error: true });
     }
   }
 
@@ -49,10 +45,12 @@ class NewPasswordUI extends Component {
   }
 
   validateItem = () => {
-    const { error, newPass, newPass2 } = this.state;
+    const { newPass } = this.state;
 
-    if ((newPass && newPass2 && (newPass !== newPass2 || !passwordPassRegex(newPass))) || error) {
-      return 'error';
+    if (newPass && !passwordPassRegex(newPass)) {
+      return false;
+    } else if(newPass && passwordPassRegex(newPass)) {
+      return true;
     }
 
     return null;
@@ -69,53 +67,56 @@ class NewPasswordUI extends Component {
           (success || errors) &&
             <Alert variant={errors ? 'danger' : 'success'}>
               {
-                errors ?
+                !errors ?
                   <span>{passwordResetErr[errors.get('error')]}</span> :
-                  <span>Your password has been successfully reset! <button onClick={this.props.toggleLogin} className="button-link" type="button">You can now login with your new password.</button></span>
+                  <span>Your password has been successfully reset! <Button variant="link" onClick={this.props.toggleLogin}>You can now login with your new password.</Button></span>
               }
             </Alert>
         }
-        <div className={classNames('row new-pass', { success })}>
-          <div className="col-sm-6 col-md-6 col-md-offset-3">
+        <Row className={classNames('new-pass', { success })}>
+          <Col xs={12} sm={{ span: 6, offset: 3 }}>
             <Form onSubmit={this.save}>
               <h3>{product} password reset</h3>
-              <h4>Please enter a new password below:</h4>
+              <p>Please enter a new password below:</p>
 
-              <div className="form-group">
-                <p>Username: <b>{qs.username}</b></p>
-              </div>
+              <Form.Group>
+                <Form.Label>Username:&emsp;</Form.Label>
+                <b>{qs.username}</b>
+              </Form.Group>
 
-              <FormGroup validationState={this.validateItem()}>
-                <ControlLabel>New password</ControlLabel>
-                <FormControl
+              <Form.Group>
+                <Form.Label>New password</Form.Label>
+                <Form.Control
+                  required
+                  autoFocus
                   aria-label="new password"
                   type="password"
                   name="newPass"
                   placeholder="new password"
                   value={newPass}
                   onChange={this.handleChange}
-                  autoFocus />
-                {
-                  this.validateItem() === 'error' && !passwordPassRegex(newPass) &&
-                    <HelpBlock>Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols</HelpBlock>
-                }
-              </FormGroup>
+                  isInvalid={this.validateItem() === false} />
+                <Form.Control.Feedback type="invalid">Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols</Form.Control.Feedback>
+              </Form.Group>
 
-              <FormGroup validationState={this.validateItem()}>
-                <ControlLabel>Repeat new password</ControlLabel>
-                <FormControl
+              <Form.Group>
+                <Form.Label>Repeat new password</Form.Label>
+                <Form.Control
+                  required
                   aria-label="repeat new password"
                   type="password"
                   name="newPass2"
                   placeholder="repeat new password"
                   value={newPass2}
-                  onChange={this.handleChange} />
-              </FormGroup>
+                  onChange={this.handleChange}
+                  isInvalid={newPass2 && newPass !== newPass2} />
+                <Form.Control.Feedback type="invalid">Password confirmation does not match</Form.Control.Feedback>
+              </Form.Group>
 
               <Button variant="primary" type="submit" disabled={success} block>Reset Password</Button>
             </Form>
-          </div>
-        </div>
+          </Col>
+        </Row>
       </React.Fragment>
     );
   }

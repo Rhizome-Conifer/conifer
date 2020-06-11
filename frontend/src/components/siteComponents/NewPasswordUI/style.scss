@@ -2,6 +2,7 @@
 
 
 .new-pass {
+    margin: b16(100px) 0 b16(50px) 0;
     transition: opacity $slowShift ease-in-out;
 
     &.success {
