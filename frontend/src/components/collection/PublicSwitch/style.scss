@@ -26,10 +26,6 @@
             display: none;
         }
 
-        svg {
-            vertical-align: top;
-        }
-
         &.is-public {
             color: white;
             font-weight: 600;
@@ -48,8 +44,10 @@
     }
 
     svg{
-        width: rem(1.3rem);
-        height: rem(1.3rem);
+        position: relative;
+        top: b16(-1px);
+        width: b16(12px);
+        height: b16(12px);
         margin-right: rem(0.2rem);
     }
 }

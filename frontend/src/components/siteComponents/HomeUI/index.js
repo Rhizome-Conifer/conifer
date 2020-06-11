@@ -138,7 +138,6 @@ class HomeUI extends PureComponent {
                   <video autoPlay loop muted poster={require('shared/images/homepage/autopilot.jpg')}>
                     <source src={require('shared/media/autopilot.mp4')} type="video/mp4" />
                     <source src={require('shared/media/autopilot.webm')} type="video/webm" />
-                    <source src={require('shared/media/autopilot.ogv')} type="video/ogg" />
                   </video>
               }
             </figure>

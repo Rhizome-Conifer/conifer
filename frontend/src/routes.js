@@ -3,11 +3,6 @@ import { ApiDocs, Documentation, FAQ, TermsAndPolicies } from 'components/siteCo
 import { product } from 'config';
 
 import {
-  collDetailBreadcrumb,
-  collList,
-  listDetailBreadcrumb
-} from 'components/siteComponents/BreadcrumbsUI/breadcrumbs';
-import {
   CollectionCover,
   CollectionDetail,
   CollectionList,
@@ -38,7 +33,6 @@ const userRoutes = [
   /* collection */
   {
     path: userPath,
-    breadcrumb: collList,
     component: CollectionList,
     exact: true,
     footer: true,
@@ -54,7 +48,6 @@ const userRoutes = [
   },
   {
     path: `${userPath}/:coll`,
-    breadcrumb: collDetailBreadcrumb,
     classOverride: '',
     component: CollectionCover,
     exact: true,
@@ -85,7 +78,6 @@ const userRoutes = [
   },
   {
     path: `${userPath}/:coll/list/:list`,
-    breadcrumb: listDetailBreadcrumb,
     component: ListDetail,
     exact: true,
     footer: false,

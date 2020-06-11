@@ -230,7 +230,6 @@ class UserSignup extends Component {
           <h5>Create your own web archive as you browse!</h5>
           <br />
           <p>To begin, please fill out the registration form.</p>
-          <br />
         </Col>
         <Col xs={12} sm={6} className={classes}>
           <Form onSubmit={this.save} validated={this.state.formValid}>

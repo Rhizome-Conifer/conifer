@@ -10,13 +10,12 @@
     }
 
     .dropdown-toggle {
-        // display: flex;
-        // justify-content: space-between;
-        // align-items: center;
-        // width: 100%;
-
         svg {
-            vertical-align: middle;
+            position: relative;
+            top: b16(-1px);
+            width: b16(18px);
+            height: b16(18px);
+            margin-right: rem(0.2rem);
         }
     }
 

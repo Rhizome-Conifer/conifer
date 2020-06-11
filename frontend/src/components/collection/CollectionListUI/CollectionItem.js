@@ -59,7 +59,7 @@ class CollectionItem extends PureComponent {
     return (
       <li className={descClasses} key={collection.get('id')}>
         <Row>
-          <Col sm={12} md={7}>
+          <Col sm={12} md={9} lg={7}>
             <Link className="collection-title" to={`${getCollectionLink(collection)}`}>{collection.get('title')}</Link>
             <p className="collection-list-description">
               {
@@ -76,13 +76,13 @@ class CollectionItem extends PureComponent {
                 </React.Fragment>
             }
           </Col>
-          <Col xs={6} md={1} className="collection-list-size">
+          <Col lg={1} className="collection-list-size d-none d-lg-block">
             <SizeFormat bytes={collection.get('size')} />
           </Col>
-          <Col className="collection-time" xs={6} md={2}>
+          <Col className="collection-time d-none d-lg-block" lg={2}>
             Created {buildDate(collection.get('created_at'), false, true)}
           </Col>
-          <Col className="collection-delete-action" xs={5} md={2}>
+          <Col className="collection-delete-action d-none d-md-flex" md={3} lg={2}>
             {
               canAdmin &&
                 <React.Fragment>

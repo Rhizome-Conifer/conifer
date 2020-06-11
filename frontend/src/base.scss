@@ -4,14 +4,14 @@
 @import './bootstrap';
 
 .wr-content, .modal, .card {
-    a, .button-link {
+    a:not(.dropdown-item), .button-link {
       &:link, &:visited {
         color: $slate;
         text-decoration: underline;
         transition: color $quickShift ease-in-out;
       }
 
-      &:hover {
+      &:not(.dropdown-item):hover {
         color: $vivid-pine;
       }
     }
@@ -315,16 +315,7 @@ button.primary {
     }
   }
 }
-.navbar-user-links {
-  font-size: rem(1.4rem);
-  li>button {
-    font-size: rem(1.4rem);
-  }
-  li.navbar-right{
-    margin-left:rem(0.5rem);
-    text-align: center;
-  }
-}
+
 #wr-popover-delete {
     max-width: rem(40rem);
     min-width: rem(20rem);

@@ -8,7 +8,6 @@ import { product } from 'config';
 
 import { AdminHeader, UserManagement } from 'containers';
 
-import BreadcrumbsUI from 'components/siteComponents/BreadcrumbsUI';
 import { LogoIcon } from 'components/icons';
 
 import './style.scss';
@@ -48,14 +47,15 @@ class AppHeader extends PureComponent {
                   product :
                   <div className="logo-anchor">
                     <LogoIcon darkMode={canAdmin} />
-                    <h2>Conifer</h2>
+                    {
+                      route && (!canAdmin || !match.params.coll) &&
+                        <h2>Conifer</h2>
+                    }
                   </div>
               }
             </NavLink>
             {
-              canAdmin ?
-                match.params.coll && <AdminHeader managing={route.managementView} /> :
-                <BreadcrumbsUI is404={is404} url={pathname} />
+              canAdmin && match.params.coll && <AdminHeader managing={route.managementView} />
             }
           </div>
           <UserManagement route={route} canAdmin={canAdmin} />

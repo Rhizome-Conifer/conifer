@@ -5,8 +5,14 @@
 
     .signup-alert {
         position: fixed;
-        top: rem(4rem);
+        top: b16(50px);
+        width: 70vw;
+        left: 15vw;
         z-index: 100;
+
+        p {
+            margin: 0;
+        }
     }
 
     .wr-signup {

@@ -224,53 +224,21 @@ a.collection-title:hover {
         }
 
         .collection-delete-action {
-        	button:last-of-type {
-                float:right;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
 
+            .visibility-button {
+                display: inline-block;
+                margin-top: b16(10px);
+            }
+
+        	button {
                 svg {
-	                width:15px;
-	                height:15px;
+	                width: b16(15px);
+	                height: b16(15px);
 	            }
         	}
-        }
-    }
-}
-
-@media (min-width: 768px){
-    .collection-list li {
-        .collection-list-size span {
-            padding: rem(2rem) 0;
-        }
-        .collection-time {
-            padding: rem(2rem) 0;
-        }
-        .visibility-button {
-           margin-top: rem(1.8rem);
-        }
-        .collection-list-description {
-            margin-bottom: 0;
-            padding:0;
-        }
-    }
-
-    .collection-list li.has-description {
-        .collection-list-size span {
-            padding: rem(0.7rem) 0;
-        }
-        .collection-time {
-            padding: rem(0.7rem) 0;
-        }
-        .visibility-button {
-            margin-top: rem(0.3rem);
-        }
-        .collection-delete-action {
-            button:last-of-type {
-                padding:rem(0.7rem) 0;
-            }
-        }
-        .collection-list-description {
-            margin-bottom: rem(1.5rem);
-            padding: 0;
         }
     }
 }

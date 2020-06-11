@@ -22,7 +22,7 @@ class PublicSwitch extends PureComponent {
   render() {
     const { isPublic, label } = this.props;
 
-    const button = isPublic ? <span><GlobeIcon /><span className="d-none d-sm-inline"> Public</span></span> : <span><LockIcon /><span className="d-none d-sm-inline"> Private</span></span>;
+    const button = isPublic ? <React.Fragment><GlobeIcon /><span className="d-none d-sm-inline"> Public</span></React.Fragment> : <React.Fragment><LockIcon /><span className="d-none d-sm-inline"> Private</span></React.Fragment>;
 
     return (
       <div className="wr-coll-visibility">
