@@ -39,13 +39,11 @@
 
     .adv-search-filters {
         position: absolute;
-        top: rem(3.5rem);
-        right: 0;
         z-index: 100;
         border: solid rem(.1rem) $gray500;
         width: 100%;
         padding: rem(1rem) rem(1rem) 0 rem(1rem);
-        background: #FFF;
+        background: $white;
 
         display: grid;
         grid-template-columns: max-content 1fr;
@@ -56,9 +54,14 @@
             font-weight: 300;
             font-size: rem(1.4rem);
             flex-shrink: 0;
-            display: block;
             margin: 0;
             text-align: right;
+
+            &.form-label {
+                display: flex;
+                justify-content: flex-end;
+                align-self: center;
+            }
         }
 
         input[name=searchFrag], input[name=urlFrag] {
@@ -103,8 +106,8 @@
                 padding-left: 0;
             }
 
-            .react-datepicker-wrapper + .react-datepicker-wrapper {
-                margin-top: rem(.5rem);
+            .react-datepicker-wrapper {
+                margin-bottom: rem(.5rem);
             }
 
 

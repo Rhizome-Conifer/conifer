@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import DatePicker from 'react-datepicker';
 import querystring from 'querystring';
 import OutsideClick from 'components/OutsideClick';
-import { Button, Dropdown, DropdownButton, FormControl, InputGroup } from 'react-bootstrap';
+import { Button, Dropdown, DropdownButton, Form, InputGroup } from 'react-bootstrap';
 import { LoaderIcon, SearchIcon, XIcon } from 'components/icons';
 
 
@@ -393,7 +393,7 @@ class Searchbox extends PureComponent {
               <SearchIcon />
             </InputGroup.Text>
           </InputGroup.Prepend>
-          <FormControl aria-label="filter" onKeyUp={this.keyUp} onChange={this.handleChange} name="search" value={this.state.search} autoComplete="off" placeholder="Filter" />
+          <Form.Control aria-label="filter" onKeyUp={this.keyUp} onChange={this.handleChange} name="search" value={this.state.search} autoComplete="off" placeholder="Filter" />
           <InputGroup.Append>
             {
               (searching || searched) &&
@@ -413,23 +413,23 @@ class Searchbox extends PureComponent {
           this.state.options &&
             <OutsideClick handleClick={this.toggleAdvancedSearch}>
               <section className="adv-search-filters">
-                <label htmlFor="searchFrag" className="label">Contains the words</label>
-                <input type="text" id="searchFrag" name="searchFrag" value={this.state.searchFrag} onKeyUp={this.keyUp} onChange={this.handleChange} />
+                <Form.Label htmlFor="searchFrag" className="label">Contains the words</Form.Label>
+                <Form.Control type="text" id="searchFrag" name="searchFrag" value={this.state.searchFrag} onKeyUp={this.keyUp} onChange={this.handleChange} />
 
-                <label htmlFor="urlFrag" className="label">URL contains</label>
-                <input type="text" id="urlFrag" name="urlFrag" value={this.state.urlFrag} onKeyUp={this.keyUp} onChange={this.handleChange} />
+                <Form.Label htmlFor="urlFrag" className="label">URL contains</Form.Label>
+                <Form.Control type="text" id="urlFrag" name="urlFrag" value={this.state.urlFrag} onKeyUp={this.keyUp} onChange={this.handleChange} />
 
                 <div className="label">Include File Types</div>
                 <ul>
-                  <li><label htmlFor="includeWebpages"><input type="checkbox" onChange={this.handleChange} id="includeWebpages" name="includeWebpages" checked={this.state.includeWebpages} /> Webpages</label></li>
-                  <li><label htmlFor="includeImages"><input type="checkbox" onChange={this.handleChange} id="includeImages" name="includeImages" checked={this.state.includeImages} /> Images</label></li>
-                  <li><label htmlFor="includeAudio"><input type="checkbox" onChange={this.handleChange} id="includeAudio" name="includeAudio" checked={this.state.includeAudio} /> Audio</label></li>
-                  <li><label htmlFor="includeVideo"><input type="checkbox" onChange={this.handleChange} id="includeVideo" name="includeVideo" checked={this.state.includeVideo} /> Video</label></li>
-                  <li><label htmlFor="includeDocuments"><input type="checkbox" onChange={this.handleChange} id="includeDocuments" name="includeDocuments" checked={this.state.includeDocuments} /> Documents (.pdf, .doc, .pptx, etc.)</label></li>
+                  <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeWebpages" name="includeWebpages" checked={this.state.includeWebpages} label="Webpages" /></li>
+                  <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeImages" name="includeImages" checked={this.state.includeImages} label="Images" /></li>
+                  <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeAudio" name="includeAudio" checked={this.state.includeAudio} label="Audio" /></li>
+                  <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeVideo" name="includeVideo" checked={this.state.includeVideo} label="Video" /></li>
+                  <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeDocuments" name="includeDocuments" checked={this.state.includeDocuments} label="Documents (.pdf, .doc, .pptx, etc.)" /></li>
                 </ul>
                 <div className="label date-filter">Date Archived</div>
                 <div>
-                  <DropdownButton id="time-filter" title={this.labels[date]} onSelect={this.changeTimeframe}>
+                  <DropdownButton variant="outline-secondary" id="time-filter" title={this.labels[date]} onSelect={this.changeTimeframe}>
                     {
                       Object.keys(this.labels).map(k => <Dropdown.Item key={k} eventKey={k} active={date === k}>{this.labels[k]}</Dropdown.Item>)
                     }
@@ -440,10 +440,10 @@ class Searchbox extends PureComponent {
                         <div className="start-date">
                           <div className="label">From</div>
                           <DatePicker
-                            showPopperArrow={false}
                             selected={this.state.startDate}
                             onChange={this.setStartDate}
-                            shouldCloseOnSelect={false} />
+                            shouldCloseOnSelect={false}
+                            className="form-control" />
                           <DatePicker
                             selected={this.state.startDate}
                             onChange={this.setStartDate}
@@ -452,15 +452,16 @@ class Searchbox extends PureComponent {
                             shouldCloseOnSelect={false}
                             timeIntervals={15}
                             timeCaption="Time"
-                            dateFormat="h:mm aa" />
+                            dateFormat="h:mm aa"
+                            className="form-control" />
                         </div>
                         <div className="end-date">
                           <div className="label">To</div>
                           <DatePicker
-                            showPopperArrow={false}
                             selected={this.state.endDate}
                             onChange={this.setEndDate}
-                            shouldCloseOnSelect={false} />
+                            shouldCloseOnSelect={false}
+                            className="form-control" />
                           <DatePicker
                             selected={this.state.endDate}
                             onChange={this.setEndDate}
@@ -469,13 +470,14 @@ class Searchbox extends PureComponent {
                             timeIntervals={15}
                             timeCaption="Time"
                             shouldCloseOnSelect={false}
-                            dateFormat="h:mm aa" />
+                            dateFormat="h:mm aa"
+                            className="form-control" />
                         </div>
                       </div>
                   }
                   {
                     date === 'session' &&
-                      <DropdownButton id="session-filter" title={this.state.session ? this.state.session : "Select a session"} onSelect={this.selectSession}>
+                      <DropdownButton variant="outline-secondary" id="session-filter" title={this.state.session ? this.state.session : "Select a session"} onSelect={this.selectSession}>
                         {
                           collection.get('recordings').map(rec => <Dropdown.Item key={rec.get('id')} eventKey={rec.get('id')} active={this.state.session === rec.get('id')}>{rec.get('id')}</Dropdown.Item>)
                         }
@@ -483,7 +485,7 @@ class Searchbox extends PureComponent {
                   }
                 </div>
                 <div className="actions">
-                  <Button variant="link" onClick={this.reset}>Reset to Defaults</Button>
+                  <Button variant="outline-secondary" onClick={this.reset}>Reset to Defaults</Button>
                   <Button variant="primary" onClick={this.search}>Search</Button>
                 </div>
               </section>
