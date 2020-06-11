@@ -49,7 +49,7 @@ class NewPasswordUI extends Component {
 
     if (newPass && !passwordPassRegex(newPass)) {
       return false;
-    } else if(newPass && passwordPassRegex(newPass)) {
+    } else if (newPass && passwordPassRegex(newPass)) {
       return true;
     }
 
@@ -67,7 +67,7 @@ class NewPasswordUI extends Component {
           (success || errors) &&
             <Alert variant={errors ? 'danger' : 'success'}>
               {
-                !errors ?
+                errors ?
                   <span>{passwordResetErr[errors.get('error')]}</span> :
                   <span>Your password has been successfully reset! <Button variant="link" onClick={this.props.toggleLogin}>You can now login with your new password.</Button></span>
               }
