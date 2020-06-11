@@ -16,7 +16,7 @@ const ConiferAnnounce = React.memo(({ dismiss }) => {
           <h2>New Name, Same Service! <span aria-label="evergreen tree" role="img">🌲</span><span aria-label="sparkles" role="img">✨</span></h2>
           <p>
             <strong>The Webrecorder.io web archiving service is now&nbsp;Conifer.</strong>
-            <a href="https://rhizome.org/editorial/2020/jun/11/introducing-conifer/" target="_blank">Full Announcement</a>
+            <a href="https://blog.conifer.rhizome.org/2020/06/11/webrecorder-conifer.html" target="_blank">Full Announcement</a>
           </p>
           <p>
             <strong>The Webrecorder software project is now an independent entity.</strong>
