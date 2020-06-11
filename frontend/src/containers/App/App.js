@@ -19,7 +19,7 @@ import { apiFetch, inStorage, setStorage } from 'helpers/utils';
 // direct import to prevent circular dependency
 import AppHeader from 'containers/AppHeader/AppHeader';
 
-import { Footer } from 'components/siteComponents';
+import { ConiferAnnounce, Footer } from 'components/siteComponents';
 import { InfoIcon } from 'components/icons';
 
 import 'shared/fonts/fonts.scss';
@@ -45,6 +45,7 @@ export class App extends Component {
     this.handle = null;
     this.isMobile = Boolean(ua.match(/Mobile|Android|BlackBerry/));
     this.state = {
+      coniferAnnounce: true,
       error: null,
       lastPathname: null,
       loginStateAlert: false,
@@ -69,6 +70,10 @@ export class App extends Component {
       if (inStorage('mobileNotice', window.sessionStorage)) {
         this.setState({ mobileAlert: false });
       }
+    }
+
+    if (inStorage('coniferAnnounceDismiss')) {
+      this.setState({ coniferAnnounce: false });
     }
 
     if (typeof document.hidden !== 'undefined') {
@@ -118,6 +123,11 @@ export class App extends Component {
   componentWillUnmount() {
     clearTimeout(this.handle);
     document.removeEventListener(this.visibilityChange, this.heartbeat);
+  }
+
+  coniferAnnounceDismiss = () => {
+    setStorage('coniferAnnounceDismiss', '1');
+    this.setState({ coniferAnnounce: false });
   }
 
   dismissStalledAlert = () => this.setState({ stalled: false })
@@ -204,6 +214,10 @@ export class App extends Component {
     return (
       <React.Fragment>
         <Helmet {...config.app.head} />
+        {
+          match.name === 'landing' && this.state.coniferAnnounce &&
+            <ConiferAnnounce dismiss={this.coniferAnnounceDismiss} />
+        }
         {
           !isEmbed &&
             <AppHeader routes={this.props.route.routes} />

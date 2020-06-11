@@ -1,12 +1,15 @@
 @import 'src/vars';
 
-.supporter-announce {
-    border-bottom: solid rem(.2rem) $pine;
+.conifer-announce {
     display: flex;
     flex-direction: column;
+    background: rgba($pine-sap, 0.25);
 
     .banner {
-        background: $pine;
+        background: linear-gradient(90deg, #0000ee, $pine 50%);
+        background-image: url('../../../shared/images/Donation-Bg.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
         height: rem(7.5rem);
 
         .wrapper {
@@ -19,8 +22,10 @@
 
             h3 {
                 margin: 0 auto;
-                color: $white;
+
                 text-align: center;
+                color: $white;
+                text-shadow: 0 0 4px rgba($gray700, 0.5);
             }
 
             .dismiss {
@@ -29,6 +34,11 @@
 
                 path {
                     fill: $white;
+                    transition: fill $quickShift ease-in-out;
+                }
+
+                &:hover path {
+                    fill: $redwood;
                 }
             }
         }
@@ -38,7 +48,7 @@
         display: flex;
         justify-content: center;
         align-items: stretch;
-        margin: rem(1.5rem) 5%;
+        margin: rem(1.5rem);
 
         p {
             width: 70%;
@@ -51,17 +61,6 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-
-            a {
-                border-radius: rem(2.7rem);
-                padding: rem(0.7rem) rem(3rem);
-                font-size: rem(1.15rem);
-                background: $pine;
-                border: none;
-                color: #FFF;
-                font-size: rem(1.8rem);
-                text-decoration: none;
-            }
         }
     }
 }

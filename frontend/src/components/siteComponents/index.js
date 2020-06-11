@@ -1,4 +1,5 @@
 export ApiDocs from './ApiDocs';
+export ConiferAnnounce from './ConiferAnnounce';
 export Documentation from './Documentation';
 export FAQ from './FAQ';
 export Footer from './Footer';

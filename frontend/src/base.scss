@@ -3,7 +3,7 @@
 /* custom bootstrap */
 @import './bootstrap';
 
-.wr-content, .modal, .card {
+.wr-content, .modal, .card, .conifer-announce {
     a, .button-link {
       &:link, &:visited {
         color: $slate;
