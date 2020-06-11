@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Row, Col } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
 import { XIcon } from 'components/icons';
 
@@ -10,21 +10,21 @@ import './style.scss';
 const ConiferAnnounce = React.memo(({ dismiss }) => {
   return (
     <div className="conifer-announce">
-      <div className="banner">
-        <div className="wrapper">
-          <h3>New Name, Same Great Service!</h3>
-          <button className="dismiss" aria-label="Dismiss Conifer Announcement" onClick={dismiss} type="button"><XIcon /></button>
+      <div className="logos" />
+      <div className="announcement">
+        <div>
+          <h2>New Name, Same Service! <span aria-label="evergreen tree" role="img">🌲</span><span aria-label="sparkles" role="img">✨</span></h2>
+          <p>
+            <strong>The Webrecorder.io web archiving service is now&nbsp;Conifer.</strong>
+            <a href="https://rhizome.org/editorial/2020/jun/11/introducing-conifer/" target="_blank">Full Announcement</a>
+          </p>
+          <p>
+            <strong>The Webrecorder software project is now an independent entity.</strong>
+            <a href="https://webrecorder.net/" target="_blank">Learn more</a>
+          </p>
         </div>
+        <Button variant="link" className="dismiss" aria-label="Dismiss Conifer Announcement" onClick={dismiss}><XIcon /></Button>
       </div>
-      <Row className="info">
-        <Col>
-          The Webrecorder.io web archiving service is now&nbsp;Conifer.&nbsp;<span aria-label="branch emoji" role="img">🌿</span><br />
-          <a href="https://rhizome.org/editorial/2020/jun/10/introducing-conifer/" target="_blank">Full Announcement</a>
-        </Col>
-        <Col className="signup-link">
-          The Webrecorder software project is now an independent entity. <a href="https://webrecorder.net/" target="_blank">Learn more</a>
-        </Col>
-      </Row>
     </div>
   );
 });
