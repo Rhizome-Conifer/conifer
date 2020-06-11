@@ -3,7 +3,7 @@
 /* custom bootstrap */
 @import './bootstrap';
 
-.wr-content, .modal {
+.wr-content, .modal, .card {
     a, .button-link {
       &:link, &:visited {
         color: $slate;

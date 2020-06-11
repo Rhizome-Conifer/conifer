@@ -173,7 +173,7 @@ export class App extends Component {
   }
 
   render() {
-    const { auth,loaded, location: { pathname }, spaceUtilization } = this.props;
+    const { auth, loaded, location: { pathname }, spaceUtilization } = this.props;
     const { error, info, lastPathname } = this.state;
 
     const match = this.getActiveRoute(pathname);
@@ -210,7 +210,7 @@ export class App extends Component {
         }
         {
           isOutOfSpace && this.state.outOfSpaceAlert &&
-            <Alert variant="warning" className="oos-alert" onDismiss={this.dismissSpaceAlert}>
+            <Alert variant="warning" className="oos-alert" dismissible onClose={this.dismissSpaceAlert}>
               <p><b>Your account is out of space.</b> This means you can't capture anything right now.</p>
               To be able to capture again, you can:
               <ul>
@@ -224,25 +224,19 @@ export class App extends Component {
         }
         {
           this.state.stalled &&
-            <Card className="stalled-alert" variant="warning">
-              <Card.Heading>Oops, this request seems to be taking a long time..</Card.Heading>
+            <Card className="stalled-alert">
+              <Card.Header>Oops, this request seems to be taking a long time..</Card.Header>
               <Card.Body>
                 <p>
                   Please refresh the page and try again. If the problem persists, contact <a href={`mailto:${config.supportEmail}`}>support</a>.
                 </p>
-                <Button onClick={this.dismissStalledAlert}>dismiss</Button>
+                <Button variant="outline-secondary" onClick={this.dismissStalledAlert}>dismiss</Button>
               </Card.Body>
             </Card>
         }
         {
-          !isEmbed && this.isMobile && this.state.mobileAlert &&
-            <Alert className="mobile-alert" onDismiss={this.dismissMobileAlert}>
-              Please note: {config.product} doesn't currently support mobile devices.
-            </Alert>
-        }
-        {
           this.state.loginStateAlert &&
-            <Alert className="not-logged-in" onDismiss={this.dismissLoginAlert}>
+            <Alert variant="warning" className="not-logged-in" dismissible onClose={this.dismissLoginAlert}>
               Please <button className="button-link" onClick={this.refresh} type="button">reload the page</button>. Session has ended.
             </Alert>
         }

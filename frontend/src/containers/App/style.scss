@@ -14,31 +14,44 @@ section {
 }
 
 .not-logged-in {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: $yellow;
+    position: fixed !important;
+    top: 10vh;
+    left: 10%;
+    width: 80%;
     margin: 0;
     z-index: 1000;
     border: none;
+
+    .button-link {
+        color: $redwood;
+    }
 }
 
 .oos-alert {
-    position: absolute;
+    position: fixed !important;
     z-index: 1000;
-    top: rem(4.5rem);
-    left: rem(1.5rem);
+    top: 10vh;
+    left: 10%;
+    width: 80%;
 
     p {
         margin-bottom: rem(.5rem);
+    }
+
+    a {
+        color: $redwood;
+
+        &:hover {
+            color: $redwood;
+        }
     }
 }
 
 .mobile-alert {
     position: fixed;
+    left: 10%;
     bottom: 0;
-    width: 100%;
+    width: 80%;
     z-index: 1000;
     margin:0;
     border-radius: 0;
@@ -46,10 +59,10 @@ section {
 }
 
 .stalled-alert {
-    position: fixed;
-    width: rem(40rem);
-    top: calc(25vh);
-    left: calc(50vw - 20rem);
+    position: fixed !important;
+    width: b16(400px);
+    top: calc(10vh);
+    left: calc(50vw - 200px);
     z-index: 500;
     box-shadow: rem(.2rem) rem(.2rem) rem(.8rem) rgba(0,0,0,0.4);
 
