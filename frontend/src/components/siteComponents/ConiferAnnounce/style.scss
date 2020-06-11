@@ -1,0 +1,76 @@
+@import 'src/vars';
+
+.conifer-announce {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: b16(300px);
+
+    @media (max-width: $sm) {
+        height: b16(400px);
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+    }
+
+    background: rgba($pine-sap, 0.25);
+
+    .logos {
+        background-image: url('../../../shared/images/conifer-announce.jpg');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        background-color: $white;
+    }
+
+    .announcement {
+        padding: 0 b16(30px);
+        box-sizing: border-box;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        @media (max-width: $sm) {
+            font-size: b16(14px);
+
+            h2 {
+                font-size: b16(16px);
+            }
+        }
+
+        h2 {
+            font-family: $serif;
+            color: $cf-success;
+        }
+
+        strong {
+            display: block;
+        }
+
+        .dismiss {
+            position: absolute;
+            top: b16(15px);
+            right: b16(15px);
+            z-index: 500;
+            cursor: pointer;
+
+
+            #{$bs-button-interactive} {
+                svg {
+                    path {
+                        fill: $redwood;
+                    }
+                }
+            }
+
+            svg {
+                width: b16(16px);
+                height: b16(16px);
+
+                path {
+                    fill: $slate;
+                    transition: fill $quickShift ease-in-out;
+                }
+            }
+        }
+    }
+}
