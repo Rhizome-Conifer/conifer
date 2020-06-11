@@ -101,7 +101,7 @@ email_sender: $EMAIL_SENDER
 email_smtp_url: $EMAIL_SMTP_URL
 
 metadata:
-    product: Webrecorder
+    product: Conifer
     type: default
 
 # Default Descriptions
@@ -121,7 +121,7 @@ default_coll:
     desc: |
         *This is your first collection!*
 
-        Each collection contains pages you’ve captured using Webrecorder.
+        Each collection contains pages you’ve captured using Conifer.
 
         To add to this collection you can capture more pages.
 
@@ -237,5 +237,3 @@ enable_memento: true
 framed_replay: true
 
 query_html: time_info.html
-
-

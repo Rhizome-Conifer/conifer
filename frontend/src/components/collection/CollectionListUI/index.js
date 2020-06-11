@@ -5,7 +5,9 @@ import classNames from 'classnames';
 import { fromJS } from 'immutable';
 import { Button, Col, Row } from 'react-bootstrap';
 
-import { stopPropagation } from 'helpers/utils';
+import { appHost, tagline } from 'config';
+
+import { getCollectionLink, stopPropagation, truncate } from 'helpers/utils';
 import { AccessContext, AppContext } from 'store/contexts';
 
 import { StandaloneRecorder } from 'containers';
@@ -105,6 +107,10 @@ class CollectionListUI extends Component {
       <AccessContext.Provider value={{ canAdmin }}>
         <Helmet>
           <title>{`${displayName}'s Collections`}</title>
+          <meta property="og:url" content={`${appHost}/${userParam}`} />
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content={`${displayName}'s Collections`} />
+          <meta property="og:description" content={user.get('desc') ? truncate(user.get('desc'), 3, new RegExp(/([.!?])/)) : tagline} />
         </Helmet>
         <Row>
           {

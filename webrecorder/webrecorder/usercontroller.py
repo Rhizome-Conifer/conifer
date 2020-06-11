@@ -206,7 +206,7 @@ class UserController(BaseController):
                 self.user_manager.cork.send_password_reset_email(
                                           username=username,
                                           email_addr=email,
-                                          subject='webrecorder.io password reset confirmation',
+                                          subject='Conifer password reset confirmation',
                                           email_template='webrecorder/templates/emailreset.html',
                                           host=host)
 
