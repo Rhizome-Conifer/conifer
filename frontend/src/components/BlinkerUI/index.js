@@ -2,6 +2,8 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
+import { CircleIcon } from 'components/icons';
+
 import './style.scss';
 
 
@@ -14,7 +16,7 @@ class BlinkerUI extends PureComponent {
     const { bytes } = this.props;
 
     return (
-      <span className={classNames({ blink: bytes > 0 }, 'glyphicon glyphicon-dot-sm glyphicon-recording-status')} aria-hidden="true" />
+      <CircleIcon className={classNames('recording-status wr-mode-icon', { blink: bytes > 0 })} aria-hidden="true" />
     );
   }
 }

@@ -289,11 +289,9 @@ class UserSignup extends Component {
                 placeholder="Password"
                 required
                 value={password}
-                onChange={this.handleChange} />
-              {
-                password && !passwordPassRegex(password) &&
-                  <Form.Text bsPrefix="text-warning">Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols</Form.Text>
-              }
+                onChange={this.handleChange}
+                isInvalid={password && !passwordPassRegex(password)} />
+              <Form.Control.Feedback type="invalid" bsPrefix="text-warning">Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols</Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group>

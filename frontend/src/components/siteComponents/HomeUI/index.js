@@ -84,7 +84,7 @@ class HomeUI extends PureComponent {
           <div className="intro">
             <h1>{product}</h1>
             <h2>Collect and revisit web pages.</h2>
-            <p>{product} Conifer is a web archiving service that creates an interactive copy of any web page that you browse, including content revealed by your interactions such as playing video and audio, scrolling, clicking buttons, and so forth.</p>
+            <p>{product} is a web archiving service that creates an interactive copy of any web page that you browse, including content revealed by your interactions such as playing video and audio, scrolling, clicking buttons, and so forth.</p>
 
             <div className="cta">
               <Button variant="primary" size="md" onClick={this.signup}>Create a Free Account</Button>

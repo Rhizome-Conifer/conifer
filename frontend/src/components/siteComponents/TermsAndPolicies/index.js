@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
+import { Button } from 'react-bootstrap';
 
 import { supportEmail } from 'config';
 
@@ -7,6 +8,14 @@ import './style.scss';
 
 
 function TermsAndPolicies() {
+  const scrollTo = (evt, to) => {
+    evt.preventDefault();
+    window.history.replaceState({}, '', `#${to}`);
+    const ele = document.querySelector(`a[name=${to}]`);
+    if (ele) {
+      ele.scrollIntoView();
+    }
+  }
   return (
     <React.Fragment>
       <Helmet>
@@ -17,9 +26,9 @@ function TermsAndPolicies() {
           <h1>Terms and Policies</h1>
 
           <ul>
-            <li><a href="#tos">Terms of Service</a></li>
-            <li><a href="#privacy">Privacy Policy</a></li>
-            <li><a href="#copyright">Copyright Policy</a></li>
+            <li><a href="#" onClick={(e) => { scrollTo(e, "tos"); }}>Terms of Service</a></li>
+            <li><a href="#" onClick={(e) => { scrollTo(e, "privacy"); }}>Privacy Policy</a></li>
+            <li><a href="#" onClick={(e) => { scrollTo(e, "copyright"); }}>Copyright Policy</a></li>
           </ul>
 
           <div className="tos-div">

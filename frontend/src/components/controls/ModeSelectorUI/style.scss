@@ -5,8 +5,15 @@
         padding: rem(1rem) 0;
     }
 
-    .glyphicon-recording-status {
-        font-size: rem(1em);
+    .recording-status {
+        position: relative;
+        height: b16(14px);
+        width: b16(14px);
+        top: b16(-1px);
+
+        circle {
+            fill: $warning;
+        }
     }
 
     li {
@@ -64,6 +71,12 @@
 
             &.stop-icon {
                 width: rem(1rem);
+            }
+
+            &.recording-status {
+                top: b16(-2px);
+                height: b16(10px);
+                width: b16(10px);
             }
         }
     }

@@ -5,6 +5,7 @@ export BugIcon from './Bug';
 export CarotIcon from './Carot';
 export CatalogIcon from './Catalog';
 export CheckIcon from './Check';
+export CircleIcon from './Circle';
 export ClipboardIcon from './Clipboard';
 export CloseIcon from './Close';
 export Collection from './Collection';

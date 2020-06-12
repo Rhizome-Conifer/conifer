@@ -45,7 +45,7 @@ function FAQ() {
           </p>
         </Col>
         <Col xs={12} md={9}>
-          <h4 className="q">What are Web Archives?</h4>
+          <h4 className="q">What are web archives?</h4>
           <p className="a">
             A web archive is a record of web resources. It may include HTML and images, scripts, stylesheets, as well as video, audio and other elements that web pages and web apps are made of, all in one file.<br />
           </p>
@@ -64,12 +64,12 @@ function FAQ() {
 
           <h4 className="q">How do I use {product}?</h4>
           <p className="a">
-            <a href="https://guide.conifer.rhizome.org/" target="_blank">We created a user guide to help get acquianted.</a>
+            <a href="https://guide.conifer.rhizome.org/" target="_blank">We created a user guide to help get acquainted.</a>
           </p>
 
           <h4 className="q">Is {product} free to use?</h4>
           <p className="a">
-            Generally, yes! {product} offers a limited free tier with 5GB of storage space with some networking quota restrictions. Access to collections that users made public is always free of charge an unlimited.
+            Generally, yes! {product} offers a limited free tier with 5GB of storage space with some networking quota restrictions. Access to collections that users made public is always free of charge and unlimited.
           </p>
           <p className="a">
             The software driving the service is open source under the Apache license.

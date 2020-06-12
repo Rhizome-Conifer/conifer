@@ -51,7 +51,6 @@ function Footer() {
               <div className="col-xs-12 col-sm-6 donate-info d-none d-sm-block">
                 <p>{product} is a rapidly developing community project maintained by a non-profit arts organization. Becoming a supporter or donor helps us offset our operational costs, keeping {product} a sustainable project.</p>
                 <Button variant="secondary" onClick={donateNow} type="button">Learn More</Button>
-                <a href={supporterPortal} target="_blank">Learn More About Becoming a Supporter</a>
               </div>
           }
         </div>

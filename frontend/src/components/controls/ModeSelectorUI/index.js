@@ -8,7 +8,7 @@ import config from 'config';
 import { apiFetch, remoteBrowserMod } from 'helpers/utils';
 
 import OutsideClick from 'components/OutsideClick';
-import { PatchIcon, PlayIcon, StopIcon } from 'components/icons';
+import { CircleIcon, PatchIcon, PlayIcon, StopIcon } from 'components/icons';
 import { Blinker, SizeCounter } from 'containers';
 
 import './style.scss';
@@ -179,7 +179,7 @@ class ModeSelectorUI extends PureComponent {
                 isLive &&
                   <Row className="wr-mode" onClick={this.onRecord} role="button" title="Stop preview mode and begin capturing">
                     <Col xs={1}>
-                      <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
+                      <CircleIcon className="recording-status wr-mode-icon" aria-hidden="true" />
                     </Col>
                     <Col>
                       <h5>Start Capture</h5>
@@ -191,7 +191,7 @@ class ModeSelectorUI extends PureComponent {
                   <React.Fragment>
                     <Row className={classNames('wr-mode', { active: isRecord })} onClick={this.onRecord} role="button" title="Start a new recording session at the current URL">
                       <Col xs={1}>
-                        <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
+                        <CircleIcon className="recording-status wr-mode-icon" aria-hidden="true" />
                       </Col>
                       <Col>
                         <h5>{ isRecord ? 'Currently Capturing' : isLiveMsg }</h5>
@@ -220,7 +220,7 @@ class ModeSelectorUI extends PureComponent {
                       isExtract &&
                         <Row className={classNames('wr-mode', { active: isExtract })} title="Start a new extraction at the current URL">
                           <Col xs={1}>
-                            <span className="glyphicon glyphicon-save glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
+                            <CircleIcon className="recording-status wr-mode-icon" aria-hidden="true" />
                           </Col>
                           <Col>
                             <h5>Currently Extracting</h5>

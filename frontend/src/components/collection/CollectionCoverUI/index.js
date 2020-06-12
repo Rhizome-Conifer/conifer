@@ -156,6 +156,7 @@ class CollectionCoverUI extends Component {
     }
 
     const lists = collection.get('loaded') && this.getLists(collection);
+    const description = collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : tagline;
 
     return (
       <AppContext.Consumer>
@@ -171,10 +172,11 @@ class CollectionCoverUI extends Component {
                           <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title> :
                           <title>{collection.get('title')}</title>
                       }
+                      <meta name="description" content={description} />
                       <meta property="og:url" content={`${appHost}${getCollectionLink(collection)}`} />
                       <meta property="og:type" content="website" />
                       <meta property="og:title" content={collection.get('title')} />
-                      <meta property="og:description" content={collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : tagline} />
+                      <meta property="og:description" content={description} />
                     </Helmet>
                     {
                       !__DESKTOP__ && canAdmin && !isAnon && !collection.get('public') && collection.get('loaded') &&
