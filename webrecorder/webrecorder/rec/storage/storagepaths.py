@@ -16,7 +16,7 @@ def strip_prefix(uri):
     :returns: URI w/o WARC network location
     :rtype: str
     """
-    if FULL_WARC_PREFIX and uri.startswith(FULL_WARC_PREFIX):
+    if uri and FULL_WARC_PREFIX and uri.startswith(FULL_WARC_PREFIX):
         return uri[len(FULL_WARC_PREFIX):]
 
     return uri

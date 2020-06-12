@@ -311,7 +311,8 @@ class Recording(RedisUniqueComponent):
             all_files = self.redis.hmget(self._coll_warc_key(), rec_warc_keys)
 
             for n, v in zip(rec_warc_keys, all_files):
-                yield n, v
+                if n and v:
+                    yield n, v
 
         if include_index:
             index_file = self.get_prop(self.INDEX_FILE_KEY)
@@ -455,6 +456,14 @@ class Recording(RedisUniqueComponent):
             logger.debug('Committing Rec: {0}'.format(self.my_id))
             collection = self.get_owner()
             user = collection.get_owner()
+
+            if not collection:
+                print('Collection missing for: ' + self.my_id)
+                return
+
+            if not user:
+                print('User missing for: ' + self.my_id)
+                return
 
             if not storage and not user.is_anon():
                 storage = collection.get_storage()

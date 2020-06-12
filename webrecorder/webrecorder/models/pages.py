@@ -47,7 +47,7 @@ class PagesMixin(object):
         self.access.assert_can_write_coll(self)
 
         page = {'url': props['url'],
-                'timestamp': props.get('timestamp', ''),
+                'timestamp': props.get('ts', '') or props.get('timestamp', ''),
                 'title': props['title'],
                 'rec': recording.my_id,
                }
