@@ -3,7 +3,7 @@ from gevent import monkey; monkey.patch_all()
 import os
 from ast import literal_eval
 
-from webrecorder.utils import load_wr_config, init_logging, spawn_once
+from webrecorder.utils import load_wr_config, init_logging, spawn_once, get_bool
 from webrecorder.rec.webrecrecorder import WebRecRecorder
 
 
@@ -21,4 +21,3 @@ def init():
     wr.app.wr = wr
 
     return wr.app
-
