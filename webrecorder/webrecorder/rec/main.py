@@ -9,7 +9,7 @@ from webrecorder.rec.webrecrecorder import WebRecRecorder
 
 # =============================================================================
 def init():
-    init_logging(debug=literal_eval(os.environ.get('WR_DEBUG', 'True')))
+    init_logging(debug=get_bool(os.environ.get('WR_DEBUG', 'True')))
 
     config = load_wr_config()
 
@@ -21,5 +21,4 @@ def init():
     wr.app.wr = wr
 
     return wr.app
-
 
