@@ -82,7 +82,7 @@ class WYSIWYG extends Component {
 
     this.state = {
       renderable: false,
-      editorState: !props.readOnly && createValueFromString(this.getText(), this.method),
+      editorState: createValueFromString(this.getText(), this.method),
       markdownEdit: false,
       localEditMode: false
     };
