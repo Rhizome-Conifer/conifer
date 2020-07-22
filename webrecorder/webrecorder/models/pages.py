@@ -138,10 +138,10 @@ class PagesMixin(object):
     def update_page(self, page):
         """Update an existing page metadata.
 
-        :param str pid: page ID
+        :param dict page: page data
         """
 
-        pid = page.pop('pid', '')
+        pid = page.get('id', '')
         if pid:
             self.redis.hset(self.pages_key, pid, json.dumps(page))
 
@@ -329,5 +329,3 @@ class PagesMixin(object):
             self.redis.expire(key, self.COLL_CDXJ_TTL)
 
         return filtered_bookmarks
-
-

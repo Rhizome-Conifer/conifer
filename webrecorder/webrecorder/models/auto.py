@@ -272,7 +272,3 @@ class Auto(RedisUniqueComponent):
 
         if not self.delete_object():
             return False
-
-
-
-

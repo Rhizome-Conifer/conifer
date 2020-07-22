@@ -40,6 +40,11 @@
                     margin-right: rem(.5rem);
                 }
             }
+
+            .big-query-warning {
+                font-style: italic;
+                color: $gray700;
+            }
         }
     }
 

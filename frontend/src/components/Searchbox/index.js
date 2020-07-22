@@ -325,9 +325,9 @@ class Searchbox extends PureComponent {
     const { query } = parseQuery(search);
 
     const mime = (includeWebpages ? 'text/html,' : '') +
-                 (includeImages ? 'image/,' : '') +
-                 (includeAudio ? 'audio/,' : '') +
-                 (includeVideo ? 'video/,' : '') +
+                 (includeImages ? 'image/*,' : '') +
+                 (includeAudio ? 'audio/*,' : '') +
+                 (includeVideo ? 'video/*,' : '') +
                  (includeDocuments ? 'application/pdf' : '');
 
     let dateFilter = {};
@@ -343,7 +343,7 @@ class Searchbox extends PureComponent {
 
     const urlQuery = {};
     if (urlFrag) {
-      urlQuery.url = urlFrag;
+      urlQuery.url = encodeURIComponent(urlFrag);
     }
 
     const searchParams = {

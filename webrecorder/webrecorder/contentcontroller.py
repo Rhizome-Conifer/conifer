@@ -624,11 +624,11 @@ class ContentController(BaseController, RewriterApp):
             kwargs['url'] = url
             kwargs['timestamp'] = timestamp or page.get('timestamp')
             kwargs['hasScreenshot'] = request.query.getunicode('hasScreenshot')
-            self.solr_mgr.ingest(data, kwargs)
+            self.solr_mgr.ingest(kwargs, data)
 
             # update page metadata as well
             page['has_text'] = True
-            page['has_screenshot'] = request.query.getunicode('hasScreenshot')
+            page['has_screenshot'] = request.query.getunicode('hasScreenshot') == '1'
             collection.update_page(page)
 
         return res
@@ -1203,6 +1203,3 @@ class ContentController(BaseController, RewriterApp):
             return prefix + '/' + url
         else:
             return url
-
-
-

@@ -1,11 +1,14 @@
 import logging
 import os
+import re
 import traceback
 from datetime import date
 
 import gevent
-from pywb.utils.loaders import load
+from pywb.utils.loaders import BlockLoader, load
 from pywb.warcserver.index.cdxobject import CDXObject
+
+from warcio.archiveiterator import ArchiveIterator
 
 from webrecorder.models.auto import Auto
 from webrecorder.models.base import RedisNamedMap, RedisOrderedList, RedisUniqueComponent, RedisUnorderedList
@@ -15,7 +18,9 @@ from webrecorder.models.pages import PagesMixin
 from webrecorder.models.recording import Recording
 from webrecorder.rec.storage import get_storage as get_global_storage
 from webrecorder.rec.storage.storagepaths import strip_prefix
-from webrecorder.utils import get_new_id, sanitize_title
+from webrecorder.solrmanager import SolrManager
+from webrecorder.utils import get_new_id, load_wr_config, sanitize_title
+
 
 logger = logging.getLogger('wr.io')
 
@@ -570,6 +575,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         data['public'] = self.is_public()
         data['public_index'] = self.get_bool_prop('public_index', False)
         data['autoindexed'] = self.get_bool_prop('autoindexed', False)
+        data['indexing'] = self.get_bool_prop('indexing', False)
 
         if DatShare.DAT_SHARE in data:
             data[DatShare.DAT_SHARE] = self.get_bool_prop(DatShare.DAT_SHARE, False)
@@ -801,6 +807,86 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         if not do_async:
             res = gevent.joinall(ges)
+
+    def sync_solr_derivatives(self, do_async=True):
+        self.set_bool_prop('indexing', True)
+        jobs = [gevent.spawn(self._ingest_stored_derivs)]
+
+        if not do_async:
+            gevent.joinall(jobs)
+
+    def _ingest_stored_derivs(self):
+        loader = BlockLoader()
+        pages = self.list_pages()
+        solr_mgr = SolrManager(load_wr_config())
+
+        solr_batch = []
+
+        for line, _ in self.get_cdxj_iter():
+            cdxo = CDXObject(line.encode('utf-8'))
+
+            if (cdxo['mime'] == 'warc/revisit'
+                or cdxo['urlkey'].startswith('urn:screenshot')):
+                continue
+
+            # index non-text/hml cdxj entries
+            if cdxo['mime'] != 'text/html':
+                try:
+                    rec = re.match('rec-\d+-(\w+)-.+', cdxo['filename']).group(1)
+                except IndexError:
+                    rec = ''
+
+                solr_batch.append(solr_mgr.prepare_doc({
+                    'user': self.get_owner().name,
+                    'coll': self.my_id,
+                    'rec': rec,
+                    'url': cdxo['url'],
+                    'timestamp': cdxo['timestamp'],
+                    'mime': cdxo['mime']
+                }))
+
+            # skip non-text records
+            if not cdxo['urlkey'].startswith('urn:text'):
+                continue
+
+            f = self.redis.hget(self.get_warc_key(), cdxo['filename'])
+
+            if not f:
+                print('warc file not found')
+                continue
+
+            page = next((p for p in pages if cdxo['urlkey'].startswith('urn:text:{timestamp}/{url}'.format(**p))), None)
+
+            if not page:
+                print('page not found..')
+                continue
+
+            fh = loader.load(f, offset=int(cdxo['offset']), length=int(cdxo['length']))
+            for record in ArchiveIterator(fh):
+                data = record.raw_stream.read()
+                record = {
+                    'user': self.get_owner().name,
+                    'coll': self.my_id,
+                    'rec': page.get('rec'),
+                    'pid': page.get('id'),
+                    'title': page.get('title'),
+                    'url': page.get('url'),
+                    'timestamp': page.get('timestamp'),
+                    'hasScreenshot': page.get('hasScreenshot', False),
+                    'mime': 'text/html',
+                }
+                solr_batch.append(solr_mgr.prepare_doc(record, data))
+
+            # submit chunk of docs to be indexed
+            if len(solr_batch) >= 500:
+                solr_mgr.batch_ingest(solr_batch)
+                solr_batch = []
+
+        # submit final batch
+        solr_mgr.batch_ingest(solr_batch)
+
+        # all done
+        self.set_bool_prop('indexing', False)
 
     def _do_download_cdxj(self, cdxj_key, output_key):
         lock_key = None

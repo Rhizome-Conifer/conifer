@@ -2,6 +2,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 
 import requests
 from warcio.timeutils import timestamp_now, timestamp_to_iso_date
@@ -10,12 +11,38 @@ from warcio.timeutils import timestamp_now, timestamp_to_iso_date
 # =============================================================================
 class SolrManager:
     def __init__(self, config):
-        self.solr_api = 'http://solr:8983/solr/webrecorder/update/json/docs?commit=true'
-        self.solr_update_api = 'http://solr:8983/solr/webrecorder/update?commit=true'
-        self.solr_select_api = 'http://solr:8983/solr/webrecorder/select'
+        self.escape_re = re.compile(r'(?<!\\)(?P<char>[&|+\-!(){}[\]^"~*?:])')
+        self.solr_api = 'http://solr:8983/solr/conifer/update/json/docs?commit=true'
+        self.solr_update_api = 'http://solr:8983/solr/conifer/update?commit=true'
+        self.solr_select_api = 'http://solr:8983/solr/conifer/select'
 
-        self.page_query = '?q=title_t:* AND timestamp_s:[{f} TO {t}] AND rec_s:{s}&fq=coll_s:{coll}&fl=title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s&rows={rows}&start={start}&sort=timestamp_s+{sort}'
-        self.text_query = '?q={q}&fq={fq}&fl=id,title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s&hl=true&hl.fl=content_t,title_t,url_s&hl.snippets=3&rows={rows}&start={start}'
+        self.page_query = (
+            '?q=title_t:* '
+            'AND timestamp_s:[{f} TO {t}] '
+            'AND mime_s:{m} '
+            'AND rec_s:{s} '
+            'AND url_s:*{u}*'
+            '&fq=coll_s:{coll}'
+            '&fl=title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s'
+            '&rows={rows}'
+            '&start={start}'
+            '&sort=timestamp_s+{sort}'
+        )
+        self.text_query = (
+            '?q={q}'
+            '&fq={fq}'
+            '&fl=id,title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s'
+            '&hl=true'
+            '&hl.fl=content_t,title_t,url_s'
+            '&hl.snippets=3'
+            '&rows={rows}'
+            '&start={start}'
+        )
+
+    def _escape(self, query):
+        if not query:
+            return query
+        return self.escape_re.sub(r'\\\g<char>', query)
 
     def update_if_dupe(self, digest, coll, url, timestamp, timestamp_dt):
         try:
@@ -54,21 +81,18 @@ class SolrManager:
             print(e)
             return False
 
-    def ingest(self, text, params):
-
+    def prepare_doc(self, params, text=None):
         # text already parsed
-        content = text.decode('utf-8')
         title = params.get('title') or params.get('url')
 
         url = params.get('url')
 
+        mime_s = params.get('mime', 'text/html')
+
         timestamp_s = params.get('timestamp') or timestamp_now()
         timestamp_dt = timestamp_to_iso_date(timestamp_s)
-        has_screenshot_b = params.get('hasScreenshot') == '1'
 
         title = title or url
-
-        digest = self.get_digest(content)
 
         #if self.update_if_dupe(digest, coll, url, timestamp_ss, timestamp_dts):
         #    return
@@ -77,17 +101,37 @@ class SolrManager:
             'user_s': params.get('user'),
             'coll_s': params.get('coll'),
             'rec_s': params.get('rec'),
-            'id': params.get('pid'),
             'title_t': title,
-            'content_t': content,
             'url_s': url,
-            'digest_s': digest,
             'timestamp_s': timestamp_s,
             'timestamp_dt': timestamp_dt,
-            'has_screenshot_b': has_screenshot_b,
+            'mime_s': mime_s,
+            'ttl_s': '+30MINUTES'
         }
 
-        result = requests.post(self.solr_api, json=data)
+        if text is not None:
+            content = text.decode('utf-8')
+
+            has_screenshot_b = params.get('hasScreenshot') == '1'
+
+            data.update({
+                'id': params.get('pid'),
+                'content_t': content,
+                'digest_s': self.get_digest(content),
+                'has_screenshot_b': has_screenshot_b,
+            })
+
+        return data
+
+    def batch_ingest(self, data):
+        """ Index a batch of documents
+            data -- json array of documents to ingest
+        """
+        requests.post(self.solr_update_api, json=data)
+
+    def ingest(self, *args, **kwargs):
+        """Index a single doc into solr"""
+        requests.post(self.solr_api, json=self.prepare_doc(*args, **kwargs))
 
     def get_digest(self, text):
         m = hashlib.sha1()
@@ -99,18 +143,23 @@ class SolrManager:
 
         start = int(params.get('start', 0))
 
-        rows = int(params.get('limit', 100))
+        rows = int(params.get('limit', 5000))
 
         sort = params.get('sort', 'asc')
 
         ts_from = params.get('from', '*')
         ts_to = params.get('to', '*')
         session = params.get('session', '*')
+        mime = params.get('mime', '*').strip(',')
+        url = self._escape(params.get('url')) or '*'
+
+        if ',' in mime:
+            mime = '({})'.format(mime.replace(',', ' OR '))
 
         if not search:
             qurl = self.solr_select_api + self.page_query.format(
                 coll=coll, start=start, rows=rows, sort=sort,
-                f=ts_from, t=ts_to, s=session,
+                f=ts_from, t=ts_to, s=session, m=mime, u=url
             )
             res = requests.get(qurl)
 
@@ -135,10 +184,14 @@ class SolrManager:
 
         else:
             query = (
-                '(content_t:"{q}" OR title_t:"{q}" OR url_s:"*{q}*")'
-                'AND timestamp_s:[{f} TO {t}]'
-                'AND rec_s:{s}'
-            ).format(q=search, coll=coll, f=ts_from, t=ts_to, s=session)
+                '(content_t:"{q}" OR title_t:"{q}") '
+                'AND timestamp_s:[{f} TO {t}] '
+                'AND mime_s:{m} '
+                'AND rec_s:{s} '
+                'AND url_s:*{u}*'
+            ).format(
+                q=self._escape(search), coll=coll, f=ts_from, t=ts_to,
+                s=session, m=mime,u=url)
 
             res = requests.get(
                 self.solr_select_api

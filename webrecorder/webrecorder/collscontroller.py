@@ -27,10 +27,10 @@ class CollsController(BaseController):
         wr_api_spec.set_curr_tag('Collections')
 
         @self.app.post('/api/v1/collections')
-        @self.api(query=['user'],
-                  req=['title', 'public', 'public_index'],
-                  resp='collection')
-
+        @self.api(
+            query=['user'],
+            req=['title', 'public', 'public_index'],
+            resp='collection')
         def create_collection():
             user = self.get_user(api=True, redir_check=False)
 
@@ -419,6 +419,17 @@ class CollsController(BaseController):
 
     def get_collection_info(self, coll_name, user=None, include_pages=False):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
+
+        if self.is_search_auto:
+            # see if there are results in solr
+            if (user.curr_role in ['admin', 'beta-archivist'] and
+                self.solr_mgr.query_solr(collection.my_id, {})['total'] == 0):
+                print('sycing solr derivs...')
+                collection.sync_solr_derivatives(do_async=True)
+            else:
+                # sync cdxj to redis in lieu of playback
+                print('syncing cdx...')
+                collection.sync_coll_index(exists=False, do_async=True)
 
         result = {'collection': collection.serialize(include_rec_pages=include_pages,
                                                      include_lists=True,
