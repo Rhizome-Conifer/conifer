@@ -188,10 +188,10 @@ class SolrManager:
                 'AND timestamp_s:[{f} TO {t}] '
                 'AND mime_s:{m} '
                 'AND rec_s:{s} '
-                'AND url_s:*{u}*'
+                'AND url_s:{u}'
             ).format(
                 q=self._escape(search), coll=coll, f=ts_from, t=ts_to,
-                s=session, m=mime,u=url)
+                s=session, m=mime, u=('*{}*'.format(url) if url != '*' else '*'))
 
             res = requests.get(
                 self.solr_select_api
