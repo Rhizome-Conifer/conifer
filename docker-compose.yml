@@ -149,8 +149,8 @@ services:
             - CONTAINER_EXPIRE_SECS=3600
             - IDLE_TIMEOUT=5
 
-            - BROWSER_NET=webrecorder_browsers
-            - MAIN_NET=webrecorder_default
+            - BROWSER_NET=conifer_browsers
+            - MAIN_NET=conifer_default
 
         ports:
             - 9020:9020
@@ -190,11 +190,12 @@ services:
 
         volumes:
           - ./data/solr:/var/solr
+          - ./solrconf:/opt/solr/server/solr/configsets/solrconf
 
-        entrypoint:
-          - docker-entrypoint.sh
+        command:
           - solr-precreate
-          - webrecorder
+          - conifer
+          - /opt/solr/server/solr/configsets/solrconf
 
         ports:
           - 8983:8983
@@ -227,4 +228,3 @@ networks:
 
     browsers:
         driver: bridge
-
