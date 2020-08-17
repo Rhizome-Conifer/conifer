@@ -8,7 +8,7 @@ This repository represents the hosted service running at https://conifer.rhizome
 
 This README refers to the 5.x version of Conifer, released in June, 2020. This release includes a new UI and the renaming of Webrecorder.io to Conifer. Other parts of the open source efforts remain at the [Webrecorder Project](https://webrecorder.net). For more info about this momentous change, read our announcement [blog post.](https://blog.conifer.rhizome.org/2020/06/11/webrecorder-conifer.html) 
 
-The previous UI is available on the [legacy branch](tree/legacy).
+The previous UI is available on the [legacy branch](https://github.com/Rhizome-Conifer/conifer/tree/legacy).
 
 
 ## Frequently asked questions
