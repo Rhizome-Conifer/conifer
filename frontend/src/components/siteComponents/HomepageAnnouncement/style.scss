@@ -1,22 +1,22 @@
 @import 'src/vars';
 
 #news-alert {
-    margin: 1rem auto 3rem auto;
+    margin: rem(3rem) auto rem(3rem) auto;
     background-color: white;
     background-image: none;
-    border: .1rem solid $gray500;
+    border: rem(.1rem) solid $gray500;
     border-radius: unset;
     color: black;
 
     a {
-        margin-top: 1rem;
+        margin-top: rem(1rem);
         font-weight: bold;
         color: #0232F5;
     }
 
     .wr-alert-logo {
         float: left;
-        max-width: 8rem;
+        max-width: rem(8rem);
         min-height: 100%;
 
         img {
@@ -27,11 +27,11 @@
     .wr-alert-info {
         h1,h2,h3,h4,h5 {
             margin-top: 0;
-            color: $body-gray;
+            color: $slate;
         }
 
         p {
-            color: $body-gray;
+            color: $slate;
         }
     }
 }

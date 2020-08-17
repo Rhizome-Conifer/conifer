@@ -2,18 +2,18 @@
 
 #wr-tw {
     display: inline-block;
-    width: 7.6rem;
-    height: 3.7rem;
+    width: rem(7.6rem);
+    height: rem(3.7rem);
     float: left;
 }
 #wr-fb {
     float: left;
-    margin-left: .5rem;
+    margin-left: rem(.5rem);
 }
 
 .wr-tools {
-    margin-top: -4rem;
-    height: 4rem;
+    margin-top: rem(-4rem);
+    height: rem(4rem);
     background: #F3F3F3;
     display: flex;
     display: -ms-flexbox;
@@ -37,7 +37,7 @@
 .wr-controls.public .recording-actions {
     position: absolute;
     top: 0;
-    right: 1.5rem;
+    right: rem(1.5rem);
 }
 
 .recording-actions {
@@ -46,17 +46,17 @@
     flex-shrink: 0;
 
     & > *:not(:last-child) {
-        margin-right: .5rem;
+        margin-right: rem(.5rem);
     }
 
     .btn svg {
-        width: 1.6rem;
-        height: 1.6rem;
+        width: rem(1.6rem);
+        height: rem(1.6rem);
         vertical-align: middle;
     }
 
     .clipboard-btn {
-        padding: .5rem 1.5rem;
+        padding: rem(.5rem) rem(1.5rem);
         vertical-align: middle;
     }
 
@@ -65,8 +65,8 @@
 
         svg {
             vertical-align: middle;
-            height: 1.5rem;
-            margin-right: .5rem;
+            height: rem(1.5rem);
+            margin-right: rem(.5rem);
 
             path {
                 transition: fill $midShift ease-in-out;
@@ -74,11 +74,11 @@
         }
 
         &.special-behavior {
-            color: $blue;
+            color: $deep-pine;
 
             svg {
                 path {
-                    fill: $blue;
+                    fill: $deep-pine;
                 }
             }
         }

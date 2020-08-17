@@ -1,0 +1,11 @@
+{
+  "name": "simple-driver",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "ioredis": "^4.16.0",
+    "node-fetch": "^2.6.0",
+    "puppeteer-core": "^2.1.1"
+  }
+}

@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button } from 'react-bootstrap';
+import { withRouter } from 'react-router';
+
+import { AppContext } from 'store/contexts';
 
 import { ModeSelector, RecordingTools } from 'containers';
 
@@ -12,22 +15,20 @@ import './style.scss';
 
 
 class ReplayUI extends Component {
+  static contextType = AppContext;
+
   static propTypes = {
     activeBrowser: PropTypes.string,
     autopilotRunning: PropTypes.bool,
+    canAdmin: PropTypes.bool,
     canGoBackward: PropTypes.bool,
     canGoForward: PropTypes.bool,
+    currMode: PropTypes.string,
     params: PropTypes.object,
     sidebarExpanded: PropTypes.bool,
     timestamp: PropTypes.string,
     toggle: PropTypes.func,
     url: PropTypes.string
-  };
-
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    currMode: PropTypes.string,
-    isMobile: PropTypes.bool
   };
 
   toggleSidebar = () => {
@@ -55,10 +56,9 @@ class ReplayUI extends Component {
   }
 
   render() {
-    const { canAdmin, currMode, isMobile } = this.context;
-    const { canGoBackward, canGoForward } = this.props;
-
-    const isWrite = ['extract', 'extract_only', 'patch', 'record', 'live'].includes(currMode);
+    const { isMobile } = this.context;
+    const { canAdmin, currMode, canGoBackward, canGoForward } = this.props;
+    const writeModes = ['extract', 'extract_only', 'patch', 'record', 'live'];
 
     let backClass;
     let fwdClass;
@@ -77,17 +77,17 @@ class ReplayUI extends Component {
     }
 
     return (
-      <div role="presentation" className={classNames('container-fluid wr-controls navbar-default', { 'has-widget': ['extract', 'extract_only', 'patch'].includes(currMode) })}>
+      <div role="presentation" className={classNames('container-fluid wr-controls', { 'has-widget': ['extract', 'extract_only', 'patch'].includes(currMode) })}>
         {
           currMode.includes('replay') && !isMobile &&
-            <Button className="sidebar-toggle" onClick={this.toggleSidebar}>
+            <Button variant="outline-secondary" onClick={this.toggleSidebar}>
               <InfoIcon />
             </Button>
         }
 
         {
           canAdmin && !isMobile &&
-            <ModeSelector />
+            <ModeSelector currMode={this.props.currMode} />
         }
 
         {
@@ -106,18 +106,20 @@ class ReplayUI extends Component {
         }
 
         {
-          isWrite ?
+          writeModes.includes(currMode) ?
             <RecordURLBar {...this.props} /> :
             <ReplayURLBar {...this.props} />
         }
 
         {
           !isMobile && !__PLAYER__ &&
-            <RecordingTools />
+            <RecordingTools
+              canAdmin={this.props.canAdmin}
+              currMode={this.props.currMode} />
         }
       </div>
     );
   }
 }
 
-export default ReplayUI;
+export default withRouter(ReplayUI);

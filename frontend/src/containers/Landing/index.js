@@ -83,7 +83,7 @@ class Landing extends Component {
       (
         <div className="dat-container">
           <h4>Downloading from peer-to-peer Dat network:</h4>
-          <ProgressBar now={this.state.progress} label={`${progress}%`} bsStyle="success" />
+          <ProgressBar now={this.state.progress} label={`${progress}%`} variant="success" />
         </div>
       ) :
       (
@@ -116,7 +116,7 @@ class Landing extends Component {
                     Or via dat:
                     <div className="dat-input">
                       <FormControl type="text" name="datUrl" onChange={this.handleInput} onKeyPress={this.submitCheck} value={this.state.datUrl} placeholder="Enter a dat:// url" />
-                      <Button bsStyle="primary" onClick={this.syncDat}>Sync</Button>
+                      <Button variant="primary" onClick={this.syncDat}>Sync</Button>
                     </div>
                   </div>
               }

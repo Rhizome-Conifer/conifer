@@ -3,29 +3,58 @@
 .wr-list-header {
     .banner {
         display: flex;
-        margin: 1.5rem 0 0 1.5rem;
-        font-size: 1.2rem;
+        margin: rem(1.5rem) 0 0 rem(1.5rem);
+        font-size: rem(1.2rem);
 
         svg {
             flex-shrink: 0;
-            margin: .5rem 1rem 0 0;
+            margin: rem(.5rem) rem(1rem) 0 0;
         }
 
         h2 {
             display: inline-block;
-            font-size: 2.4rem;
+            font-size: rem(2.4rem);
             font-weight: 300;
             color: $gray600;
             margin: 0;
         }
     }
 
-    .Collapsible {
-        margin: 0 0 1.5rem 1.5rem;
-        cursor: pointer;
+    .list-metadata {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: rem(1.5rem);
 
-        .click-highlight {
-            display: inline-block;
+        .Collapsible {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin: 0 rem(.5rem) 0 rem(1.5rem);
+            cursor: pointer;
+
+            .click-highlight {
+                display: inline-block;
+            }
+        }
+
+        .list-sort-actions {
+            display: flex;
+            align-items: flex-end;
+            transition: opacity $midShift ease-in-out;
+            margin-right: rem(1.5rem);
+
+            &.fade {
+                opacity: 0;
+            }
+
+            button {
+                width: max-content;
+            }
+
+            button + button {
+                margin-left: rem(1.5rem);
+            }
         }
     }
 }

@@ -1,3 +1,19 @@
+
+@font-face {
+  font-family: 'Aften';
+  font-weight: normal;
+  src: url('aften/aften_screen.woff') format('woff'),
+       url('aften/aften_screen.ttf')  format('truetype');
+}
+
+@font-face {
+  font-family: 'GZA';
+  font-weight: normal;
+  src: url('gza/gza-seminegra-webfont.woff2') format('woff2'),
+       url('gza/gza-seminegra-webfont.woff') format('woff'),
+       url('gza/gza-seminegra-webfont.ttf')  format('truetype');
+}
+
 @font-face {
   font-family: 'InknutAntiqua';
   font-weight: normal;

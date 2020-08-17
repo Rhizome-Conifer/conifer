@@ -1,4 +1,5 @@
 export ApiDocs from './ApiDocs';
+export ConiferAnnounce from './ConiferAnnounce';
 export Documentation from './Documentation';
 export FAQ from './FAQ';
 export Footer from './Footer';
@@ -15,4 +16,4 @@ export TermsAndPolicies from './TermsAndPolicies';
 export UploadUI from './UploadUI';
 export UserManagementUI from './UserManagementUI';
 export UserSettingsUI from './UserSettingsUI';
-export UserSignup from './UserSignup';
+export UserSignupUI from './UserSignupUI';

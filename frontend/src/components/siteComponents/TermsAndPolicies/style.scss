@@ -1,10 +1,11 @@
 @import 'src/vars';
 
 .terms-policies {
+    margin-top: b16(100px);
 
     h1 {
-        font-family: $serif;
-        font-size: 5.1rem;
+        font-family: $sans;
+        font-size: rem(5.1rem);
     }
 
     h1, h3 {
@@ -21,11 +22,11 @@
 
     ol.tos {
 
-        padding-left: 1.6rem;
+        padding-left: rem(1.6rem);
     }
 
     .tos li {
-        margin-top: 1.8rem;
+        margin-top: rem(1.8rem);
     }
 
     .privacy li {
@@ -33,8 +34,8 @@
     }
 
     .section-updated {
-        margin-top: 2rem;
-        margin-bottom: 4rem;
+        margin-top: rem(2rem);
+        margin-bottom: rem(4rem);
         font-style: italic;
     }
 }

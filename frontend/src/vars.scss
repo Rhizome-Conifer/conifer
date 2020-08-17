@@ -6,21 +6,37 @@ $md: 768px;
 $lg: 992px;
 $xl: 1200px;
 
+$bs-button-interactive: "&:not(:disabled):not(.disabled):active, &:not(:disabled):not(.disabled):active:focus, &:focus, &:hover";
+
 /* fonts */
-$font-size-base: 1.4rem;
-$serif: "InknutAntiqua";
+$serif: "GZA";
 $sans: "HKGrotesk";
 
 $mobile: 375px;
 
 /* colors */
 $collTrigger: rgb(0, 57, 229);
-$blue: #0000ee;
-$blue-deselect: #B4C1F5;
+
+$pine: #DCEDC9;
+$pine-accent: #c8d5bb;
+$pine-deselect: rgba($pine, 0.5);
+$dusty-pine: #C0C2A3;
+$deep-pine: #676C5B;
+$vivid-pine: #869A5D;
+$matcha: #94A073;
+$dried-needle: #CCAE83;
+$pine-sap: #ecd289;
+$pine-nut: #FFE0B3;
+$redwood: #FE9B7E;
+
+$cf-danger: #EF613B;
+$cf-warning: #f8d677;
+$cf-success: #26451F;
+
+
 $dark-blue: #0129C4;
 $bookmarkListDefault: rgb(100,100,100);
-$brightGreen: #45A109;
-$bright-green-highlight: #56BB13;
+$brightGreen: $vivid-pine;
 $buttonHover: #ececec;
 $gray200: #F6F6F6;
 $gray300: #EEEEEE;
@@ -30,7 +46,12 @@ $gray500: #CECECE;
 $gray525: #9B9B9B;
 $gray550: #7e7e7e;
 $gray600: #6E6E6E;
+$gray650: #636363;
+$gray700: #5C5C5C;
+$gray800: #545454;
+$gray900: #3c3a3a;
 $body-gray: #3E3E3E;
+$slate: #3E3E3E;
 $header: #373944;
 $link: #337ab7;
 $linkHover: #74B9F3;
@@ -38,11 +59,10 @@ $listsBlue: #72D1FE;
 $listsYellow: #F9FF95;
 $mgmt-gray: #979797;
 $sidebarBg: #FFF;
-$slate: #8F9294;
-$success-color: #7ED321;
+$success-color: #26451F;
 $tableHeaderBg: #E0E0E0; //gray400
 $tr-selected: #BABAC4;
-$tr-highlight-selected: #0A0A97;
+$tr-highlight-selected: $dusty-pine;
 $white: #FFF;
 $black: #000;
 $yellow: rgb(255, 252, 108);
@@ -60,3 +80,27 @@ $quickShift: 125ms;
 $midShift: 200ms;
 $slowShift: 300ms;
 $tableRowFade: 150ms;
+
+@function rem($size) {
+    /*
+        scale rems from legacy base 10 to base 16
+
+        regex to replace old settings
+        find: (:|\s)([0-9.]+rem)(;|\s)
+        repl: $1rem($2)$3
+    */
+    @return $size * .625;
+}
+
+@function strip-unit($number) {
+  @if type-of($number) == 'number' and not unitless($number) {
+    @return $number / ($number * 0 + 1);
+  }
+
+  @return $number;
+}
+
+@function b16($size) {
+    /* scale units from px to base 16 rem */
+    @return strip-unit($size) * .0625rem;
+}

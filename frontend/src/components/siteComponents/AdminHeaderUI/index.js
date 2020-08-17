@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import { Button } from 'react-bootstrap';
 
 import { truncWord } from 'config';
 import { getCollectionLink, truncate } from 'helpers/utils';
@@ -36,27 +37,26 @@ class AdminHeaderUI extends PureComponent {
 
       return (
         <React.Fragment>
-          <div className="managing-collection">
-            Collection Manager:
+          <div className="d-none d-sm-block" style={{ flexGrow: 1 }}>
+            <CollectionDropdown
+              label={false}
+              canCreateCollection={false}
+              fromCollection={collection.get('id')}
+              setCollectionCallback={this.goToCollection} />
           </div>
-          <CollectionDropdown
-            label={false}
-            canCreateCollection={false}
-            fromCollection={collection.get('id')}
-            setCollectionCallback={this.goToCollection} />
         </React.Fragment>
       );
     }
 
     return (
       <React.Fragment>
-        <button className="rounded collection-manager" onClick={this.goToManager} type="button">
+        <Button variant="dark" onClick={this.goToManager} className="d-none d-md-block">
           Collection Manager
-        </button>
-        <span className="active-collection" title={collection.get('title')}>{truncate(collection.get('title'), 10, truncWord)}</span>
+        </Button>
+        <span className="active-collection d-none d-sm-block" title={collection.get('title')}>{truncate(collection.get('title'), 10, truncWord)}</span>
         {
           collection.get('public') &&
-            <span className="visibility-badge">PUBLIC</span>
+            <span className="visibility-badge d-none d-sm-block">PUBLIC</span>
         }
       </React.Fragment>
     );

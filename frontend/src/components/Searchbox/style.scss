@@ -1,23 +1,133 @@
 @import 'src/vars';
 
-@keyframes indexing {
-    0% { opacity: .75; }
-    50% { opacity: .25; }
-    100% { opacity: .75; }
-}
-
 .search-box {
-    svg {
-        transition: opacity $quickShift ease-in-out;
-        vertical-align: middle;
+    position: relative;
+    width: 100%;
+
+    .input-group {
+        border: b16(1) solid $gray400;
+        border-width: b16(1) b16(1) b16(4) b16(1);
+
+        .input-group-text {
+            background-color: transparent;
+            border: none;
+        }
+
+        input {
+            padding-right: rem(4rem);
+            flex-grow: 1;
+            border: none;
+            outline: none;
+            box-shadow: none;
+
+            &:focus {
+                box-shadow: none;
+            }
+        }
     }
 
-    // button {
-    //     &.indexing {
-    //         svg {
-    //             opacity: 0.75;
-    //             animation: indexing 1s infinite;
-    //         }
-    //     }
-    // }
+    svg {
+        height: 100%;
+    }
+
+    .input-group-append {
+
+        .btn-link {
+            color: $slate;
+        }
+    }
+
+    .adv-search-filters {
+        position: absolute;
+        z-index: 100;
+        border: solid rem(.1rem) $gray500;
+        width: 100%;
+        padding: rem(1rem) rem(1rem) 0 rem(1rem);
+        background: $white;
+
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        grid-gap: rem(1.5rem);
+
+        .label {
+            color: $gray600;
+            font-weight: 300;
+            font-size: rem(1.4rem);
+            flex-shrink: 0;
+            margin: 0;
+            text-align: right;
+
+            &.form-label {
+                display: flex;
+                justify-content: flex-end;
+                align-self: center;
+            }
+        }
+
+        input[name=searchFrag], input[name=urlFrag] {
+            border-width: 0 0 rem(.1rem) 0;
+            width: 100%;
+        }
+
+        .dropdown {
+            width: 100%;
+
+            .dropdown-menu {
+                max-height: rem(30rem);
+                overflow: auto;
+            }
+        }
+
+        .dropdown + .dropdown {
+            margin-top: rem(.5rem);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+
+            label {
+                color: $gray600;
+                font-weight: 300;
+                font-size: rem(1.4rem);
+            }
+        }
+
+        .sub-filters {
+            display: flex;
+            margin-top: rem(.5rem);
+        }
+
+        .date-select {
+            margin-top: rem(1.5rem);
+
+            .label {
+                text-align: left;
+                padding-left: 0;
+            }
+
+            .react-datepicker-wrapper {
+                margin-bottom: rem(.5rem);
+            }
+
+
+            .end-date {
+                margin-top: rem(1.5rem);
+            }
+        }
+
+        .actions {
+            margin: rem(1.5rem);
+            grid-column: 2;
+            justify-self: end;
+
+            .button-link {
+                color: $gray600;
+            }
+
+            button + button {
+                margin-left: rem(1.5rem);
+            }
+        }
+    }
 }

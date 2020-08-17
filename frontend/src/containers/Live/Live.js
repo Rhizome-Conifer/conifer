@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
 
 import { isLoaded, load as loadColl } from 'store/modules/collection';
-import { getArchives, updateUrl } from 'store/modules/controls';
-import { load as loadUser } from 'store/modules/user';
+import { updateUrl } from 'store/modules/controls';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -23,10 +22,6 @@ if (__DESKTOP__) {
 
 
 class Live extends Component {
-  static contextTypes = {
-    product: PropTypes.string
-  };
-
   static propTypes = {
     activeBrowser: PropTypes.string,
     appSettings: PropTypes.object,
@@ -38,31 +33,10 @@ class Live extends Component {
     url: PropTypes.string
   };
 
-  // TODO move to HOC
-  static childContextTypes = {
-    currMode: PropTypes.string,
-    canAdmin: PropTypes.bool,
-    coll: PropTypes.string,
-    rec: PropTypes.string,
-    user: PropTypes.string,
-  };
-
   constructor(props) {
     super(props);
 
     this.mode = 'live';
-  }
-
-  getChildContext() {
-    const { auth, match: { params: { user, coll, rec } } } = this.props;
-
-    return {
-      currMode: 'live',
-      canAdmin: auth.getIn(['user', 'username']) === user,
-      user,
-      coll,
-      rec
-    };
   }
 
   // shouldComponentUpdate(nextProps) {
@@ -75,9 +49,10 @@ class Live extends Component {
   // }
 
   render() {
-    const { activeBrowser, appSettings, dispatch, match: { params }, timestamp, url } = this.props;
+    const { activeBrowser, appSettings, auth, dispatch, match: { params }, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
+    const canAdmin = auth.getIn(['user', 'username']) === params.user;
     const appPrefix = `${config.appHost}/${user}/live/`;
     const contentPrefix = `${config.contentHost}/${user}/live/`;
 
@@ -90,6 +65,8 @@ class Live extends Component {
           activeBrowser={activeBrowser}
           canGoBackward={__DESKTOP__ ? appSettings.get('canGoBackward') : false}
           canGoForward={__DESKTOP__ ? appSettings.get('canGoForward') : false}
+          canAdmin={canAdmin}
+          currMode={this.mode}
           params={params}
           url={url} />
 
@@ -97,21 +74,24 @@ class Live extends Component {
           {
             __DESKTOP__ &&
               <Webview
+                canGoBackward={appSettings.get('canGoBackward')}
+                canGoForward={appSettings.get('canGoForward')}
+                currMode={this.mode}
                 key="webview"
                 host={appSettings.get('host')}
                 params={params}
                 dispatch={dispatch}
                 timestamp={timestamp}
-                canGoBackward={appSettings.get('canGoBackward')}
-                canGoForward={appSettings.get('canGoForward')}
                 partition={`persist:${params.user}`}
-                url={url} />
+                url={url}
+                {...{ coll, user, rec }} />
           }
 
           {
             !__DESKTOP__ && (
               activeBrowser ?
                 <RemoteBrowser
+                  currMode={this.mode}
                   params={params}
                   rb={activeBrowser}
                   rec={rec}
@@ -120,6 +100,7 @@ class Live extends Component {
                   appPrefix={appPrefix}
                   auth={this.props.auth}
                   contentPrefix={contentPrefix}
+                  currMode={this.mode}
                   dispatch={dispatch}
                   params={params}
                   timestamp={timestamp}

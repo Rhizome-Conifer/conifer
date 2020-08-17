@@ -1,7 +1,8 @@
+@import 'src/vars';
 
 .temp-user-alert {
     position: fixed;
-    top: 4.5rem;
-    left: 1.5rem;
+    top: rem(4.5rem);
+    left: rem(1.5rem);
     z-index: 100;
 }

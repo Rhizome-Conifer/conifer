@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Collapsible from 'react-collapsible';
+import { Button } from 'react-bootstrap';
+
+import { AccessContext } from 'store/contexts';
 
 import EditModal from 'components/collection/EditModal';
 import WYSIWYG from 'components/WYSIWYG';
@@ -11,18 +14,20 @@ import './style.scss';
 
 
 class ListHeaderUI extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool
-  };
+  static contextType = AccessContext;
 
   static propTypes = {
+    clearSort: PropTypes.func,
     collection: PropTypes.object,
     editList: PropTypes.func,
     list: PropTypes.object,
     listEditing: PropTypes.bool,
     listEdited: PropTypes.bool,
     listError: PropTypes.bool,
-    location: PropTypes.object
+    location: PropTypes.object,
+    ordererdBookmarks: PropTypes.array,
+    saveBookmarkSort: PropTypes.func,
+    sort: PropTypes.object
   };
 
   constructor(props) {
@@ -35,8 +40,8 @@ class ListHeaderUI extends Component {
   }
 
   editList = (data) => {
-    const { collection, editList, list } = this.props;
-    editList(collection.get('owner'), collection.get('id'), list.get('id'), data);
+    const { editList, list } = this.props;
+    editList(list.get('id'), data);
   }
 
   editModal = () => {
@@ -47,10 +52,17 @@ class ListHeaderUI extends Component {
 
   openDesc = () => this.setState({ showDesc: true })
 
+  saveSort = () => {
+    const { list, ordererdBookmarks, saveBookmarkSort } = this.props;
+    const order = ordererdBookmarks.map(o => o.get('id')).toArray();
+    saveBookmarkSort(list.get('id'), order);
+  }
+
   render() {
     const { canAdmin } = this.context;
-    const { list } = this.props;
+    const { list, sort } = this.props;
     const { showDesc } = this.state;
+    const sorted = sort.get('sort') !== null;
 
     const trigger = (
       <div><CarotIcon flip={showDesc} /> {showDesc ? 'Hide' : 'Show'} Description</div>
@@ -64,22 +76,33 @@ class ListHeaderUI extends Component {
         </div>
 
         {
-          (list.get('desc') || canAdmin) &&
-            <Collapsible
-              lazyRender
-              easing="ease-in-out"
-              onClose={this.closeDesc}
-              onOpen={this.openDesc}
-              overflowWhenOpen="visible"
-              transitionTime={300}
-              trigger={trigger}>
-              <div role={canAdmin ? 'button' : 'presentation'} className={classNames({ 'click-highlight': canAdmin })} onClick={canAdmin ? this.editModal : undefined}>
-                <WYSIWYG
-                  readOnly
-                  initial={list.get('desc') || '\\+ Add Description'}
-                  key={list.get('id')} />
-              </div>
-            </Collapsible>
+          <div className="list-metadata">
+            {
+              (list.get('desc') || canAdmin) &&
+                <Collapsible
+                  lazyRender
+                  easing="ease-in-out"
+                  onClose={this.closeDesc}
+                  onOpen={this.openDesc}
+                  overflowWhenOpen="visible"
+                  transitionTime={300}
+                  trigger={trigger}>
+                  <div role={canAdmin ? 'button' : 'presentation'} className={classNames({ 'click-highlight': canAdmin })} onClick={canAdmin ? this.editModal : undefined}>
+                    <WYSIWYG
+                      readOnly
+                      initial={list.get('desc') || '\\+ Add Description'}
+                      key={list.get('id')} />
+                  </div>
+                </Collapsible>
+            }
+            {
+              canAdmin &&
+                <div className={classNames('list-sort-actions', { fade: !sorted })}>
+                  <Button variant="outline-secondary" disabled={!sorted} onClick={this.props.clearSort} type="button">remove sort</Button>
+                  <Button variant="primary" disabled={!sorted} onClick={this.saveSort} type="button">save this ordering</Button>
+                </div>
+            }
+          </div>
         }
 
         {

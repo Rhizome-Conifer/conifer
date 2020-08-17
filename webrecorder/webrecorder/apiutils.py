@@ -103,6 +103,7 @@ class WRAPISpec(object):
         'include_bookmarks': 'Include bookmarks in response',
 
         'public_index': 'Publicly Accessible Collection Index',
+        'autoindexed': 'Indicates whether this collection has been indexed in solr',
     }
 
     custom_params = {

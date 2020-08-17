@@ -12,7 +12,7 @@
     border: none;
     background: transparent;
     color: $gray600;
-    padding: 0 1rem;
+    padding: 0 rem(1rem);
 
     &:hover {
         text-decoration: underline;
@@ -26,38 +26,38 @@
 
     .anon-cta {
         background: $gray200;
-        padding: 1.5rem 3rem;
+        padding: rem(1.5rem) rem(3rem);
 
         h5:nth-child(1n) {
-            margin-top: 1.5rem;
+            margin-top: rem(1.5rem);
             margin-bottom: 0;
         }
     }
 }
 
 .wr-login-form {
-    margin: 2rem 4rem 2rem 4rem;
+    margin: rem(2rem) rem(4rem) rem(2rem) rem(4rem);
 
     #remember_me {
-        margin-right: 1rem;
+        margin-right: rem(1rem);
     }
 
     p {
-        margin-top: 2rem;
+        margin-top: rem(2rem);
     }
 }
 
 .num-collection {
     font-feature-settings: 'tnum';
-    margin-left: .5rem;
+    margin-left: rem(.5rem);
 
     &:before {
         content: '(';
-        padding-right: .1rem;
+        padding-right: rem(.1rem);
     }
     &:after {
         content: ')';
-        padding-left: .1rem;
+        padding-left: rem(.1rem);
     }
 }
 
@@ -70,8 +70,12 @@
     padding: 0;
 
     & > li:not(:last-of-type) {
-        margin-right: 5rem;
-        font-size: 1.6rem;
+        margin-right: rem(5rem);
+        font-size: rem(1.6rem);
+
+        @media (max-width: $xs) {
+            margin-right: rem(2.5rem);
+        }
     }
 
     .custom-report {
@@ -79,7 +83,7 @@
     }
 
     .login-link {
-        padding: .7rem 1rem;
+        padding: rem(.7rem) rem(1rem);
     }
 
     .dropdown {
@@ -89,20 +93,20 @@
             align-items: center;
 
             svg {
-                margin-right: .5rem;
+                margin-right: rem(.5rem);
             }
 
             .caret {
-                margin-left: .5rem;
+                margin-left: rem(.5rem);
             }
         }
 
         .dropdown-menu {
-            border-radius: .3rem;
+            border-radius: rem(.3rem);
 
             .display {
-                padding: .2rem 2rem;
-                margin: .5rem 0;
+                padding: rem(.2rem) rem(2rem);
+                margin: rem(.5rem) 0;
 
                 .sm-label {
                     font-size: 70%;
@@ -113,7 +117,7 @@
                         margin: 0;
                     }
                     .username {
-                        font-size: 1.1rem;
+                        font-size: rem(1.1rem);
                         color: $gray600;
                     }
                 }
@@ -121,8 +125,8 @@
 
             .space-display {
                 position: relative;
-                height: 1rem;
-                border: solid .1rem $gray600;
+                height: rem(1rem);
+                border: solid rem(.1rem) $gray600;
 
                 span {
                     height: 100%;

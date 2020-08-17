@@ -105,7 +105,8 @@ export default {
     invalid_coll_name: 'The collection name entered is not valid'
   },
   passwordReset: {
-    already_logged_in: 'An account is already logged in.'
+    already_logged_in: 'An account is already logged in.',
+    invalid_reset_code: 'The reset code is invalid. Please try going through the reset process again.'
   },
   registration: {
     already_registered: 'This account has already been registered',
@@ -121,5 +122,8 @@ export default {
     incomplete_upload: 'The file upload was incomplete',
     no_file_specified: 'No upload file specified',
     upload_expired: 'Upload already finished',
+  },
+  settings: {
+    invalid_password: 'The current password you provided did not work.'
   }
 };

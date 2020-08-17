@@ -5,15 +5,20 @@ import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import classNames from 'classnames';
+import { Map } from 'immutable';
 import { Button } from 'react-bootstrap';
 
 import config from 'config';
 import { getCollectionLink, getStorage, inStorage, setStorage } from 'helpers/utils';
 
+import { AccessContext } from 'store/contexts';
+
 import { CollectionFilters, ListHeader } from 'containers';
 
 import Modal from 'components/Modal';
 import OutsideClick from 'components/OutsideClick';
+import { FalafelIcon } from 'components/icons';
 
 import {
   BrowserRenderer,
@@ -31,10 +36,7 @@ import './style.scss';
 
 
 class TableRenderer extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isMobile: PropTypes.bool
-  };
+  static contextType = AccessContext;
 
   static propTypes = {
     activeList: PropTypes.bool,
@@ -43,6 +45,7 @@ class TableRenderer extends Component {
     deselect: PropTypes.func,
     displayObjects: PropTypes.object,
     list: PropTypes.object,
+    isMobile: PropTypes.bool,
     removeBookmark: PropTypes.func,
     onKeyNavigate: PropTypes.func,
     onSelectRow: PropTypes.func,
@@ -55,20 +58,20 @@ class TableRenderer extends Component {
   constructor(props, context) {
     super(props);
 
-    this.columns = config.columns;
     this.state = {
-      columns: context.isMobile ? ['timestamp', 'url'] : config.defaultColumns,
+      columns: props.isMobile ? ['timestamp', 'url'] : config.defaultColumns,
       headerEditor: false
     };
 
-    if (props.activeList && context.canAdmin && !context.isMobile) {
-      this.state.columns = ['remove', ...this.columns];
+    if (props.activeList && context.canAdmin && !props.isMobile) {
+      const pageColumns = context.canAdmin ? ['remove', 'rowIndex'] : ['rowIndex'];
+      this.state.columns = [...pageColumns, ...config.defaultColumns];
     }
   }
 
   componentDidMount() {
-    const { canAdmin, isMobile } = this.context;
-    const { activeList } = this.props;
+    const { canAdmin } = this.context;
+    const { activeList, isMobile } = this.props;
 
     if (isMobile) {
       return false;
@@ -76,12 +79,11 @@ class TableRenderer extends Component {
 
     if (inStorage('columnOrder')) {
       try {
-        const columns = JSON.parse(getStorage('columnOrder')).filter(o => config.columns.includes(o));
+        let columns = JSON.parse(getStorage('columnOrder')).filter(o => config.columns.includes(o));
 
-        if ((!activeList || !canAdmin) && columns.includes('remove')) {
-          columns.splice(columns.indexOf('remove'), 1);
-        } else if (activeList && canAdmin && !columns.includes('remove')) {
-          columns.unshift('remove');
+        if (activeList) {
+          const pageColumns = canAdmin ? ['remove', 'rowIndex'] : ['rowIndex'];
+          columns = [...pageColumns, ...columns];
         }
 
         this.setState({ columns });
@@ -93,6 +95,7 @@ class TableRenderer extends Component {
 
   getColumnDefs = memoize((activeList, collection, browsers, list, objectLabel) => {
     const { canAdmin } = this.context;
+
     return {
       browser: {
         cellRenderer: BrowserRenderer,
@@ -106,7 +109,8 @@ class TableRenderer extends Component {
         dataKey: 'id',
         disableSort: true,
         key: 'rowIndex',
-        width: 60
+        width: 45,
+        headerClassName: 'hide-header'
       },
       remove: {
         cellRenderer: RemoveRenderer,
@@ -118,7 +122,8 @@ class TableRenderer extends Component {
         },
         dataKey: 'remove',
         key: 'remove',
-        width: 55
+        width: 35,
+        headerClassName: 'hide-header'
       },
       session: {
         cellRenderer: SessionRenderer,
@@ -186,7 +191,7 @@ class TableRenderer extends Component {
   }
 
   customHeaderRenderer = (props) => {
-    if (__PLAYER__) {
+    if (__PLAYER__ || ['remove', 'id'].includes(props.dataKey)) {
       return <DefaultHeader {...props} />;
     }
 
@@ -206,7 +211,7 @@ class TableRenderer extends Component {
   }
 
   saveHeaderState = () => {
-    setStorage('columnOrder', JSON.stringify(this.state.columns));
+    setStorage('columnOrder', JSON.stringify(this.state.columns.filter(o => !['rowIndex', 'remove'].includes(o))));
   }
 
   testRowHighlight = ({ index }) => {
@@ -242,27 +247,27 @@ class TableRenderer extends Component {
     const { activeList, browsers, collection, displayObjects, list, selectedPageIdx } = this.props;
 
     const objectLabel = activeList ? 'Bookmark Title' : 'Page Title';
+    const sortStore = activeList ? list : collection;
     const columnDefs = this.getColumnDefs(activeList, collection, browsers, list, objectLabel);
+    const sorted = activeList && list.getIn(['sortBy', 'sort']) !== null;
 
     return (
-      <div className="table-container">
+      <div className={classNames('table-container', { sorted })}>
         {
           activeList ?
             <ListHeader /> :
             <div className="collection-header">
-              <h2>Pages</h2>
               <CollectionFilters />
             </div>
         }
 
-        <OutsideClick classes="wr-coll-detail-table" handleClick={this.props.deselect}>
+        <OutsideClick classes={classNames('wr-coll-detail-table', { 'resources-table': !activeList })} handleClick={this.props.deselect}>
           {
             canAdmin &&
               <React.Fragment>
-                <Button onClick={this.toggleHeaderModal} className="table-header-menu borderless" bsSize="xs">
-                  {/* TODO: placeholder icon */}
-                  <span style={{ display: 'inline-block', fontWeight: 'bold', transform: 'rotateZ(90deg)' }}>...</span>
-                </Button>
+                <button onClick={this.toggleHeaderModal} type="button" className="table-header-menu borderless">
+                  <FalafelIcon />
+                </button>
                 <Modal
                   visible={this.state.headerEditor}
                   closeCb={this.toggleHeaderModal}
@@ -271,7 +276,7 @@ class TableRenderer extends Component {
                   footer={<Button onClick={this.toggleHeaderModal}>Close</Button>}>
                   <ul>
                     {
-                      this.columns.map((coll) => {
+                      config.columns.map((coll) => {
                         return (
                           <li key={coll}>
                             <input type="checkbox" onChange={this.toggleColumn} name={coll} id={`add-to-list-${coll}`} checked={this.state.columns.includes(coll) || false} />
@@ -300,7 +305,7 @@ class TableRenderer extends Component {
                           width={width}
                           height={height}
                           rowCount={displayObjects.size}
-                          headerHeight={25}
+                          headerHeight={30}
                           rowHeight={40}
                           rowGetter={({ index }) => displayObjects.get(index)}
                           rowClassName={this.testRowHighlight}
@@ -309,9 +314,9 @@ class TableRenderer extends Component {
                             onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex })
                           }}
                           rowRenderer={this.customRowRenderer}
-                          sort={activeList ? null : this.props.sort}
-                          sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
-                          sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
+                          sort={this.props.sort}
+                          sortBy={sortStore.getIn(['sortBy', 'sort'])}
+                          sortDirection={sortStore.getIn(['sortBy', 'dir'])}>
                           {
                             this.state.columns.map((c, idx) => {
                               let props = columnDefs[c];

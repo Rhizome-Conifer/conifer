@@ -1,0 +1,36 @@
+@import 'src/vars';
+
+.signup-form {
+    margin-top: b16(100px);
+
+    .signup-alert {
+        position: fixed;
+        top: b16(50px);
+        width: 70vw;
+        left: 15vw;
+        z-index: 100;
+
+        p {
+            margin: 0;
+        }
+    }
+
+    .wr-signup {
+        opacity: 1;
+        transition: opacity $slowShift ease-in-out;
+
+        &.success {
+            opacity: 0.5;
+        }
+
+        .btn {
+            .wr-loader {
+                margin-right: rem(.5rem);
+
+                path {
+                    fill: #FFF;
+                }
+            }
+        }
+    }
+}

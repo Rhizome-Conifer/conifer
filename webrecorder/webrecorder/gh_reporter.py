@@ -107,7 +107,7 @@ class GitHubIssueImporter(object):
         self.new_recording_prefix = ''
 
         if not self.new_recording_prefix:
-            self.new_recording_prefix = 'https://webrecorder.io/'
+            self.new_recording_prefix = 'https://conifer.rhizome.org/'
         self.new_recording_prefix += '$record/bug-reports/report/'
 
     def add_bug_report(self, report):

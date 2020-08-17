@@ -17,14 +17,15 @@ module.exports = {
   "plugins": [
     ["@babel/plugin-proposal-class-properties", { "loose": true }],
     "@babel/plugin-proposal-export-default-from",
+    "@babel/plugin-transform-runtime",
     "add-module-exports",
     "react-hot-loader/babel",
     "transform-react-remove-prop-types",
     ["transform-imports", {
-      "react-bootstrap": {
-        "transform": "react-bootstrap/lib/${member}",
-        "preventFullImport": true
-      },
+      // "react-bootstrap": {
+      //   "transform": "react-bootstrap/lib/${member}",
+      //   "preventFullImport": true
+      // },
       "components/siteComponents": {
         "transform": "components/siteComponents/${member}"
       },

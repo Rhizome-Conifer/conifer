@@ -7,6 +7,8 @@ import { withRouter } from 'react-router';
 
 import { draggableTypes as dt } from 'config';
 
+import { AccessContext } from 'store/contexts';
+
 import VisibilityLamp from 'components/collection/VisibilityLamp';
 import { LoaderIcon } from 'components/icons';
 
@@ -87,9 +89,7 @@ function dragCollect(connect, monitor) {
 
 
 class ListItem extends PureComponent {
-  static contextTypes = {
-    canAdmin: PropTypes.bool
-  };
+  static contextType = AccessContext;
 
   static propTypes = {
     addToList: PropTypes.func,

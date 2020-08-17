@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { checkUser, sendSignup } from 'store/modules/userSignup';
-import { UserSignup } from 'components/siteComponents';
+import { UserSignupUI } from 'components/siteComponents';
 
 
 const mapStateToProps = ({ app }) => {
@@ -30,4 +30,4 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(UserSignup);
+)(UserSignupUI);

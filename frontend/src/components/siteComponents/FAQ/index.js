@@ -1,8 +1,9 @@
 import React from 'react';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import { Col, Row } from 'react-bootstrap';
 
-import { supportEmail } from 'config';
+import { product } from 'config';
 
 import './style.scss';
 
@@ -13,17 +14,15 @@ function FAQ() {
       <Helmet>
         <title>About</title>
       </Helmet>
-      <div className="row heading">
-        <aside className="col-sm-3 hidden-xs">
-          <img src={require('shared/images/logo.svg')} alt="Webrecorder logo" />
-        </aside>
-        <div className="col-xs-10 col-xs-push-1 col-sm-9 col-sm-push-0">
-          <h2>Webrecorder is both a tool to create high-fidelity, interactive recordings of any web site you browse and a platform to make those recordings accessible.</h2>
-        </div>
-      </div>
+      <Row className="heading">
+        <Col as="aside" sm={3} className="d-none d-md-block" />
+        <Col xs={12} md={9}>
+          <h2>{product} is both a tool to create high-fidelity, interactive captures of any web site you browse and a platform to make those captured websites accessible.</h2>
+        </Col>
+      </Row>
 
-      <div className="row">
-        <aside className="col-sm-3 hidden-xs">
+      <Row>
+        <Col as="aside" md={3} className="d-none d-md-block">
           <p className="credit">
             <span>A project by</span>
             <a href="https://rhizome.org" target="_blank">
@@ -32,50 +31,48 @@ function FAQ() {
           </p>
 
           <p className="credit">
-            <span>With generous support&nbsp;from</span>
+            <span>2016-2020&nbsp;supported&nbsp;by</span>
             <a href="https://mellon.org/grants/grants-database/grants/rhizome-communications-inc/41500666/" target="_blank">
               <img src={require('shared/images/mellon-fdn.svg')} className="mellon-logo" alt="Andrew W. Mellon Foundation" />
             </a>
           </p>
 
           <p className="credit">
-            Outreach support is provided by
+            2016-2018&nbsp;supported&nbsp;by
             <a href="https://www.knightfoundation.org/press/releases/three-projects-will-help-better-inform-the-public-through-technology-innovation-with-540-000-from-knight-foundation" target="_blank">
               <img src={require('shared/images/KF_logo-stacked.svg')} className="knight-fnd" alt="James S. and John L. Knight Foundation" />
             </a>
           </p>
-        </aside>
-        <div className="col-xs-10 col-xs-push-1 col-sm-9 col-sm-push-0">
-          <h4 className="q">What are Web Archives?</h4>
+        </Col>
+        <Col xs={12} md={9}>
+          <h4 className="q">What are web archives?</h4>
           <p className="a">
             A web archive is a record of web resources. It may include HTML and images, scripts, stylesheets, as well as video, audio and other elements that web pages and web apps are made of, all in one file.<br />
           </p>
 
-          <h4 className="q">What makes Webrecorder different?</h4>
           <p className="a">
-            What most differentiates Webrecorder is its focus on "dynamic web content." The web once delivered documents, like HTML pages. Today, it delivers complex software customized for every user, like individualized social media feeds. Other existing digital preservation solutions were built for that earlier time and cannot adequately cope with what the web has become. Webrecorder, by contrast, focuses on all that dynamic content, such as embedded video and complex javascript, addressing our present and future.
+            Web archives can provide better context than isolated screenshots. They can capture not only content but the behaviors of users and their relationships to one another. They can also offer vivid windows into a moment in time. At the same time, web archives should be made with great care and consideration. Keep in mind that what you archive might become public, and what you publish might be used in ways you do not anticipate.
           </p>
 
-          <h4 className="q">How do I use Webrecorder?</h4>
+          <h4 className="q">What makes {product} different?</h4>
           <p className="a">
-            <a href="https://guide.webrecorder.io/" target="_blank">We created a user guide to help get acquianted.</a>
+            While most web archive projects automatically create copies of material found on the public web, {product} is a user-driven platform. Users can create, curate, and share their own collections of web materials. This can even include items that would be only revealed after logging in or performing complicated actions on a web site.
+          </p>
+          <p className="a">
+            On the technical side, {product} focuses on “high fidelity” web archiving. Items relying on complex scripting, such as embedded videos, fancy navigation, or 3D graphics have a much higher success rate for capture with {product} than with traditional web archives.
           </p>
 
-          <h4 className="q">What can I do with recordings made in Webrecorder?</h4>
+          <h4 className="q">How do I use {product}?</h4>
           <p className="a">
-            After you create a recording, you can <a href="/_register">register</a> and <a href="/_login">login</a> to an account so we can host the recording(s) for you on webrecorder.io. We offer up to 5GB of free storage for every registered user.
-            <br /><br />
-            You can also download the recordings as WARC files and view them offline on your own machine, using our <a href="https://github.com/webrecorder/webrecorderplayer-electron#webrecorder-player" target="_blank"><strong>Webrecorder&nbsp;Player</strong></a> desktop application.
+            <a href="https://guide.conifer.rhizome.org/" target="_blank">We created a user guide to help get acquainted.</a>
           </p>
 
-          <h4 className="q">Where can I see some things captured with Webrecorder?</h4>
+          <h4 className="q">Is {product} free to use?</h4>
           <p className="a">
-            <a href="http://webenact.rhizome.org/" target="_blank">Here's</a> a collection made by Rhizome, and <a href="https://webrecorder.io/despens">another</a> by preservation director Dragan Espenschied.
+            Generally, yes! {product} offers a limited free tier with 5GB of storage space with some networking quota restrictions. Access to collections that users made public is always free of charge and unlimited.
           </p>
-
-          <h4 className="q">Is Webrecorder free to use?</h4>
           <p className="a">
-            Generally, yes! Webrecorder is a free and open-source software (under the Apache License). Check out the details <a href="https://github.com/webrecorder/webrecorder" target="_blank">here</a>. That said, specific use-cases and integrations may require additional support or storage that will come at a cost. <a href={`mailto:${supportEmail}`}>(Email us for details.)</a>
+            The software driving the service is open source under the Apache license.
           </p>
 
           <h4 className="q">There has to be some tiny print, right?</h4>
@@ -83,9 +80,9 @@ function FAQ() {
             <Link to="/_policies">Yes!</Link>
           </p>
 
-          <h4 className="q">Who created Webrecorder?</h4>
+          <h4 className="q">Who created {product}?</h4>
           <p className="a">
-            Webrecorder was developed by <a href="https://github.com/ikreymer" target="_blank">Ilya Kreymer</a>, and is a project of Rhizome under its digital preservation program led by <a href="https://github.com/despens" target="_blank">Dragan&nbsp;Espenschied</a>. It's currently developed by Kreymer with the assistance of Senior Front-End Developer <a href="https://github.com/m4rk3r" target="_blank">Mark Beasley</a>, Associate Director of Design <a href="https://github.com/patshiu" target="_blank">Pat&nbsp;Shiu</a>, Associate Director, Strategic Partnerships <a href="https://twitter.com/AnnaPerricci" target="_blank">Anna Perricci</a>, and Senior Back-End Developer <a href="https://github.com/N0taN3rd" target="_blank">John Berlin</a>.
+            {product} is the result of a multi-year research and development project to create a next generation web archiving service that was hosted at Rhizome from 2015 to 2020 under the name “Webrecorder.io.” The open source components created during this time now form the foundation of {product}. These components are maintained independently by the <a href="https://webrecorder.net">Webrecorder</a> project. With the renaming from Webrecorder.io to {product}, Rhizome became the permanent steward of the service.
           </p>
 
           <h4 className="q">What's Rhizome?</h4>
@@ -93,13 +90,11 @@ function FAQ() {
             Founded on the internet in 1996, Rhizome is a non-profit organization which commissions, presents, and preserves digital art. Since 2003, Rhizome has been an independent affiliate in residence at the <a href="http://newmuseum.org/" target="_blank">New Museum</a> in New York City, and is based at <a href="http://www.newinc.org/" target="_blank">NEW INC</a>, the first museum-led incubator. As it happens, to preserve net art you need to build complex things that can capture complex things.
           </p>
 
-          <h4 className="q">How is Webrecorder funded?</h4>
+          <h4 className="q">How is {product} funded?</h4>
           <p className="a">
-            Major support for the Webrecorder initiative is provided by The Andrew W. Mellon Foundation.
+            Major support has been provided by The Andrew W. Mellon Foundation.
             <br /><br />
-            Outreach, events, and research around Webrecorder is supported by James S. and John L. Knight Foundation.
-            <br /><br />
-            Additional support for Rhizome digital preservation is provided by Google and the Google Cultural Institute, the National Endowment for the Arts, and the New York State Council on the Arts with the support of Governor Andrew Cuomo and the New York State Legislature.
+            Additional support for Rhizome digital preservation is provided by the James S. and John L. Knight Foundation, Google and the Google Cultural Institute, the National Endowment for the Arts, and the New York State Council on the Arts with the support of Governor Andrew Cuomo and the New York State Legislature.
           </p>
           <div className="support-logos">
             <a href="https://mellon.org/grants/grants-database/grants/rhizome-communications-inc/41500666/" target="_blank">
@@ -110,8 +105,8 @@ function FAQ() {
               <img src={require('shared/images/KF_logo-stacked.svg')} width="100" alt="James S. and John L. Knight Foundation" />
             </a>
           </div>
-        </div>
-      </div>
+        </Col>
+      </Row>
     </div>
   );
 }

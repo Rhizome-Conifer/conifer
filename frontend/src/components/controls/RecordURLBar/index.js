@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
+import { Form, InputGroup } from 'react-bootstrap';
 
 import { ExtractWidget, PatchWidget, RemoteBrowserSelect } from 'containers';
 
@@ -11,15 +11,12 @@ import './style.scss';
 
 
 class RecordURLBar extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    currMode: PropTypes.string
-  };
-
   static propTypes = {
     activeBrowser: PropTypes.string,
     activeCollection: PropTypes.object,
     autopilotRunning: PropTypes.bool,
+    canAdmin: PropTypes.bool,
+    currMode: PropTypes.string,
     history: PropTypes.object,
     params: PropTypes.object,
     timestamp: PropTypes.string,
@@ -32,9 +29,9 @@ class RecordURLBar extends Component {
     this.state = { url: props.url || '' };
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.url !== this.props.url) {
-      this.setState({ url: nextProps.url });
+  componentDidUpdate(prevProps) {
+    if (this.props.url !== prevProps.url) {
+      this.setState({ url: this.props.url });
     }
   }
 
@@ -45,8 +42,7 @@ class RecordURLBar extends Component {
   }
 
   handleSubmit = (evt) => {
-    const { currMode } = this.context;
-    const { activeBrowser, history, params: { archiveId, coll, collId, extractMode, rec, user }, timestamp } = this.props;
+    const { activeBrowser, currMode, history, params: { archiveId, coll, collId, extractMode, rec, user }, timestamp } = this.props;
     const { url } = this.state;
 
     if (evt.key === 'Enter') {
@@ -72,8 +68,7 @@ class RecordURLBar extends Component {
   }
 
   render() {
-    const { currMode, canAdmin } = this.context;
-    const { activeCollection, autopilotRunning, params } = this.props;
+    const { activeCollection, autopilotRunning, currMode, canAdmin, params } = this.props;
     const { url } = this.state;
 
     const isNew = currMode === 'new';
@@ -81,39 +76,37 @@ class RecordURLBar extends Component {
     const isPatch = currMode === 'patch';
 
     return (
-      <div className="main-bar">
-        <form className={classNames('form-group-recorder-url', { 'start-recording': isNew, 'content-form': !isNew, 'remote-archive': isPatch || isExtract })}>
-          <div className="input-group containerized">
-            {
-              !__DESKTOP__ && canAdmin &&
-                <div className="input-group-btn rb-dropdown">
-                  {
-                    <RemoteBrowserSelect
-                      active
-                      autopilotRunning={autopilotRunning}
-                      params={params} />
-                  }
-                </div>
-            }
-            {
-              /* {% if not browser %}autofocus{% endif %} */
-              <input type="text" disabled={autopilotRunning} onChange={this.handleChange} onKeyPress={this.handleSubmit} className="url-input-recorder form-control" name="url" value={url} style={{ height: '3.2rem' }} autoFocus required />
-            }
-            {
-              isExtract &&
-                <ExtractWidget
-                  active
-                  toCollection={activeCollection.title} />
-            }
-            {
-              isPatch &&
-                <PatchWidget params={params} />
-            }
-          </div>
-        </form>
-      </div>
+      <Form className={classNames('form-group-recorder-url', { 'start-recording': isNew, 'content-form': !isNew, 'remote-archive': isPatch || isExtract })}>
+        <InputGroup>
+          {
+            canAdmin && !__DESKTOP__ &&
+              <div className="rb-dropdown">
+                {
+                  <RemoteBrowserSelect
+                    active
+                    autopilotRunning={autopilotRunning}
+                    currMode={currMode}
+                    params={params} />
+                }
+              </div>
+          }
+          {
+            <Form.Control type="text" disabled={autopilotRunning} onChange={this.handleChange} onKeyPress={this.handleSubmit} name="url" value={url} autoFocus required />
+          }
+          {
+            isExtract &&
+              <ExtractWidget
+                active
+                toCollection={activeCollection.title} />
+          }
+          {
+            isPatch &&
+              <PatchWidget params={params} />
+          }
+        </InputGroup>
+      </Form>
     );
   }
 }
 
-export default withRouter(RecordURLBar);
+export default RecordURLBar;

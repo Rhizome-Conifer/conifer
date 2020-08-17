@@ -1,6 +1,8 @@
 import { apiPath } from 'config';
 import { fromJS } from 'immutable';
 
+import { defaultSort } from 'config';
+
 const BK_COUNT = 'wr/coll/BK_COUNT';
 const BK_COUNT_SUCCESS = 'wr/coll/BK_COUNT_SUCCESS';
 const BK_COUNT_FAIL = 'wr/coll/BK_COUNT_FAIL';
@@ -38,7 +40,11 @@ const LISTS_REORDER = 'wr/coll/LISTS_REORDER';
 const LISTS_REORDER_SUCCESS = 'wr/coll/LISTS_REORDER_SUCCESS';
 const LISTS_REORDER_FAIL = 'wr/coll/LISTS_REORDER_FAIL';
 
-export const defaultSort = { sort: 'timestamp', dir: 'DESC' };
+const SEARCH = 'wr/coll/SEARCH';
+const SEARCH_SUCCESS = 'wr/coll/SEARCH_SUCCESS';
+const SEARCH_FAIL = 'wr/coll/SEARCH_FAIL';
+const CLEAR_SEARCH = 'wr/coll/CLEAR_SEARCH';
+
 const initialState = fromJS({
   editing: false,
   datProcessing: false,
@@ -48,6 +54,8 @@ const initialState = fromJS({
   error: null,
   loading: false,
   loaded: false,
+  searching: false,
+  searched: false,
   sortBy: defaultSort
 });
 
@@ -83,6 +91,7 @@ export default function collection(state = initialState, action = {}) {
     case COLL_LOAD_SUCCESS: {
       const {
         collection: {
+          autoindexed,
           created_at,
           dat_updated_at,
           dat_key,
@@ -105,11 +114,6 @@ export default function collection(state = initialState, action = {}) {
         }
       } = action.result;
 
-      const pgs = {};
-      if (pages) {
-        pages.forEach((pg) => { pgs[pg.id] = pg; });
-      }
-
       let editState = {};
       if (action.type === COLL_EDIT_SUCCESS) {
         editState = {
@@ -125,7 +129,8 @@ export default function collection(state = initialState, action = {}) {
         loaded: true,
         accessed: action.accessed,
         error: null,
-        pages: fromJS(pgs),
+        pages: fromJS(pages),
+        autoindexed,
         created_at,
         dat_updated_at,
         dat_key,
@@ -139,6 +144,8 @@ export default function collection(state = initialState, action = {}) {
         lists: fromJS(lists),
         owner,
         recordings: fromJS(recordings),
+        searching: false,
+        searched: false,
         size,
         slug,
         slug_matched,
@@ -203,6 +210,24 @@ export default function collection(state = initialState, action = {}) {
       });
     case RESET_EDIT_STATE:
       return state.set('edited', false);
+
+    case SEARCH:
+      return state.merge({
+        searching: true,
+      });
+    case SEARCH_SUCCESS:
+      return state.merge({
+        pages: fromJS(action.result.results),
+        searching: false,
+        searched: true
+      });
+    case SEARCH_FAIL:
+      return state.set('searching', false);
+    case CLEAR_SEARCH:
+      return state.merge({
+        searching: false,
+        searched: false,
+      });
 
     case LISTS_LOAD_FAIL:
     case LISTS_LOAD:
@@ -283,11 +308,19 @@ export function resetEditState() {
 }
 
 
-export function shareToDat(user, coll) {
+export function clearSearch() {
+  return { type: CLEAR_SEARCH };
+}
+
+export function search(user, coll, searchParams, fullText = false) {
   return {
-    types: [DAT_SHARE, DAT_SHARE_SUCCESS, DAT_SHARE_FAIL],
-    promise: client => client.post(`${apiPath}/collection/${coll}/dat/share`, {
-      params: { user }
+    types: [SEARCH, SEARCH_SUCCESS, SEARCH_FAIL],
+    promise: client => client.get(`${apiPath}/${fullText ? 'text' : 'url'}_search`, {
+      params: {
+        user,
+        coll,
+        ...searchParams
+      }
     })
   };
 }
@@ -297,6 +330,16 @@ export function setSort(sortBy) {
   return {
     type: COLL_SET_SORT,
     sortBy
+  };
+}
+
+
+export function shareToDat(user, coll) {
+  return {
+    types: [DAT_SHARE, DAT_SHARE_SUCCESS, DAT_SHARE_FAIL],
+    promise: client => client.post(`${apiPath}/collection/${coll}/dat/share`, {
+      params: { user }
+    })
   };
 }
 

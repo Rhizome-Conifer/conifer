@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import classNames from 'classnames';
 import { fromJS } from 'immutable';
 import { Button, Col, Row } from 'react-bootstrap';
 
-import { stopPropagation } from 'helpers/utils';
+import { appHost, tagline } from 'config';
+
+import { getCollectionLink, stopPropagation, truncate } from 'helpers/utils';
+import { AccessContext, AppContext } from 'store/contexts';
 
 import { StandaloneRecorder } from 'containers';
 
@@ -15,16 +18,14 @@ import RedirectWithStatus from 'components/RedirectWithStatus';
 import WYSIWYG from 'components/WYSIWYG';
 import { NewCollection } from 'components/siteComponents';
 import { Upload } from 'containers';
-import { LinkIcon, UploadIcon } from 'components/icons';
+import { LinkIcon, PlusIcon, UploadIcon, UserIcon } from 'components/icons';
 
 import CollectionItem from './CollectionItem';
 import './style.scss';
 
 
 class CollectionListUI extends Component {
-  static contextTypes = {
-    isAnon: PropTypes.bool
-  };
+  static contextType = AppContext;
 
   static propTypes = {
     auth: PropTypes.object,
@@ -103,9 +104,13 @@ class CollectionListUI extends Component {
     }
 
     return (
-      <React.Fragment>
+      <AccessContext.Provider value={{ canAdmin }}>
         <Helmet>
           <title>{`${displayName}'s Collections`}</title>
+          <meta property="og:url" content={`${appHost}/${userParam}`} />
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content={`${displayName}'s Collections`} />
+          <meta property="og:description" content={user.get('desc') ? truncate(user.get('desc'), 3, new RegExp(/([.!?])/)) : tagline} />
         </Helmet>
         <Row>
           {
@@ -119,7 +124,7 @@ class CollectionListUI extends Component {
                   success={this.props.edited}>
                   <h2>{displayName}</h2>
                 </InlineEditor>
-                <p className="collection-username"><span className="glyphicon glyphicon-user right-buffer-sm" />{ userParam }</p>
+                <p className="collection-username"><UserIcon />{ userParam }</p>
                 {
                   (user.get('display_url') || canAdmin) &&
                     <InlineEditor
@@ -146,7 +151,7 @@ class CollectionListUI extends Component {
                   success={this.props.edited} />
               </Col>
           }
-          <Col xs={12} sm={__DESKTOP__ ? 10 : 9} smOffset={__DESKTOP__ ? 1 : 0} className="wr-coll-meta">
+          <Col xs={12} sm={{ span: __DESKTOP__ ? 10 : 9, offset: __DESKTOP__ ? 1 : 0}} className="wr-coll-meta">
             {
               canAdmin &&
                 <Row className="collection-start-form">
@@ -161,10 +166,10 @@ class CollectionListUI extends Component {
                 <Row>
                   <Col xs={12} className={classNames('collections-index-nav', { desktop: __DESKTOP__ })}>
                     { __DESKTOP__ && <h4>My Collections</h4> }
-                    <Button onClick={this.toggle} className="rounded">
-                      <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
+                    <Button size="lg" onClick={this.toggle} variant="outline-secondary">
+                      <PlusIcon /> New Collection
                     </Button>
-                    <Upload classes="rounded">
+                    <Upload size="lg">
                       <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' }
                     </Upload>
                   </Col>
@@ -173,20 +178,22 @@ class CollectionListUI extends Component {
             {
               collections && collections.get('loaded') &&
                 <Row>
-                  <ul className="list-group collection-list">
-                    {
-                      orderedCollections.map((coll) => {
-                        return (
-                          <CollectionItem
-                            key={coll.get('id')}
-                            canAdmin={canAdmin}
-                            collection={coll}
-                            editCollection={editCollection}
-                            history={history} />
-                        );
-                      })
-                    }
-                  </ul>
+                  <Col>
+                    <ul className="list-group collection-list">
+                      {
+                        orderedCollections.map((coll) => {
+                          return (
+                            <CollectionItem
+                              key={coll.get('id')}
+                              canAdmin={canAdmin}
+                              collection={coll}
+                              editCollection={editCollection}
+                              history={history} />
+                          );
+                        })
+                      }
+                    </ul>
+                  </Col>
                 </Row>
             }
           </Col>
@@ -197,7 +204,7 @@ class CollectionListUI extends Component {
           createCollection={this.createCollection}
           creatingCollection={collections.get('creatingCollection')}
           error={collections.get('error')} />
-      </React.Fragment>
+      </AccessContext.Provider>
     );
   }
 }

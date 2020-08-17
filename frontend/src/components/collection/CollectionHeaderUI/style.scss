@@ -4,18 +4,18 @@
     border-radius: 0;
     text-align: center;
     display: block;
-    margin: 2rem auto 1rem;
-    min-width: 25rem;
-    font-size: 1.4rem;
+    margin: rem(2rem) auto rem(1rem);
+    min-width: rem(25rem);
+    font-size: rem(1.4rem);
 }
 
 .dat-modal {
     .dat-info {
-        margin-bottom: 1.5rem;
+        margin-bottom: rem(1.5rem);
 
         .dat-current {
             color: $brightGreen;
-            margin-top: .5rem;
+            margin-top: rem(.5rem);
         }
         .dat-current.update-dat{
             color: $warning;
@@ -24,12 +24,12 @@
             vertical-align: middle;
         }
         button {
-            margin-top: 2rem;
+            margin-top: rem(2rem);
         }
 
         .clipboard {
             vertical-align: top;
-            margin-right: 0.4rem;
+            margin-right: rem(0.4rem);
         }
         input[name="datUrl"] {
             width: 75%;
@@ -40,32 +40,32 @@
         .rounded {
             display: inline-block;
             margin-top:0;
-            margin-bottom:0.5rem;
-            margin-left: 1rem;
-            padding: 0.6rem 1.5rem;
+            margin-bottom:rem(0.5rem);
+            margin-left: rem(1rem);
+            padding: rem(0.6rem) rem(1.5rem);
             vertical-align: top;
         }
         .rounded.copy-dat {
-            padding: 0.6rem 1.4rem;
+            padding: rem(0.6rem) rem(1.4rem);
         }
     }
 
     .loading-dat {
         h4 {
             text-align: center;
-            margin: 2rem 0;
+            margin: rem(2rem) 0;
         }
 
         .dat-note {
-            font-size: 1.2rem;
+            font-size: rem(1.2rem);
             text-align: center;
         }
     }
 }
 
 header.wr-collection-header {
-    padding: 1rem 2rem;
-    border-bottom: solid .1rem $mgmt-gray;
+    padding: rem(1rem) rem(2rem);
+    border-bottom: solid rem(.1rem) $mgmt-gray;
 
     .dat-shared {
         background: $brightGreen;
@@ -84,20 +84,20 @@ header.wr-collection-header {
             flex-direction: column;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 1.5rem;
+            margin-bottom: rem(1.5rem);
             width: 100%;
 
             .capstone {
-                margin: .5rem 0;
+                margin: rem(.5rem) 0;
             }
 
             h1 {
                 display: inline-block;
                 font-family: $sans;
                 margin: 0;
-                font-size: 2.2rem;
+                font-size: rem(2.2rem);
                 font-weight: 400;
-                color: $body-gray;
+                color: $slate;
                 word-break: break-word;
             }
 
@@ -106,13 +106,13 @@ header.wr-collection-header {
                 white-space: nowrap;
                 width: 100%;
                 overflow: hidden;
-                font-size: 1.4rem;
+                font-size: rem(1.4rem);
 
                 &:after {
                     content: '';
                     position: absolute;
                     right: 0;
-                    width: 6rem;
+                    width: rem(6rem);
                     height: 100%;
                     background: linear-gradient(90deg, rgba(255, 255, 255, 0), #FFF 100%, #FFF);
                 }
@@ -127,10 +127,11 @@ header.wr-collection-header {
         .menu-row {
             display: flex;
             justify-content: flex-start;
-            margin: 1.5rem 0;
+            align-items: center;
+            margin: rem(1.5rem) 0;
 
             .new-session {
-                padding: .7rem 1.2rem;
+                padding: rem(.7rem) rem(1.2rem);
             }
 
             sup {
@@ -138,22 +139,31 @@ header.wr-collection-header {
             }
 
             & > *:not(:first-child) {
-                margin-left: .5rem;
+                margin-left: rem(.5rem);
             }
 
-            .dropdown-menu > li > a{
+            .dropdown-menu > .dropdown-item {
               margin: 0;
-              padding: 1rem 2rem;
+              padding: rem(1rem) rem(2rem);
             }
 
-            button#coll-menu {
-              width: 3.2rem;
-              height: 3.2rem;
-              padding: 0;
+            #coll-menu button {
+
+              &:after {
+                  display: none;
+              }
+
+              &:hover, &:active, &[aria-expanded=true] {
+                  svg {
+                      circle {
+                          fill: $white;
+                      }
+                  }
+              }
 
               svg {
-                width: 1.4rem;
-                height: .6rem;
+                width: rem(1.4rem);
+                height: rem(.6rem);
               }
             }
         }

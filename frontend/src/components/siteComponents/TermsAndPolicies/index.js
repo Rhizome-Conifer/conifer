@@ -1,5 +1,6 @@
 import React from 'react';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
+import { Button } from 'react-bootstrap';
 
 import { supportEmail } from 'config';
 
@@ -7,6 +8,14 @@ import './style.scss';
 
 
 function TermsAndPolicies() {
+  const scrollTo = (evt, to) => {
+    evt.preventDefault();
+    window.history.replaceState({}, '', `#${to}`);
+    const ele = document.querySelector(`a[name=${to}]`);
+    if (ele) {
+      ele.scrollIntoView();
+    }
+  }
   return (
     <React.Fragment>
       <Helmet>
@@ -17,9 +26,9 @@ function TermsAndPolicies() {
           <h1>Terms and Policies</h1>
 
           <ul>
-            <li><a href="#tos">Terms of Service</a></li>
-            <li><a href="#privacy">Privacy Policy</a></li>
-            <li><a href="#copyright">Copyright Policy</a></li>
+            <li><a href="#" onClick={(e) => { scrollTo(e, "tos"); }}>Terms of Service</a></li>
+            <li><a href="#" onClick={(e) => { scrollTo(e, "privacy"); }}>Privacy Policy</a></li>
+            <li><a href="#" onClick={(e) => { scrollTo(e, "copyright"); }}>Copyright Policy</a></li>
           </ul>
 
           <div className="tos-div">
@@ -27,13 +36,13 @@ function TermsAndPolicies() {
               <h3>Terms of Service</h3>
             </a>
             <p>
-              Use of the website <a href="/">http://webrecorder.io</a> (the “Site”) and the content and services provided through the Site is subject to the following terms and conditions.
+              Use of the website <a href="/">https://conifer.rhizome.org</a> (the “Site”) and the content and services provided through the Site is subject to the following terms and conditions.
             </p>
             <p>
               By using the Site, you accept and agree to be legally bound by these Terms of Service, whether or not you register for an account. If you are using the Site on behalf of an organization, you are agreeing to these Terms of Service for that organization and promising that you have authority to bind that organization to these Terms of Service. In that case, “you” and “your” will refer to the organization on behalf of which you are using the Site.
             </p>
             <p>If any of these Terms of Service is unacceptable to you, do not use the Site.</p>
-            <p>The Site is operated by Rhizome Communications, Inc. and its staff (“Rhizome”) in support of its mission to advance digital preservation through the creation of free and open source software tools. As used in these Terms of Service, “we,” “us” and “our” refer to the Rhizome Webrecorder initiative and to Rhizome more generally.</p>
+            <p>The Site is operated by Rhizome Communications, Inc. and its staff (“Rhizome”) in support of its mission to advance digital preservation through the creation of free and open source software tools. As used in these Terms of Service, “we,” “us” and “our” refer to the Rhizome Conifer initiative and to Rhizome more generally.</p>
             <p>The Site helps its users create high fidelity, context-rich and interactive archives of the internet for use on their own copyright materials or for not-for-profit use of others materials. Through the Site, users can create and save web archives. Visitors to the Site can access user-created archives if they are made public. The services provided by us through or in connection with the Site are referred to collectively as the “Service.”</p>
 
             <ol className="tos">
@@ -150,7 +159,7 @@ function TermsAndPolicies() {
             <ul className="privacy">
               <li>
                 <b>Introduction</b>
-                <p>This Privacy Policy discloses the information gathering and dissemination practices for the web site <a href="/">https://webrecorder.io/</a> (the “Site”) and the Webrecorder service (the “Service”).  The Site is operated by Rhizome Communications, Inc. and its staff (“Rhizome”) in support of its mission to advance digital preservation through the creation of free and open source software tools. As used in these Terms of Service, “we,” “us” and “our” refer to the Rhizome Webrecorder initiative and to Rhizome more generally.</p>
+                <p>This Privacy Policy discloses the information gathering and dissemination practices for the web site <a href="/">https://conifer.rhizome.org/</a> (the “Site”) and the Conifer service (the “Service”).  The Site is operated by Rhizome Communications, Inc. and its staff (“Rhizome”) in support of its mission to advance digital preservation through the creation of free and open source software tools. As used in these Terms of Service, “we,” “us” and “our” refer to the Rhizome Conifer initiative and to Rhizome more generally.</p>
                 <p>This Privacy Policy applies to information collected both from users who register to use the Service and from users who view the Site and use the Service without registering. By using the Site or Service, you are consenting to our collection and use of your information in accordance with this Privacy Policy.</p>
               </li>
 
@@ -169,7 +178,7 @@ function TermsAndPolicies() {
 
               <li>
                 <b>If You Do Not Wish to Disclose User Information</b>
-                <p>If you do not want to provide us with certain User Information then you may opt out by not using the Service or the part of the Service that provides us with such User Information. For example, if you do not want us to retain your name, then you may choose not to become a registered User. You will not be entitled to the benefits of registration, but you are still free to browse the Site and to visit the parts of the Site accessible to non-registrants. For example, you will be able to create temporary collections, but not persistent archives hosted on webrecorder.io.</p>
+                <p>If you do not want to provide us with certain User Information then you may opt out by not using the Service or the part of the Service that provides us with such User Information. For example, if you do not want us to retain your name, then you may choose not to become a registered User. You will not be entitled to the benefits of registration, but you are still free to browse the Site and to visit the parts of the Site accessible to non-registrants.</p>
               </li>
 
               <li>
@@ -179,33 +188,33 @@ function TermsAndPolicies() {
 
               <li>
                 <b>Cookies</b>
-                <p>The Site will attempt to store a small piece of data known as a “cookie” on your computer. The cookies are refreshed every time you enter the Site. Most browsers are initially set to accept cookies, but you may be able to change the settings to refuse cookies or to be alerted when cookies are being sent. We use cookies in some instances, to associate you with your User Information. For example, through the use of cookies you may log in automatically and thereby save you time. Rejection of cookies can interfere with your ability to log in and use certain parts of the Service.</p>
+                <p>The Site will attempt to store a small piece of data known as a “cookie” on your computer. The cookies are refreshed every time you enter the Site. Most browsers are initially set to accept cookies, but you may be able to change the settings to refuse cookies or to be alerted when cookies are being sent. We use cookies in some instances, to associate you with your User Information. For example, through the use of cookies you may log in automatically and thereby save you time. Rejection of cookies will interfere with your ability to log in and use certain parts of the Service.</p>
               </li>
 
               <li>
                 <b>Control of Your Password</b>
-                <p>Except as specifically permitted by this Privacy Policy or the Terms of Service, you may not disclose your Webrecorder password to any third parties nor share it with any third-parties. If you lose control of your Webrecorder password you may lose control over your Personally Identifiable Information, and you will be responsible for any legally binding actions taken on your behalf. Therefore, if your password has been compromised for any reason, you should immediately change your password or, if we provided your password, notify us so that we may issue you a new password.</p>
+                <p>Except as specifically permitted by this Privacy Policy or the Terms of Service, you may not disclose your Conifer password to any third parties nor share it with any third-parties. If you lose control of your Conifer password you may lose control over your Personally Identifiable Information, and you will be responsible for any legally binding actions taken on your behalf. Therefore, if your password has been compromised for any reason, you should immediately change your password or, if we provided your password, notify us so that we may issue you a new password.</p>
               </li>
 
               <li>
                 <b>Third Parties</b>
-                <p>This Privacy Policy only addresses the use and disclosure of User Information collected by us in connection with the Webrecorder Service. If you disclose information to other parties, different rules may apply to their use or disclosure of such information regardless of their affiliation or relationship with us. We are not responsible for the privacy practices or content of other web sites. When you link to another web site or are recording another web site, you are subject to the privacy policy of that web site. We encourage you to be aware when you are leaving our Site and to review any applicable privacy policies before you disclose your personal information to third parties.</p>
+                <p>This Privacy Policy only addresses the use and disclosure of User Information collected by us in connection with the Conifer service. If you disclose information to other parties, different rules may apply to their use or disclosure of such information regardless of their affiliation or relationship with us. We are not responsible for the privacy practices or content of other web sites. When you link to another web site or are recording another web site, you are subject to the privacy policy of that web site. We encourage you to be aware when you are leaving our Site and to review any applicable privacy policies before you disclose your personal information to third parties.</p>
 
                 <b>Recording Proxy and Third Party Content</b>
-                <p>The purpose of Webrecorder is to record remote website traffic (Third Party Content) on behalf of the user. As such, any content entered into Webrecorder will be transmitted through the Webrecorder service and recorded into a web archive, controlled by the user. If a user enters Personally Identifiable Information for the purpose of recording Third Party Content, that information may be recorded. Webrecorder will in most cases attempt to exclude user-submitted passwords and cookies from recordings, but does not guarantee that such attempts will always succeed. Even when not recorded, Personally Identifiable Information entered in the course of using Webrecorder may be transmitted through the Webrecorder proxy system.</p>
+                <p>The purpose of Conifer is to capture remote website traffic (Third Party Content) on behalf of the user. As such, any content entered into Conifer will be transmitted through the Conifer service and recorded into a web archive, controlled by the user. If a user enters Personally Identifiable Information for the purpose of recording Third Party Content, that information may be recorded as well. Conifer will attempt to exclude user-submitted passwords and cookies from recordings, but does not guarantee that such attempts will always succeed. Even when not recorded, Personally Identifiable Information entered in the course of using Conifer may be transmitted through the Conifer proxy system.</p>
 
                 <b>Third Party Disclaimer</b>
                 <p>We do not try to control, and disclaim responsibility for, information provided by other users or third-parties that is made available through our site. Such information may contain errors, intentional or otherwise, or may be offensive, inappropriate or inaccurate, and in some cases may be mislabeled or deceptively labeled.</p>
-                <p>Webrecorder uses services provided by third-party service providers, such as Amazon Web Services (which provides computing and storage services). You may wish to review their privacy policies as well.</p>
+                <p>Conifer uses services provided by third-party service providers, such as Amazon Web Services (which provides computing and storage services). You may wish to review their privacy policies as well.</p>
               </li>
 
               <li>
                 <b>Changes to this Policy</b>
-                <p>We may change this Privacy Policy from time to time with or without notice, so please check it regularly for any changes or updates. For future reference, Webrecorder will make a link to the current Privacy Policy available to you when you are on our Site.</p>
+                <p>We may change this Privacy Policy from time to time with or without notice, so please check it regularly for any changes or updates. For future reference, Conifer will make a link to the current Privacy Policy available to you when you are on our Site.</p>
               </li>
 
               <li>
-                <b>How do I contact Webrecorder?</b>
+                <b>How do I contact Conifer?</b>
                 <p>If you have any questions regarding this Privacy Policy, you can contact us by sending an email to <a href={`mailto:${supportEmail}`}>{supportEmail}</a></p>
               </li>
             </ul>
@@ -220,20 +229,20 @@ function TermsAndPolicies() {
             <ol>
               <li>A physical or electronic signature of person authorized to act on behalf of the owner of an exclusive right that is allegedly infringed;</li>
               <li>Identification of the copyrighted work claimed to have been infringed;</li>
-              <li>Identification of the material that is claimed to be infringing or to be the subject of infringing activity and that is to be removed or access to which is to be disabled, and information reasonably sufficient to permit Webrecorder to locate the material;</li>
-              <li>Information reasonably sufficient to permit Webrecorder to contact the complaining party, such as an address, telephone number, and if available, an electronic mail address at which the complaining party may be contacted;</li>
+              <li>Identification of the material that is claimed to be infringing or to be the subject of infringing activity and that is to be removed or access to which is to be disabled, and information reasonably sufficient to permit Conifer to locate the material;</li>
+              <li>Information reasonably sufficient to permit Conifer to contact the complaining party, such as an address, telephone number, and if available, an electronic mail address at which the complaining party may be contacted;</li>
               <li>A statement that the complaining party has a good faith belief that use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law; and</li>
               <li>A statement that the information in the notification is accurate, and under penalty of perjury, that the complaining party is authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.</li>
             </ol>
 
-            <p>Webrecorder’s designated agent for notice for claims of copyright infringement is Lauren Studebaker, who can be reached as follows:</p>
+            <p>Conifer’s designated agent for notice for claims of copyright infringement is Lyndsey Moulds, who can be reached as follows:</p>
             <ul>
               <li>By mail: Rhizome, 235 Bowery, New York, NY 10002</li>
               <li>By phone: 212-219-1288 x302</li>
-              <li>By email: lauren.studebaker(at)rhizome.org</li>
+              <li>By email: lyndsey.moulds(at)rhizome.org</li>
             </ul>
 
-            <p>Note: the above contact information is provided exclusively for notifying Webrecorder that your copyrighted material may have been infringed. All other inquiries, (e.g., requests for technical assistance or customer service, reports of email abuse, and piracy reports), will not receive a response through this process and should be directed to the appropriate entity via email or by phone.</p>
+            <p>Note: the above contact information is provided exclusively for notifying Conifer that your copyrighted material may have been infringed. All other inquiries, (e.g., requests for technical assistance or customer service, reports of email abuse, and piracy reports), will not receive a response through this process and should be directed to the appropriate entity via email or by phone.</p>
           </div>
         </div>
       </div>

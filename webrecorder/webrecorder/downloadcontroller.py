@@ -125,7 +125,8 @@ class DownloadController(BaseController):
         if not collection:
             self._raise_error(404, 'no_such_collection')
 
-        self.access.assert_can_write_coll(collection)
+        if not self.access.is_superuser():
+            self.access.assert_can_write_coll(collection)
 
         # collection['uid'] = coll
         collection.load()

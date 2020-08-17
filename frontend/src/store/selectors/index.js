@@ -6,14 +6,16 @@ import { columnMappings } from 'config';
 import { rts, truncate } from 'helpers/utils';
 
 import {
+  collSortBy,
+  collSortDir,
   getArchives,
   getActiveBookmarkId,
   getActiveRemoteBrowserId,
   getCollections,
-  getColumn,
+  // getColumn,
   getListBookmarks,
   getPages,
-  getQuery,
+  // getQuery,
   getRecordings,
   getRemoteBrowsers,
   getSize,
@@ -21,9 +23,9 @@ import {
   getTimestamp,
   getUrl,
   getUserCollections,
+  listSortBy,
+  listSortDir,
   selectedCollection,
-  userSortBy,
-  userSortDir,
 } from './access';
 
 
@@ -88,13 +90,34 @@ export const timestampOrderedIds = createSelector(
 
 
 export const getOrderedPages = createSelector(
-  getPages, userSortBy, userSortDir,
+  getPages, collSortBy, collSortDir,
   (pages, sort, dir) => {
     if (!pages) {
       return List();
     }
 
-    const sortedPages = pages.toList().sortBy(o => o.get(sort));
+    const sortedPages = pages.sortBy(o => o.get(sort));
+
+    if (dir === 'DESC') {
+      return sortedPages.reverse();
+    }
+    return sortedPages;
+  }
+);
+
+
+export const getOrderedBookmarks = createSelector(
+  getListBookmarks, listSortBy, listSortDir,
+  (pages, sort, dir) => {
+    if (!pages) {
+      return List();
+    }
+
+    if (sort === null) {
+      return pages;
+    }
+
+    const sortedPages = pages.sortBy(o => o.get(sort));
 
     if (dir === 'DESC') {
       return sortedPages.reverse();
@@ -201,19 +224,19 @@ export const getPageCount = createSelector(
 );
 
 
-export const getQueryPages = createSelector(
-  [getOrderedPages, getColumn, getQuery],
-  (orderedPages, column, query) => {
-    const c = columnMappings.hasOwnProperty(column) ? columnMappings[column] : column;
-    const exact = query.startsWith('"') && query.endsWith('"') && query.length > 1;
-    const _query = exact ? query.substring(1, query.length - 1) : query;
-
-    return orderedPages.filter((o) => {
-      return o.get(c) &&
-      (exact ? o.get(c) === _query : o.get(c).startsWith(_query));
-    });
-  }
-);
+// export const getQueryPages = createSelector(
+//   [getOrderedPages, getColumn, getQuery],
+//   (orderedPages, column, query) => {
+//     const c = columnMappings.hasOwnProperty(column) ? columnMappings[column] : column;
+//     const exact = query.startsWith('"') && query.endsWith('"') && query.length > 1;
+//     const _query = exact ? query.substring(1, query.length - 1) : query;
+//
+//     return orderedPages.filter((o) => {
+//       return o.get(c) &&
+//       (exact ? o.get(c) === _query : o.get(c).startsWith(_query));
+//     });
+//   }
+// );
 
 
 export const getRemoteArchiveStats = createSelector(

@@ -1,19 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import {
   Button,
-  Col,
   ControlLabel,
   FormControl,
   FormGroup,
-  InputGroup,
   Panel,
-  ProgressBar,
-  Row
+  ProgressBar
 } from 'react-bootstrap';
 
-import { supportEmail } from 'config';
+
 import { appendFlashVersion } from 'helpers/utils';
 
 import Modal from 'components/Modal';
@@ -41,18 +38,15 @@ class DesktopSettingsUI extends Component {
   constructor(props) {
     super(props);
 
+    ipcRenderer.on('async-response', this.handleVersionResponse);
+    ipcRenderer.send('async-call');
+
     this.state = {
-      allotment: '',
       confirmUser: '',
       dataPath: '',
       showModal: false,
       version: ''
     };
-  }
-
-  componentWillMount() {
-    ipcRenderer.on('async-response', this.handleVersionResponse);
-    ipcRenderer.send('async-call');
   }
 
   componentWillUnmount() {
@@ -172,12 +166,12 @@ class DesktopSettingsUI extends Component {
             </p>
             <span><b>Space Used:</b> </span>
             <SizeFormat bytes={usedSpace} /> <em>of <SizeFormat bytes={totalSpace} /></em>
-            <ProgressBar now={(usedSpace / totalSpace) * 100} bsStyle="success" />
+            <ProgressBar now={(usedSpace / totalSpace) * 100} variant="success" />
           </Panel.Body>
         </Panel>
 
         {/*
-          <Panel className="buffer-top" bsStyle="danger">
+          <Panel className="buffer-top" variant="danger">
             <Panel.Heading>
               <Panel.Title>Remove Local Data</Panel.Title>
             </Panel.Heading>
@@ -186,7 +180,7 @@ class DesktopSettingsUI extends Component {
                 <div>
                   <b>Permanently remove all local archived data for this user</b>
                   <p>This action can not be undone!</p>
-                  <Button bsStyle="danger" bsSize="sm" onClick={this.toggleDelete}>Clear Local Data</Button>
+                  <Button variant="danger" size="sm" onClick={this.toggleDelete}>Clear Local Data</Button>
                 </div>
               </div>
             </Panel.Body>

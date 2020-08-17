@@ -1,24 +1,25 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
-import Helmet from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import HTML5Backend from 'react-dnd-html5-backend';
 import PropTypes from 'prop-types';
 import Raven from 'raven-js';
 import { matchPath } from 'react-router-dom';
 import { renderRoutes } from 'react-router-config';
-import { Alert, Button, Panel } from 'react-bootstrap';
+import { Alert, Button, Card } from 'react-bootstrap';
 import { asyncConnect } from 'redux-connect';
 import { DragDropContext } from 'react-dnd';
 
 import { isLoaded as isAuthLoaded, load as loadAuth } from 'store/modules/auth';
+import { AppContext } from 'store/contexts';
 import config from 'config';
 import { apiFetch, inStorage, setStorage } from 'helpers/utils';
 
 // direct import to prevent circular dependency
 import AppHeader from 'containers/AppHeader/AppHeader';
 
-import { Footer } from 'components/siteComponents';
+import { ConiferAnnounce, Footer } from 'components/siteComponents';
 import { InfoIcon } from 'components/icons';
 
 import 'shared/fonts/fonts.scss';
@@ -37,12 +38,6 @@ export class App extends Component {
     spaceUtilization: PropTypes.object
   };
 
-  static childContextTypes = {
-    isAnon: PropTypes.bool,
-    isEmbed: PropTypes.bool,
-    isMobile: PropTypes.bool
-  };
-
   constructor(props) {
     super(props);
     const ua = global.navigator ? global.navigator.userAgent : '';
@@ -50,6 +45,7 @@ export class App extends Component {
     this.handle = null;
     this.isMobile = Boolean(ua.match(/Mobile|Android|BlackBerry/));
     this.state = {
+      coniferAnnounce: true,
       error: null,
       lastPathname: null,
       loginStateAlert: false,
@@ -69,22 +65,15 @@ export class App extends Component {
     return null;
   }
 
-  getChildContext() {
-    const { auth, location: { pathname } } = this.props;
-    const match = this.getActiveRoute(pathname);
-
-    return {
-      isAnon: auth.getIn(['user', 'anon']),
-      isEmbed: match.embed || false,
-      isMobile: this.isMobile,
-    };
-  }
-
   componentDidMount() {
     if (this.isMobile) {
       if (inStorage('mobileNotice', window.sessionStorage)) {
         this.setState({ mobileAlert: false });
       }
+    }
+
+    if (inStorage('coniferAnnounceDismiss')) {
+      this.setState({ coniferAnnounce: false });
     }
 
     if (typeof document.hidden !== 'undefined') {
@@ -134,6 +123,11 @@ export class App extends Component {
   componentWillUnmount() {
     clearTimeout(this.handle);
     document.removeEventListener(this.visibilityChange, this.heartbeat);
+  }
+
+  coniferAnnounceDismiss = () => {
+    setStorage('coniferAnnounceDismiss', '1');
+    this.setState({ coniferAnnounce: false });
   }
 
   dismissStalledAlert = () => this.setState({ stalled: false })
@@ -189,10 +183,16 @@ export class App extends Component {
   }
 
   render() {
-    const { loaded, location: { pathname }, spaceUtilization } = this.props;
+    const { auth, loaded, location: { pathname }, spaceUtilization } = this.props;
     const { error, info, lastPathname } = this.state;
 
     const match = this.getActiveRoute(pathname);
+    const contextValues = {
+      isAnon: auth.getIn(['user', 'anon']),
+      isEmbed: match.embed || false,
+      isMobile: this.isMobile,
+    };
+
     const lastMatch = this.getActiveRoute(lastPathname);
 
     const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
@@ -215,12 +215,16 @@ export class App extends Component {
       <React.Fragment>
         <Helmet {...config.app.head} />
         {
+          match.name === 'landing' && this.state.coniferAnnounce &&
+            <ConiferAnnounce dismiss={this.coniferAnnounceDismiss} />
+        }
+        {
           !isEmbed &&
             <AppHeader routes={this.props.route.routes} />
         }
         {
           isOutOfSpace && this.state.outOfSpaceAlert &&
-            <Alert bsStyle="warning" className="oos-alert" onDismiss={this.dismissSpaceAlert}>
+            <Alert variant="warning" className="oos-alert" dismissible onClose={this.dismissSpaceAlert}>
               <p><b>Your account is out of space.</b> This means you can't capture anything right now.</p>
               To be able to capture again, you can:
               <ul>
@@ -234,52 +238,48 @@ export class App extends Component {
         }
         {
           this.state.stalled &&
-            <Panel className="stalled-alert" bsStyle="warning">
-              <Panel.Heading>Oops, this request seems to be taking a long time..</Panel.Heading>
-              <Panel.Body>
+            <Card className="stalled-alert">
+              <Card.Header>Oops, this request seems to be taking a long time..</Card.Header>
+              <Card.Body>
                 <p>
                   Please refresh the page and try again. If the problem persists, contact <a href={`mailto:${config.supportEmail}`}>support</a>.
                 </p>
-                <Button onClick={this.dismissStalledAlert}>dismiss</Button>
-              </Panel.Body>
-            </Panel>
-        }
-        {
-          !isEmbed && this.isMobile && this.state.mobileAlert &&
-            <Alert className="mobile-alert" onDismiss={this.dismissMobileAlert}>
-              Please note: Webrecorder doesn't currently support mobile devices.
-            </Alert>
+                <Button variant="outline-secondary" onClick={this.dismissStalledAlert}>dismiss</Button>
+              </Card.Body>
+            </Card>
         }
         {
           this.state.loginStateAlert &&
-            <Alert className="not-logged-in" onDismiss={this.dismissLoginAlert}>
+            <Alert variant="warning" className="not-logged-in" dismissible onClose={this.dismissLoginAlert}>
               Please <button className="button-link" onClick={this.refresh} type="button">reload the page</button>. Session has ended.
             </Alert>
         }
-        {
-          error ?
-            <div>
-              <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
-                <Panel bsStyle="danger" className="error-panel">
-                  <Panel.Heading><InfoIcon /> Oops!</Panel.Heading>
-                  <Panel.Body>
-                    <p>Oops, the page encountered an error.</p>
-                    {
-                      config.ravenConfig &&
-                        <Button onClick={() => Raven.lastEventId() && Raven.showReportDialog()}>Submit a bug report</Button>
-                    }
-                  </Panel.Body>
-                </Panel>
-              </div>
-            </div> :
-            <section role="main" className={containerClasses}>
-              {renderRoutes(this.props.route.routes)}
-            </section>
-        }
-        {
-          hasFooter && !__DESKTOP__ &&
-            <Footer />
-        }
+        <AppContext.Provider value={contextValues}>
+          {
+            error ?
+              <div className="wr-content">
+                <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
+                  <Card variant="danger" className="error-panel">
+                    <Card.Header><InfoIcon /> Oops!</Card.Header>
+                    <Card.Body>
+                      <Card.Title>Oops, the page encountered an error.</Card.Title>
+                      {
+                        config.ravenConfig &&
+                          <Button variant="primary" onClick={() => Raven.lastEventId() && Raven.showReportDialog()}>Submit a bug report</Button>
+                      }
+                    </Card.Body>
+                  </Card>
+                </div>
+              </div> :
+              <section role="main" className={containerClasses}>
+                {renderRoutes(this.props.route.routes)}
+              </section>
+          }
+          {
+            hasFooter && !__DESKTOP__ &&
+              <Footer />
+          }
+        </AppContext.Provider>
       </React.Fragment>
     );
   }

@@ -311,7 +311,8 @@ class Recording(RedisUniqueComponent):
             all_files = self.redis.hmget(self._coll_warc_key(), rec_warc_keys)
 
             for n, v in zip(rec_warc_keys, all_files):
-                yield n, v
+                if n and v:
+                    yield n, v
 
         if include_index:
             index_file = self.get_prop(self.INDEX_FILE_KEY)
@@ -381,6 +382,24 @@ class Recording(RedisUniqueComponent):
         if patch_rec:
             return self.get_owner().get_recording(patch_rec)
 
+    def set_derivs_recording(self, derivs_recording, update_ts=True):
+        """Set derivatives recording.
+
+        :param Recording derivs_recording: recording building block
+        :param bool update_ts: whether to update timestamp
+        """
+        self.set_prop('derivs_rec', derivs_recording.my_id, update_ts=update_ts)
+
+    def get_derivs_recording(self):
+        """Get derivatives recording associated with this recording.
+
+        :returns: derivatives recording
+        :rtype: Recording
+        """
+        derivs_rec = self.get_prop('derivs_rec')
+        if derivs_rec:
+            return self.get_owner().get_recording(derivs_rec)
+
     def write_cdxj(self, user, cdxj_key):
         """Write CDX index lines to file.
 
@@ -437,6 +456,14 @@ class Recording(RedisUniqueComponent):
             logger.debug('Committing Rec: {0}'.format(self.my_id))
             collection = self.get_owner()
             user = collection.get_owner()
+
+            if not collection:
+                print('Collection missing for: ' + self.my_id)
+                return
+
+            if not user:
+                print('User missing for: ' + self.my_id)
+                return
 
             if not storage and not user.is_anon():
                 storage = collection.get_storage()

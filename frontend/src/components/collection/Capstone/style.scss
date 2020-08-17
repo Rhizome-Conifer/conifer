@@ -4,14 +4,14 @@
     display: flex;
     justify-content: center;
     align-items: baseline;
-    margin: 4rem 0;
+    margin: rem(4rem) 0;
     color: $gray500;
 
     h4 {
-        margin: 0 0.5rem 0 0;
+        margin: 0 rem(0.5rem) 0 0;
         text-transform: uppercase;
         font-weight: 400;
-        font-size: 1.2rem;
+        font-size: rem(1.2rem);
 
         svg {
             vertical-align: bottom;
@@ -20,22 +20,23 @@
     }
 
     .user-link {
+        font-size: b16(12);
+
         a {
             &:link, &:visited, &:active, &:hover {
               color: $gray500;
               font-weight: 400;
-              font-size: 1.2rem;
               text-decoration: underline;
             }
         }
     }
 
     .capstone-column {
-        margin-left: 1rem;
+        margin-left: rem(1rem);
 
         h3 {
             margin: 0;
-            color: $body-gray;
+            color: $slate;
         }
 
         .user-link {

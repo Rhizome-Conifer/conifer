@@ -5,26 +5,29 @@
     flex-direction: column;
     flex-grow: 1;
 
+    &.sorted {
+        .row-index {
+            opacity: 0;
+        }
+    }
+
     .collection-header {
         display: flex;
+        flex-direction: column;
         justify-content: space-between;
-        align-items: center;
 
         h2 {
-            font-size: 2.8rem;
+            font-size: rem(2.8rem);
             font-weight: 400;
             color: $gray600;
-            margin-left: 1.5rem;
+            margin-left: rem(1.5rem);
         }
 
 
         .wr-coll-utilities {
-            background: #FFF;
-            //z-index: 10;
-            margin-left: 1.5rem;
-            width: 30%;
-            min-width: 25rem;
-            max-width: 35rem;
+            margin: rem(1.5rem) 0 rem(1.5rem) rem(1.5rem);
+            width: 70%;
+            min-width: rem(25rem);
 
             nav {
                 height: 100%;
@@ -34,7 +37,7 @@
 
                 .search-box {
                     width: 100%;
-                    margin-right: .5rem;
+                    margin-right: rem(.5rem);
                 }
             }
         }
@@ -43,18 +46,17 @@
     .wr-coll-detail-table {
         flex-grow: 1;
         position: relative;
-        padding-right: 1.5rem;
-        padding-left: 1.5rem;
-        background: #FFF;
+        padding-right: rem(1.5rem);
+        padding-left: rem(1.5rem);
 
         .table-header-menu {
             position: absolute;
-            right: -.5rem;
-            top: 0.25rem;
+            right: rem(.2rem);
+            top: rem(0.25rem);
         }
 
         .ReactVirtualized__Table__headerRow {
-            font-size: 1rem;
+            font-size: rem(1rem);
             font-weight: 500;
             letter-spacing: 0.5pt;
         }
@@ -70,24 +72,32 @@
                 margin-right: 0;
             }
 
+            &.hide-header {
+              opacity: 0;
+            }
+
             & > div{
                 display: flex;
                 align-items: center;
-                background: $tableHeaderBg;
-                padding: 0 .5rem 0 0;
+                padding: 0 rem(.5rem) 0 0;
                 width: 100%;
                 height: 100%;
+                border-bottom: solid rem(.3rem) $pine;
+
+                svg {
+                    margin-left: auto;
+                }
             }
 
             .header-handle {
-                width: 1rem;
+                width: rem(1rem);
                 height: 100%;
-                margin-right: .75rem;
+                margin-right: rem(.75rem);
                 cursor: move;
                 background-image: url('../../../shared/images/Table-Col-Header-Handle.svg');
                 background-repeat: no-repeat;
                 flex-shrink: 0;
-                background-position: .3rem .6rem;
+                background-position: rem(.3rem) rem(.6rem);
             }
         }
 
@@ -96,16 +106,16 @@
                         color $tableRowFade ease-in-out,
                         fill $tableRowFade ease-in-out;
             cursor: context-menu;
-            font-size: 1.2rem;
+            font-size: rem(1.2rem);
             position: relative;
-            background: #FFF;
+            background: $white;
 
             &:before {
                 transition: background-color $quickShift ease-in-out;
                 position: absolute;
                 left: 0;
                 content: '';
-                width: .75rem;
+                width: rem(.75rem);
                 height: 100%;
             }
 
@@ -122,12 +132,14 @@
 
                 &:first-of-type {
                     & > * {
-                        padding: 0 1.25rem;
+                        padding: 0 rem(1.25rem);
                     }
                 }
 
                 .wr-remove-widget {
-                    text-align: left;
+                    text-align: center;
+                    opacity: 0;
+                    transition: opacity $midShift ease-in-out;
 
                     button {
                         margin: 0;
@@ -143,11 +155,12 @@
 
                 .row-index {
                     text-align: center;
+                    transition: opacity $midShift ease-in-out;
                 }
             }
 
             .page-title {
-                font-size: 1.45rem;
+                font-size: rem(1.45rem);
             }
 
             svg {
@@ -168,28 +181,27 @@
                         background: $tr-highlight-selected;
                     }
                 }
+
+                .wr-remove-widget {
+                    opacity: 1;
+                }
             }
 
             &.selected {
-                background-color: $blue;
-                color: #FFF;
-                fill: #FFF;
-
-                .session-link:link, a:link { color: #FFF; }
-                .session-link:visited, a:visited{ color: #FFF; }
-
-                svg {
-                    & > g {
-                        fill: #FFF;
-                    }
-                }
+                background-color: $pine;
             }
 
 
             .ReactVirtualized__Table__rowColumn {
                 a {
                     display: inline-block;
-                    padding: 1rem;
+                    text-decoration: none;
+                    padding: rem(1rem);
+                    color: $slate;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
                 }
             }
         }

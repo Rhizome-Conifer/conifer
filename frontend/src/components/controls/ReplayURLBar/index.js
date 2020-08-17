@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
+import { Form, InputGroup } from 'react-bootstrap';
 
 import { remoteBrowserMod } from 'helpers/utils';
 
@@ -12,13 +12,9 @@ import './style.scss';
 
 
 class ReplayURLBar extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    currMode: PropTypes.string
-  }
-
   static propTypes = {
     activeBrowser: PropTypes.string,
+    canAdmin: PropTypes.bool,
     bookmarks: PropTypes.object,
     history: PropTypes.object,
     params: PropTypes.object,
@@ -33,9 +29,9 @@ class ReplayURLBar extends Component {
     this.state = { url: props.url };
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.url !== this.props.url) {
-      this.setState({ url: nextProps.url });
+  componentDidUpdate(prevProps) {
+    if (this.props.url !== prevProps.url) {
+      this.setState({ url: this.props.url });
     }
   }
 
@@ -55,38 +51,35 @@ class ReplayURLBar extends Component {
   }
 
   render() {
-    const { canAdmin } = this.context;
-    const { params, timestamp } = this.props;
+    const { canAdmin, params, timestamp } = this.props;
     const { url } = this.state;
 
     return (
-      <div className="main-bar">
-        <form className="form-group-recorder-url">
-          <div className="input-group containerized">
-            {
-              canAdmin && !__DESKTOP__ &&
-                <div className="input-group-btn rb-dropdown">
-                  <RemoteBrowserSelect
-                    active
-                    params={params} />
-                </div>
-            }
-
-            <div className="wr-app-url">
-              <input type="text" onChange={this.handleInput} onKeyPress={this.handleSubmit} style={{ height: '3.2rem' }} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
-              <div className="wr-replay-info">
-                <InfoWidget />
-                <span className="replay-date main-replay-date hidden-xs">
-                  <TimeFormat dt={timestamp} />
-                </span>
+      <Form className="form-group-recorder-url">
+        <InputGroup>
+          {
+            canAdmin && !__DESKTOP__ &&
+              <div className="rb-dropdown">
+                <RemoteBrowserSelect
+                  active
+                  currMode={this.props.currMode}
+                  params={params} />
               </div>
-            </div>
+          }
 
+          <div className="wr-app-url">
+            <Form.Control type="text" onChange={this.handleInput} onKeyPress={this.handleSubmit} name="url" aria-haspopup="true" value={url} autoComplete="off" />
+            <div className="wr-replay-info">
+              <InfoWidget />
+              <span className="replay-date main-replay-date d-none d-sm-inline-block">
+                <TimeFormat dt={timestamp} />
+              </span>
+            </div>
           </div>
-        </form>
-      </div>
+        </InputGroup>
+      </Form>
     );
   }
 }
 
-export default withRouter(ReplayURLBar);
+export default ReplayURLBar;

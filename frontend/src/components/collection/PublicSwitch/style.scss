@@ -5,25 +5,32 @@
 
     .is-private {
         font-style: italic;
-        color: $gray600;
 
         svg path {
             fill: $gray600;
+        }
+
+        &:hover, &:active, &[aria-expanded=true] {
+            svg {
+                path {
+                    fill: $white;
+                }
+            }
         }
     }
 
     .dropdown-toggle {
         color: #000;
 
-        svg {
-            vertical-align: top;
+        &:after {
+            display: none;
         }
 
         &.is-public {
             color: white;
             font-weight: 600;
-            background: $brightGreen;
-            border: $brightGreen;
+            background-color: $brightGreen;
+
             svg g {
               fill: white;
             }
@@ -37,8 +44,10 @@
     }
 
     svg{
-        width: 1.3rem;
-        height: 1.3rem;
-        margin-right: 0.2rem;
+        position: relative;
+        top: b16(-1px);
+        width: b16(12px);
+        height: b16(12px);
+        margin-right: rem(0.2rem);
     }
 }

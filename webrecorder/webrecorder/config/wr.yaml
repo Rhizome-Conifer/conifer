@@ -41,6 +41,8 @@ browser_req_url: 'http://shepherd:9020/api/request/{browser}'
 browser_list_url: 'http://shepherd:9020/api/images/browser'
 browser_info_url: 'http://shepherd:9020/api/flock/{reqid}'
 
+browsertrix_url: 'http://browsertrix:8000/crawls'
+
 proxy_host: 'proxy'
 
 all_archives_index: './webarchives.yaml'
@@ -99,7 +101,7 @@ email_sender: $EMAIL_SENDER
 email_smtp_url: $EMAIL_SMTP_URL
 
 metadata:
-    product: Webrecorder
+    product: Conifer
     type: default
 
 # Default Descriptions
@@ -119,7 +121,7 @@ default_coll:
     desc: |
         *This is your first collection!*
 
-        Each collection contains pages you’ve captured using Webrecorder.
+        Each collection contains pages you’ve captured using Conifer.
 
         To add to this collection you can capture more pages.
 
@@ -235,5 +237,3 @@ enable_memento: true
 framed_replay: true
 
 query_html: time_info.html
-
-

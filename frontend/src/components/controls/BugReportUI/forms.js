@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Button, ControlLabel, Form, FormControl, FormGroup } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 
 import { product } from 'config';
 
@@ -38,14 +38,14 @@ export class ReportUIBugForm extends Component {
     return (
       <Form id="uibugform" onSubmit={this.save}>
         <p>Spot something off? Let us know what's happening:</p>
-        <FormGroup>
-          <FormControl aria-label="description" componentClass="textarea" name="desc" placeholder="When I click the 'save' button when editing my collection description, nothing happens." onChange={this.handleInput} value={this.state.bugReport} />
-        </FormGroup>
-        <FormGroup>
-          <ControlLabel>Email to notify in response to this issue: (optional)</ControlLabel>
-          <FormControl aria-label="email" name="email" placeholder="me@example.com" onChange={this.handleInput} value={this.state.email} />
-        </FormGroup>
-        <Button bsStyle="primary" type="submit" block>Send Report</Button>
+        <Form.Group>
+          <Form.Control aria-label="description" as="textarea" name="desc" placeholder="When I click the 'save' button when editing my collection description, nothing happens." onChange={this.handleInput} value={this.state.bugReport} />
+        </Form.Group>
+        <Form.Group>
+          <Form.Label>Email to notify in response to this issue: (optional)</Form.Label>
+          <Form.Control aria-label="email" name="email" placeholder="me@example.com" onChange={this.handleInput} value={this.state.email} />
+        </Form.Group>
+        <Button variant="primary" type="submit" block>Send Report</Button>
       </Form>
     );
   }
@@ -122,18 +122,18 @@ export class ReportContentBugForm extends Component {
               field => <CheckboxField {...field} key={field.name} cb={this.handleChange} />
             )
           }
-          <FormGroup id="formControlTextarea">
-            <FormControl
+          <Form.Group id="formControlTextarea">
+            <Form.Control
               aria-label="additional info (optional)"
               name="desc"
               onChange={this.handleChange}
-              componentClass="textarea"
+              as="textarea"
               value={desc}
               placeholder="Additional Info (optional)" />
-          </FormGroup>
-          <FormGroup>
-            <ControlLabel>Email to notify when this issue is fixed: (optional)</ControlLabel>
-            <FormControl
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>Email to notify when this issue is fixed: (optional)</Form.Label>
+            <Form.Control
               aria-label="email (optional)"
               id="bugEmail"
               type="email"
@@ -141,8 +141,8 @@ export class ReportContentBugForm extends Component {
               onChange={this.handleChange}
               value={email}
               placeholder="Email" />
-          </FormGroup>
-          <Button bsStyle="primary" type="submit" block>Send Report</Button>
+          </Form.Group>
+          <Button variant="primary" type="submit" block>Send Report</Button>
         </Form>
       </React.Fragment>
     );

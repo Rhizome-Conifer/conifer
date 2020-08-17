@@ -4,10 +4,6 @@
 	animation: blinker 0.8s alternate infinite;
 }
 
-.glyphicon-dot-sm {
-	color: $warning;
-}
-
 @keyframes blinker {
     10% { opacity: 1; }
 	20% { opacity: 0; }

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import removeMd from 'remove-markdown';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
-import { Button, Col, Row, Tooltip } from 'react-bootstrap';
+import { Button, Col, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
 
 import { buildDate, getCollectionLink, truncate } from 'helpers/utils';
 
@@ -44,10 +44,22 @@ class CollectionItem extends PureComponent {
     const { canAdmin, collection } = this.props;
     const descClasses = classNames('left-buffer list-group-item', { 'has-description': collection.get('desc') });
 
+    const deleteBtn = (
+      <OverlayTrigger
+        placement="top"
+        overlay={
+          <Tooltip id="tooltip-top">
+            DELETE
+          </Tooltip>
+        }>
+        <Button variant="link"><TrashIcon /></Button>
+      </OverlayTrigger>
+    );
+
     return (
       <li className={descClasses} key={collection.get('id')}>
         <Row>
-          <Col sm={12} md={7}>
+          <Col sm={12} md={9} lg={7}>
             <Link className="collection-title" to={`${getCollectionLink(collection)}`}>{collection.get('title')}</Link>
             <p className="collection-list-description">
               {
@@ -57,20 +69,20 @@ class CollectionItem extends PureComponent {
             {
               canAdmin &&
                 <React.Fragment>
-                  <Button className="rounded" onClick={this.manageCollection}>
+                  <Button size="lg" variant="outline-secondary" onClick={this.manageCollection}>
                     Manage Collection
                   </Button>
-                  <Button className="rounded" onClick={this.newSession}><PlusIcon /> New Session</Button>
+                  <Button size="lg" variant="outline-secondary" onClick={this.newSession}><PlusIcon /> New Session</Button>
                 </React.Fragment>
             }
           </Col>
-          <Col xs={6} md={1} className="collection-list-size">
+          <Col lg={1} className="collection-list-size d-none d-lg-block">
             <SizeFormat bytes={collection.get('size')} />
           </Col>
-          <Col className="collection-time" xs={6} md={2}>
+          <Col className="collection-time d-none d-lg-block" lg={2}>
             Created {buildDate(collection.get('created_at'), false, true)}
           </Col>
-          <Col className="collection-delete-action col-xs-offset-7 col-md-offset-0" xs={5} md={2}>
+          <Col className="collection-delete-action d-none d-md-flex" md={3} lg={2}>
             {
               canAdmin &&
                 <React.Fragment>
@@ -80,12 +92,7 @@ class CollectionItem extends PureComponent {
                         { collection.get('public') ? 'PUBLIC' : 'PRIVATE' }
                       </span>
                   }
-                  <DeleteCollection collection={collection}>
-                    <TrashIcon />
-                    <Tooltip placement="top" className="in" id="tooltip-top">
-                      DELETE
-                    </Tooltip>
-                  </DeleteCollection>
+                  <DeleteCollection collection={collection} trigger={deleteBtn} />
                 </React.Fragment>
             }
           </Col>

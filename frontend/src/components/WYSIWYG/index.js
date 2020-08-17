@@ -6,7 +6,9 @@ import ButtonGroup from 'react-rte/lib/ui/ButtonGroup';
 import IconButton from 'react-rte/lib/ui/IconButton';
 import remark from 'remark';
 import remark2react from 'remark-react';
-import { Button } from 'react-bootstrap'
+import { Button } from 'react-bootstrap';
+
+import { AccessContext } from 'store/contexts';
 
 import { PencilIcon, XIcon } from 'components/icons';
 
@@ -14,9 +16,7 @@ import './style.scss';
 
 
 class WYSIWYG extends Component {
-  static contextTypes = {
-    canAdmin: PropTypes.bool
-  };
+  static contextType = AccessContext;
 
   static propTypes = {
     active: PropTypes.bool,
@@ -82,7 +82,7 @@ class WYSIWYG extends Component {
 
     this.state = {
       renderable: false,
-      editorState: !props.readOnly && createValueFromString(this.getText(), this.method),
+      editorState: createValueFromString(this.getText(), this.method),
       markdownEdit: false,
       localEditMode: false
     };
@@ -90,31 +90,6 @@ class WYSIWYG extends Component {
 
   componentDidMount() {
     this.setState({ renderable: true });
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (!this.props.externalEditButton) {
-      // if change in success state from on to off, reset edit mode
-      if (this.props.success && !nextProps.success && this.state.localEditMode) {
-        this.toggleEditMode();
-      }
-    }
-
-    // non-save related inital value changed, update editor
-    if (this.props.initial !== nextProps.initial && !nextProps.success) {
-      if (!this.props.externalEditButton && this.state.localEditMode) {
-        this.toggleEditMode();
-      }
-
-      const text = nextProps.readOnly ? nextProps.initial : nextProps.initial || nextProps.placeholder;
-      this.setState({ editorState: createValueFromString(text, this.method) });
-    }
-
-    // readOnly state changed
-    if (this.props.readOnly && !nextProps.readOnly) {
-      const text = nextProps.initial || nextProps.placeholder;
-      this.setState({ editorState: createValueFromString(text, this.method) });
-    }
   }
 
   shouldComponentUpdate(nextProps) {
@@ -128,6 +103,29 @@ class WYSIWYG extends Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.props.renderCallback && this.state.renderable && !prevState.renderable) {
       this.props.renderCallback();
+    }
+
+    if (!prevProps.externalEditButton) {
+      // if change in success state from on to off, reset edit mode
+      if (prevProps.success && !this.props.success && this.state.localEditMode) {
+        this.toggleEditMode();
+      }
+    }
+
+    // non-save related inital value changed, update editor
+    if (prevProps.initial !== this.props.initial && !this.props.success) {
+      if (!this.props.externalEditButton && this.state.localEditMode) {
+        this.toggleEditMode();
+      }
+
+      const text = this.props.readOnly ? this.props.initial : this.props.initial || this.props.placeholder;
+      this.setState({ editorState: createValueFromString(text, this.method) });
+    }
+
+    // readOnly state changed
+    if (prevProps.readOnly && !this.props.readOnly) {
+      const text = this.props.initial || this.props.placeholder;
+      this.setState({ editorState: createValueFromString(text, this.method) });
     }
   }
 
@@ -267,8 +265,8 @@ class WYSIWYG extends Component {
         {
           _editMode && !contentSync &&
             <div className="editor-button-row">
-              <Button onClick={this.cancel} className="rounded" type="button">Cancel</Button>
-              <Button bsStyle={this.props.success ? 'success' : 'default'} className="rounded" onClick={this.save} type="button">
+              <Button variant="outline-secondary" onClick={this.cancel}>Cancel</Button>
+              <Button variant="primary" onClick={this.save}>
                 { this.props.success ? 'Saved..' : 'Save' }
               </Button>
             </div>
@@ -276,9 +274,9 @@ class WYSIWYG extends Component {
         {
           _editMode && this.state.markdownEdit &&
             <React.Fragment>
-              <button onClick={this.toggleMarkdownMode} className="close-markdown borderless" type="button">
+              <Button variant="link" onClick={this.toggleMarkdownMode} className="close-markdown">
                 <XIcon />
-              </button>
+              </Button>
               <textarea
                 className={classNames('markdown-editor', { visible: this.state.markdownEdit })}
                 onChange={this.onChangeSource}
@@ -288,7 +286,7 @@ class WYSIWYG extends Component {
         {
           canAdmin && !readOnly && !externalEditButton && !_editMode && !clickToEdit &&
             <div className="toggle-btn-row">
-              <Button className="rounded wr-edit-button" onClick={this.toggleEditMode}>edit</Button>
+              <Button variant="outline-secondary" onClick={this.toggleEditMode}>edit</Button>
             </div>
         }
         {

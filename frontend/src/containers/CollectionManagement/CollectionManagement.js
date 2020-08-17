@@ -4,6 +4,7 @@ import { asyncConnect } from 'redux-connect';
 
 import { load as loadColl } from 'store/modules/collection';
 import { getOrderedRecordings } from 'store/selectors';
+import { AccessContext } from 'store/contexts';
 
 import CollectionManagementUI from 'components/collection/CollectionManagementUI';
 
@@ -15,23 +16,13 @@ class CollectionManagement extends Component {
     history: PropTypes.object
   };
 
-  // TODO move to HOC
-  static childContextTypes = {
-    canAdmin: PropTypes.bool
-  };
-
-  getChildContext() {
-    const { auth, match: { params: { user } } } = this.props;
-    const username = auth.getIn(['user', 'username']);
-
-    return {
-      canAdmin: username === user
-    };
-  }
-
   render() {
+    const { auth, match: { params: { user } } } = this.props;
+    const canAdmin = auth.getIn(['user', 'username']) === user;
     return (
-      <CollectionManagementUI {...this.props} />
+      <AccessContext.Provider value={{ canAdmin }}>
+        <CollectionManagementUI {...this.props} />
+      </AccessContext.Provider>
     );
   }
 }
