@@ -34,6 +34,8 @@ SEARCH_CRAWL_DEF = {
 
 # =============================================================================
 class SearchAutomation(object):
+    MAX_CRAWL_GROUPS = 50
+
     def __init__(self, config):
         self.redis = redis.StrictRedis.from_url(os.environ['REDIS_BASE_URL'],
                                                 decode_responses=True)
@@ -47,7 +49,7 @@ class SearchAutomation(object):
     def process_new_pages(self):
         crawl_groups = {}
 
-        while True:
+        while len(crawl_groups) < self.MAX_CRAWL_GROUPS:
             data = self.redis.rpop(Collection.NEW_PAGES_Q)
             if not data:
                 break
@@ -131,4 +133,3 @@ class SearchAutomation(object):
 if __name__ == "__main__":
     from webrecorder.rec.worker import Worker
     Worker(SearchAutomation, 120).run()
-

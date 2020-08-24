@@ -11,10 +11,12 @@ from warcio.timeutils import timestamp_now, timestamp_to_iso_date
 # =============================================================================
 class SolrManager:
     def __init__(self, config):
+        solr_url = os.environ.get('SOLR_HOST', 'http://solr:8983')
+
         self.escape_re = re.compile(r'(?<!\\)(?P<char>[&|+\-!(){}[\]^"~*?:])')
-        self.solr_api = 'http://solr:8983/solr/conifer/update/json/docs?commit=true'
-        self.solr_update_api = 'http://solr:8983/solr/conifer/update?commit=true'
-        self.solr_select_api = 'http://solr:8983/solr/conifer/select'
+        self.solr_api = '{}/solr/conifer/update/json/docs?commit=true'.format(solr_url)
+        self.solr_update_api = '{}/solr/conifer/update?commit=true'.format(solr_url)
+        self.solr_select_api = '{}/solr/conifer/select'.format(solr_url)
 
         self.page_query = (
             '?q=title_t:* '
