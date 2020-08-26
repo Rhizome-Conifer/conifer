@@ -886,3 +886,20 @@ class CLIUserManager(UserManager):
 
     def _get_access(self):
         return self.base_access
+
+    def index_collection(self, username, collection, include_existing=True):
+        """Helper function to trigger indexing for supplied collection"""
+        user, coll = self.get_user_coll(username, collection)
+
+        if coll is None:
+            print('Collection not found...')
+            return
+
+        title = 'Derivates Regenerated on ' + datetime.now().isoformat()
+        rec = coll.create_recording(title=title, rec_type='derivs')
+        res = coll.requeue_pages_for_derivs(rec.my_id, include_existing)
+
+        if res > 0:
+            coll.set_bool_prop('autoindexed', True)
+
+        return '{} recordings queued'.format(res)
