@@ -108,7 +108,7 @@ class SolrManager:
             'timestamp_s': timestamp_s,
             'timestamp_dt': timestamp_dt,
             'mime_s': mime_s,
-            'ttl_s': '+30MINUTES'
+            'ttl_s': '+24HOURS'
         }
 
         if text is not None:
