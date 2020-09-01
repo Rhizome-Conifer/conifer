@@ -74,7 +74,7 @@ class CollsController(BaseController):
                     collection.set_external(True)
 
                 # if auto-indexing is on, mark new collections as auto-indexed to distinguish from prev collections
-                if self.is_search_auto:
+                if self.is_search_auto and self.access.beta_access():
                     collection.set_bool_prop('autoindexed', True)
 
                 user.mark_updated()
@@ -422,10 +422,10 @@ class CollsController(BaseController):
     def get_collection_info(self, coll_name, user=None, include_pages=False):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
 
-        if self.is_search_auto:
+        if self.is_search_auto and self.access.beta_access():
             # see if there are results in solr
             if (user.curr_role in ['admin', 'beta-archivist'] and
-                self.solr_mgr.query_solr(collection.my_id, {})['total'] == 0):
+                self.solr_mgr.query_solr(collection.my_id, {}).get('total', None) == 0):
                 print('sycing solr derivs...')
                 collection.sync_solr_derivatives(do_async=True)
             else:

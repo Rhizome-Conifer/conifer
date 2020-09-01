@@ -163,7 +163,14 @@ class SolrManager:
                 coll=coll, start=start, rows=rows, sort=sort,
                 f=ts_from, t=ts_to, s=session, m=mime, u=url
             )
-            res = requests.get(qurl)
+
+            try:
+                res = requests.get(qurl)
+            except requests.exceptions.ConnectionError:
+                return {
+                    'total': 0,
+                    'results': []
+                }
 
             res = res.json()
             resp = res.get('response', {})
@@ -195,12 +202,18 @@ class SolrManager:
                 q=self._escape(search), coll=coll, f=ts_from, t=ts_to,
                 s=session, m=mime, u=('*{}*'.format(url) if url != '*' else '*'))
 
-            res = requests.get(
-                self.solr_select_api
-                + self.text_query.format(
-                    q=query, start=start, rows=rows, fq='coll_s:' + coll
+            try:
+                res = requests.get(
+                    self.solr_select_api
+                    + self.text_query.format(
+                        q=query, start=start, rows=rows, fq='coll_s:' + coll
+                    )
                 )
-            )
+            except requests.exceptions.ConnectionError:
+                return {
+                    'total': 0,
+                    'results': []
+                }
 
             res = res.json()
             resp = res.get('response', {})
