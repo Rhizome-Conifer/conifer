@@ -172,6 +172,7 @@ class Searchbox extends PureComponent {
     let session = '';
     let search = '';
     let searchFrag = '';
+    let urlFrag = '';
     let date = 'anytime';
     let startDate = new Date();
     let endDate = new Date();
@@ -188,7 +189,8 @@ class Searchbox extends PureComponent {
       search,
       searchFrag,
       session,
-      startDate
+      startDate,
+      urlFrag
     };
 
     if (props.location.search) {
@@ -233,7 +235,8 @@ class Searchbox extends PureComponent {
       search,
       searchStruct: '',
       session,
-      startDate
+      startDate,
+      urlFrag
     };
 
     if (props.location.search) {
