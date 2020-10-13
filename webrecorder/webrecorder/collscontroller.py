@@ -221,6 +221,10 @@ class CollsController(BaseController):
         @self.app.get('/api/v1/url_search')
         def do_url_search():
             user, collection = self.load_user_coll()
+
+            if not self.access.check_read_access_public(collection):
+                self._raise_error(404, 'no_such_collection')
+
             results = []
 
             search = request.query.getunicode('search', '').lower()
@@ -314,6 +318,9 @@ class CollsController(BaseController):
                 self._raise_error(400, 'not_supported')
 
             user, collection = self.load_user_coll()
+
+            if not self.access.check_read_access_public(collection):
+                self._raise_error(404, 'no_such_collection')
 
             return self.solr_mgr.query_solr(collection.my_id, request.query)
 
