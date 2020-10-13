@@ -903,3 +903,12 @@ class CLIUserManager(UserManager):
             coll.set_bool_prop('autoindexed', True)
 
         return '{} recordings queued'.format(res)
+
+    def index_user_collections(self, username, include_existing=True):
+        """Helper function to index all of a user's collections"""
+
+        user = self.all_users[username]
+        colls = user.get_collections()
+        for coll in colls:
+            self.index_collection(username, coll.data['slug'], include_existing)
+        return f'marked {len(colls)} collections for indexing'

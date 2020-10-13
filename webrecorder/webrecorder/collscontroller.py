@@ -424,8 +424,7 @@ class CollsController(BaseController):
 
         if self.is_search_auto and self.access.beta_access():
             # see if there are results in solr
-            if (user.curr_role in ['admin', 'beta-archivist'] and
-                self.solr_mgr.query_solr(collection.my_id, {}).get('total', None) == 0):
+            if self.solr_mgr.query_solr(collection.my_id, {}).get('total', None) == 0:
                 print('sycing solr derivs...')
                 collection.sync_solr_derivatives(do_async=True)
             else:
