@@ -484,7 +484,7 @@ class ContentController(BaseController, RewriterApp):
             recording = info['recording']
 
             if kwargs['type'] == 'replay-coll':
-                collection.sync_coll_index(exists=False,  do_async=False)
+                collection.sync_coll_index(exists=False, do_async=False)
 
             url = self.add_query(url)
 

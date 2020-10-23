@@ -1,0 +1,88 @@
+version: '3'
+services:
+  zoo1:
+    image: zookeeper:3.4
+    hostname: zoo1
+    networks:
+      - solrnet
+    volumes:
+      - 'zoo1_data:/data'
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+      ZOO_SERVERS: 'server.1=zoo1:2888:3888 server.2=zoo2:2888:3888'
+    ports:
+      - "2181:2181"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.hostname == search-node-1]
+  zoo2:
+    image: zookeeper:3.4
+    hostname: zoo2
+    networks:
+      - solrnet
+    volumes:
+      - 'zoo2_data:/data'
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_PORT: 2181
+      ZOO_SERVERS: 'server.1=zoo1:2888:3888 server.2=zoo2:2888:3888'
+    ports:
+      - "2181:2181"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.hostname == search-node-2]
+  solr1:
+    image: solr
+    hostname: solr1
+    container_name: solr1
+    networks:
+      - solrnet
+    ports:
+      - "8985:8983"
+    volumes:
+      - ./data/solr:/var/solr
+      - ./solrconf:/opt/solr/server/solr/configsets/solrconf
+    environment:
+      ZK_HOST: 'zoo1,zoo2'
+      SOLR_OPTS: '$SOLR_OPTS -Dsolr.autoSoftCommit.maxTime=1000'
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.hostname == search-node-1]
+  solr2:
+    image: solr
+    hostname: solr2
+    container_name: solr2
+    networks:
+      - solrnet
+    ports:
+      - "8986:8983"
+    volumes:
+      - ./data/solr:/var/solr
+      - ./solrconf:/opt/solr/server/solr/configsets/solrconf
+    environment:
+      ZK_HOST: 'zoo1,zoo2'
+      SOLR_OPTS: '$SOLR_OPTS -Dsolr.autoSoftCommit.maxTime=1000'
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.hostname == search-node-2]
+networks:
+  solrnet:
+    driver: overlay
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.101.0.0/16
+volumes:
+  zoo1_data:
+  zoo2_data:
+  solr1_varsolr:
+  solr2_varsolr:

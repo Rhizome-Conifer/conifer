@@ -176,6 +176,7 @@ class Searchbox extends PureComponent {
     let date = 'anytime';
     let startDate = new Date();
     let endDate = new Date();
+    let urlSearch = false;
 
     // create clone
     this.initialValues = {
@@ -190,7 +191,8 @@ class Searchbox extends PureComponent {
       searchFrag,
       session,
       startDate,
-      urlFrag
+      urlFrag,
+      urlSearch
     };
 
     if (props.location.search) {
@@ -220,6 +222,10 @@ class Searchbox extends PureComponent {
         endDate = qs.to ? this.parseDate(qs.to) : endDate;
         date = 'daterange';
       }
+
+      if (qs.method === 'url') {
+        urlSearch = true;
+      }
     }
 
     this.state = {
@@ -236,7 +242,8 @@ class Searchbox extends PureComponent {
       searchStruct: '',
       session,
       startDate,
-      urlFrag
+      urlFrag,
+      urlSearch
     };
 
     if (props.location.search) {
@@ -322,7 +329,8 @@ class Searchbox extends PureComponent {
       search,
       session,
       startDate,
-      urlFrag
+      urlFrag,
+      urlSearch
     } = this.state;
 
     const { query } = parseQuery(search);
@@ -364,7 +372,7 @@ class Searchbox extends PureComponent {
       collection.get('owner'),
       collection.get('id'),
       searchParams,
-      collection.get('autoindexed')
+      collection.get('autoindexed') && !urlSearch
     );
 
     // close adv search

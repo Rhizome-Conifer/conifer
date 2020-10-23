@@ -434,10 +434,10 @@ class CollsController(BaseController):
             if self.solr_mgr.query_solr(collection.my_id, {}).get('total', None) == 0:
                 print('sycing solr derivs...')
                 collection.sync_solr_derivatives(do_async=True)
-            else:
-                # sync cdxj to redis in lieu of playback
-                print('syncing cdx...')
-                collection.sync_coll_index(exists=False, do_async=True)
+            # else:
+            #     # sync cdxj to redis in lieu of playback
+            #     print('syncing cdx...')
+            #     collection.sync_coll_index(exists=False, do_async=True)
 
         result = {'collection': collection.serialize(include_rec_pages=include_pages,
                                                      include_lists=True,
