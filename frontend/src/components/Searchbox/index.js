@@ -260,7 +260,7 @@ class Searchbox extends PureComponent {
   componentDidUpdate(prevProps, prevState) {
     // check for searched prop being cleared
     if (prevProps.searched && !this.props.searched) {
-      this.setState({ search: 'is:page', searchFrag: '', urlFrag: '' });
+      this.setState({ search: 'is:page ', searchFrag: '', urlFrag: '' });
     }
   }
 
