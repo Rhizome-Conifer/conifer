@@ -912,3 +912,10 @@ class CLIUserManager(UserManager):
         for coll in colls:
             self.index_collection(username, coll.data['slug'], include_existing)
         return f'marked {len(colls)} collections for indexing'
+
+    def get_user_by_email(self, email):
+        """Helper function to look up a username by email"""
+        for u, data in self.all_users.items():
+            if data.get('email_addr') == email:
+                return print(f'Username: {u} for email address {email}')
+        print('No user found...')
