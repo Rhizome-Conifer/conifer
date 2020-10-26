@@ -100,7 +100,7 @@ class SearchAutomation(object):
             if not derivs_rec:
                 derivs_recording = recording.get_derivs_recording()
                 if not derivs_recording:
-                    title = 'Derivatives for: Session from ' + recording.to_iso_date(recording['created_at'], no_T=True)
+                    title = 'Full text search index for session from ' + recording.to_iso_date(recording['created_at'], no_T=True)
                     derivs_recording = collection.create_recording(title=title,
                                                                    rec_type='derivs')
 
