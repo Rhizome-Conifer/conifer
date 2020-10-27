@@ -3,8 +3,9 @@ import hashlib
 import json
 import os
 import re
-
 import requests
+
+from six.moves.urllib.parse import unquote
 from warcio.timeutils import timestamp_now, timestamp_to_iso_date
 
 
@@ -109,7 +110,7 @@ class SolrManager:
             'timestamp_s': timestamp_s,
             'timestamp_dt': timestamp_dt,
             'mime_s': mime_s,
-            'ttl_s': '+24HOURS'
+            'ttl_s': '+7DAYS'
         }
 
         if text is not None:
@@ -154,7 +155,7 @@ class SolrManager:
         ts_to = params.get('to', '*')
         session = params.get('session', '*')
         mime = params.get('mime', '*').strip(',')
-        url = self._escape(params.get('url')) or '*'
+        url = self._escape(unquote(params.get('url', ''))) or '*'
 
         if ',' in mime:
             mime = '({})'.format(mime.replace(',', ' OR '))

@@ -176,7 +176,7 @@ class UserManagementUI extends PureComponent {
               <li><Button variant="primary" onClick={this.showLogin}>Login</Button></li>
             </React.Fragment> :
             <li className="navbar-text">
-              <DropdownButton pullRight id="user-dropdown" title={userDropdown} onToggle={this.toggleDropdown}>
+              <DropdownButton id="user-dropdown" title={userDropdown} onToggle={this.toggleDropdown}>
                 {
                   !__DESKTOP__ &&
                     <li className="display login-display">

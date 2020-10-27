@@ -91,7 +91,7 @@ class Searchbox extends PureComponent {
       }
 
       if (urlFrag) {
-        searchStruct += textChange ? `url:${urlFragTxt} ` : `url:${encodeURIComponent(urlFrag)} `;
+        searchStruct += textChange ? `url:${urlFragTxt} ` : `url:${urlFrag} `;
       }
     }
 
@@ -198,10 +198,11 @@ class Searchbox extends PureComponent {
     if (props.location.search) {
       const qs = querystring.parse(props.location.search.replace(/^\?/, ''));
 
-      if (qs.search) {
+      if (qs.search || qs.url) {
         props.search(qs);
         search = qs.search;
         searchFrag = qs.search;
+        urlFrag = qs.url ? decodeURIComponent(qs.url) : '';
       }
 
       if (qs.mime) {
