@@ -895,7 +895,7 @@ class CLIUserManager(UserManager):
             print('Collection not found...')
             return
 
-        title = 'Derivates Regenerated on ' + datetime.now().isoformat()
+        title = 'Full text search index for session from ' + datetime.now().isoformat()
         rec = coll.create_recording(title=title, rec_type='derivs')
         res = coll.requeue_pages_for_derivs(rec.my_id, include_existing)
 

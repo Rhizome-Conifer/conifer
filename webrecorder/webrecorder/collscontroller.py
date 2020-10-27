@@ -386,7 +386,7 @@ class CollsController(BaseController):
             if not self.is_search_auto:
                 self._raise_error(400, 'not_supported')
 
-            title = 'Derivates Regenerated on ' + datetime.datetime.now().isoformat()
+            title = 'Full text search index for session from ' + datetime.datetime.now().isoformat()
             derivs_recording = collection.create_recording(title=title,
                                                            rec_type='derivs')
 
