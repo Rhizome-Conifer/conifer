@@ -1,5 +1,11 @@
 @import 'src/vars';
 
+.search-results {
+    em {
+        background: yellow;
+    }
+}
+
 .table-container {
     display: flex;
     flex-direction: column;
@@ -139,6 +145,11 @@
                     & > * {
                         padding: 0 rem(1.25rem);
                     }
+                }
+
+                .results-trigger {
+                    padding: rem(1.5rem) 0;
+                    text-align: center;
                 }
 
                 .wr-remove-widget {

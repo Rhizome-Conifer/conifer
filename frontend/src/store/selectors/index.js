@@ -59,6 +59,17 @@ export const getActiveCollection = createSelector(
   }
 );
 
+export const getOrderedDerivs = createSelector(
+  [getRecordings],
+  (recordings) => {
+    if (!recordings) {
+      return List();
+    }
+
+    return recordings.filter(o => o.get('rec_type') === 'derivs').sortBy(o => o.get('created_at')).reverse();
+  }
+);
+
 
 export const getOrderedRecordings = createSelector(
   [getRecordings],
@@ -67,8 +78,7 @@ export const getOrderedRecordings = createSelector(
       return List();
     }
 
-    const sortedRecordings = recordings.sortBy(o => o.get('created_at')).reverse();
-    return sortedRecordings;
+    return recordings.filter(o => o.get('rec_type') !== 'derivs').sortBy(o => o.get('created_at')).reverse();
   }
 );
 
@@ -96,7 +106,13 @@ export const getOrderedPages = createSelector(
       return List();
     }
 
-    const sortedPages = pages.sortBy(o => o.get(sort));
+    const sortedPages = pages.sortBy((o) => {
+      if(sort === 'matched') {
+        return o.getIn(['matched', 'title_t'], List()).merge(o.getIn(['matched', 'content_t'], List())).size;
+      }
+
+      return o.get(sort);
+    });
 
     if (dir === 'DESC') {
       return sortedPages.reverse();

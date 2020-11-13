@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import querystring from 'querystring';
 import { Button } from 'react-bootstrap';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+
 
 import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
 import config from 'config';
@@ -24,6 +26,7 @@ class CollectionManagementUI extends Component {
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
+    derivs: PropTypes.object,
     location: PropTypes.object,
     match: PropTypes.object,
     recordings: PropTypes.object,
@@ -51,6 +54,7 @@ class CollectionManagementUI extends Component {
     const {
       auth,
       collection,
+      derivs,
       recordings,
       location: { search },
       match: { params: { user } }
@@ -133,17 +137,38 @@ class CollectionManagementUI extends Component {
               { expandAll ? 'Collapse All' : 'Expand All' }
             </Button>
           </div>
-          {
-            recordings.map((rec) => {
-              return (
-                <SessionCollapsible
-                  active={rec.get('id') === activeSession}
-                  key={rec.get('id')}
-                  expand={expandAll || rec.get('id') === activeSession}
-                  recording={rec} />
-              );
-            })
-          }
+          <Tabs>
+            <TabList>
+              <Tab>Recording Sessions</Tab>
+              <Tab>Full-Text Search Data</Tab>
+            </TabList>
+            <TabPanel>
+              {
+                recordings.map((rec) => {
+                  return (
+                    <SessionCollapsible
+                      active={rec.get('id') === activeSession}
+                      key={rec.get('id')}
+                      expand={expandAll || rec.get('id') === activeSession}
+                      recording={rec} />
+                  );
+                })
+              }
+            </TabPanel>
+            <TabPanel>
+              {
+                derivs.map((rec) => {
+                  return (
+                    <SessionCollapsible
+                      active={rec.get('id') === activeSession}
+                      key={rec.get('id')}
+                      expand={expandAll || rec.get('id') === activeSession}
+                      recording={rec} />
+                  );
+                })
+              }
+            </TabPanel>
+          </Tabs>
         </section>
       </div>
     );

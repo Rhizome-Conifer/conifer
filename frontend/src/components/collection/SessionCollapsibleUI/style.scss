@@ -7,9 +7,9 @@
     border: solid rem(.1rem) $mgmt-gray;
     border-width: 0 0 rem(.1rem) 0;
 
-    &:nth-child(2) {
-        border-width: rem(.1rem) 0 rem(.1rem) 0;
-    }
+    // &:nth-child(2) {
+    //     border-width: rem(.1rem) 0 rem(.1rem) 0;
+    // }
 
     .Collapsible {
         flex-grow: 1;

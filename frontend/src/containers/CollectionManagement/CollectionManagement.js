@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
 import { load as loadColl } from 'store/modules/collection';
-import { getOrderedRecordings } from 'store/selectors';
+import { getOrderedRecordings, getOrderedDerivs } from 'store/selectors';
 import { AccessContext } from 'store/contexts';
 
 import CollectionManagementUI from 'components/collection/CollectionManagementUI';
@@ -43,6 +43,7 @@ const mapStateToProps = (outerState) => {
   return {
     auth: app.get('auth'),
     collection: app.get('collection'),
+    derivs: isLoaded ? getOrderedDerivs(app) : null,
     recordingEdited: app.getIn(['recordings', 'edited']),
     recordings: isLoaded ? getOrderedRecordings(app, true) : null
   };

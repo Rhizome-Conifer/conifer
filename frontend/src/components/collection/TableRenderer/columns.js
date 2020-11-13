@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { List } from 'immutable';
 // import defaultHeaderRenderer from 'react-virtualized/dist/commonjs/Table/defaultHeaderRenderer';
 import SortDirection from 'react-virtualized/dist/commonjs/Table/SortDirection';
 import classNames from 'classnames';
 import { DropTarget, DragSource } from 'react-dnd';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
 
 import { draggableTypes, untitledEntry } from 'config';
 import { capitalize, getCollectionLink, getListLink, remoteBrowserMod, stopPropagation } from 'helpers/utils';
@@ -130,6 +132,33 @@ export function SessionRenderer({ cellData, columnData: { activeList, canAdmin, 
   return canAdmin ?
     <Link to={`${collLink}/management?session=${recording}`} onClick={evt => stopPropagation(evt)} className="session-link">{recording}</Link> :
     <span>{recording}</span>;
+}
+
+
+export function SearchResultsRenderer({ cellData, columnData: { canAdmin, collLink }, rowData }) {
+  if (!cellData) {
+    return null;
+  }
+
+  const results = cellData.get('title_t', List()).merge(cellData.get('content_t', List()));
+  const popover = (
+    <Popover>
+      <Popover.Content>
+        <div className="search-results">
+          {
+            results.map((res) => {
+              return <p dangerouslySetInnerHTML={{ __html: res }} />;
+            })
+          }
+        </div>
+      </Popover.Content>
+    </Popover>
+  );
+  return (
+    <OverlayTrigger placement="left" overlay={popover}>
+      <div className="results-trigger">{results.size} match{results.size === 1 ? '' : 'es'}</div>
+    </OverlayTrigger>
+  );
 }
 
 
