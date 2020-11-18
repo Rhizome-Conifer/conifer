@@ -154,7 +154,7 @@ class SolrManager:
         ts_from = params.get('from', '*')
         ts_to = params.get('to', '*')
         session = params.get('session', '*')
-        mime = params.get('mime', '*').strip(',')
+        mime = params.get('mime', '').strip(',') or 'text/html'
         url = self._escape(unquote(params.get('url', ''))) or '*'
 
         if ',' in mime:
