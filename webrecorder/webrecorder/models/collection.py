@@ -855,7 +855,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
                 print('warc file not found')
                 continue
 
-            page = next((p for p in pages if cdxo['urlkey'].startswith('urn:text:{timestamp}/{url}'.format(**p))), None)
+            page = page = next((p for p in pages if 'urn:text:{timestamp}/{url}'.format(**p).startswith(cdxo['urlkey'])), None)
 
             if not page:
                 print('page not found..')
