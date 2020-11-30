@@ -89,7 +89,7 @@ class SolrManager:
         # text already parsed
         title = params.get('title') or params.get('url')
 
-        url = params.get('url')
+        url = params.get('url', '').lower()
 
         mime_s = params.get('mime', 'text/html')
 
@@ -155,7 +155,7 @@ class SolrManager:
         ts_to = params.get('to', '*')
         session = params.get('session', '*')
         mime = params.get('mime', '').strip(',') or 'text/html'
-        url = self._escape(unquote(params.get('url', ''))) or '*'
+        url = self._escape(unquote(params.get('url', '')).lower()) or '*'
 
         if ',' in mime:
             mime = '({})'.format(mime.replace(',', ' OR '))
