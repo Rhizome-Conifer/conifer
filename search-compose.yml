@@ -1,45 +1,66 @@
 version: '3'
 services:
   zoo1:
-    image: zookeeper:3.4
+    image: zookeeper:3.6
     hostname: zoo1
+    restart: always
     networks:
       - solrnet
     volumes:
       - 'zoo1_data:/data'
+    ports:
+      - 2181:2181
     environment:
       ZOO_MY_ID: 1
-      ZOO_PORT: 2181
-      ZOO_SERVERS: 'server.1=zoo1:2888:3888 server.2=zoo2:2888:3888'
-    ports:
-      - "2181:2181"
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+      ZOO_4LW_COMMANDS_WHITELIST: "*"
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints: [node.hostname == search-node-1]
   zoo2:
-    image: zookeeper:3.4
+    image: zookeeper:3.6
     hostname: zoo2
+    restart: always
     networks:
       - solrnet
     volumes:
       - 'zoo2_data:/data'
+    ports:
+      - 2182:2181
     environment:
       ZOO_MY_ID: 2
-      ZOO_PORT: 2181
-      ZOO_SERVERS: 'server.1=zoo1:2888:3888 server.2=zoo2:2888:3888'
-    ports:
-      - "2181:2181"
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+      ZOO_4LW_COMMANDS_WHITELIST: "*"
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints: [node.hostname == search-node-2]
+  zoo3:
+    image: zookeeper:3.6
+    hostname: zoo3
+    restart: always
+    networks:
+      - solrnet
+    volumes:
+      - 'zoo3_data:/data'
+    ports:
+      - 2183:2181
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+      ZOO_4LW_COMMANDS_WHITELIST: "*"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.hostname == search-node-3]
+
   solr1:
     image: solr
     hostname: solr1
-    container_name: solr1
     networks:
       - solrnet
     ports:
@@ -48,8 +69,9 @@ services:
       - ./data/solr:/var/solr
       - ./solrconf:/opt/solr/server/solr/configsets/solrconf
     environment:
-      ZK_HOST: 'zoo1,zoo2'
+      ZK_HOST: 'zoo1,zoo2,zoo3'
       SOLR_OPTS: '$SOLR_OPTS -Dsolr.autoSoftCommit.maxTime=1000'
+      SOLR_HEAP: '3G'
     deploy:
       mode: replicated
       replicas: 1
@@ -58,7 +80,6 @@ services:
   solr2:
     image: solr
     hostname: solr2
-    container_name: solr2
     networks:
       - solrnet
     ports:
@@ -67,13 +88,35 @@ services:
       - ./data/solr:/var/solr
       - ./solrconf:/opt/solr/server/solr/configsets/solrconf
     environment:
-      ZK_HOST: 'zoo1,zoo2'
+      ZK_HOST: 'zoo1,zoo2,zoo3'
       SOLR_OPTS: '$SOLR_OPTS -Dsolr.autoSoftCommit.maxTime=1000'
+      SOLR_HEAP: '3G'
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints: [node.hostname == search-node-2]
+  solr3:
+    image: solr
+    hostname: solr3
+    networks:
+      - solrnet
+    ports:
+      - "8987:8983"
+    volumes:
+      - ./data/solr:/var/solr
+      - ./solrconf:/opt/solr/server/solr/configsets/solrconf
+    environment:
+      ZK_HOST: 'zoo1,zoo2,zoo3'
+      SOLR_OPTS: '$SOLR_OPTS -Dsolr.autoSoftCommit.maxTime=1000'
+      SOLR_HEAP: '1G'
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.hostname == search-node-3]
+
+
 networks:
   solrnet:
     driver: overlay
@@ -84,5 +127,7 @@ networks:
 volumes:
   zoo1_data:
   zoo2_data:
+  zoo3_data:
   solr1_varsolr:
   solr2_varsolr:
+  solr3_varsolr:
