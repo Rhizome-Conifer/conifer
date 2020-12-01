@@ -48,12 +48,16 @@ class SolrManager:
             return query
         return self.escape_re.sub(r'\\\g<char>', query)
 
+    def clear_collection_docs(self, coll):
+        delete_cmd = {'delete': {'query': 'coll_s:{}'.format(coll)}}
+        resp = requests.post(self.solr_update_api, json=delete_cmd, timeout=2)
+
     def update_if_dupe(self, digest, coll, url, timestamp, timestamp_dt):
         try:
             query = 'digest_s:"{0}" AND coll_s:{1} AND url_s:"{2}"'.format(
                 digest, coll, url
             )
-            resp = requests.get(self.solr_select_api, params={'q': query, 'fl': 'id'})
+            resp = requests.get(self.solr_select_api, params={'q': query, 'fl': 'id'}, timeout=2)
 
             resp = resp.json()
             resp = resp.get('response')
@@ -78,7 +82,7 @@ class SolrManager:
                 }
             }
 
-            resp = requests.post(self.solr_update_api, json=add_cmd)
+            resp = requests.post(self.solr_update_api, json=add_cmd, timeout=2)
             return True
 
         except Exception as e:
@@ -131,11 +135,11 @@ class SolrManager:
         """ Index a batch of documents
             data -- json array of documents to ingest
         """
-        requests.post(self.solr_update_api, json=data)
+        requests.post(self.solr_update_api, json=data, timeout=2)
 
     def ingest(self, *args, **kwargs):
         """Index a single doc into solr"""
-        requests.post(self.solr_api, json=self.prepare_doc(*args, **kwargs))
+        requests.post(self.solr_api, json=self.prepare_doc(*args, **kwargs), timeout=2)
 
     def get_digest(self, text):
         m = hashlib.sha1()
@@ -167,7 +171,7 @@ class SolrManager:
             )
 
             try:
-                res = requests.get(qurl)
+                res = requests.get(qurl, timeout=2)
             except requests.exceptions.ConnectionError:
                 return {
                     'total': 0,
@@ -209,7 +213,8 @@ class SolrManager:
                     self.solr_select_api
                     + self.text_query.format(
                         q=query, start=start, rows=rows, fq='coll_s:' + coll
-                    )
+                    ),
+                    timeout=2
                 )
             except requests.exceptions.ConnectionError:
                 return {

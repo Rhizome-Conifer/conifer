@@ -895,9 +895,7 @@ class CLIUserManager(UserManager):
             print('Collection not found...')
             return
 
-        title = 'Full text search index for session from ' + datetime.now().isoformat()
-        rec = coll.create_recording(title=title, rec_type='derivs')
-        res = coll.requeue_pages_for_derivs(rec.my_id, include_existing)
+        res = coll.requeue_pages_for_derivs(include_existing)
 
         if res > 0:
             coll.set_bool_prop('autoindexed', True)
@@ -911,11 +909,11 @@ class CLIUserManager(UserManager):
         colls = user.get_collections()
         for coll in colls:
             self.index_collection(username, coll.data['slug'], include_existing)
-        return f'marked {len(colls)} collections for indexing'
+        return 'marked {} collections for indexing'.format(len(colls))
 
     def get_user_by_email(self, email):
         """Helper function to look up a username by email"""
         for u, data in self.all_users.items():
             if data.get('email_addr') == email:
-                return print(f'Username: {u} for email address {email}')
+                return print('Username: {} for email address {}'.format(u, email))
         print('No user found...')

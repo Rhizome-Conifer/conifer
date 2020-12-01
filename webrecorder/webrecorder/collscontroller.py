@@ -386,11 +386,7 @@ class CollsController(BaseController):
             if not self.is_search_auto:
                 self._raise_error(400, 'not_supported')
 
-            title = 'Full text search index for session from ' + datetime.datetime.now().isoformat()
-            derivs_recording = collection.create_recording(title=title,
-                                                           rec_type='derivs')
-
-            res = collection.requeue_pages_for_derivs(derivs_recording.my_id, get_bool(request.query.get('include_existing')))
+            res = collection.requeue_pages_for_derivs(get_bool(request.query.get('include_existing')))
 
             if res > 0:
                 collection.set_bool_prop('autoindexed', True)
@@ -427,19 +423,19 @@ class CollsController(BaseController):
         return result
 
     def get_collection_info(self, coll_name, user=None, include_pages=False):
-        user, collection = self.load_user_coll(user=user, coll_name=coll_name)
+        user, coll = self.load_user_coll(user=user, coll_name=coll_name)
 
         if self.is_search_auto and self.access.beta_access():
             # see if there are results in solr
-            if self.solr_mgr.query_solr(collection.my_id, {}).get('total', None) == 0:
+            if self.solr_mgr.query_solr(coll.my_id, {}).get('total', None) == 0:
                 print('sycing solr derivs...')
-                collection.sync_solr_derivatives(do_async=True)
+                coll.sync_solr_derivatives(do_async=True)
             # else:
             #     # sync cdxj to redis in lieu of playback
             #     print('syncing cdx...')
             #     collection.sync_coll_index(exists=False, do_async=True)
 
-        result = {'collection': collection.serialize(include_rec_pages=include_pages,
+        result = {'collection': coll.serialize(include_rec_pages=include_pages,
                                                      include_lists=True,
                                                      include_recordings=True,
                                                      include_pages=True,

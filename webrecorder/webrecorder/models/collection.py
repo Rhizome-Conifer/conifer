@@ -116,6 +116,25 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         return recording
 
+    def create_derivs_recording(self, src_rec):
+        """Create derivatives recording.
+
+        :returns: recording
+        :rtype: Recording
+        """
+        self.access.assert_can_admin_coll(self)
+
+        title = 'Full text search index for session {}'.format(src_rec.my_id)
+
+        recording = Recording(redis=self.redis,
+                              access=self.access)
+
+        rec = recording.init_new(title=title, rec_type='derivs')
+
+        self.recs.add_object(recording, owner=True)
+
+        return recording
+
     def move_recording(self, obj, new_collection):
         """Move recording into new collection.
 

@@ -94,6 +94,29 @@ class PagesMixin(object):
 
         self.redis.lpush(self.NEW_PAGES_Q, json.dumps(page))
 
+    def requeue_pages_for_derivs(self, include_existing=True):
+        """ Queue pages for derivs
+
+        :param str derivs_rec: If set, existing recording id to place derivatives in
+        :param: bool include_existing: If true, include pages that already have
+        text and screenshots
+        """
+
+        page_data = self.redis.hgetall(self.pages_key)
+        pages = []
+        count = 0
+
+        for n, v in page_data.items():
+            page = json.loads(v)
+            if not include_existing:
+                if page.get('has_text') and page.get('has_screenshot'):
+                    continue
+
+            self.queue_page_for_derivs(n, page)
+            count += 1
+
+        return count
+
     def delete_page(self, pid, all_page_bookmarks):
         """Delete page.
 
@@ -154,29 +177,6 @@ class PagesMixin(object):
         self.access.assert_can_read_coll(self)
 
         return self.redis.hlen(self.pages_key)
-
-    def requeue_pages_for_derivs(self, derivs_rec, include_existing=True):
-        """ Queue pages for derivs
-
-        :param str derivs_rec: If set, existing recording id to place derivatives in
-        :param: bool include_existing: If true, include pages that already have
-        text and screenshots
-        """
-
-        page_data = self.redis.hgetall(self.pages_key)
-        pages = []
-        count = 0
-
-        for n, v in page_data.items():
-            page = json.loads(v)
-            if not include_existing:
-                if page.get('has_text') and page.get('has_screenshot'):
-                    continue
-
-            self.queue_page_for_derivs(n, page, derivs_rec)
-            count += 1
-
-        return count
 
     def list_pages(self):
         """List pages.

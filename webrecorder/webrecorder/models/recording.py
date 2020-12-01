@@ -282,6 +282,11 @@ class Recording(RedisUniqueComponent):
         if pages:
             self.get_owner().delete_rec_pages(self)
 
+        # check for corresponding derivs recording
+        derivs = self.get_derivs_recording()
+        if derivs:
+            derivs.delete_me(storage, False)
+
         if not self.delete_object():
             res['error'] = 'not_found'
 
