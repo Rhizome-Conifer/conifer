@@ -425,7 +425,7 @@ class CollsController(BaseController):
     def get_collection_info(self, coll_name, user=None, include_pages=False):
         user, coll = self.load_user_coll(user=user, coll_name=coll_name)
 
-        if self.is_search_auto and self.access.beta_access():
+        if self.is_search_auto and self.access.can_admin_coll(coll) and self.access.beta_access():
             # see if there are results in solr
             if self.solr_mgr.query_solr(coll.my_id, {}).get('total', None) == 0:
                 print('sycing solr derivs...')

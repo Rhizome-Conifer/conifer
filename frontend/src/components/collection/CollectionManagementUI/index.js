@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import querystring from 'querystring';
 import { Button } from 'react-bootstrap';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-
 
 import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
 import config from 'config';
@@ -137,38 +135,17 @@ class CollectionManagementUI extends Component {
               { expandAll ? 'Collapse All' : 'Expand All' }
             </Button>
           </div>
-          <Tabs>
-            <TabList>
-              <Tab>Recording Sessions</Tab>
-              <Tab>Full-Text Search Data</Tab>
-            </TabList>
-            <TabPanel>
-              {
-                recordings.map((rec) => {
-                  return (
-                    <SessionCollapsible
-                      active={rec.get('id') === activeSession}
-                      key={rec.get('id')}
-                      expand={expandAll || rec.get('id') === activeSession}
-                      recording={rec} />
-                  );
-                })
-              }
-            </TabPanel>
-            <TabPanel>
-              {
-                derivs.map((rec) => {
-                  return (
-                    <SessionCollapsible
-                      active={rec.get('id') === activeSession}
-                      key={rec.get('id')}
-                      expand={expandAll || rec.get('id') === activeSession}
-                      recording={rec} />
-                  );
-                })
-              }
-            </TabPanel>
-          </Tabs>
+          {
+            recordings.map((rec) => {
+              return (
+                <SessionCollapsible
+                  active={rec.get('id') === activeSession}
+                  key={rec.get('id')}
+                  expand={expandAll || rec.get('id') === activeSession}
+                  recording={rec} />
+              );
+            })
+          }
         </section>
       </div>
     );

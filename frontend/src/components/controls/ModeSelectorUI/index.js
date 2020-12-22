@@ -173,7 +173,7 @@ class ModeSelectorUI extends PureComponent {
             { modeMarkup }
             { isWrite && <SizeCounter /> }
           </Button>
-          <DropdownButton alignLeft variant="outline-secondary" title="">
+          <DropdownButton variant="outline-secondary" title="">
             <div className="container">
               {
                 isLive &&

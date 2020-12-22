@@ -43,7 +43,7 @@ const mapStateToProps = (outerState) => {
   return {
     auth: app.get('auth'),
     collection: app.get('collection'),
-    derivs: isLoaded ? getOrderedDerivs(app) : null,
+    //derivs: isLoaded ? getOrderedDerivs(app) : null,
     recordingEdited: app.getIn(['recordings', 'edited']),
     recordings: isLoaded ? getOrderedRecordings(app, true) : null
   };
