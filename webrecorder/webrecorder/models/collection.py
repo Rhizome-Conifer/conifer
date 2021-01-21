@@ -828,7 +828,6 @@ class Collection(PagesMixin, RedisUniqueComponent):
             res = gevent.joinall(ges)
 
     def sync_solr_derivatives(self, do_async=True):
-        self.set_bool_prop('indexing', True)
         jobs = [gevent.spawn(self._ingest_stored_derivs)]
 
         if not do_async:

@@ -3,6 +3,8 @@ from six.moves.urllib.parse import quote
 import os
 import datetime
 
+from warcio.timeutils import iso_date_to_datetime
+
 from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.webreccork import ValidationException
 
@@ -108,12 +110,26 @@ class CollsController(BaseController):
             return {'collections': [coll.serialize(**kwargs) for coll in collections]}
 
         @self.app.get('/api/v1/collection/<coll_name>')
-        @self.api(query=['user'],
+        @self.api(query=['user', 'shallow'],
                   resp='collection')
         def get_collection(coll_name):
             user = self.get_user(api=True, redir_check=False)
+            shallow = get_bool(request.query.get('shallow'))
 
-            return self.get_collection_info(coll_name, user=user)
+            if shallow:
+                user, coll = self.load_user_coll(user=user, coll_name=coll_name)
+                return {
+                    'collection': coll.serialize(
+                        include_rec_pages=False,
+                        include_lists=False,
+                        include_recordings=False,
+                        include_pages=False,
+                        check_slug=coll_name
+                    )
+                }
+            else:
+                return self.get_collection_info(coll_name, user=user)
+
 
         @self.app.delete('/api/v1/collection/<coll_name>')
         @self.api(query=['user'],
@@ -425,16 +441,6 @@ class CollsController(BaseController):
     def get_collection_info(self, coll_name, user=None, include_pages=False):
         user, coll = self.load_user_coll(user=user, coll_name=coll_name)
 
-        if self.is_search_auto and self.access.can_admin_coll(coll) and self.access.beta_access():
-            # see if there are results in solr
-            if self.solr_mgr.query_solr(coll.my_id, {}).get('total', None) == 0:
-                print('sycing solr derivs...')
-                coll.sync_solr_derivatives(do_async=True)
-            # else:
-            #     # sync cdxj to redis in lieu of playback
-            #     print('syncing cdx...')
-            #     collection.sync_coll_index(exists=False, do_async=True)
-
         result = {'collection': coll.serialize(include_rec_pages=include_pages,
                                                      include_lists=True,
                                                      include_recordings=True,
@@ -443,5 +449,20 @@ class CollsController(BaseController):
 
         result['user'] = user.my_id
         result['size_remaining'] = user.get_size_remaining()
+
+        if self.is_search_auto and self.access.can_admin_coll(coll) and self.access.beta_access():
+            # see if there are results in solr
+            res = self.solr_mgr.query_solr(coll.my_id, {'limit': 1, 'sort_field': 'expires_at_dt', 'sort': 'asc'})
+            t = res.get('total', 0)
+            r = iso_date_to_datetime(res.get('results')[0].get('expires_at')) if t > 0 else None
+            offset = datetime.datetime.now() + datetime.timedelta(days=1)
+            needs_indexing = True if t == 0 or r < offset else False
+            if needs_indexing:
+                coll.set_bool_prop('indexing', True)
+                result['collection']['indexing'] = True
+                coll.sync_solr_derivatives(do_async=True)
+            else:
+                # sync cdxj to redis in lieu of playback
+                coll.sync_coll_index(exists=False, do_async=True)
 
         return result

@@ -27,15 +27,15 @@ class SolrManager:
             'AND rec_s:{s} '
             'AND url_s:*{u}*'
             '&fq=coll_s:{coll}'
-            '&fl=title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s'
+            '&fl=title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s,expires_at_dt'
             '&rows={rows}'
             '&start={start}'
-            '&sort=timestamp_s+{sort}'
+            '&sort={sort_field}+{sort}'
         )
         self.text_query = (
             '?q={q}'
             '&fq={fq}'
-            '&fl=id,title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s'
+            '&fl=id,title_t,url_s,timestamp_s,has_screenshot_b,id,rec_s,expires_at_dt'
             '&hl=true'
             '&hl.fl=content_t,title_t,url_s'
             '&hl.snippets=3'
@@ -105,16 +105,21 @@ class SolrManager:
         #if self.update_if_dupe(digest, coll, url, timestamp_ss, timestamp_dts):
         #    return
 
+        user = params.get('user')
+        coll = params.get('coll')
+
         data = {
-            'user_s': params.get('user'),
-            'coll_s': params.get('coll'),
+            'user_s': user,
+            'coll_s': coll,
             'rec_s': params.get('rec'),
             'title_t': title,
             'url_s': url,
             'timestamp_s': timestamp_s,
             'timestamp_dt': timestamp_dt,
+            'added_at_dt': timestamp_to_iso_date(timestamp_now()),
             'mime_s': mime_s,
-            'ttl_s': '+24HOURS'
+            'ttl_s': '+7DAYS',
+            'id': hashlib.md5('{}{}{}{}'.format(user, coll, url, timestamp_s).encode('utf-8')).hexdigest(),
         }
 
         if text is not None:
@@ -154,6 +159,7 @@ class SolrManager:
         rows = int(params.get('limit', 5000))
 
         sort = params.get('sort', 'asc')
+        sort_field = params.get('sort_field', 'timestamp_s')
 
         ts_from = params.get('from', '*')
         ts_to = params.get('to', '*')
@@ -166,8 +172,8 @@ class SolrManager:
 
         if not search:
             qurl = self.solr_select_api + self.page_query.format(
-                coll=coll, start=start, rows=rows, sort=sort,
-                f=ts_from, t=ts_to, s=session, m=mime, u=url
+                coll=coll, start=start, rows=rows, sort_field=sort_field,
+                sort=sort, f=ts_from, t=ts_to, s=session, m=mime, u=url
             )
 
             try:
@@ -192,6 +198,7 @@ class SolrManager:
                         'timestamp': doc.get('timestamp_s'),
                         'id': doc.get('id'),
                         'has_screenshot': doc.get('has_screenshot_b'),
+                        'expires_at': doc.get('expires_at_dt'),
                     }
                     for doc in docs
                 ],
@@ -237,6 +244,7 @@ class SolrManager:
                         'timestamp': doc.get('timestamp_s'),
                         'id': doc.get('id'),
                         'has_screenshot': doc.get('has_screenshot_b'),
+                        'expires_at': doc.get('expires_at_dt'),
                         'matched': hl.get(doc.get('id'))
                         #'matched': hl.get(doc.get('id'), {}).get('content_t'),
                     }

@@ -11,6 +11,10 @@ const COLL_LOAD = 'wr/coll/COLL_LOAD';
 const COLL_LOAD_SUCCESS = 'wr/coll/COLL_LOAD_SUCCESS';
 const COLL_LOAD_FAIL = 'wr/coll/COLL_LOAD_FAIL';
 
+const COLL_LOAD_META = 'wr/coll/COLL_LOAD_META';
+const COLL_LOAD_META_SUCCESS = 'wr/coll/COLL_LOAD_META_SUCCESS';
+const COLL_LOAD_META_FAIL = 'wr/coll/COLL_LOAD_META_FAIL';
+
 const COLL_EDIT = 'wr/coll/COLL_EDIT';
 const COLL_EDIT_SUCCESS = 'wr/coll/COLL_EDIT_SUCCESS';
 const COLL_EDIT_FAIL = 'wr/coll/COLL_EDIT_FAIL';
@@ -87,6 +91,40 @@ export default function collection(state = initialState, action = {}) {
       return state.set('editing', true);
     case COLL_LOAD:
       return state.set('loading', true);
+    case COLL_LOAD_META_SUCCESS: {
+      const {
+        collection: {
+          autoindexed,
+          created_at,
+          desc,
+          duration,
+          id,
+          indexing,
+          owner,
+          public_index,
+          size,
+          slug,
+          timespan,
+          title,
+          updated_at
+        }
+      } = action.result;
+      return state.merge({
+        autoindexed,
+        created_at,
+        desc,
+        duration,
+        id,
+        indexing,
+        owner,
+        public_index,
+        size,
+        slug,
+        timespan,
+        title,
+        updated_at
+      });
+    }
     case COLL_EDIT_SUCCESS:
     case COLL_LOAD_SUCCESS: {
       const {
@@ -278,6 +316,17 @@ export function isLoaded({ app }) {
   return app.get('collection') &&
          app.getIn(['collection', 'loaded']) &&
          Date.now() - app.getIn(['collection', 'accessed']) < 15 * 60 * 1000;
+}
+
+
+export function loadMetadata(user, coll, host = '') {
+  return {
+    types: [COLL_LOAD_META, COLL_LOAD_META_SUCCESS, COLL_LOAD_META_FAIL],
+    accessed: Date.now(),
+    promise: client => client.get(`${host}${apiPath}/collection/${coll}`, {
+      params: { user, shallow: true }
+    })
+  };
 }
 
 

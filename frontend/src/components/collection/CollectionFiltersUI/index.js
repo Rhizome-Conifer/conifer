@@ -14,6 +14,7 @@ class CollectionFiltersUI extends PureComponent {
     collection: PropTypes.object,
     disabled: PropTypes.bool,
     history: PropTypes.object,
+    loadMeta: PropTypes.func,
     location: PropTypes.object,
     searching: PropTypes.bool,
     searched: PropTypes.bool,
@@ -23,8 +24,38 @@ class CollectionFiltersUI extends PureComponent {
 
   constructor(props) {
     super(props);
+    this.count = 0;
 
-    this.indexed = false;
+    if (props.collection.get('indexing')) {
+      this.interval = setInterval(() => {
+        props.loadMeta(props.user.get('username'), props.collection.get('id'));
+        if (this.count++ > 120) {
+          clearInterval(this.interval);
+        }
+      }, 1000);
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    const { collection, indexing, loadMeta, user } = this.props;
+
+    if (!prevProps.indexing && indexing) {
+      this.count = 0;
+      this.interval = setInterval(() => {
+        loadMeta(user.get('username'), collection.get('id'));
+        if (this.count++ > 120) {
+          clearInterval(this.interval);
+        }
+      }, 1000);
+    }
+
+    if (prevProps.indexing && !indexing) {
+      clearInterval(this.interval);
+    }
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   search = (user, coll, params, fullText) => {
@@ -42,7 +73,7 @@ class CollectionFiltersUI extends PureComponent {
             location={this.props.location}
             search={this.search}
             clear={this.props.clearSearch}
-            searching={this.props.searching}
+            busy={this.props.searching || this.props.indexing}
             searched={this.props.searched} />
         </nav>
         {

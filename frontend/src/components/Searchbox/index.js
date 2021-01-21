@@ -38,7 +38,7 @@ class Searchbox extends PureComponent {
     clear: PropTypes.func,
     location: PropTypes.object,
     search: PropTypes.func,
-    searching: PropTypes.bool,
+    busy: PropTypes.bool,
     searched: PropTypes.bool,
   };
 
@@ -287,7 +287,7 @@ class Searchbox extends PureComponent {
 
   handleChange = (evt) => {
     // noop while indexing
-    if (this.props.searching) {
+    if (this.props.busy) {
       return;
     }
 
@@ -394,7 +394,7 @@ class Searchbox extends PureComponent {
   }
 
   render() {
-    const { collection, searching, searched } = this.props;
+    const { busy, collection, searched } = this.props;
     const { date } = this.state;
 
     return (
@@ -408,10 +408,10 @@ class Searchbox extends PureComponent {
           <Form.Control aria-label="filter" onKeyUp={this.keyUp} onChange={this.handleChange} name="search" value={this.state.search} autoComplete="off" placeholder="Filter" />
           <InputGroup.Append>
             {
-              (searching || searched) &&
+              (busy || searched) &&
               <React.Fragment>
                 {
-                  searching ?
+                  busy ?
                     <LoaderIcon /> :
                     <Button variant="link" onClick={this.clear}><XIcon /></Button>
                 }

@@ -104,6 +104,7 @@ class WRAPISpec(object):
 
         'public_index': 'Publicly Accessible Collection Index',
         'autoindexed': 'Indicates whether this collection has been indexed in solr',
+        'shallow': 'Return shallow or full Collection Response',
     }
 
     custom_params = {
