@@ -48,6 +48,7 @@ const SEARCH = 'wr/coll/SEARCH';
 const SEARCH_SUCCESS = 'wr/coll/SEARCH_SUCCESS';
 const SEARCH_FAIL = 'wr/coll/SEARCH_FAIL';
 const CLEAR_SEARCH = 'wr/coll/CLEAR_SEARCH';
+const CLEAR_INDEXING = 'wr/coll/CLEAR_INDEXING';
 
 const initialState = fromJS({
   editing: false,
@@ -268,6 +269,10 @@ export default function collection(state = initialState, action = {}) {
         searching: false,
         searched: false,
       });
+    case CLEAR_INDEXING:
+      return state.merge({
+        indexing: false
+      });
 
     case LISTS_LOAD_FAIL:
     case LISTS_LOAD:
@@ -362,6 +367,12 @@ export function resetEditState() {
 export function clearSearch() {
   return { type: CLEAR_SEARCH };
 }
+
+
+export function clearIndexing() {
+  return { type: CLEAR_INDEXING };
+}
+
 
 export function search(user, coll, searchParams, fullText = false) {
   return {

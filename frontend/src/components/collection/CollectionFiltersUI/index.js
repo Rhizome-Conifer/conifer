@@ -10,6 +10,7 @@ class CollectionFiltersUI extends PureComponent {
   static contextType = AccessContext;
 
   static propTypes = {
+    clearIndexingState: PropTypes.func,
     clearSearch: PropTypes.func,
     collection: PropTypes.object,
     disabled: PropTypes.bool,
@@ -28,9 +29,11 @@ class CollectionFiltersUI extends PureComponent {
 
     if (props.collection.get('indexing')) {
       this.interval = setInterval(() => {
-        props.loadMeta(props.user.get('username'), props.collection.get('id'));
-        if (this.count++ > 120) {
+        if (this.count++ > 240) {
           clearInterval(this.interval);
+          props.clearIndexingState();
+        } else {
+          props.loadMeta(props.user.get('username'), props.collection.get('id'));
         }
       }, 1000);
     }
@@ -42,9 +45,11 @@ class CollectionFiltersUI extends PureComponent {
     if (!prevProps.indexing && indexing) {
       this.count = 0;
       this.interval = setInterval(() => {
-        loadMeta(user.get('username'), collection.get('id'));
-        if (this.count++ > 120) {
+        if (this.count++ > 240) {
           clearInterval(this.interval);
+          this.props.clearIndexingState();
+        } else {
+          loadMeta(user.get('username'), collection.get('id'));
         }
       }, 1000);
     }

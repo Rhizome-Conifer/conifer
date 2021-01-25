@@ -16,8 +16,8 @@ class SolrManager:
         solr_coll = os.environ.get('SOLR_COLL', 'conifer')
 
         self.escape_re = re.compile(r'(?<!\\)(?P<char>[&|+\-!(){}[\]^"~*?:])')
-        self.solr_api = '{}/solr/{}/update/json/docs'.format(solr_url, solr_coll)
-        self.solr_update_api = '{}/solr/{}/update'.format(solr_url, solr_coll)
+        self.solr_api = '{}/solr/{}/update/json/docs?softCommit=true'.format(solr_url, solr_coll)
+        self.solr_update_api = '{}/solr/{}/update?softCommit=true'.format(solr_url, solr_coll)
         self.solr_select_api = '{}/solr/{}/select'.format(solr_url, solr_coll)
 
         self.page_query = (

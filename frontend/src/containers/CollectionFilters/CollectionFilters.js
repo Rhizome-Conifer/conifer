@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { clearSearch, load, loadMetadata, search } from 'store/modules/collection';
+import { clearIndexing, clearSearch, load, loadMetadata, search } from 'store/modules/collection';
 
 import CollectionFiltersUI from 'components/collection/CollectionFiltersUI';
 
@@ -25,6 +25,7 @@ const mapDispatchToProps = (dispatch) => {
       await dispatch(clearSearch());
       await dispatch(load(user, coll));
     },
+    clearIndexingState: () => dispatch(clearIndexing()),
     dispatch
   };
 };
