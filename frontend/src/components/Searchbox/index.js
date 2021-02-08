@@ -396,10 +396,12 @@ class Searchbox extends PureComponent {
   render() {
     const { busy, collection, searched } = this.props;
     const { date } = this.state;
+    const busyAction = searched ? 'Searching...' : 'Indexing collection...';
+    const inputTitle = busy ? busyAction : 'Search';
 
     return (
       <div className="search-box">
-        <InputGroup title="Search">
+        <InputGroup title={inputTitle}>
           <InputGroup.Prepend>
             <InputGroup.Text>
               <SearchIcon />

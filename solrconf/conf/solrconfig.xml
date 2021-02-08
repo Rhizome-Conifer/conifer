@@ -771,6 +771,14 @@
     </lst>
   </requestHandler>
 
+  <!--
+  <requestHandler name="/update" class="solr.UpdateRequestHandler">
+    <lst name="defaults">
+      <str name="update.chain">dedupe</str>
+    </lst>
+  </requestHandler>
+  -->
+
   <initParams path="/update/**,/query,/select,/spell">
     <lst name="defaults">
       <str name="df">_text_</str>
@@ -1113,16 +1121,23 @@
     <processor class="solr.TimestampUpdateProcessorFactory">
       <str name="fieldName">timestamp_dt</str>
     </processor>
+
     <processor class="solr.processor.DocExpirationUpdateProcessorFactory">
       <int name="autoDeletePeriodSeconds">30</int>
       <str name="ttlFieldName">ttl_s</str>
       <str name="expirationFieldName">expires_at_dt</str>
     </processor>
+
+    <processor class="solr.processor.SignatureUpdateProcessorFactory">
+      <bool name="enabled">true</bool>
+      <str name="signatureField">signature</str>
+      <bool name="overwriteDupes">true</bool>
+      <str name="fields">user_s,coll_s,url_s,timestamp_s</str>
+      <str name="signatureClass">solr.processor.Lookup3Signature</str>
+    </processor>
+
     <processor class="solr.LogUpdateProcessorFactory"/>
     <processor class="solr.DistributedUpdateProcessorFactory"/>
-    <processor class="solr.UUIDUpdateProcessorFactory">
-      <str name="fieldName">id</str>
-    </processor>
     <processor class="solr.RunUpdateProcessorFactory"/>
   </updateRequestProcessorChain>
 

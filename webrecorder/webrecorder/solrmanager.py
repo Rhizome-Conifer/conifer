@@ -119,7 +119,6 @@ class SolrManager:
             'added_at_dt': timestamp_to_iso_date(timestamp_now()),
             'mime_s': mime_s,
             'ttl_s': '+7DAYS',
-            'id': hashlib.md5('{}{}{}{}'.format(user, coll, url, timestamp_s).encode('utf-8')).hexdigest(),
         }
 
         if text is not None:
