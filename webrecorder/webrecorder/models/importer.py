@@ -24,7 +24,7 @@ import gevent
 import redis
 
 from webrecorder.utils import SizeTrackingReader, CacheingLimitReader
-from webrecorder.utils import redis_pipeline, sanitize_title
+from webrecorder.utils import get_bool, redis_pipeline, sanitize_title
 
 import logging
 logger = logging.getLogger(__name__)
@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 BLOCK_SIZE = 16384 * 8
 EMPTY_DIGEST = '3I42H3S6NNFQ2MSVX7XZKYAYSCX5QBYJ'
+search_auto = get_bool(os.environ.get('SEARCH_AUTO'))
 
 
 # ============================================================================
@@ -772,7 +773,8 @@ class UploadImporter(BaseImporter):
         return base64.b32encode(os.urandom(5)).decode('utf-8')
 
     def postprocess_coll(self, collection):
-        pass
+        if search_auto and collection.owner.curr_role in ['admin', 'beta-archivist']:
+            collection.requeue_pages_for_derivs(include_existing=False)
 
     def process_list_data(self, list_data):
         pass
@@ -1014,4 +1016,3 @@ class InplaceImporter(BaseImporter):
         self.the_collection.set_bool_prop('public', True)
 
         return self.the_collection
-
