@@ -149,8 +149,8 @@ services:
             - CONTAINER_EXPIRE_SECS=3600
             - IDLE_TIMEOUT=5
 
-            - BROWSER_NET=webrecorder_browsers
-            - MAIN_NET=webrecorder_default
+            - BROWSER_NET=conifer_browsers
+            - MAIN_NET=conifer_default
 
         ports:
             - 9020:9020
@@ -223,8 +223,6 @@ services:
 networks:
     default:
         driver: bridge
-
-
     browsers:
         driver: bridge
 
