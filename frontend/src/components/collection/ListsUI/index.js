@@ -162,11 +162,12 @@ class ListsUI extends Component {
       const pagesToAdd = [];
       /* eslint-disable */
       for(const pgIdx of pageSelection) {
-        pagesToAdd.push(
-          itemType === draggableTypes.PAGE_ITEM ?
-            pages.get(pgIdx).toJS() :
-            pages.get(pgIdx).filterNot(keyIn('id', 'page')).toJS()
-        );
+        const bulkPage = itemType === draggableTypes.PAGE_ITEM ?
+                          pages.get(pgIdx).toJS() :
+                          pages.get(pgIdx).filterNot(keyIn('id', 'page')).toJS();
+
+        bulkPage.page_id = bulkPage.id;
+        pagesToAdd.push(bulkPage);
       }
       /* eslint-enable */
       this.props.bulkAddToList(collection.get('owner'), collection.get('id'), list, pagesToAdd);
