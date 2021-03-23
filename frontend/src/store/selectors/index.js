@@ -59,17 +59,6 @@ export const getActiveCollection = createSelector(
   }
 );
 
-export const getOrderedDerivs = createSelector(
-  [getRecordings],
-  (recordings) => {
-    if (!recordings) {
-      return List();
-    }
-
-    return recordings.filter(o => o.get('rec_type') === 'derivs').sortBy(o => o.get('created_at')).reverse();
-  }
-);
-
 
 export const getOrderedRecordings = createSelector(
   [getRecordings],
@@ -78,7 +67,7 @@ export const getOrderedRecordings = createSelector(
       return List();
     }
 
-    return recordings.filter(o => o.get('rec_type') !== 'derivs').sortBy(o => o.get('created_at')).reverse();
+    return recordings.sortBy(o => o.get('created_at')).reverse();
   }
 );
 

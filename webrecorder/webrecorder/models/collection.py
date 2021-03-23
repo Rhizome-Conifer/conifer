@@ -396,15 +396,22 @@ class Collection(PagesMixin, RedisUniqueComponent):
         """
         return self.recs.num_objects()
 
-    def get_recordings(self, load=True):
+    def get_recordings(self, load=True, include_derivs=False):
         """Return recordings.
 
         :param bool load: whether to load Redis entries
+        :param bool include_derivs: whether to include derivative recordings
 
         :returns: list of recordings
         :rtype: list
         """
-        return self.recs.get_objects(Recording, load=load)
+        recs = self.recs.get_objects(Recording, load=load)
+
+        # filter out deriv recs
+        if not include_derivs:
+            return list(filter(lambda r: r.get('rec_type') != 'derivs', recs))
+
+        return recs
 
     def _get_rec_keys(self, key_templ):
         """Return recording Redis keys.

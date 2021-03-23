@@ -504,6 +504,6 @@ class MainController(BaseController):
 
     def _init_logging(self):
         # bottle debug
-        debug(True)
+        debug(False)
 
         init_logging()
