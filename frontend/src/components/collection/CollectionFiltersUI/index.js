@@ -29,7 +29,7 @@ class CollectionFiltersUI extends PureComponent {
 
     if (props.collection.get('indexing')) {
       this.interval = setInterval(() => {
-        if (this.count++ > 240) {
+        if (this.count++ > 60) {
           clearInterval(this.interval);
           props.clearIndexingState();
         } else {

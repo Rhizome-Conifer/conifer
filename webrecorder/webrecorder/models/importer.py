@@ -774,6 +774,7 @@ class UploadImporter(BaseImporter):
 
     def postprocess_coll(self, collection):
         if search_auto and collection.owner.curr_role in ['admin', 'beta-archivist']:
+            collection.set_bool_prop('autoindexed', True)
             collection.requeue_pages_for_derivs(include_existing=False)
 
     def process_list_data(self, list_data):
