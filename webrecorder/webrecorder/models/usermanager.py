@@ -704,7 +704,7 @@ class UserManager(object):
         # don't delete data in temp user dir as its waiting to be committed!
         self.get_session().set_anon_commit_wait()
 
-        for recording in temp_coll.get_recordings():
+        for recording in temp_coll.get_recordings(include_derivs=True):
             # will be marked for commit
             recording.set_closed()
 
@@ -900,7 +900,7 @@ class CLIUserManager(UserManager):
         if res > 0:
             coll.set_bool_prop('autoindexed', True)
 
-        return '{} recordings queued'.format(res)
+        return '{} pages queued'.format(res)
 
     def index_user_collections(self, username, include_existing=True):
         """Helper function to index all of a user's collections"""

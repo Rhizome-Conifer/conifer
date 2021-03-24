@@ -137,7 +137,7 @@ class User(RedisUniqueComponent):
 
         Stats(self.redis).move_temp_to_user_usage(collection)
 
-        for recording in collection.get_recordings():
+        for recording in collection.get_recordings(include_derivs=True):
             # will be marked for commit
             recording.set_closed()
 

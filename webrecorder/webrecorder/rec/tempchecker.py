@@ -99,7 +99,7 @@ class TempChecker(object):
             # return (if necessary) to give time for closing logic to complete
             wait_to_delete = False
             for collection in user.get_collections(load=False):
-                for recording in collection.get_recordings(load=False):
+                for recording in collection.get_recordings(load=False, include_derivs=True):
                     if recording.is_open(extend=False):
                         recording.set_closed()
                         logger.debug('TempChecker: Closing temp recording: ' + recording.my_id)
@@ -208,4 +208,3 @@ class TempChecker(object):
 if __name__ == "__main__":
     from webrecorder.rec.worker import Worker
     Worker(TempChecker).run()
-

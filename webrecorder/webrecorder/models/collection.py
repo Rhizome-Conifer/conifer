@@ -472,7 +472,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         open_recs = []
 
-        for recording in self.get_recordings():
+        for recording in self.get_recordings(include_derivs=True):
             if recording.is_open():
                 recording.set_closed()
                 recording.commit_to_storage()
