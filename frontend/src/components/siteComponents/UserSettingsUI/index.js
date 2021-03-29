@@ -30,7 +30,7 @@ import './style.scss';
 class UserSettingsUI extends Component {
   static propTypes = {
     auth: PropTypes.object,
-    collSum: PropTypes.number,
+    collections: PropTypes.object,
     deleting: PropTypes.bool,
     deleteError: PropTypes.oneOfType([
       PropTypes.string,
@@ -40,6 +40,7 @@ class UserSettingsUI extends Component {
     edited: PropTypes.bool,
     editing: PropTypes.bool,
     editUser: PropTypes.func,
+    indexCollection: PropTypes.func,
     loadUserRoles: PropTypes.func,
     match: PropTypes.object,
     updatePass: PropTypes.func,
@@ -73,11 +74,13 @@ class UserSettingsUI extends Component {
       allotment: '',
       confirmUser: '',
       currPassword: '',
+      indexColl: null,
       desc: props.user.get('desc'),
       display_url: props.user.get('display_url'),
       full_name: props.user.get('full_name'),
       password: '',
       password2: '',
+      reIndexColl: false,
       role: null,
       showModal: false
     };
@@ -90,7 +93,19 @@ class UserSettingsUI extends Component {
     }
   }
 
-  handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
+  handleChange = (evt) => {
+    if (evt.target.type === 'checkbox') {
+      if (evt.target.name in this.state) {
+        this.setState({ [evt.target.name]: !this.state[evt.target.name] });
+      } else {
+        this.setState({ [evt.target.name]: true });
+      }
+    } else {
+      this.setState({
+        [evt.target.name]: evt.target.value
+      });
+    }
+  }
 
   goToSupporterPortal = () => {
     window.location.href = supporterPortal;
@@ -102,6 +117,18 @@ class UserSettingsUI extends Component {
 
   editDesc = (desc) => {
     this.setState({ desc });
+  }
+
+  triggerIndexColl = () => {
+    const { user } = this.props;
+    const { indexColl, reIndexColl } = this.state;
+
+    if (indexColl) {
+      this.props.indexCollection(user.get('username'), indexColl, reIndexColl);
+
+      // reset widget
+      this.setState({ indexColl: null });
+    }
   }
 
   setRole = (role) => {
@@ -125,6 +152,10 @@ class UserSettingsUI extends Component {
     if (this.validatePassword() === null) {
       this.props.updatePass(currPassword, password, password2);
     }
+  }
+
+  selectColl = (key) => {
+    this.setState({indexColl: key});
   }
 
   sendDelete = (evt) => {
@@ -195,8 +226,8 @@ class UserSettingsUI extends Component {
   }
 
   render() {
-    const { auth, deleting, edited, editing, match: { params }, user } = this.props;
-    const { currPassword, password, password2, showModal } = this.state;
+    const { auth, collections, deleting, edited, editing, match: { params }, user } = this.props;
+    const { currPassword, indexColl, password, password2, showModal } = this.state;
 
     const username = params.user;
     const canAdmin = username === auth.getIn(['user', 'username']);
@@ -210,6 +241,7 @@ class UserSettingsUI extends Component {
     const totalSpace = user.getIn(['space_utilization', 'total']);
     const passUpdate = auth.get('passUpdate');
     const passUpdateFail = auth.get('passUpdateFail');
+    const selectedCollForIndex = indexColl ? collections.find(c => c.get('id') === indexColl) : null;
 
     const confirmDeleteBody = (
       <div>
@@ -286,7 +318,7 @@ class UserSettingsUI extends Component {
 
                       <div className="admin-section update-role">
                         <h5>Update Role</h5>
-                        <p>Current Role: {user.get('role')}</p>
+                        <p>Current Role: <mark>{user.get('role')}</mark></p>
                         <div>
                           <Dropdown id="roleDropdown" onSelect={this.setRole}>
                             <Dropdown.Toggle variant="outline-secondary">{this.state.role ? this.state.role : 'Change Role'}</Dropdown.Toggle>
@@ -300,11 +332,30 @@ class UserSettingsUI extends Component {
                         <Button variant="primary" className="top-buffer" onClick={this.saveRole}>Update Role</Button>
                       </div>
 
+                      {/*
                       <div className="admin-section suspend">
                         <h5>Suspend Account</h5>
                         <p>User will be suspended and a notification will be sent via email.</p>
                         <Button variant="primary" disabled><DisabledIcon /> Suspend Account</Button>
                       </div>
+                      */}
+
+                      <div className="admin-section index-coll">
+                        <h5>Index Collection</h5>
+                        <p>Select one of the user's collection below to trigger indexing.</p>
+                        <Dropdown id="indexDropdown" onSelect={this.selectColl}>
+                          <Dropdown.Toggle variant="outline-secondary">{indexColl ? selectedCollForIndex.get('title') : 'Select a collection to index'}</Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            {
+                              collections.map(c => <Dropdown.Item key={c.get('id')} eventKey={c.get('id')}>{c.get('title')}</Dropdown.Item>)
+                            }
+                          </Dropdown.Menu>
+                        </Dropdown>
+                        <br />
+                        <Form.Check type="checkbox" id="reindex-coll" name="reIndexColl" label="re-index previously indexed pages" onChange={this.handleChange} checked={this.state.reIndexColl} />
+                        <Button variant="primary" className="top-buffer" onClick={this.triggerIndexColl}>Index Collection</Button>
+                      </div>
+
                     </div>
                   </Card.Body>
                 </Card>

@@ -396,7 +396,7 @@ class CollsController(BaseController):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
             #self.access.assert_can_admin_coll(collection)
-            if not self.is_superuser():
+            if not self.access.is_superuser():
                 self._raise_error(400, 'not_supported')
 
             if not self.is_search_auto:

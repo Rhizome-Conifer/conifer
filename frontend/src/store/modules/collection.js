@@ -7,6 +7,10 @@ const BK_COUNT = 'wr/coll/BK_COUNT';
 const BK_COUNT_SUCCESS = 'wr/coll/BK_COUNT_SUCCESS';
 const BK_COUNT_FAIL = 'wr/coll/BK_COUNT_FAIL';
 
+const COLL_INDEX = 'wr/coll/COLL_INDEX';
+const COLL_INDEX_SUCCESS = 'wr/coll/COLL_INDEX_SUCCESS';
+const COLL_INDEX_FAIL = 'wr/coll/COLL_INDEX_FAIL';
+
 const COLL_LOAD = 'wr/coll/COLL_LOAD';
 const COLL_LOAD_SUCCESS = 'wr/coll/COLL_LOAD_SUCCESS';
 const COLL_LOAD_FAIL = 'wr/coll/COLL_LOAD_FAIL';
@@ -312,6 +316,16 @@ export function getBookmarkCount(user, coll, list) {
     list,
     promise: client => client.get(`${apiPath}/list/${list}`, {
       params: { user, coll: decodeURIComponent(coll), include_bookmarks: 'none' }
+    })
+  };
+}
+
+
+export function indexCollection(user, coll, include_existing) {
+  return {
+    types: [COLL_INDEX, COLL_INDEX_SUCCESS, COLL_INDEX_FAIL],
+    promise: client => client.post(`${apiPath}/collection/${coll}/generate_derivs`, {
+      params: { user, include_existing }
     })
   };
 }
