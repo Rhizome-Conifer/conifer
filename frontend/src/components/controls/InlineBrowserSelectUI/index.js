@@ -52,7 +52,7 @@ class InlineBrowserSelectUI extends PureComponent {
                 <img src={`/api/browsers/browsers/${bkBrowser.get('id')}/icon`} alt={`${bkBrowser.get('name')} version ${bkBrowser.get('version')}`} />
                 {` ${bkBrowser.get('name')} v${bkBrowser.get('version')}`}
               </React.Fragment> :
-              'Native Browser'
+              'Current Browser'
           }
         </Dropdown.Toggle>
         <Dropdown.Menu>
@@ -68,7 +68,7 @@ class InlineBrowserSelectUI extends PureComponent {
           }
 
           <Dropdown.Item eventKey={null} active={!bkBrowser}>
-            Native browser
+            Current browser
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>

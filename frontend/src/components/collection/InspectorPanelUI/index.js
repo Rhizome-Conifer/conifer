@@ -103,11 +103,11 @@ class InspectorPanelUI extends PureComponent {
                           </React.Fragment>
                       }
 
-                      <h4>Preconfigured Browser</h4>
+                      <h4>Access Browser</h4>
                       {
                         !__PLAYER__ ?
                           <InlineBrowserSelect bookmark={bk} /> :
-                          <span className="value">{pg.get('browser', 'Native Browser')}</span>
+                          <span className="value">{pg.get('browser', 'Current Browser')}</span>
                       }
                     </header>
                 }
