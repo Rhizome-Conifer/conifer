@@ -773,7 +773,7 @@ class UploadImporter(BaseImporter):
         return base64.b32encode(os.urandom(5)).decode('utf-8')
 
     def postprocess_coll(self, collection):
-        if search_auto and collection.owner.curr_role in ['admin', 'beta-archivist']:
+        if search_auto and collection.owner.curr_role in ['admin', 'beta-archivist', 'supporter']:
             collection.set_bool_prop('autoindexed', True)
             collection.requeue_pages_for_derivs(include_existing=False)
 

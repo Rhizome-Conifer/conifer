@@ -450,7 +450,7 @@ class CollsController(BaseController):
         result['user'] = user.my_id
         result['size_remaining'] = user.get_size_remaining()
 
-        if self.is_search_auto and self.access.can_admin_coll(coll) and self.access.beta_access():
+        if self.is_search_auto and self.access.can_admin_coll(coll) and self.access.search_access():
             # see if there are results in solr
             res = self.solr_mgr.query_solr(coll.my_id, {'limit': 1, 'sort_field': 'expires_at_dt', 'sort': 'asc'})
             t = res.get('total', 0)
@@ -461,8 +461,10 @@ class CollsController(BaseController):
                 coll.set_bool_prop('indexing', True)
                 result['collection']['indexing'] = True
                 coll.sync_solr_derivatives(do_async=True)
-            else:
-                # sync cdxj to redis in lieu of playback
-                coll.sync_coll_index(exists=False, do_async=True)
+                # skip sync below since that will happen with with solr sync
+                return result
+
+        # sync cdxj to redis in lieu of playback
+        coll.sync_coll_index(exists=False, do_async=True)
 
         return result

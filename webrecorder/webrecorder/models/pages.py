@@ -59,7 +59,7 @@ class PagesMixin(object):
 
         self.redis.hset(self.pages_key, pid, json.dumps(page))
 
-        if search_auto and self.access.beta_access():
+        if search_auto and self.access.search_access():
             self.queue_page_for_derivs(pid, page)
 
         return pid
