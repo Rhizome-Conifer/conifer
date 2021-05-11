@@ -317,7 +317,7 @@ class RedisUniqueComponent(object):
 
         all_keys = self.ALL_KEYS.format_map({self.MY_TYPE: self.my_id})
 
-        for key in self.redis.scan_iter(all_keys, count=100):
+        for key in self.redis.scan_iter(all_keys, count=1000):
             self.redis.delete(key)
             deleted = True
 
