@@ -262,6 +262,8 @@ class CollsController(BaseController):
             # remove trailing comma,
             mimes = request.query.getunicode('mime', '').rstrip(',')
             mimes = mimes.split(',') if mimes else []
+            # strip solr star query from mimes
+            mimes = [mime.strip('*') for mime in mimes]
 
             # search pages or default to page search if no mime supplied
             if 'text/html' in mimes or len(mimes) == 0:
