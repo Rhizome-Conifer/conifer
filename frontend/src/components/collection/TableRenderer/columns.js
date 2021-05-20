@@ -95,8 +95,8 @@ export function BrowserRenderer({ cellData, columnData: { browsers } }) {
 
 export function LinkRenderer({ cellData, rowData, columnData: { collection, list } }) {
   const linkTo = list ?
-    `${getListLink(collection, list)}/b${rowData.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}` :
-    `${getCollectionLink(collection)}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}`;
+    `${getListLink(collection, list)}/b${rowData.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'), '/')}${rowData.get('url')}` :
+    `${getCollectionLink(collection)}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'), '/')}${rowData.get('url')}`;
   return (
     <Link
       to={linkTo}
@@ -169,8 +169,8 @@ export function TimestampRenderer({ cellData }) {
 
 export function TitleRenderer({ cellData, rowData, columnData: { collection, list } }) {
   const linkTo = list ?
-    `${getListLink(collection, list)}/b${rowData.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}` :
-    `${getCollectionLink(collection)}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}`;
+    `${getListLink(collection, list)}/b${rowData.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'), '/')}${rowData.get('url')}` :
+    `${getCollectionLink(collection)}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'), '/')}${rowData.get('url')}`;
   return (
     <Link
       to={linkTo}

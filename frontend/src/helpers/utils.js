@@ -289,15 +289,13 @@ export function range(start, end) {
 
 
 export function remoteBrowserMod(rb, ts, sep) {
-  // no remote browsers on player
-  if (__PLAYER__) {
-    return ts || '';
-  }
-
   let base = ts || '';
-  if (rb) {
+
+  // no remote browsers on player
+  if (rb && !__PLAYER__) {
     base += `$br:${rb}`;
   }
+
   if (base && sep) {
     base += sep;
   }
