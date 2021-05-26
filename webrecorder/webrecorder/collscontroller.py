@@ -75,8 +75,9 @@ class CollsController(BaseController):
                 if is_external:
                     collection.set_external(True)
 
-                # if auto-indexing is on, mark new collections as auto-indexed to distinguish from prev collections
-                if self.is_search_auto and self.access.beta_access():
+                # if search is enabled, mark new collections as auto-indexed
+                # to distinguish from prev collections
+                if self.is_search_auto and self.access.search_access():
                     collection.set_bool_prop('autoindexed', True)
 
                 user.mark_updated()

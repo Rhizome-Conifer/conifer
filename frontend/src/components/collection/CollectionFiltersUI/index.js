@@ -64,8 +64,7 @@ class CollectionFiltersUI extends PureComponent {
   }
 
   search = (user, coll, params, fullText) => {
-    const newSearch = this.context.canAdmin && ['admin', 'beta-archivist'].includes(this.props.user.get('role'));
-    this.props.searchCollection(user, coll, params, fullText && newSearch);
+    this.props.searchCollection(user, coll, params, fullText && this.context.canAdmin);
   }
 
   render() {
