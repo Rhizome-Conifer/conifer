@@ -12,6 +12,7 @@ import './style.scss';
 
 
 const parseQuery = (search) => {
+  search = search.trim();
   const filters = search.match(/((is|start|end|session):[a-z0-9-.:]+)/ig) || [];
   const urlFragRX = search.match(/url:((?:https?:\/\/)?(?:www\.)?(?:[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})?(?:[-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*))/i);
   const searchRX = search.match(/(?:(?:(?:is|start|end|session|url):[^ ]+\s?)+\s?)?(.*)/i);
