@@ -133,6 +133,10 @@ class BaseController(object):
             msg = 'not_found' if user == 'api' else 'no_such_user'
             self._raise_error(404, msg)
 
+        # check if user is suspended
+        if user.get('role') == 'suspended':
+            self._raise_error(403, 'suspended')
+
         return user
 
     def load_user_coll(self, api=True, redir_check=True, user=None, coll_name=None):
@@ -297,4 +301,3 @@ class BaseController(object):
     @property
     def access(self):
         return request.environ['webrec.access']
-

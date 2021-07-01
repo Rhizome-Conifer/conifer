@@ -178,6 +178,11 @@ class UserSettingsUI extends Component {
     this.setState({privateColl: null});
   }
 
+  suspendAccount = () => {
+    const { match: { params: { user } }, adminUpdateUser } = this.props;
+    adminUpdateUser(user, { role: 'suspended' });
+  }
+
   updateUserAllotment = () => {
     const { match: { params: { user } }, adminUpdateUser } = this.props;
     const { allotment } = this.state;
@@ -380,7 +385,7 @@ class UserSettingsUI extends Component {
                       <div className="admin-section suspend">
                         <h5>Suspend Account</h5>
                         <p>User will be suspended and receive notice on attempted login.</p>
-                        <Button variant="primary"><DisabledIcon /> Suspend Account</Button>
+                        <Button variant="primary" onClick={this.suspendAccount}><DisabledIcon /> Suspend Account</Button>
                       </div>
 
                     </div>
