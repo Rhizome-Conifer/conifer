@@ -52,6 +52,15 @@
                 h5 {
                     margin-bottom: rem(1rem);
                 }
+
+                mark.suspended {
+                    background: $warning;
+                    color: white;
+                }
+            }
+
+            .dropdown .dropdown-item {
+                white-space: break-spaces;
             }
         }
     }

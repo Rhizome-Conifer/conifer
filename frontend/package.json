@@ -75,6 +75,7 @@
     "react-dnd": "^6.0.0",
     "react-dnd-html5-backend": "^6.0.0",
     "react-dom": "^16.9.0",
+    "react-google-recaptcha": "^2.1.0",
     "react-helmet": "^6.0.0",
     "react-hot-loader": "^4.6.3",
     "react-redux": "^5.1.1",

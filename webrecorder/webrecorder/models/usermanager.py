@@ -260,6 +260,9 @@ class UserManager(object):
         if not user:
             return {'error': 'invalid_login'}
 
+        if user.get('role') == 'suspended':
+            return {'error': 'account_suspended'}
+
         # if not enough space, don't continue with login
         if move_info:
             if not self.has_space_for_new_collection(user.my_id,

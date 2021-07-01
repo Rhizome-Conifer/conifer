@@ -11,6 +11,10 @@ const COLL_INDEX = 'wr/coll/COLL_INDEX';
 const COLL_INDEX_SUCCESS = 'wr/coll/COLL_INDEX_SUCCESS';
 const COLL_INDEX_FAIL = 'wr/coll/COLL_INDEX_FAIL';
 
+const COLL_MAKE_PRIVATE = 'wr/coll/COLL_MAKE_PRIVATE';
+const COLL_MAKE_PRIVATE_SUCCESS = 'wr/coll/COLL_MAKE_PRIVATE_SUCCESS';
+const COLL_MAKE_PRIVATE_FAIL = 'wr/coll/COLL_MAKE_PRIVATE_FAIL';
+
 const COLL_LOAD = 'wr/coll/COLL_LOAD';
 const COLL_LOAD_SUCCESS = 'wr/coll/COLL_LOAD_SUCCESS';
 const COLL_LOAD_FAIL = 'wr/coll/COLL_LOAD_FAIL';
@@ -335,6 +339,14 @@ export function isLoaded({ app }) {
   return app.get('collection') &&
          app.getIn(['collection', 'loaded']) &&
          Date.now() - app.getIn(['collection', 'accessed']) < 15 * 60 * 1000;
+}
+
+
+export function makeCollectionPrivate(username, collection) {
+  return {
+    types: [COLL_MAKE_PRIVATE, COLL_MAKE_PRIVATE, COLL_MAKE_PRIVATE],
+    promise: client => client.put(`${apiPath}/admin/make-private/${username}/${collection}`)
+  };
 }
 
 

@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import ReCAPTCHA from "react-google-recaptcha";
+import { Link } from 'react-router-dom';
 import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
 
-import { product, userRegex } from 'config';
+import { product, recaptcha, recaptchaKey, userRegex } from 'config';
 import { registration as registrationErr } from 'helpers/userMessaging';
 
 import { passwordPassRegex } from 'helpers/utils';
@@ -32,6 +33,8 @@ class UserSignup extends Component {
   constructor(props) {
     super(props);
 
+    this.recaptchaRef = React.createRef();
+
     this.state = {
       moveTemp: true,
       toColl: 'New Collection',
@@ -44,8 +47,12 @@ class UserSignup extends Component {
     };
   }
 
-  save = (evt) => {
+  save = async (evt) => {
     evt.preventDefault();
+
+    // invoke recaptcha
+    const captchaToken = recaptcha ? await this.recaptchaRef.current.executeAsync() : null;
+
     const { user } = this.props;
     const {
       announce_mailer,
@@ -64,7 +71,7 @@ class UserSignup extends Component {
       this.validateEmail()
     ) {
       // core fields to send to server
-      let data = { username, email, password, confirmpassword };
+      let data = { captchaToken, username, email, password, confirmpassword };
 
       if (announce_mailer) {
         data = { ...data, announce_mailer };
@@ -323,6 +330,10 @@ class UserSignup extends Component {
                 handleInput={this.handleChange}
                 moveTemp={moveTemp}
                 toColl={toColl} />
+            }
+
+            {
+              recaptcha && <ReCAPTCHA ref={this.recaptchaRef} size="invisible" sitekey={recaptchaKey} />
             }
 
             <Button variant="primary" size="large" type="submit" block disabled={success || submitting}>

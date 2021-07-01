@@ -3,7 +3,7 @@ import { asyncConnect } from 'redux-connect';
 
 import { deleteUser, load as loadAuth, loadRoles, updatePassword } from 'store/modules/auth';
 import { load as loadCollections } from 'store/modules/collections';
-import { indexCollection as indexColl } from 'store/modules/collection';
+import { indexCollection as indexColl, makeCollectionPrivate } from 'store/modules/collection';
 import { edit, load as loadUser, resetEditState, updateUser } from 'store/modules/user';
 
 import { UserSettingsUI } from 'components/siteComponents';
@@ -53,6 +53,10 @@ const mapDispatchToProps = (dispatch, props) => {
       dispatch(edit(user, data))
         .then(() => setTimeout(() => dispatch(resetEditState()), 5000))
         .then(() => dispatch(loadUser(user, false)));
+    },
+    setCollectionPrivate: (user, coll) => {
+      dispatch(makeCollectionPrivate(user, coll))
+        .then(() => dispatch(loadCollections(user)));
     }
   };
 };

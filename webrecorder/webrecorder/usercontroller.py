@@ -1,6 +1,7 @@
 
 import json
 import redis
+import requests
 import os
 
 from bottle import request, response
@@ -21,6 +22,7 @@ class UserController(BaseController):
 
         self.default_user_desc = config['user_desc']
         self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
+        self.recaptcha = os.environ.get('RECAPTCHA_KEY', None)
 
     def load_user(self, username=None):
         include_colls = get_bool(request.query.get('include_colls', False))
@@ -132,6 +134,24 @@ class UserController(BaseController):
         @self.app.post('/api/v1/auth/register')
         def api_register_user():
             data = request.json or {}
+
+            # if recaptcha enabled, verify
+            if self.recaptcha:
+                # check for client token
+                if not data.get('captchaToken', None):
+                    response.status = 400
+                    return {'errors': {'recaptcha': 'suspicious'}}
+
+                cr = requests.post('https://www.google.com/recaptcha/api/siteverify',
+                    data={
+                        'secret': self.recaptcha,
+                        'response': data['captchaToken'],
+                    })
+                res = cr.json()
+
+                if res['score'] <= 0.8:
+                    response.status = 400
+                    return {'errors': {'recaptcha': 'suspicious'}}
 
             msg, redir_extra = self.user_manager.register_user(data, self.get_host())
 

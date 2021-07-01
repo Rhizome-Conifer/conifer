@@ -29,6 +29,7 @@ import './style.scss';
 
 class UserSettingsUI extends Component {
   static propTypes = {
+    adminUpdateUser: PropTypes.func,
     auth: PropTypes.object,
     collections: PropTypes.object,
     deleting: PropTypes.bool,
@@ -43,8 +44,8 @@ class UserSettingsUI extends Component {
     indexCollection: PropTypes.func,
     loadUserRoles: PropTypes.func,
     match: PropTypes.object,
+    setCollectionPrivate: PropTypes.func,
     updatePass: PropTypes.func,
-    adminUpdateUser: PropTypes.func,
     user: PropTypes.object
   };
 
@@ -74,6 +75,7 @@ class UserSettingsUI extends Component {
       allotment: '',
       confirmUser: '',
       currPassword: '',
+      privateColl: null,
       indexColl: null,
       desc: props.user.get('desc'),
       display_url: props.user.get('display_url'),
@@ -154,14 +156,26 @@ class UserSettingsUI extends Component {
     }
   }
 
-  selectColl = (key) => {
-    this.setState({indexColl: key});
+  selectIndexColl = (coll) => {
+    this.setState({indexColl: coll});
+  }
+
+  selectPrivateColl = (coll) => {
+    this.setState({privateColl: coll});
   }
 
   sendDelete = (evt) => {
     if (this.validateConfirmDelete()) {
       this.props.deleteUser(this.props.auth.getIn(['user', 'username']));
     }
+  }
+
+  setPrivate = () => {
+    const { privateColl } = this.state;
+    const { match: { params: { user } } } = this.props;
+
+    this.props.setCollectionPrivate(user, privateColl);
+    this.setState({privateColl: null});
   }
 
   updateUserAllotment = () => {
@@ -227,7 +241,7 @@ class UserSettingsUI extends Component {
 
   render() {
     const { auth, collections, deleting, edited, editing, match: { params }, user } = this.props;
-    const { currPassword, indexColl, password, password2, showModal } = this.state;
+    const { currPassword, indexColl, password, password2, privateColl, showModal } = this.state;
 
     const username = params.user;
     const canAdmin = username === auth.getIn(['user', 'username']);
@@ -242,6 +256,7 @@ class UserSettingsUI extends Component {
     const passUpdate = auth.get('passUpdate');
     const passUpdateFail = auth.get('passUpdateFail');
     const selectedCollForIndex = indexColl ? collections.find(c => c.get('id') === indexColl) : null;
+    const selectedCollForPrivate = privateColl ? collections.find(c => c.get('id') === privateColl) : null;
 
     const confirmDeleteBody = (
       <div>
@@ -318,7 +333,7 @@ class UserSettingsUI extends Component {
 
                       <div className="admin-section update-role">
                         <h5>Update Role</h5>
-                        <p>Current Role: <mark>{user.get('role')}</mark></p>
+                        <p>Current Role: <mark className={user.get('role')}>{user.get('role')}</mark></p>
                         <div>
                           <Dropdown id="roleDropdown" onSelect={this.setRole}>
                             <Dropdown.Toggle variant="outline-secondary">{this.state.role ? this.state.role : 'Change Role'}</Dropdown.Toggle>
@@ -331,14 +346,6 @@ class UserSettingsUI extends Component {
                         </div>
                         <Button variant="primary" className="top-buffer" onClick={this.saveRole}>Update Role</Button>
                       </div>
-
-                      {/*
-                      <div className="admin-section suspend">
-                        <h5>Suspend Account</h5>
-                        <p>User will be suspended and a notification will be sent via email.</p>
-                        <Button variant="primary" disabled><DisabledIcon /> Suspend Account</Button>
-                      </div>
-                      */}
 
                       <div className="admin-section index-coll">
                         <h5>Index Collection</h5>
@@ -354,6 +361,26 @@ class UserSettingsUI extends Component {
                         <br />
                         <Form.Check type="checkbox" id="reindex-coll" name="reIndexColl" label="re-index previously indexed pages" onChange={this.handleChange} checked={this.state.reIndexColl} />
                         <Button variant="primary" className="top-buffer" onClick={this.triggerIndexColl}>Index Collection</Button>
+                      </div>
+
+                      <div className="admin-section index-coll">
+                        <h5>Set Collection Private</h5>
+                        <p>Select one of the user's public collections below to mark private</p>
+                        <Dropdown id="indexDropdown" onSelect={this.selectPrivateColl}>
+                          <Dropdown.Toggle variant="outline-secondary">{privateColl ? selectedCollForPrivate.get('title') : 'Public Collections'}</Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            {
+                              collections.map(c => c.get('public') && <Dropdown.Item key={c.get('id')} eventKey={c.get('id')}>{c.get('title')}</Dropdown.Item>)
+                            }
+                          </Dropdown.Menu>
+                        </Dropdown>
+                        <Button variant="primary" className="top-buffer" onClick={this.setPrivate}>Set Private</Button>
+                      </div>
+
+                      <div className="admin-section suspend">
+                        <h5>Suspend Account</h5>
+                        <p>User will be suspended and receive notice on attempted login.</p>
+                        <Button variant="primary"><DisabledIcon /> Suspend Account</Button>
                       </div>
 
                     </div>
