@@ -338,7 +338,7 @@ class UserSettingsUI extends Component {
 
                       <div className="admin-section update-role">
                         <h5>Update Role</h5>
-                        <p>Current Role: <mark className={user.get('role')}>{user.get('role')}</mark></p>
+                        <p>Current Role: <mark className={`role-${user.get('role')}`}>{user.get('role')}</mark></p>
                         <div>
                           <Dropdown id="roleDropdown" onSelect={this.setRole}>
                             <Dropdown.Toggle variant="outline-secondary">{this.state.role ? this.state.role : 'Change Role'}</Dropdown.Toggle>
