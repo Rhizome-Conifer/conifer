@@ -129,7 +129,7 @@ class CollectionListUI extends Component {
                   <UserIcon />{ userParam }
                   {
                     auth.getIn(['user', 'role']) == 'admin' &&
-                    <Link to="_settings"><GearIcon /></Link>
+                    <Link to={`/${userParam}/_settings`}><GearIcon /></Link>
                   }
                 </p>
                 {
