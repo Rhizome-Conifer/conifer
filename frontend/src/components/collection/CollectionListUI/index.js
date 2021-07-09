@@ -108,6 +108,7 @@ class CollectionListUI extends Component {
       <AccessContext.Provider value={{ canAdmin }}>
         <Helmet>
           <title>{`${displayName}'s Collections`}</title>
+          <meta name="robots" value="nofollow" />
           <meta property="og:url" content={`${appHost}/${userParam}`} />
           <meta property="og:type" content="website" />
           <meta property="og:title" content={`${displayName}'s Collections`} />
