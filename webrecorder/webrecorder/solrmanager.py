@@ -177,15 +177,15 @@ class SolrManager:
 
             try:
                 res = requests.get(qurl, timeout=2)
-            except requests.exceptions.ConnectionError:
+                res = res.json()
+            except:
                 return {
                     'total': 0,
                     'results': []
                 }
 
-            res = res.json()
             resp = res.get('response', {})
-            docs = resp.get('docs')
+            docs = resp.get('docs', [])
 
             return {
                 'total': resp.get('numFound'),
@@ -222,15 +222,15 @@ class SolrManager:
                     ),
                     timeout=2
                 )
-            except requests.exceptions.ConnectionError:
+                res = res.json()
+            except:
                 return {
                     'total': 0,
                     'results': []
                 }
 
-            res = res.json()
             resp = res.get('response', {})
-            docs = resp.get('docs')
+            docs = resp.get('docs', [])
             hl = res.get('highlighting', {})
 
             return {
