@@ -217,7 +217,7 @@ class AutopilotUI extends Component {
                   <div className="best-practices">
                     <h5>Best Practices</h5>
                     <p>
-                      Learn more about how to achieve the best results when using Autopilot capture in <a href="https://guide.conifer.rhizome.org/autopilot/#for-best-results" target="_blank">this user guide</a>
+                      Learn more about how to achieve the best results when using Autopilot capture in <a href="https://guide.conifer.rhizome.org/docs/autopilot/" target="_blank">this user guide</a>
                     </p>
                   </div>
               }
