@@ -118,7 +118,7 @@ class SolrManager:
             'timestamp_dt': timestamp_dt,
             'added_at_dt': timestamp_to_iso_date(timestamp_now()),
             'mime_s': mime_s,
-            'ttl_s': '+7DAYS',
+            'ttl_s': '+3DAYS',
         }
 
         if text is not None:

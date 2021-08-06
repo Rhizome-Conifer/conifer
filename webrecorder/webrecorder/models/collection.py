@@ -847,6 +847,12 @@ class Collection(PagesMixin, RedisUniqueComponent):
         solr_batch = []
 
         for line, _ in self.get_cdxj_iter():
+            # submit chunk of docs to be indexed
+            if len(solr_batch) >= 500:
+                solr_mgr.batch_ingest(solr_batch)
+                solr_batch = []
+
+
             cdxo = CDXObject(line.encode('utf-8'))
 
             if (cdxo['mime'] == 'warc/revisit'
@@ -879,7 +885,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
                 print('warc file not found')
                 continue
 
-            page = page = next((p for p in pages if 'urn:text:{timestamp}/{url}'.format(**p).startswith(cdxo['urlkey'])), None)
+            page = next((p for p in pages if 'urn:text:{timestamp}/{url}'.format(**p).startswith(cdxo['urlkey'])), None)
 
             if not page:
                 print('page not found..')
@@ -900,11 +906,6 @@ class Collection(PagesMixin, RedisUniqueComponent):
                     'mime': 'text/html',
                 }
                 solr_batch.append(solr_mgr.prepare_doc(record, data))
-
-            # submit chunk of docs to be indexed
-            if len(solr_batch) >= 500:
-                solr_mgr.batch_ingest(solr_batch)
-                solr_batch = []
 
         # submit final batch
         solr_mgr.batch_ingest(solr_batch)
