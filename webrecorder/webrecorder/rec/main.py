@@ -1,12 +1,15 @@
 from gevent import monkey; monkey.patch_all()
 
-from webrecorder.utils import load_wr_config, init_logging, spawn_once
+import os
+from ast import literal_eval
+
+from webrecorder.utils import load_wr_config, init_logging, spawn_once, get_bool
 from webrecorder.rec.webrecrecorder import WebRecRecorder
 
 
 # =============================================================================
 def init():
-    init_logging(debug=True)
+    init_logging(debug=get_bool(os.environ.get('WR_DEBUG', 'True')))
 
     config = load_wr_config()
 
@@ -18,5 +21,3 @@ def init():
     wr.app.wr = wr
 
     return wr.app
-
-
