@@ -75,13 +75,14 @@ class UserSettingsUI extends Component {
       allotment: '',
       confirmUser: '',
       currPassword: '',
-      privateColl: null,
-      indexColl: null,
       desc: props.user.get('desc'),
       display_url: props.user.get('display_url'),
       full_name: props.user.get('full_name'),
+      indexColl: null,
+      newEmail: '',
       password: '',
       password2: '',
+      privateColl: null,
       reIndexColl: false,
       role: null,
       showModal: false
@@ -183,6 +184,15 @@ class UserSettingsUI extends Component {
     adminUpdateUser(user, { role: 'suspended' });
   }
 
+  updateEmail = () => {
+    const { match: { params: { user } }, adminUpdateUser } = this.props;
+    const { newEmail } = this.state;
+
+    if (this.validateEmail()) {
+      adminUpdateUser(user, { email_addr: newEmail });
+    }
+  }
+
   updateUserAllotment = () => {
     const { match: { params: { user } }, adminUpdateUser } = this.props;
     const { allotment } = this.state;
@@ -224,6 +234,16 @@ class UserSettingsUI extends Component {
     }
 
     if (auth.getIn(['user', 'username']).toLowerCase() !== confirmUser.toLowerCase()) {
+      return false;
+    }
+
+    return true;
+  }
+
+  validateEmail = () => {
+    const { newEmail } = this.state;
+
+    if (!newEmail || newEmail.indexOf('@') === -1 || newEmail.match(/\.\w+$/) === null) {
       return false;
     }
 
@@ -388,6 +408,22 @@ class UserSettingsUI extends Component {
                         <Button variant="primary" onClick={this.suspendAccount}><DisabledIcon /> Suspend Account</Button>
                       </div>
 
+                      <div className="admin-section update-email">
+                        <h5>Update Email</h5>
+                        <Form.Group className="top-buffer-md">
+                          <InputGroup>
+                            <Form.Control
+                              id="updateEmail"
+                              name="newEmail"
+                              onChange={this.handleChange}
+                              placeholder={user.get('email_addr')}
+                              type="text"
+                              isInvalid={this.state.newEmail.length > 6 && !this.validateEmail()}
+                              value={this.state.newEmail} />
+                          </InputGroup>
+                        </Form.Group>
+                        <Button variant="primary" onClick={this.updateEmail}>Update Email</Button>
+                      </div>
                     </div>
                   </Card.Body>
                 </Card>

@@ -661,6 +661,9 @@ class UserManager(object):
         if 'customer_max_size' in data:
             user['customer_max_size'] = data['customer_max_size']
 
+        if 'email_addr' in data:
+            user['email_addr'] = data['email_addr']
+
         return None
 
     def delete_user(self, username):
