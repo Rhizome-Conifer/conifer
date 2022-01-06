@@ -566,6 +566,9 @@ class Collection(PagesMixin, RedisUniqueComponent):
                         check_slug=False,
                         include_files=False):
 
+        # access check
+        self.access.assert_can_read_coll(self)
+
         data = super(Collection, self).serialize(convert_date=convert_date)
         data['id'] = self.name
 

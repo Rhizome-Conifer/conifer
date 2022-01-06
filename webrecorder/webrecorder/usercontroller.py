@@ -88,25 +88,6 @@ class UserController(BaseController):
 
         return result
 
-    def get_user_or_raise(self, username=None, status=403, msg='unauthorized'):
-        # ensure correct host
-        if self.app_host and request.environ.get('HTTP_HOST') != self.app_host:
-            return self._raise_error(403, 'unauthorized')
-
-        # if no username, check if logged in
-        if not username:
-            if self.access.is_anon():
-                self._raise_error(status, msg)
-            return
-
-        user = self.get_user(user=username)
-
-        # check permissions
-        if not self.access.is_logged_in_user(user) and not self.access.is_superuser():
-            self._raise_error(status, msg)
-
-        return user
-
     def init_routes(self):
         wr_api_spec.set_curr_tag('Auth')
 
@@ -202,8 +183,6 @@ class UserController(BaseController):
 
         @self.app.post('/api/v1/auth/logout')
         def logout():
-            self.get_user_or_raise()
-
             self.user_manager.logout()
 
             data = {'success': 'logged_out'}
@@ -307,7 +286,7 @@ class UserController(BaseController):
 
         @self.app.post('/api/v1/user/<username>')
         def update_user(username):
-            user = self.get_user(user=username)
+            user = self.get_user_or_raise(user=username)
 
             data = request.json or {}
 

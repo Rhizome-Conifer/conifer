@@ -34,7 +34,7 @@ class CollsController(BaseController):
             req=['title', 'public', 'public_index'],
             resp='collection')
         def create_collection():
-            user = self.get_user(api=True, redir_check=False)
+            user = self.get_user_or_raise()
 
             data = request.json or {}
 
@@ -56,9 +56,6 @@ class CollsController(BaseController):
             if is_external:
                 if not self.allow_external:
                     self._raise_error(403, 'external_not_allowed')
-
-                #if not is_anon:
-                #    self._raise_error(400, 'not_valid_for_external')
 
             elif is_anon:
                 if coll_name != 'temp':
@@ -136,7 +133,10 @@ class CollsController(BaseController):
         @self.api(query=['user'],
                   resp='deleted')
         def delete_collection(coll_name):
-            user, collection = self.load_user_coll(coll_name=coll_name)
+            user = self.get_user_or_raise()
+            collection = user.get_collection_by_name(coll_name)
+
+            self.access.assert_can_admin_coll(collection)
 
             errs = user.remove_collection(collection, delete=True)
             if errs.get('error'):
@@ -222,6 +222,8 @@ class CollsController(BaseController):
                   resp='bookmarks')
         def get_page_bookmarks(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
+
+            self.access.assert_can_read_coll(collection)
 
             rec = request.query.get('rec')
             if rec:
@@ -411,21 +413,6 @@ class CollsController(BaseController):
                 collection.set_bool_prop('autoindexed', True)
 
             return {'queued': res}
-
-        # LEGACY ENDPOINTS (to remove)
-        # Collection view (all recordings)
-        @self.app.get(['/<user>/<coll_name>', '/<user>/<coll_name>/'])
-        @self.jinja2_view('collection_info.html')
-        def coll_info(user, coll_name):
-            return self.get_collection_info_for_view(user, coll_name)
-
-        @self.app.get(['/<user>/<coll_name>/<rec_list:re:([\w,-]+)>', '/<user>/<coll_name>/<rec_list:re:([\w,-]+)>/'])
-        @self.jinja2_view('collection_info.html')
-        def coll_info(user, coll_name, rec_list):
-            #rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]
-            return self.get_collection_info_for_view(user, coll_name)
-
-        wr_api_spec.set_curr_tag(None)
 
     def get_collection_info_for_view(self, user, coll_name):
         self.redir_host()

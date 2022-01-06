@@ -17,6 +17,8 @@ class RecsController(BaseController):
         def create_recording():
             user, collection = self.load_user_coll()
 
+            self.access.assert_can_write_coll(collection)
+
             data = request.json or {}
 
             title = data.get('title', '')
@@ -34,6 +36,8 @@ class RecsController(BaseController):
         def get_recordings():
             user, collection = self.load_user_coll()
 
+            self.access.assert_can_read_coll(collection)
+
             recs = collection.get_recordings()
 
             return {'recordings': [rec.serialize() for rec in recs]}
@@ -43,6 +47,8 @@ class RecsController(BaseController):
                   resp='recording')
         def get_recording(rec):
             user, collection, recording = self.load_recording(rec)
+
+            self.access.assert_can_read_coll(collection)
 
             if recording:
                 return {'recording': recording.serialize()}
@@ -56,7 +62,7 @@ class RecsController(BaseController):
         def update_rec_desc(rec):
             user, collection, recording = self.load_recording(rec)
 
-            user.access.assert_can_write_coll(collection)
+            self.access.assert_can_write_coll(collection)
 
             data = request.json or {}
 
@@ -72,6 +78,8 @@ class RecsController(BaseController):
                   resp='deleted')
         def delete_recording(rec):
             user, collection, recording = self.load_recording(rec)
+
+            self.access.assert_can_write_coll(collection)
 
             errs = collection.remove_recording(recording, delete=True)
             if errs.get('error'):
@@ -140,6 +148,8 @@ class RecsController(BaseController):
         def list_pages(rec):
             user, collection, recording = self.load_recording(rec)
 
+            self.access.assert_can_read_coll(collection)
+
             pages = collection.list_rec_pages(recording)
             return {'pages': pages}
 
@@ -149,6 +159,8 @@ class RecsController(BaseController):
         def get_num_pages(rec):
             user, collection, recording = self.load_recording(rec)
 
+            self.access.assert_can_read_coll(collection)
+
             return {'count': recording.count_pages() }
 
         @self.app.delete('/api/v1/recording/<rec>/pages')
@@ -156,6 +168,8 @@ class RecsController(BaseController):
                   resp='deleted')
         def delete_page(rec):
             user, collection, recording = self.load_recording(rec)
+
+            self.access.assert_can_write_coll(collection)
 
             url = request.json.get('url')
             ts = request.json.get('timestamp')
