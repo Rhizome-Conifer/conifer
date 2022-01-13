@@ -130,7 +130,7 @@ class UserSettingsUI extends Component {
       this.props.indexCollection(user.get('username'), indexColl, reIndexColl);
 
       // reset widget
-      this.setState({ indexColl: null });
+      this.setState({ indexColl: null, reIndexColl: false });
     }
   }
 
@@ -375,7 +375,7 @@ class UserSettingsUI extends Component {
                       <div className="admin-section index-coll">
                         <h5>Index Collection</h5>
                         <p>Select one of the user's collection below to trigger indexing.</p>
-                        <Dropdown id="indexDropdown" onSelect={this.selectColl}>
+                        <Dropdown id="indexDropdown" onSelect={this.selectIndexColl}>
                           <Dropdown.Toggle variant="outline-secondary">{indexColl ? selectedCollForIndex.get('title') : 'Select a collection to index'}</Dropdown.Toggle>
                           <Dropdown.Menu>
                             {

@@ -631,6 +631,13 @@ class Collection(PagesMixin, RedisUniqueComponent):
         else:
             self.incr_size(-recording.size)
 
+        # remove derivative recording from collection if it exists
+        deriv = recording.get_derivs_recording()
+        if deriv:
+            if self.recs.remove_object(deriv):
+                self.incr_size(-deriv.size)
+
+
         user = self.get_owner()
         if user:
             user.incr_size(-recording.size)
