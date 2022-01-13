@@ -11,7 +11,6 @@ for u, data in um.all_users.items():
 
 for u in effected_users:
     colls = um.all_users[u].get_collections()
-    print(f'searching {u} {len(colls)} collections')
     for coll in colls:
         recs = um.redis.smembers(f'c:{coll.my_id}:recs')
         orphans = []
@@ -20,10 +19,10 @@ for u in effected_users:
                 orphans.append(r)
 
         if orphans:
-            o = ','.join(orphans)
-            print(f'removed {len(orphans)} orphan recordings from {coll.name} ({o})')
+            o = ', '.join(orphans)
+            print(f'removed {len(orphans)} orphan recordings from {u}/{coll.name} ({o})')
 
-            i = input('remove orphan recordings? y/n')
+            i = input('remove orphan recordings? y/n ')
 
             if i == 'y':
                 # remove orphan recordings
