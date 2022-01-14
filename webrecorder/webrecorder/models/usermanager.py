@@ -794,7 +794,7 @@ class CLIUserManager(UserManager):
         return roles[alpha.index(new_role)][0]
 
     def modify_user(self):
-        """Modify an existing users. available modifications: role, email"""
+        """Modify an existing users. """
         username = input('username to modify: ')
         has_modified = False
 
@@ -835,6 +835,49 @@ class CLIUserManager(UserManager):
             user['email_addr'] = new_email
             print('assigned {0} with the new email: {1}'.format(username, new_email))
             has_modified = True
+
+        # update username
+        mod_username = input('change username? currently {0} (y/n) '.format(username))
+        if mod_username.strip().lower() == 'y':
+            new_username = input('new username: ')
+
+            if not self.is_username_available(new_username):
+                print('The new username already exists!')
+                return
+
+            new_password = input('new password: ')
+
+            colls = user.get_collections()
+
+            for c in colls:
+                c['owner'] = new_username
+
+            # rename holding keys
+            self.redis.rename('u:{}:colls'.format(username), 'u:{}:colls'.format(new_username))
+            self.redis.rename('u:{}:info'.format(username), 'u:{}:info'.format(new_username))
+            if self.redis.exists('u:{}:cr'.format(username)):
+                self.redis.rename('u:{}:cr'.format(username), 'u:{}:cr'.format(new_username))
+
+            # remove old username from users, add new
+            self.redis.srem('s:users', username)
+            self.redis.sadd('s:users', new_username)
+
+            # lowercase username mapping
+            lc = new_username.lower()
+            self.redis.hset('h:lc_users', new_username,
+                lc if lc != new_username else "")
+
+            self.cork.update_password(new_username, new_password)
+
+            # check for open recordings not yet commited to storage
+            if os.path.exists(os.path.join(os.environ['RECORD_ROOT'], username)):
+                os.rename(
+                    os.path.join(os.environ['RECORD_ROOT'], username),
+                    os.path.join(os.environ['RECORD_ROOT'], new_username)
+                )
+
+            has_modified = True
+            print('update {0} -> {1}'.format(username, new_username))
 
         #
         # additional modifications can be added here

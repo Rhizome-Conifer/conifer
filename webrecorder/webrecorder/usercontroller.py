@@ -300,29 +300,3 @@ class UserController(BaseController):
                 user['display_url'] = data['display_url'][:500]
 
             return {'success': True}
-
-
-        # OLD VIEWS BELOW
-        # ====================================================================
-        @self.app.get(['/<username>', '/<username>/'])
-        @self.jinja2_view('user.html')
-        def user_info(username):
-            self.redir_host()
-
-            user = self.get_user(user=username)
-
-            if self.access.is_anon(user):
-                self.redirect('/' + user.my_id + '/temp')
-
-            result = {
-                'user': user.name,
-                'user_info': user.serialize(),
-                'collections': [coll.serialize() for coll in user.get_collections()],
-            }
-
-            if not result['user_info'].get('desc'):
-                result['user_info']['desc'] = self.default_user_desc.format(user)
-
-            return result
-
-        wr_api_spec.set_curr_tag(None)
