@@ -864,8 +864,8 @@ class CLIUserManager(UserManager):
 
             # lowercase username mapping
             lc = new_username.lower()
-            self.redis.hset('h:lc_users', new_username,
-                lc if lc != new_username else "")
+            self.redis.hset('h:lc_users', lc,
+                new_username if lc != new_username else "")
 
             self.cork.update_password(new_username, new_password)
 
