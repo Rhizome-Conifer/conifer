@@ -862,6 +862,9 @@ class CLIUserManager(UserManager):
             self.redis.srem('s:users', username)
             self.redis.sadd('s:users', new_username)
 
+            # remove old lowercase mapping
+            self.redis.hdel('h:lc_useres', username.lower())
+
             # lowercase username mapping
             lc = new_username.lower()
             self.redis.hset('h:lc_users', lc,

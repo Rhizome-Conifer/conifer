@@ -235,7 +235,7 @@ class UserController(BaseController):
 
         @self.app.post('/api/v1/auth/password/update')
         def update_password():
-            self.get_user_or_raise()
+            self.access.assert_is_logged_in()
 
             data = request.json or {}
 
