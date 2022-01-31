@@ -856,6 +856,12 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         solr_batch = []
 
+        # mapping of recording ids to warc files
+        rec_warcs = {
+            r.my_id: [f[0] for f in r.iter_all_files()]
+            for r in self.get_recordings()
+        }
+
         for line, _ in self.get_cdxj_iter():
             # submit chunk of docs to be indexed
             if len(solr_batch) >= 500:
@@ -871,10 +877,11 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
             # index non-text/hml cdxj entries
             if cdxo['mime'] != 'text/html':
-                try:
-                    rec = re.match('rec-\d+-(\w+)-.+', cdxo['filename']).group(1)
-                except IndexError:
-                    rec = ''
+                rec = ''
+                for k,itm in rec_warcs.items():
+                    if cdxo['filename'] in itm:
+                        rec = k
+                        break
 
                 solr_batch.append(solr_mgr.prepare_doc({
                     'user': self.get_owner().name,

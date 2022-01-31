@@ -286,7 +286,7 @@ class ListsUI extends Component {
               dialogClassName="lists-edit-modal">
               <header>
                 <button className="borderless" onClick={this.clearInput} disabled={!title.length} type="button"><XIcon /></button>
-                <input name="title" className="borderless-input" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="Create new list" autoFocus />
+                <input name="title" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="Create new list" autoFocus />
                 {
                   created ?
                     <button className="borderless" type="button"><CheckIcon success /></button> :

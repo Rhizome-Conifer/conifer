@@ -163,7 +163,7 @@ class SolrManager:
         ts_from = params.get('from', '*')
         ts_to = params.get('to', '*')
         session = params.get('session', '*')
-        mime = params.get('mime', '').strip(',') or 'text/html'
+        mime = params.get('mime', '').strip(',') or '*'
         url = self._escape(unquote(params.get('url', '')).lower()) or '*'
 
         if ',' in mime:
@@ -174,6 +174,8 @@ class SolrManager:
                 coll=coll, start=start, rows=rows, sort_field=sort_field,
                 sort=sort, f=ts_from, t=ts_to, s=session, m=mime, u=url
             )
+
+            print(qurl)
 
             try:
                 res = requests.get(qurl, timeout=2)
@@ -213,6 +215,8 @@ class SolrManager:
             ).format(
                 q=self._escape(search), coll=coll, f=ts_from, t=ts_to,
                 s=session, m=mime, u=('*{}*'.format(url) if url != '*' else '*'))
+
+            print(query)
 
             try:
                 res = requests.get(
