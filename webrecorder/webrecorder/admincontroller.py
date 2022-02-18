@@ -469,6 +469,7 @@ class AdminController(BaseController):
             return {'defaults': data}
 
         @self.app.put('/api/v1/admin/defaults')
+        @self.admin_view
         def update_defaults():
             data = request.json
             if 'max_size' in data:
