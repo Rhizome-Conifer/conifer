@@ -88,6 +88,12 @@ class Searchbox extends PureComponent {
       searchStruct += b ? `${filterFields[val]} ` : '';
     });
 
+    // if no filters set, default to webpage
+    const filtersSet = Object.values(filterValues).some(f => !!f);
+    if (!filtersSet) {
+      filterValues.includeWebpages = true;
+    }
+
     if (urlFrag || (urlFragTxt && textChange)) {
       if (textChange) {
         urlFrag = urlFragTxt;
