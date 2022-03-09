@@ -47,6 +47,7 @@ class Searchbox extends PureComponent {
     const modalClosed = !state.options && !state.reset;
     const textChange = state.search !== state.prevSearch && !state.reset;
     const filterValues = {
+      includeAll: state.includeAll,
       includeWebpages: state.includeWebpages,
       includeImages: state.includeImages,
       includeAudio: state.includeAudio,
@@ -54,6 +55,7 @@ class Searchbox extends PureComponent {
       includeDocuments: state.includeDocuments,
     };
     const filterFields = {
+      includeAll: 'is:any',
       includeWebpages: 'is:page',
       includeImages: 'is:image',
       includeAudio: 'is:audio',
@@ -85,6 +87,12 @@ class Searchbox extends PureComponent {
       filterValues[val] = b;
       searchStruct += b ? `${filterFields[val]} ` : '';
     });
+
+    // if no filters set, default to webpage
+    const filtersSet = Object.values(filterValues).some(f => !!f);
+    if (!filtersSet) {
+      filterValues.includeWebpages = true;
+    }
 
     if (urlFrag || (urlFragTxt && textChange)) {
       if (textChange) {
@@ -165,6 +173,7 @@ class Searchbox extends PureComponent {
   constructor(props) {
     super(props);
 
+    let includeAll = false;
     let includeWebpages = true;
     let includeImages = false;
     let includeAudio = false;
@@ -183,6 +192,7 @@ class Searchbox extends PureComponent {
     this.initialValues = {
       date,
       endDate,
+      includeAll,
       includeWebpages,
       includeImages,
       includeAudio,
@@ -207,6 +217,7 @@ class Searchbox extends PureComponent {
       }
 
       if (qs.mime) {
+        includeAll = qs.mime.includes('*');
         includeWebpages = qs.mime.includes('text/html');
         includeImages = qs.mime.includes('image/');
         includeAudio = qs.mime.includes('audio/');
@@ -234,6 +245,7 @@ class Searchbox extends PureComponent {
       date,
       endDate,
       options: false,
+      includeAll,
       includeWebpages,
       includeImages,
       includeAudio,
@@ -293,10 +305,19 @@ class Searchbox extends PureComponent {
     }
 
     if (evt.target.type === 'checkbox') {
-      if (evt.target.name in this.state) {
-        this.setState({ [evt.target.name]: !this.state[evt.target.name] });
+      if (evt.target.name === 'includeAll') {
+        this.setState({
+          includeAll: true,
+          includeWebpages: false,
+          includeImages: false,
+          includeAudio: false,
+          includeVideo: false,
+          includeDocuments: false
+        });
+      } else if (evt.target.name in this.state) {
+        this.setState({ [evt.target.name]: !this.state[evt.target.name], includeAll: false });
       } else {
-        this.setState({ [evt.target.name]: true });
+        this.setState({ [evt.target.name]: true, includeAll: false });
       }
     } else {
       this.setState({
@@ -323,6 +344,7 @@ class Searchbox extends PureComponent {
     const {
       date,
       endDate,
+      includeAll,
       includeAudio,
       includeDocuments,
       includeImages,
@@ -337,7 +359,8 @@ class Searchbox extends PureComponent {
 
     const { query } = parseQuery(search);
 
-    const mime = (includeWebpages ? 'text/html,' : '') +
+    const mime = (includeAll ? '*,' : '') +
+                 (includeWebpages ? 'text/html,' : '') +
                  (includeImages ? 'image/*,' : '') +
                  (includeAudio ? 'audio/*,' : '') +
                  (includeVideo ? 'video/*,' : '') +
@@ -436,6 +459,7 @@ class Searchbox extends PureComponent {
 
                 <div className="label">Include File Types</div>
                 <ul>
+                  <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeAll" name="includeAll" checked={this.state.includeAll} label="All" /></li>
                   <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeWebpages" name="includeWebpages" checked={this.state.includeWebpages} label="Webpages" /></li>
                   <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeImages" name="includeImages" checked={this.state.includeImages} label="Images" /></li>
                   <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeAudio" name="includeAudio" checked={this.state.includeAudio} label="Audio" /></li>
