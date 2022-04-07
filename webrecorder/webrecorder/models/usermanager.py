@@ -73,6 +73,10 @@ class UserManager(object):
 
         self.invites = RedisTable(self.redis, 'h:invites')
 
+    def domain_blocklisted(self, domain=''):
+        """Check if `domain` is in `domain-blocklist` set in redis"""
+        return self.redis.sismember('domain-blocklist', domain.lower())
+
     def register_user(self, input_data, host):
         msg = OrderedDict()
         redir_extra = ''

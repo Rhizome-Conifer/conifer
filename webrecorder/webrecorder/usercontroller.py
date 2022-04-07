@@ -134,6 +134,12 @@ class UserController(BaseController):
                     response.status = 400
                     return {'errors': {'recaptcha': 'suspicious'}}
 
+            # check for banned domains
+            domain = data['email'].split('@')[1]
+            if self.user_manager.domain_blocklisted(domain):
+                response.status = 400
+                return {'errors': {'domain': 'blocked'}}
+
             msg, redir_extra = self.user_manager.register_user(data, self.get_host())
 
             if 'success' in msg:

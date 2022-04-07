@@ -115,7 +115,9 @@ export default {
     duplicate_name: 'A collection with the supplied name already exists.',
     email_not_available: 'This email address is associated with another account.',
     invalid_code: `The registration code is not valid. Please try registering again, or contact ${supportEmail} if this error persists.`,
-    suspicious: 'We had trouble verifying your details. Please refresh the page and try again. If this problem persists, contact support@conifer.rhizome.org' },
+    suspicious: 'We had trouble verifying your details. Please refresh the page and try again. If this problem persists, contact support@conifer.rhizome.org',
+    blocked: "The domain you're attempting to register from has been flagged for spam or abuse. If you believe this is an error, contact support@conifer.rhizome.org"
+  },
   upload: {
     coll_not_found: 'Collection not found.',
     no_archive_data: 'Error encountered during processing.',
