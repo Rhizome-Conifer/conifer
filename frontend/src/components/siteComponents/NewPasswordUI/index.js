@@ -13,7 +13,7 @@ import './style.scss';
 
 class NewPasswordUI extends Component {
   static propTypes = {
-    errors: PropTypes.object,
+    error: PropTypes.object,
     location: PropTypes.object,
     match: PropTypes.object,
     setPassword: PropTypes.func,
@@ -57,18 +57,18 @@ class NewPasswordUI extends Component {
   }
 
   render() {
-    const { errors, location: { search }, success } = this.props;
+    const { error, location: { search }, success } = this.props;
     const { newPass, newPass2 } = this.state;
     const qs = querystring.parse(search.replace('?', ''));
 
     return (
       <React.Fragment>
         {
-          (success || errors) &&
-            <Alert variant={errors ? 'danger' : 'success'}>
+          (success || error) &&
+            <Alert variant={error ? 'danger' : 'success'}>
               {
-                errors ?
-                  <span>{passwordResetErr[errors.get('error')]}</span> :
+                error ?
+                  <span>{passwordResetErr[error]}</span> :
                   <span>Your password has been successfully reset! <Button variant="link" onClick={this.props.toggleLogin}>You can now login with your new password.</Button></span>
               }
             </Alert>

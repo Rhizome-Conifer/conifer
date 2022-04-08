@@ -955,12 +955,6 @@ class ContentController(BaseController, RewriterApp):
 
         self.cookie_tracker.add_cookie(key, domain, name, value)
 
-    def _get_remote_ip(self):
-        remote_ip = request.environ.get('HTTP_X_REAL_IP')
-        remote_ip = remote_ip or request.environ.get('REMOTE_ADDR', '')
-        remote_ip = remote_ip.rsplit('.', 1)[0]
-        return remote_ip
-
     def check_rate_limit(self, user, remote_ip):
         # check rate limit and return ip used for further limiting
         # if skipping limit, return empty string to avoid incrementing

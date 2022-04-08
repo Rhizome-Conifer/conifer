@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { passwordReset as passwordResetErrors } from 'helpers/userMessaging';
 import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
 
 import './style.scss';
@@ -9,7 +10,7 @@ import './style.scss';
 class ResetPasswordUI extends Component {
   static propTypes = {
     cb: PropTypes.func,
-    errors: PropTypes.object,
+    error: PropTypes.object,
     success: PropTypes.bool
   };
 
@@ -18,7 +19,6 @@ class ResetPasswordUI extends Component {
 
     this.state = {
       email: '',
-      error: false,
       username: ''
     };
   }
@@ -29,8 +29,6 @@ class ResetPasswordUI extends Component {
 
     if (email || username) {
       this.props.cb(this.state);
-    } else {
-      this.setState({ error: true });
     }
   }
 
@@ -39,19 +37,19 @@ class ResetPasswordUI extends Component {
   }
 
   render() {
-    const { errors, success } = this.props;
+    const { error, success } = this.props;
     const { username, email } = this.state;
 
     return (
       <Row>
         <Col xs={12} sm={{ span: 8, offset: 2}}>
           {
-            (success || errors) &&
-              <Alert className="top-buffer" variant={errors ? 'danger' : 'success'}>
+            (success || error) &&
+              <Alert className="top-buffer" variant={error ? 'danger' : 'success'}>
                 {
-                  errors ?
-                    <span>Username or email address not found.</span> :
-                    <span>A password reset e-mail has been sent to your e-mail!</span>
+                  error ?
+                    <span>{passwordResetErrors[error] || 'Error encountered'}</span> :
+                    <span>A password reset email will been sent to the email address associated with that account if it exists.</span>
                 }
               </Alert>
           }

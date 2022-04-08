@@ -9,7 +9,7 @@ import { NewPasswordUI } from 'components/siteComponents';
 
 const mapStateToProps = ({ app }) => {
   return {
-    errors: app.getIn(['passwordReset', 'errors']),
+    error: app.getIn(['passwordReset', 'error']),
     success: app.getIn(['passwordReset', 'setNew'])
   };
 };

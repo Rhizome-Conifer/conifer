@@ -106,6 +106,8 @@ export default {
     account_suspended: 'Your account has been suspended. If you believe this is in error, please contact support@conifer.rhizome.org'
   },
   passwordReset: {
+    reset_wait: 'You recently submitted a reset request.',
+    too_many_attempts: "You've attempted to reset your password too many times. Please wait a bit and try the process again.",
     already_logged_in: 'An account is already logged in.',
     invalid_reset_code: 'The reset code is invalid. Please try going through the reset process again.'
   },

@@ -59,6 +59,12 @@ class BaseController(object):
         origin += self.app_host if self.app_host else request.environ.get('HTTP_HOST')
         return origin
 
+    def _get_remote_ip(self):
+        remote_ip = request.environ.get('HTTP_X_REAL_IP')
+        remote_ip = remote_ip or request.environ.get('REMOTE_ADDR', '')
+        remote_ip = remote_ip.rsplit('.', 1)[0]
+        return remote_ip
+
     def is_content_request(self):
         if not self.content_host:
             return False

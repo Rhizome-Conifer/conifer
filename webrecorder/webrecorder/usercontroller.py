@@ -206,6 +206,14 @@ class UserController(BaseController):
             email = data.get('email', '')
             username = data.get('username', '')
             host = self.get_host()
+            rkey = 'reset-request:{}'.format(self._get_remote_ip())
+
+            if self.user_manager.redis.exists(rkey):
+                response.status = 429
+                return {'error': 'reset_wait'}
+
+            # set 5 minute timeout
+            self.user_manager.redis.set(rkey, '', ex=5 * 60)
 
             try:
                 self.user_manager.cork.send_password_reset_email(
@@ -214,12 +222,12 @@ class UserController(BaseController):
                                           subject='Conifer password reset confirmation',
                                           email_template='webrecorder/templates/emailreset.html',
                                           host=host)
-
-                return {'success': True}
             except Exception as e:
                 import traceback
                 traceback.print_exc()
-                self._raise_error(404, 'no_such_user')
+
+            return {'success': True}
+
 
         @self.app.post('/api/v1/auth/password/reset')
         def reset_password():
@@ -232,11 +240,19 @@ class UserController(BaseController):
             password = data.get('newPass', '')
             confirm_password = data.get('newPass2', '')
             reset_code = data.get('resetCode', '')
+            rkey = 'reset:{}'.format(self._get_remote_ip())
+
+            tries = self.user_manager.redis.get(rkey)
+            if tries is not None and int(tries) > 3:
+                response.status = 429
+                return {'error': 'too_many_attempts'}
 
             try:
                 self.user_manager.reset_password(password, confirm_password, reset_code)
                 return {'success': True}
             except ValidationException as ve:
+                self.user_manager.redis.incr(rkey)
+                self.user_manager.redis.expire(rkey, 15 * 60)
                 self._raise_error(403, str(ve))
 
         @self.app.post('/api/v1/auth/password/update')
