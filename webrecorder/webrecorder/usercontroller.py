@@ -308,7 +308,7 @@ class UserController(BaseController):
 
         @self.app.post('/api/v1/user/<username>')
         def update_user(username):
-            user = self.get_user_or_raise(user=username)
+            user = self.get_user_or_raise(username=username)
 
             data = request.json or {}
 
