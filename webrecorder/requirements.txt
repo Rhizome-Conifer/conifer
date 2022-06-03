@@ -1,4 +1,4 @@
-bottle==0.12.13
+bottle==0.12.20
 bottle-cork
 boto3
 youtube_dl
