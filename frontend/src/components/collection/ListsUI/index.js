@@ -285,12 +285,11 @@ class ListsUI extends Component {
               footer={<Button onClick={this.closeEditModal} variant="primary">Done</Button>}
               dialogClassName="lists-edit-modal">
               <header>
-                <button className="borderless" onClick={this.clearInput} disabled={!title.length} type="button"><XIcon /></button>
-                <input name="title" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="Create new list" autoFocus />
+                <input name="title" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="New list name" autoFocus />
                 {
                   created ?
                     <button className="borderless" type="button"><CheckIcon success /></button> :
-                    <button className={classNames('borderless', { 'wr-add-list': Boolean(title.length) })} onClick={this.createList} disabled={!title.length || isCreating} title="Add list" type="button"><PlusIcon /></button>
+                    <Button variant="outline-secondary" onClick={this.createList} disabled={!title.length || isCreating} title="Add list" type="button">Create List</Button>
                 }
               </header>
               <ul className="lists-modal-list">
