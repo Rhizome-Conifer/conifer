@@ -4,7 +4,7 @@ boto3
 youtube_dl
 itsdangerous
 requests>=2.9.1
-werkzeug
+werkzeug==1.0.1
 gevent-websocket
 har2warc>=1.0.4
 fakeredis<1.0
