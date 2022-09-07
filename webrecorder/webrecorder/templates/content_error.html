@@ -108,7 +108,7 @@
                     <button id="bug-report" type="button" class="btn btn-default btn-xs" data-toggle="button" aria-pressed="false" autocomplete="off">Still missing? Report a bug.</button>
                 {% endif %}
 
-                <p>The url <b>{{ url|trunc_url_expand }}</b> was not found in the archive.</p>
+                <p>The url <b>{{ url|e|trunc_url_expand }}</b> was not found in the archive.</p>
             </div>
         </div>
     {% elif status == 402 %}
@@ -119,7 +119,7 @@
             <div class="content-error-info">
                 <h1>This site could not be loaded</h1>
 
-                <p><b>{{ url|trunc_url }}</b></p>
+                <p><b>{{ url|e|trunc_url }}</b></p>
 
                 <p>Please double check that this url is valid.</p>
             </div>

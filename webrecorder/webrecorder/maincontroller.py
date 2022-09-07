@@ -333,7 +333,7 @@ class MainController(BaseController):
         def trunc_url_expand(value):
             """ Truncate querystrings, appending an ellipses, expand on click
             """
-            trunc_value = '?<span class="truncate-expand" aria-role="button" title="Click to expand" onclick="this.innerHTML=\''+value.split('?')[-1]+'\'; this.classList.add(\'open\');">...</span>'
+            trunc_value = '?<span class="truncate-expand" aria-role="button" title="Click to expand" onclick="this.innerText=\''+value.split('?')[-1]+'\'; this.classList.add(\'open\');">...</span>'
             return re.sub(r'(\?.*)', trunc_value, value)
 
         def trunc_url(value):
