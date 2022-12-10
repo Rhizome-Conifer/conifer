@@ -52,7 +52,7 @@
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "1.0.1",
     "exports-loader": "^0.7.0",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "file-loader": "^2.0.0",
     "filesize": "3.6.1",
     "gzip-size": "5.0.0",
