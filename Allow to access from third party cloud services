@@ -1,0 +1,5 @@
+allow conifer to access to warcs from third party cloud services.
+dropbox,
+microsoft onedrive,
+google drive,
+apple icloud,
