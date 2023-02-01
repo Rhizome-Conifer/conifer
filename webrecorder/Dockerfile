@@ -1,4 +1,4 @@
-FROM webrecorder/pywb:2.4.1
+FROM webrecorder/pywb:2.5.0
 
 WORKDIR /build
 ADD requirements.txt /build/

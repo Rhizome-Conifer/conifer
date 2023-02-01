@@ -73,6 +73,10 @@ class UserManager(object):
 
         self.invites = RedisTable(self.redis, 'h:invites')
 
+    def domain_blocklisted(self, domain=''):
+        """Check if `domain` is in `domain-blocklist` set in redis"""
+        return self.redis.sismember('domain-blocklist', domain.lower())
+
     def register_user(self, input_data, host):
         msg = OrderedDict()
         redir_extra = ''
@@ -259,6 +263,9 @@ class UserManager(object):
         # if failing, see if case-insensitive username and try that
         if not user:
             return {'error': 'invalid_login'}
+
+        if user.get('role') == 'suspended':
+            return {'error': 'account_suspended'}
 
         # if not enough space, don't continue with login
         if move_info:
@@ -658,6 +665,9 @@ class UserManager(object):
         if 'customer_max_size' in data:
             user['customer_max_size'] = data['customer_max_size']
 
+        if 'email_addr' in data:
+            user['email_addr'] = data['email_addr']
+
         return None
 
     def delete_user(self, username):
@@ -704,7 +714,7 @@ class UserManager(object):
         # don't delete data in temp user dir as its waiting to be committed!
         self.get_session().set_anon_commit_wait()
 
-        for recording in temp_coll.get_recordings():
+        for recording in temp_coll.get_recordings(include_derivs=True):
             # will be marked for commit
             recording.set_closed()
 
@@ -788,7 +798,7 @@ class CLIUserManager(UserManager):
         return roles[alpha.index(new_role)][0]
 
     def modify_user(self):
-        """Modify an existing users. available modifications: role, email"""
+        """Modify an existing users. """
         username = input('username to modify: ')
         has_modified = False
 
@@ -829,6 +839,52 @@ class CLIUserManager(UserManager):
             user['email_addr'] = new_email
             print('assigned {0} with the new email: {1}'.format(username, new_email))
             has_modified = True
+
+        # update username
+        mod_username = input('change username? currently {0} (y/n) '.format(username))
+        if mod_username.strip().lower() == 'y':
+            new_username = input('new username: ')
+
+            if not self.is_username_available(new_username):
+                print('The new username already exists!')
+                return
+
+            new_password = input('new password: ')
+
+            colls = user.get_collections()
+
+            for c in colls:
+                c['owner'] = new_username
+
+            # rename holding keys
+            self.redis.rename('u:{}:colls'.format(username), 'u:{}:colls'.format(new_username))
+            self.redis.rename('u:{}:info'.format(username), 'u:{}:info'.format(new_username))
+            if self.redis.exists('u:{}:cr'.format(username)):
+                self.redis.rename('u:{}:cr'.format(username), 'u:{}:cr'.format(new_username))
+
+            # remove old username from users, add new
+            self.redis.srem('s:users', username)
+            self.redis.sadd('s:users', new_username)
+
+            # remove old lowercase mapping
+            self.redis.hdel('h:lc_useres', username.lower())
+
+            # lowercase username mapping
+            lc = new_username.lower()
+            self.redis.hset('h:lc_users', lc,
+                new_username if lc != new_username else "")
+
+            self.cork.update_password(new_username, new_password)
+
+            # check for open recordings not yet commited to storage
+            if os.path.exists(os.path.join(os.environ['RECORD_ROOT'], username)):
+                os.rename(
+                    os.path.join(os.environ['RECORD_ROOT'], username),
+                    os.path.join(os.environ['RECORD_ROOT'], new_username)
+                )
+
+            has_modified = True
+            print('update {0} -> {1}'.format(username, new_username))
 
         #
         # additional modifications can be added here
@@ -886,3 +942,34 @@ class CLIUserManager(UserManager):
 
     def _get_access(self):
         return self.base_access
+
+    def index_collection(self, username, collection, include_existing=True):
+        """Helper function to trigger indexing for supplied collection"""
+        user, coll = self.get_user_coll(username, collection)
+
+        if coll is None:
+            print('Collection not found...')
+            return
+
+        res = coll.requeue_pages_for_derivs(include_existing)
+
+        if res > 0:
+            coll.set_bool_prop('autoindexed', True)
+
+        return '{} pages queued'.format(res)
+
+    def index_user_collections(self, username, include_existing=True):
+        """Helper function to index all of a user's collections"""
+
+        user = self.all_users[username]
+        colls = user.get_collections()
+        for coll in colls:
+            self.index_collection(username, coll.data['slug'], include_existing)
+        return 'marked {} collections for indexing'.format(len(colls))
+
+    def get_user_by_email(self, email):
+        """Helper function to look up a username by email"""
+        for u, data in self.all_users.items():
+            if data.get('email_addr') == email:
+                return print('Username: {} for email address {}'.format(u, email))
+        print('No user found...')

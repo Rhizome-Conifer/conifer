@@ -103,6 +103,8 @@ class ListsController(BaseController):
         def reorder_lists():
             user, collection = self.load_user_coll()
 
+            self.access.assert_can_write_coll(collection)
+
             new_order = request.json.get('order', [])
 
             if collection.lists.reorder_objects(new_order):
@@ -195,6 +197,8 @@ class ListsController(BaseController):
         def reorder_bookmarks(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)
 
+            self.access.assert_can_write_coll(collection)
+
             new_order = request.json.get('order', [])
 
             if blist.reorder_bookmarks(new_order):
@@ -222,5 +226,3 @@ class ListsController(BaseController):
             self._raise_error(404, 'no_such_list')
 
         return blist
-
-

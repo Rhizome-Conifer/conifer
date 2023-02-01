@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import classNames from 'classnames';
 import { fromJS } from 'immutable';
+import { Link } from 'react-router-dom';
 import { Button, Col, Row } from 'react-bootstrap';
 
 import { appHost, tagline } from 'config';
@@ -18,7 +19,7 @@ import RedirectWithStatus from 'components/RedirectWithStatus';
 import WYSIWYG from 'components/WYSIWYG';
 import { NewCollection } from 'components/siteComponents';
 import { Upload } from 'containers';
-import { LinkIcon, PlusIcon, UploadIcon, UserIcon } from 'components/icons';
+import { GearIcon, LinkIcon, PlusIcon, UploadIcon, UserIcon } from 'components/icons';
 
 import CollectionItem from './CollectionItem';
 import './style.scss';
@@ -107,6 +108,7 @@ class CollectionListUI extends Component {
       <AccessContext.Provider value={{ canAdmin }}>
         <Helmet>
           <title>{`${displayName}'s Collections`}</title>
+          <meta name="robots" value="nofollow" />
           <meta property="og:url" content={`${appHost}/${userParam}`} />
           <meta property="og:type" content="website" />
           <meta property="og:title" content={`${displayName}'s Collections`} />
@@ -124,7 +126,13 @@ class CollectionListUI extends Component {
                   success={this.props.edited}>
                   <h2>{displayName}</h2>
                 </InlineEditor>
-                <p className="collection-username"><UserIcon />{ userParam }</p>
+                <p className="collection-username">
+                  <UserIcon />{ userParam }
+                  {
+                    auth.getIn(['user', 'role']) == 'admin' &&
+                    <Link to={`/${userParam}/_settings`}><GearIcon /></Link>
+                  }
+                </p>
                 {
                   (user.get('display_url') || canAdmin) &&
                     <InlineEditor

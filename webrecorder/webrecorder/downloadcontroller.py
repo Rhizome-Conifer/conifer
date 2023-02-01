@@ -152,7 +152,7 @@ class DownloadController(BaseController):
         coll_info = self.create_coll_warcinfo(user, collection, filename)
 
         def iter_infos():
-            for recording in collection.get_recordings(load=True):
+            for recording in collection.get_recordings(load=True, include_derivs=True):
                 if rec_list and recording.name not in rec_list:
                     continue
 
@@ -250,7 +250,7 @@ class DownloadController(BaseController):
         for collection in colls:
             commit_storage = collection.get_storage()
 
-            for recording in collection.get_recordings():
+            for recording in collection.get_recordings(include_derivs=True):
                 is_committed = recording.is_fully_committed()
                 is_open = not is_committed and recording.get_pending_count() > 0
                 storage = commit_storage if is_committed else local_storage

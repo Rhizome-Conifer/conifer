@@ -41,11 +41,23 @@ class RemoveWidget extends Component {
     withConfirmation: true
   };
 
+  static getDerivedStateFromProps(props, state) {
+    if (!props.isDeleting && state.isDeleting && state.confirmRemove) {
+      return {
+        confirmRemove: false,
+        isDeleting: false
+      };
+    }
+
+    return null;
+  }
+
   constructor(props) {
     super(props);
 
     this.state = {
-      confirmRemove: false
+      confirmRemove: false,
+      isDeleting: false
     };
   }
 
@@ -58,12 +70,6 @@ class RemoveWidget extends Component {
     return false;
   }
 
-  componentDidUpdate(prevProps) {
-    if (!this.props.isDeleting && prevProps.isDeleting) {
-      this.setState({ confirmRemove: false });
-    }
-  }
-
   removeClick = (evt) => {
     evt.stopPropagation();
 
@@ -73,6 +79,7 @@ class RemoveWidget extends Component {
         return;
       }
 
+      this.setState({ isDeleting: true });
       this.props.callback();
     } else {
       this.setState({ confirmRemove: true });

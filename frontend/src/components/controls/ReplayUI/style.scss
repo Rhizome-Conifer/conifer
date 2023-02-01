@@ -101,10 +101,16 @@
     }
 
     &.embed {
+        height: 100vh;
         flex-direction: column;
 
         iframe {
             width: 100%;
+        }
+
+        #browser {
+            flex-grow: 1;
+            height: 100%;
         }
     }
 

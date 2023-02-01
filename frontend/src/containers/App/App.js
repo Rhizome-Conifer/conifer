@@ -43,7 +43,7 @@ export class App extends Component {
     const ua = global.navigator ? global.navigator.userAgent : '';
 
     this.handle = null;
-    this.isMobile = Boolean(ua.match(/Mobile|Android|BlackBerry/));
+    this.isMobile = Boolean(ua && ua.match(/Mobile|Android|BlackBerry/));
     this.state = {
       coniferAnnounce: true,
       error: null,

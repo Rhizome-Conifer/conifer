@@ -97,6 +97,8 @@ export default Object.assign({
   product: 'Conifer',
   productLink: 'https://conifer.rhizome.org',
   ravenConfig: null,
+  recaptcha: false,
+  recaptchaKey: '',
   saveDelay: 1000,
   storageKey: 'wr__',
   supportEmail: 'support@conifer.rhizome.org',

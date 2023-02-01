@@ -38,7 +38,7 @@ class WAMLoader(object):
     def load_all(self, webarchives_path):
         wa_file = load(webarchives_path)
         with closing(wa_file):
-            for doc in yaml.load_all(wa_file):
+            for doc in yaml.safe_load_all(wa_file):
                 webarchives = doc['webarchives']
                 for pk, webarchive in webarchives.items():
                     self.load_archive(pk, webarchive)

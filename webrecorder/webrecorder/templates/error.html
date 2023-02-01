@@ -41,7 +41,7 @@
         {% elif err.status_code == 402 and err.body == 'rate_limit_exceeded' %}
         <p>You have reached your network traffic quota.</p>
         <p>Webrecorder is a service for <a href="{{ get_app_host() }}/_faq">archiving web resources</a> and any other use, such as video streaming or trying to get around local access restrictions, is not supported.</p>
-        <p>If you are using Webrecorder within our <a href="{{ get_app_host() }}/_policies">terms and policies</a> and this limit is hindering a web archiving project you are working on, please send a message to <a href="mailto:support@webrecorder.io">support@webrecorder.io</a> with some details about your project and a request to raise your data limit.</p>
+        <p>If you are using Webrecorder within our <a href="{{ get_app_host() }}/_policies">terms and policies</a> and this limit is hindering a web archiving project you are working on, please send a message to <a href="mailto:support@conifer.rhizome.org">support@conifer.rhizome.org</a> with some details about your project and a request to raise your data limit.</p>
         {% else %}
         {{ err.body }}
         {% endif %}

@@ -29,8 +29,9 @@ import './style.scss';
 
 class UserSettingsUI extends Component {
   static propTypes = {
+    adminUpdateUser: PropTypes.func,
     auth: PropTypes.object,
-    collSum: PropTypes.number,
+    collections: PropTypes.object,
     deleting: PropTypes.bool,
     deleteError: PropTypes.oneOfType([
       PropTypes.string,
@@ -40,10 +41,11 @@ class UserSettingsUI extends Component {
     edited: PropTypes.bool,
     editing: PropTypes.bool,
     editUser: PropTypes.func,
+    indexCollection: PropTypes.func,
     loadUserRoles: PropTypes.func,
     match: PropTypes.object,
+    setCollectionPrivate: PropTypes.func,
     updatePass: PropTypes.func,
-    adminUpdateUser: PropTypes.func,
     user: PropTypes.object
   };
 
@@ -76,8 +78,12 @@ class UserSettingsUI extends Component {
       desc: props.user.get('desc'),
       display_url: props.user.get('display_url'),
       full_name: props.user.get('full_name'),
+      indexColl: null,
+      newEmail: '',
       password: '',
       password2: '',
+      privateColl: null,
+      reIndexColl: false,
       role: null,
       showModal: false
     };
@@ -90,7 +96,19 @@ class UserSettingsUI extends Component {
     }
   }
 
-  handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
+  handleChange = (evt) => {
+    if (evt.target.type === 'checkbox') {
+      if (evt.target.name in this.state) {
+        this.setState({ [evt.target.name]: !this.state[evt.target.name] });
+      } else {
+        this.setState({ [evt.target.name]: true });
+      }
+    } else {
+      this.setState({
+        [evt.target.name]: evt.target.value
+      });
+    }
+  }
 
   goToSupporterPortal = () => {
     window.location.href = supporterPortal;
@@ -102,6 +120,18 @@ class UserSettingsUI extends Component {
 
   editDesc = (desc) => {
     this.setState({ desc });
+  }
+
+  triggerIndexColl = () => {
+    const { user } = this.props;
+    const { indexColl, reIndexColl } = this.state;
+
+    if (indexColl) {
+      this.props.indexCollection(user.get('username'), indexColl, reIndexColl);
+
+      // reset widget
+      this.setState({ indexColl: null, reIndexColl: false });
+    }
   }
 
   setRole = (role) => {
@@ -127,9 +157,39 @@ class UserSettingsUI extends Component {
     }
   }
 
+  selectIndexColl = (coll) => {
+    this.setState({indexColl: coll});
+  }
+
+  selectPrivateColl = (coll) => {
+    this.setState({privateColl: coll});
+  }
+
   sendDelete = (evt) => {
     if (this.validateConfirmDelete()) {
       this.props.deleteUser(this.props.auth.getIn(['user', 'username']));
+    }
+  }
+
+  setPrivate = () => {
+    const { privateColl } = this.state;
+    const { match: { params: { user } } } = this.props;
+
+    this.props.setCollectionPrivate(user, privateColl);
+    this.setState({privateColl: null});
+  }
+
+  suspendAccount = () => {
+    const { match: { params: { user } }, adminUpdateUser } = this.props;
+    adminUpdateUser(user, { role: 'suspended' });
+  }
+
+  updateEmail = () => {
+    const { match: { params: { user } }, adminUpdateUser } = this.props;
+    const { newEmail } = this.state;
+
+    if (this.validateEmail()) {
+      adminUpdateUser(user, { email_addr: newEmail });
     }
   }
 
@@ -180,6 +240,16 @@ class UserSettingsUI extends Component {
     return true;
   }
 
+  validateEmail = () => {
+    const { newEmail } = this.state;
+
+    if (!newEmail || newEmail.indexOf('@') === -1 || newEmail.match(/\.\w+$/) === null) {
+      return false;
+    }
+
+    return true;
+  }
+
   validatePassword = () => {
     const { password, password2, missingPw } = this.state;
 
@@ -195,8 +265,8 @@ class UserSettingsUI extends Component {
   }
 
   render() {
-    const { auth, deleting, edited, editing, match: { params }, user } = this.props;
-    const { currPassword, password, password2, showModal } = this.state;
+    const { auth, collections, deleting, edited, editing, match: { params }, user } = this.props;
+    const { currPassword, indexColl, password, password2, privateColl, showModal } = this.state;
 
     const username = params.user;
     const canAdmin = username === auth.getIn(['user', 'username']);
@@ -210,6 +280,8 @@ class UserSettingsUI extends Component {
     const totalSpace = user.getIn(['space_utilization', 'total']);
     const passUpdate = auth.get('passUpdate');
     const passUpdateFail = auth.get('passUpdateFail');
+    const selectedCollForIndex = indexColl ? collections.find(c => c.get('id') === indexColl) : null;
+    const selectedCollForPrivate = privateColl ? collections.find(c => c.get('id') === privateColl) : null;
 
     const confirmDeleteBody = (
       <div>
@@ -286,7 +358,7 @@ class UserSettingsUI extends Component {
 
                       <div className="admin-section update-role">
                         <h5>Update Role</h5>
-                        <p>Current Role: {user.get('role')}</p>
+                        <p>Current Role: <mark className={`role-${user.get('role')}`}>{user.get('role')}</mark></p>
                         <div>
                           <Dropdown id="roleDropdown" onSelect={this.setRole}>
                             <Dropdown.Toggle variant="outline-secondary">{this.state.role ? this.state.role : 'Change Role'}</Dropdown.Toggle>
@@ -300,10 +372,57 @@ class UserSettingsUI extends Component {
                         <Button variant="primary" className="top-buffer" onClick={this.saveRole}>Update Role</Button>
                       </div>
 
+                      <div className="admin-section index-coll">
+                        <h5>Index Collection</h5>
+                        <p>Select one of the user's collection below to trigger indexing.</p>
+                        <Dropdown id="indexDropdown" onSelect={this.selectIndexColl}>
+                          <Dropdown.Toggle variant="outline-secondary">{indexColl ? selectedCollForIndex.get('title') : 'Select a collection to index'}</Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            {
+                              collections.map(c => <Dropdown.Item key={c.get('id')} eventKey={c.get('id')}>{c.get('title')}</Dropdown.Item>)
+                            }
+                          </Dropdown.Menu>
+                        </Dropdown>
+                        <br />
+                        <Form.Check type="checkbox" id="reindex-coll" name="reIndexColl" label="re-index previously indexed pages" onChange={this.handleChange} checked={this.state.reIndexColl} />
+                        <Button variant="primary" className="top-buffer" onClick={this.triggerIndexColl}>Index Collection</Button>
+                      </div>
+
+                      <div className="admin-section index-coll">
+                        <h5>Set Collection Private</h5>
+                        <p>Select one of the user's public collections below to mark private</p>
+                        <Dropdown id="indexDropdown" onSelect={this.selectPrivateColl}>
+                          <Dropdown.Toggle variant="outline-secondary">{privateColl ? selectedCollForPrivate.get('title') : 'Public Collections'}</Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            {
+                              collections.map(c => c.get('public') && <Dropdown.Item key={c.get('id')} eventKey={c.get('id')}>{c.get('title')}</Dropdown.Item>)
+                            }
+                          </Dropdown.Menu>
+                        </Dropdown>
+                        <Button variant="primary" className="top-buffer" onClick={this.setPrivate}>Set Private</Button>
+                      </div>
+
                       <div className="admin-section suspend">
                         <h5>Suspend Account</h5>
-                        <p>User will be suspended and a notification will be sent via email.</p>
-                        <Button variant="primary" disabled><DisabledIcon /> Suspend Account</Button>
+                        <p>User will be suspended and receive notice on attempted login.</p>
+                        <Button variant="primary" onClick={this.suspendAccount}><DisabledIcon /> Suspend Account</Button>
+                      </div>
+
+                      <div className="admin-section update-email">
+                        <h5>Update Email</h5>
+                        <Form.Group className="top-buffer-md">
+                          <InputGroup>
+                            <Form.Control
+                              id="updateEmail"
+                              name="newEmail"
+                              onChange={this.handleChange}
+                              placeholder={user.get('email_addr')}
+                              type="text"
+                              isInvalid={this.state.newEmail.length > 6 && !this.validateEmail()}
+                              value={this.state.newEmail} />
+                          </InputGroup>
+                        </Form.Group>
+                        <Button variant="primary" onClick={this.updateEmail}>Update Email</Button>
                       </div>
                     </div>
                   </Card.Body>

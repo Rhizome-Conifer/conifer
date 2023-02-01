@@ -279,3 +279,15 @@ class SessionAccessCache(BaseAccess):
         """
         if not self.can_read_list(blist):
             raise HTTPError(404, 'No List Access')
+
+    def search_access(self):
+        """
+        Return boolean indicating whether this user has access to adv search
+        """
+        return self.sesh.curr_role in ['admin', 'beta-archivist', 'supporter']
+
+    def beta_access(self):
+        """
+        Return boolean indicating whether this user has beta or admin access
+        """
+        return self.sesh.curr_role in ['admin', 'beta-archivist']

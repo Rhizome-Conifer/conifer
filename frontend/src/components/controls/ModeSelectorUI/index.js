@@ -40,7 +40,7 @@ class ModeSelectorUI extends PureComponent {
       //window.location.href = `/${user}/${coll}/index`;
       this.props.history.push(`/${user}/${coll}/manage`);
     } else {
-      this.props.history.push(`/${user}/${coll}/manage?search=&session=${rec}`);
+      this.props.history.push(`/${user}/${coll}/manage?search=&session=${rec}&method=url`);
     }
   }
 
@@ -173,7 +173,7 @@ class ModeSelectorUI extends PureComponent {
             { modeMarkup }
             { isWrite && <SizeCounter /> }
           </Button>
-          <DropdownButton alignLeft variant="outline-secondary" title="">
+          <DropdownButton variant="outline-secondary" title="">
             <div className="container">
               {
                 isLive &&

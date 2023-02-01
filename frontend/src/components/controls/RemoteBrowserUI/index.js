@@ -302,7 +302,7 @@ class RemoteBrowserUI extends Component {
               Browser Time Left: <b>{countdown}</b>
             </Alert>
         }
-        <div id="message" key="msg" className="browser" />
+        {/*<div id="message" key="msg" className="browser" />*/}
         <div id="browser" key="browser" className="browser" style={sidebarResize ? { pointerEvents: 'none' } : {}} />
         <div id="noVNC_mouse_capture_elem" />
       </React.Fragment>

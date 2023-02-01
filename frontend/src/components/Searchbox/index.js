@@ -12,6 +12,7 @@ import './style.scss';
 
 
 const parseQuery = (search) => {
+  search = search.trim();
   const filters = search.match(/((is|start|end|session):[a-z0-9-.:]+)/ig) || [];
   const urlFragRX = search.match(/url:((?:https?:\/\/)?(?:www\.)?(?:[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})?(?:[-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*))/i);
   const searchRX = search.match(/(?:(?:(?:is|start|end|session|url):[^ ]+\s?)+\s?)?(.*)/i);
@@ -38,7 +39,7 @@ class Searchbox extends PureComponent {
     clear: PropTypes.func,
     location: PropTypes.object,
     search: PropTypes.func,
-    searching: PropTypes.bool,
+    busy: PropTypes.bool,
     searched: PropTypes.bool,
   };
 
@@ -46,6 +47,7 @@ class Searchbox extends PureComponent {
     const modalClosed = !state.options && !state.reset;
     const textChange = state.search !== state.prevSearch && !state.reset;
     const filterValues = {
+      includeAll: state.includeAll,
       includeWebpages: state.includeWebpages,
       includeImages: state.includeImages,
       includeAudio: state.includeAudio,
@@ -53,6 +55,7 @@ class Searchbox extends PureComponent {
       includeDocuments: state.includeDocuments,
     };
     const filterFields = {
+      includeAll: 'is:any',
       includeWebpages: 'is:page',
       includeImages: 'is:image',
       includeAudio: 'is:audio',
@@ -85,13 +88,19 @@ class Searchbox extends PureComponent {
       searchStruct += b ? `${filterFields[val]} ` : '';
     });
 
+    // if no filters set, default to webpage
+    const filtersSet = Object.values(filterValues).some(f => !!f);
+    if (!filtersSet) {
+      filterValues.includeWebpages = true;
+    }
+
     if (urlFrag || (urlFragTxt && textChange)) {
       if (textChange) {
         urlFrag = urlFragTxt;
       }
 
       if (urlFrag) {
-        searchStruct += textChange ? `url:${urlFragTxt} ` : `url:${encodeURIComponent(urlFrag)} `;
+        searchStruct += textChange ? `url:${urlFragTxt} ` : `url:${urlFrag} `;
       }
     }
 
@@ -164,6 +173,7 @@ class Searchbox extends PureComponent {
   constructor(props) {
     super(props);
 
+    let includeAll = false;
     let includeWebpages = true;
     let includeImages = false;
     let includeAudio = false;
@@ -172,14 +182,17 @@ class Searchbox extends PureComponent {
     let session = '';
     let search = '';
     let searchFrag = '';
+    let urlFrag = '';
     let date = 'anytime';
     let startDate = new Date();
     let endDate = new Date();
+    let urlSearch = false;
 
     // create clone
     this.initialValues = {
       date,
       endDate,
+      includeAll,
       includeWebpages,
       includeImages,
       includeAudio,
@@ -188,19 +201,23 @@ class Searchbox extends PureComponent {
       search,
       searchFrag,
       session,
-      startDate
+      startDate,
+      urlFrag,
+      urlSearch
     };
 
     if (props.location.search) {
       const qs = querystring.parse(props.location.search.replace(/^\?/, ''));
 
-      if (qs.search) {
+      if (qs.search || qs.url) {
         props.search(qs);
         search = qs.search;
         searchFrag = qs.search;
+        urlFrag = qs.url ? decodeURIComponent(qs.url) : '';
       }
 
       if (qs.mime) {
+        includeAll = qs.mime.includes('*');
         includeWebpages = qs.mime.includes('text/html');
         includeImages = qs.mime.includes('image/');
         includeAudio = qs.mime.includes('audio/');
@@ -218,12 +235,17 @@ class Searchbox extends PureComponent {
         endDate = qs.to ? this.parseDate(qs.to) : endDate;
         date = 'daterange';
       }
+
+      if (qs.method === 'url') {
+        urlSearch = true;
+      }
     }
 
     this.state = {
       date,
       endDate,
       options: false,
+      includeAll,
       includeWebpages,
       includeImages,
       includeAudio,
@@ -233,7 +255,9 @@ class Searchbox extends PureComponent {
       search,
       searchStruct: '',
       session,
-      startDate
+      startDate,
+      urlFrag,
+      urlSearch
     };
 
     if (props.location.search) {
@@ -250,7 +274,7 @@ class Searchbox extends PureComponent {
   componentDidUpdate(prevProps, prevState) {
     // check for searched prop being cleared
     if (prevProps.searched && !this.props.searched) {
-      this.setState({ search: 'is:page', searchFrag: '', urlFrag: '' });
+      this.setState({ search: 'is:page ', searchFrag: '', urlFrag: '' });
     }
   }
 
@@ -276,15 +300,24 @@ class Searchbox extends PureComponent {
 
   handleChange = (evt) => {
     // noop while indexing
-    if (this.props.searching) {
+    if (this.props.busy) {
       return;
     }
 
     if (evt.target.type === 'checkbox') {
-      if (evt.target.name in this.state) {
-        this.setState({ [evt.target.name]: !this.state[evt.target.name] });
+      if (evt.target.name === 'includeAll') {
+        this.setState({
+          includeAll: true,
+          includeWebpages: false,
+          includeImages: false,
+          includeAudio: false,
+          includeVideo: false,
+          includeDocuments: false
+        });
+      } else if (evt.target.name in this.state) {
+        this.setState({ [evt.target.name]: !this.state[evt.target.name], includeAll: false });
       } else {
-        this.setState({ [evt.target.name]: true });
+        this.setState({ [evt.target.name]: true, includeAll: false });
       }
     } else {
       this.setState({
@@ -311,6 +344,7 @@ class Searchbox extends PureComponent {
     const {
       date,
       endDate,
+      includeAll,
       includeAudio,
       includeDocuments,
       includeImages,
@@ -319,15 +353,17 @@ class Searchbox extends PureComponent {
       search,
       session,
       startDate,
-      urlFrag
+      urlFrag,
+      urlSearch
     } = this.state;
 
     const { query } = parseQuery(search);
 
-    const mime = (includeWebpages ? 'text/html,' : '') +
-                 (includeImages ? 'image/,' : '') +
-                 (includeAudio ? 'audio/,' : '') +
-                 (includeVideo ? 'video/,' : '') +
+    const mime = (includeAll ? '*,' : '') +
+                 (includeWebpages ? 'text/html,' : '') +
+                 (includeImages ? 'image/*,' : '') +
+                 (includeAudio ? 'audio/*,' : '') +
+                 (includeVideo ? 'video/*,' : '') +
                  (includeDocuments ? 'application/pdf' : '');
 
     let dateFilter = {};
@@ -343,7 +379,7 @@ class Searchbox extends PureComponent {
 
     const urlQuery = {};
     if (urlFrag) {
-      urlQuery.url = urlFrag;
+      urlQuery.url = encodeURIComponent(urlFrag);
     }
 
     const searchParams = {
@@ -361,7 +397,7 @@ class Searchbox extends PureComponent {
       collection.get('owner'),
       collection.get('id'),
       searchParams,
-      collection.get('autoindexed')
+      collection.get('autoindexed') && !urlSearch
     );
 
     // close adv search
@@ -382,12 +418,14 @@ class Searchbox extends PureComponent {
   }
 
   render() {
-    const { collection, searching, searched } = this.props;
+    const { busy, collection, searched } = this.props;
     const { date } = this.state;
+    const busyAction = searched ? 'Searching...' : 'Indexing collection...';
+    const inputTitle = busy ? busyAction : 'Search';
 
     return (
       <div className="search-box">
-        <InputGroup title="Search">
+        <InputGroup title={inputTitle}>
           <InputGroup.Prepend>
             <InputGroup.Text>
               <SearchIcon />
@@ -396,10 +434,10 @@ class Searchbox extends PureComponent {
           <Form.Control aria-label="filter" onKeyUp={this.keyUp} onChange={this.handleChange} name="search" value={this.state.search} autoComplete="off" placeholder="Filter" />
           <InputGroup.Append>
             {
-              (searching || searched) &&
+              (busy || searched) &&
               <React.Fragment>
                 {
-                  searching ?
+                  busy ?
                     <LoaderIcon /> :
                     <Button variant="link" onClick={this.clear}><XIcon /></Button>
                 }
@@ -421,6 +459,7 @@ class Searchbox extends PureComponent {
 
                 <div className="label">Include File Types</div>
                 <ul>
+                  <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeAll" name="includeAll" checked={this.state.includeAll} label="All" /></li>
                   <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeWebpages" name="includeWebpages" checked={this.state.includeWebpages} label="Webpages" /></li>
                   <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeImages" name="includeImages" checked={this.state.includeImages} label="Images" /></li>
                   <li><Form.Check type="checkbox" onChange={this.handleChange} id="includeAudio" name="includeAudio" checked={this.state.includeAudio} label="Audio" /></li>

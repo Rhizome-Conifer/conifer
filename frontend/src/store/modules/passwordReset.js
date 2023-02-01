@@ -12,7 +12,7 @@ const SET_FAIL = 'wr/passwordReset/SET_FAIL';
 
 
 const initialState = fromJS({
-  errors: null,
+  error: null,
   resest: false,
   setNew: false
 });
@@ -25,24 +25,24 @@ export default function passwordReset(state = initialState, action = {}) {
     case RESET_SUCCESS:
       return state.merge({
         reset: true,
-        errors: null
+        error: null
       });
     case RESET_FAIL:
       return state.merge({
         reset: false,
-        errors: fromJS(action.error)
+        error: fromJS(action.error.error)
       });
     case SET:
       return state.set('setNew', false);
     case SET_SUCCESS:
       return state.merge({
         setNew: true,
-        errors: false
+        error: false
       });
     case SET_FAIL:
       return state.merge({
         setNew: false,
-        errors: fromJS(action.error)
+        error: fromJS(action.error.error)
       });
     default:
       return state;

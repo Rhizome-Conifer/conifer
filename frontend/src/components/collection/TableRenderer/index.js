@@ -27,6 +27,7 @@ import {
   LinkRenderer,
   RemoveRenderer,
   RowIndexRenderer,
+  SearchResultsRenderer,
   SessionRenderer,
   TitleRenderer,
   TimestampRenderer
@@ -125,6 +126,12 @@ class TableRenderer extends Component {
         width: 35,
         headerClassName: 'hide-header'
       },
+      search: {
+        cellRenderer: SearchResultsRenderer,
+        key: 'search',
+        dataKey: 'matched',
+        width: 80
+      },
       session: {
         cellRenderer: SessionRenderer,
         columnData: {
@@ -191,7 +198,7 @@ class TableRenderer extends Component {
   }
 
   customHeaderRenderer = (props) => {
-    if (__PLAYER__ || ['remove', 'id'].includes(props.dataKey)) {
+    if (__PLAYER__ || ['remove', 'id', 'matched'].includes(props.dataKey)) {
       return <DefaultHeader {...props} />;
     }
 
@@ -250,6 +257,8 @@ class TableRenderer extends Component {
     const sortStore = activeList ? list : collection;
     const columnDefs = this.getColumnDefs(activeList, collection, browsers, list, objectLabel);
     const sorted = activeList && list.getIn(['sortBy', 'sort']) !== null;
+
+    const columns = collection.get('searched') && collection.get('autoindexed') && canAdmin ? ['search', ...this.state.columns] : this.state.columns;
 
     return (
       <div className={classNames('table-container', { sorted })}>
@@ -318,7 +327,7 @@ class TableRenderer extends Component {
                           sortBy={sortStore.getIn(['sortBy', 'sort'])}
                           sortDirection={sortStore.getIn(['sortBy', 'dir'])}>
                           {
-                            this.state.columns.map((c, idx) => {
+                            columns.map((c, idx) => {
                               let props = columnDefs[c];
                               let collData = {};
 

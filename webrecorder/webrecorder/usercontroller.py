@@ -1,6 +1,7 @@
 
 import json
 import redis
+import requests
 import os
 
 from bottle import request, response
@@ -21,6 +22,7 @@ class UserController(BaseController):
 
         self.default_user_desc = config['user_desc']
         self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
+        self.recaptcha = os.environ.get('RECAPTCHA_KEY', None)
 
     def load_user(self, username=None):
         include_colls = get_bool(request.query.get('include_colls', False))
@@ -86,25 +88,6 @@ class UserController(BaseController):
 
         return result
 
-    def get_user_or_raise(self, username=None, status=403, msg='unauthorized'):
-        # ensure correct host
-        if self.app_host and request.environ.get('HTTP_HOST') != self.app_host:
-            return self._raise_error(403, 'unauthorized')
-
-        # if no username, check if logged in
-        if not username:
-            if self.access.is_anon():
-                self._raise_error(status, msg)
-            return
-
-        user = self.get_user(user=username)
-
-        # check permissions
-        if not self.access.is_logged_in_user(user) and not self.access.is_superuser():
-            self._raise_error(status, msg)
-
-        return user
-
     def init_routes(self):
         wr_api_spec.set_curr_tag('Auth')
 
@@ -132,6 +115,30 @@ class UserController(BaseController):
         @self.app.post('/api/v1/auth/register')
         def api_register_user():
             data = request.json or {}
+
+            # if recaptcha enabled, verify
+            if self.recaptcha:
+                # check for client token
+                if not data.get('captchaToken', None):
+                    response.status = 400
+                    return {'errors': {'recaptcha': 'suspicious'}}
+
+                cr = requests.post('https://www.google.com/recaptcha/api/siteverify',
+                    data={
+                        'secret': self.recaptcha,
+                        'response': data['captchaToken'],
+                    })
+                res = cr.json()
+
+                if res['score'] <= 0.8:
+                    response.status = 400
+                    return {'errors': {'recaptcha': 'suspicious'}}
+
+            # check for banned domains
+            domain = data['email'].split('@')[1]
+            if self.user_manager.domain_blocklisted(domain):
+                response.status = 400
+                return {'errors': {'domain': 'blocked'}}
 
             msg, redir_extra = self.user_manager.register_user(data, self.get_host())
 
@@ -182,8 +189,6 @@ class UserController(BaseController):
 
         @self.app.post('/api/v1/auth/logout')
         def logout():
-            self.get_user_or_raise()
-
             self.user_manager.logout()
 
             data = {'success': 'logged_out'}
@@ -201,6 +206,14 @@ class UserController(BaseController):
             email = data.get('email', '')
             username = data.get('username', '')
             host = self.get_host()
+            rkey = 'reset-request:{}'.format(self._get_remote_ip())
+
+            if self.user_manager.redis.exists(rkey):
+                response.status = 429
+                return {'error': 'reset_wait'}
+
+            # set 5 minute timeout
+            self.user_manager.redis.set(rkey, '', ex=5 * 60)
 
             try:
                 self.user_manager.cork.send_password_reset_email(
@@ -209,12 +222,12 @@ class UserController(BaseController):
                                           subject='Conifer password reset confirmation',
                                           email_template='webrecorder/templates/emailreset.html',
                                           host=host)
-
-                return {'success': True}
             except Exception as e:
                 import traceback
                 traceback.print_exc()
-                self._raise_error(404, 'no_such_user')
+
+            return {'success': True}
+
 
         @self.app.post('/api/v1/auth/password/reset')
         def reset_password():
@@ -227,16 +240,24 @@ class UserController(BaseController):
             password = data.get('newPass', '')
             confirm_password = data.get('newPass2', '')
             reset_code = data.get('resetCode', '')
+            rkey = 'reset:{}'.format(self._get_remote_ip())
+
+            tries = self.user_manager.redis.get(rkey)
+            if tries is not None and int(tries) > 3:
+                response.status = 429
+                return {'error': 'too_many_attempts'}
 
             try:
                 self.user_manager.reset_password(password, confirm_password, reset_code)
                 return {'success': True}
             except ValidationException as ve:
+                self.user_manager.redis.incr(rkey)
+                self.user_manager.redis.expire(rkey, 15 * 60)
                 self._raise_error(403, str(ve))
 
         @self.app.post('/api/v1/auth/password/update')
         def update_password():
-            self.get_user_or_raise()
+            self.access.assert_is_logged_in()
 
             data = request.json or {}
 
@@ -287,7 +308,7 @@ class UserController(BaseController):
 
         @self.app.post('/api/v1/user/<username>')
         def update_user(username):
-            user = self.get_user(user=username)
+            user = self.get_user_or_raise(username=username)
 
             data = request.json or {}
 
@@ -301,29 +322,3 @@ class UserController(BaseController):
                 user['display_url'] = data['display_url'][:500]
 
             return {'success': True}
-
-
-        # OLD VIEWS BELOW
-        # ====================================================================
-        @self.app.get(['/<username>', '/<username>/'])
-        @self.jinja2_view('user.html')
-        def user_info(username):
-            self.redir_host()
-
-            user = self.get_user(user=username)
-
-            if self.access.is_anon(user):
-                self.redirect('/' + user.my_id + '/temp')
-
-            result = {
-                'user': user.name,
-                'user_info': user.serialize(),
-                'collections': [coll.serialize() for coll in user.get_collections()],
-            }
-
-            if not result['user_info'].get('desc'):
-                result['user_info']['desc'] = self.default_user_desc.format(user)
-
-            return result
-
-        wr_api_spec.set_curr_tag(None)

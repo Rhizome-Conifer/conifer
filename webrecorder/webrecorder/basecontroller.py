@@ -59,6 +59,12 @@ class BaseController(object):
         origin += self.app_host if self.app_host else request.environ.get('HTTP_HOST')
         return origin
 
+    def _get_remote_ip(self):
+        remote_ip = request.environ.get('HTTP_X_REAL_IP')
+        remote_ip = remote_ip or request.environ.get('REMOTE_ADDR', '')
+        remote_ip = remote_ip.rsplit('.', 1)[0]
+        return remote_ip
+
     def is_content_request(self):
         if not self.content_host:
             return False
@@ -118,6 +124,7 @@ class BaseController(object):
             self._raise_error(403, 'invalid_csrf_token')
 
     def get_user(self, api=True, redir_check=True, user=None):
+        """naively retrieve user"""
         if redir_check:
             self.redir_host()
 
@@ -132,6 +139,29 @@ class BaseController(object):
         except Exception as e:
             msg = 'not_found' if user == 'api' else 'no_such_user'
             self._raise_error(404, msg)
+
+        # check if user is suspended
+        if user.get('role') == 'suspended':
+            self._raise_error(403, 'suspended')
+
+        return user
+
+    def get_user_or_raise(self, username=None, status=403, msg='unauthorized'):
+        """retreive and verify user"""
+        # ensure correct host
+        if self.app_host and request.environ.get('HTTP_HOST') != self.app_host:
+            return self._raise_error(403, 'unauthorized')
+
+        # if no username, check if anon
+        if not username:
+            if self.access.is_anon():
+                self._raise_error(status, msg)
+
+        user = self.get_user(user=username)
+
+        # check permissions
+        if not self.access.is_logged_in_user(user) and not self.access.is_superuser():
+            self._raise_error(status, msg)
 
         return user
 
@@ -297,4 +327,3 @@ class BaseController(object):
     @property
     def access(self):
         return request.environ['webrec.access']
-

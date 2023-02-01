@@ -102,17 +102,23 @@ export default {
     invalid_login: 'Invalid Login. Please Try Again.',
     duplicate_name: 'A collection with the supplied name already exists.',
     out_of_space: 'Sorry, not enough space to import this Temporary Collection into your account.',
-    invalid_coll_name: 'The collection name entered is not valid'
+    invalid_coll_name: 'The collection name entered is not valid',
+    account_suspended: 'Your account has been suspended. If you believe this is in error, please contact support@conifer.rhizome.org'
   },
   passwordReset: {
+    reset_wait: 'You recently submitted a reset request.',
+    too_many_attempts: "You've attempted to reset your password too many times. Please wait a bit and try the process again.",
     already_logged_in: 'An account is already logged in.',
     invalid_reset_code: 'The reset code is invalid. Please try going through the reset process again.'
   },
   registration: {
     already_registered: 'This account has already been registered',
+    username_not_available: 'This username is no longer available',
     duplicate_name: 'A collection with the supplied name already exists.',
     email_not_available: 'This email address is associated with another account.',
     invalid_code: `The registration code is not valid. Please try registering again, or contact ${supportEmail} if this error persists.`,
+    suspicious: 'We had trouble verifying your details. Please refresh the page and try again. If this problem persists, contact support@conifer.rhizome.org',
+    blocked: "The domain you're attempting to register from has been flagged for spam or abuse. If you believe this is an error, contact support@conifer.rhizome.org"
   },
   upload: {
     coll_not_found: 'Collection not found.',

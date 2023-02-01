@@ -1,7 +1,10 @@
 @import 'src/vars';
 
-#browserMsg, #message {
-    margin-top: 20px;
+#browserMsg {
+    position: absolute;
+    top: 40px;
+    left: 0px;
+    right: 0px;
     font-size: 18px;
     text-align: center;
 }
@@ -50,6 +53,7 @@
 
 #browser {
     width: 100%;
+    position: relative;
 }
 
 // #noVNC_screen > .canvas {

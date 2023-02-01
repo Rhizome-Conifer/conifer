@@ -80,6 +80,7 @@
                 }
 
                 .dropdown-item {
+                    white-space: normal;
 
                     &:not(:hover):not(.active) {
                         color: $white;

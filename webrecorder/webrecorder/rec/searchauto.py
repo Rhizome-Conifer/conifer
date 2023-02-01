@@ -34,6 +34,8 @@ SEARCH_CRAWL_DEF = {
 
 # =============================================================================
 class SearchAutomation(object):
+    MAX_CRAWL_GROUPS = 10
+
     def __init__(self, config):
         self.redis = redis.StrictRedis.from_url(os.environ['REDIS_BASE_URL'],
                                                 decode_responses=True)
@@ -47,7 +49,7 @@ class SearchAutomation(object):
     def process_new_pages(self):
         crawl_groups = {}
 
-        while True:
+        while len(crawl_groups) < self.MAX_CRAWL_GROUPS:
             data = self.redis.rpop(Collection.NEW_PAGES_Q)
             if not data:
                 break
@@ -98,10 +100,7 @@ class SearchAutomation(object):
             if not derivs_rec:
                 derivs_recording = recording.get_derivs_recording()
                 if not derivs_recording:
-                    title = 'Derivatives for: Session from ' + recording.to_iso_date(recording['created_at'], no_T=True)
-                    derivs_recording = collection.create_recording(title=title,
-                                                                   rec_type='derivs')
-
+                    derivs_recording = collection.create_derivs_recording(recording)
                     recording.set_derivs_recording(derivs_recording)
 
                 derivs_rec = derivs_recording.my_id
@@ -131,4 +130,3 @@ class SearchAutomation(object):
 if __name__ == "__main__":
     from webrecorder.rec.worker import Worker
     Worker(SearchAutomation, 120).run()
-

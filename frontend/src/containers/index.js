@@ -15,6 +15,7 @@ export ExtractWidget from './ExtractWidget/ExtractWidget';
 export Home from './Home/Home';
 export InfoWidget from './InfoWidget/InfoWidget';
 export Autopilot from './Autopilot/Autopilot';
+export InlineBrowserSelect from './InlineBrowserSelect/InlineBrowserSelect';
 export InspectorPanel from './InspectorPanel/InspectorPanel';
 export Lists from './Lists/Lists';
 export ListDetail from './ListDetail/ListDetail';

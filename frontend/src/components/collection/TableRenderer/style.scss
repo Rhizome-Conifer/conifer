@@ -1,5 +1,11 @@
 @import 'src/vars';
 
+.search-results {
+    em {
+        background: yellow;
+    }
+}
+
 .table-container {
     display: flex;
     flex-direction: column;
@@ -39,6 +45,11 @@
                     width: 100%;
                     margin-right: rem(.5rem);
                 }
+            }
+
+            .big-query-warning {
+                font-style: italic;
+                color: $gray700;
             }
         }
     }
@@ -134,6 +145,11 @@
                     & > * {
                         padding: 0 rem(1.25rem);
                     }
+                }
+
+                .results-trigger {
+                    padding: rem(1.5rem) 0;
+                    text-align: center;
                 }
 
                 .wr-remove-widget {

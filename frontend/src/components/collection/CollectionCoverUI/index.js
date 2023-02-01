@@ -172,6 +172,7 @@ class CollectionCoverUI extends Component {
                           <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title> :
                           <title>{collection.get('title')}</title>
                       }
+                      <meta name="robots" value="nofollow" />
                       <meta name="description" content={description} />
                       <meta property="og:url" content={`${appHost}${getCollectionLink(collection)}`} />
                       <meta property="og:type" content="website" />

@@ -3,6 +3,8 @@ from six.moves.urllib.parse import quote
 import os
 import datetime
 
+from warcio.timeutils import iso_date_to_datetime
+
 from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.webreccork import ValidationException
 
@@ -27,12 +29,12 @@ class CollsController(BaseController):
         wr_api_spec.set_curr_tag('Collections')
 
         @self.app.post('/api/v1/collections')
-        @self.api(query=['user'],
-                  req=['title', 'public', 'public_index'],
-                  resp='collection')
-
+        @self.api(
+            query=['user'],
+            req=['title', 'public', 'public_index'],
+            resp='collection')
         def create_collection():
-            user = self.get_user(api=True, redir_check=False)
+            user = self.get_user_or_raise()
 
             data = request.json or {}
 
@@ -55,9 +57,6 @@ class CollsController(BaseController):
                 if not self.allow_external:
                     self._raise_error(403, 'external_not_allowed')
 
-                #if not is_anon:
-                #    self._raise_error(400, 'not_valid_for_external')
-
             elif is_anon:
                 if coll_name != 'temp':
                     self._raise_error(400, 'invalid_temp_coll_name')
@@ -73,8 +72,9 @@ class CollsController(BaseController):
                 if is_external:
                     collection.set_external(True)
 
-                # if auto-indexing is on, mark new collections as auto-indexed to distinguish from prev collections
-                if self.is_search_auto:
+                # if search is enabled, mark new collections as auto-indexed
+                # to distinguish from prev collections
+                if self.is_search_auto and self.access.search_access():
                     collection.set_bool_prop('autoindexed', True)
 
                 user.mark_updated()
@@ -108,18 +108,35 @@ class CollsController(BaseController):
             return {'collections': [coll.serialize(**kwargs) for coll in collections]}
 
         @self.app.get('/api/v1/collection/<coll_name>')
-        @self.api(query=['user'],
+        @self.api(query=['user', 'shallow'],
                   resp='collection')
         def get_collection(coll_name):
             user = self.get_user(api=True, redir_check=False)
+            shallow = get_bool(request.query.get('shallow'))
 
-            return self.get_collection_info(coll_name, user=user)
+            if shallow:
+                user, coll = self.load_user_coll(user=user, coll_name=coll_name)
+                return {
+                    'collection': coll.serialize(
+                        include_rec_pages=False,
+                        include_lists=False,
+                        include_recordings=False,
+                        include_pages=False,
+                        check_slug=coll_name
+                    )
+                }
+            else:
+                return self.get_collection_info(coll_name, user=user)
+
 
         @self.app.delete('/api/v1/collection/<coll_name>')
         @self.api(query=['user'],
                   resp='deleted')
         def delete_collection(coll_name):
-            user, collection = self.load_user_coll(coll_name=coll_name)
+            user = self.get_user_or_raise()
+            collection = user.get_collection_by_name(coll_name)
+
+            self.access.assert_can_admin_coll(collection)
 
             errs = user.remove_collection(collection, delete=True)
             if errs.get('error'):
@@ -206,6 +223,8 @@ class CollsController(BaseController):
         def get_page_bookmarks(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
+            self.access.assert_can_read_coll(collection)
+
             rec = request.query.get('rec')
             if rec:
                 recording = collection.get_recording(rec)
@@ -221,6 +240,10 @@ class CollsController(BaseController):
         @self.app.get('/api/v1/url_search')
         def do_url_search():
             user, collection = self.load_user_coll()
+
+            if not self.access.check_read_access_public(collection):
+                self._raise_error(404, 'no_such_collection')
+
             results = []
 
             search = request.query.getunicode('search', '').lower()
@@ -242,6 +265,8 @@ class CollsController(BaseController):
             # remove trailing comma,
             mimes = request.query.getunicode('mime', '').rstrip(',')
             mimes = mimes.split(',') if mimes else []
+            # strip solr star query from mimes
+            mimes = [mime.strip('*') for mime in mimes]
 
             # search pages or default to page search if no mime supplied
             if 'text/html' in mimes or len(mimes) == 0:
@@ -315,6 +340,9 @@ class CollsController(BaseController):
 
             user, collection = self.load_user_coll()
 
+            if not self.access.check_read_access_public(collection):
+                self._raise_error(404, 'no_such_collection')
+
             return self.solr_mgr.query_solr(collection.my_id, request.query)
 
         # DAT
@@ -372,36 +400,19 @@ class CollsController(BaseController):
         def generate_derivs(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
-            self.access.assert_can_admin_coll(collection)
+            #self.access.assert_can_admin_coll(collection)
+            if not self.access.is_superuser():
+                self._raise_error(400, 'not_supported')
 
             if not self.is_search_auto:
                 self._raise_error(400, 'not_supported')
 
-            title = 'Derivates Regenerated on ' + datetime.datetime.now().isoformat()
-            derivs_recording = collection.create_recording(title=title,
-                                                           rec_type='derivs')
-
-            res = collection.requeue_pages_for_derivs(derivs_recording.my_id, get_bool(request.query.get('include_existing')))
+            res = collection.requeue_pages_for_derivs(get_bool(request.query.get('include_existing')))
 
             if res > 0:
                 collection.set_bool_prop('autoindexed', True)
 
             return {'queued': res}
-
-        # LEGACY ENDPOINTS (to remove)
-        # Collection view (all recordings)
-        @self.app.get(['/<user>/<coll_name>', '/<user>/<coll_name>/'])
-        @self.jinja2_view('collection_info.html')
-        def coll_info(user, coll_name):
-            return self.get_collection_info_for_view(user, coll_name)
-
-        @self.app.get(['/<user>/<coll_name>/<rec_list:re:([\w,-]+)>', '/<user>/<coll_name>/<rec_list:re:([\w,-]+)>/'])
-        @self.jinja2_view('collection_info.html')
-        def coll_info(user, coll_name, rec_list):
-            #rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]
-            return self.get_collection_info_for_view(user, coll_name)
-
-        wr_api_spec.set_curr_tag(None)
 
     def get_collection_info_for_view(self, user, coll_name):
         self.redir_host()
@@ -418,9 +429,9 @@ class CollsController(BaseController):
         return result
 
     def get_collection_info(self, coll_name, user=None, include_pages=False):
-        user, collection = self.load_user_coll(user=user, coll_name=coll_name)
+        user, coll = self.load_user_coll(user=user, coll_name=coll_name)
 
-        result = {'collection': collection.serialize(include_rec_pages=include_pages,
+        result = {'collection': coll.serialize(include_rec_pages=include_pages,
                                                      include_lists=True,
                                                      include_recordings=True,
                                                      include_pages=True,
@@ -428,5 +439,22 @@ class CollsController(BaseController):
 
         result['user'] = user.my_id
         result['size_remaining'] = user.get_size_remaining()
+
+        if self.is_search_auto and self.access.can_admin_coll(coll) and self.access.search_access():
+            # see if there are results in solr
+            res = self.solr_mgr.query_solr(coll.my_id, {'limit': 1, 'sort_field': 'expires_at_dt', 'sort': 'asc'})
+            t = res.get('total', 0)
+            r = iso_date_to_datetime(res.get('results')[0].get('expires_at')) if t > 0 else None
+            offset = datetime.datetime.now() + datetime.timedelta(days=1)
+            needs_indexing = True if t == 0 or r < offset else False
+            if needs_indexing:
+                coll.set_bool_prop('indexing', True)
+                result['collection']['indexing'] = True
+                coll.sync_solr_derivatives(do_async=True)
+                # skip sync below since that will happen with with solr sync
+                return result
+
+        # sync cdxj to redis in lieu of playback
+        coll.sync_coll_index(exists=False, do_async=True)
 
         return result

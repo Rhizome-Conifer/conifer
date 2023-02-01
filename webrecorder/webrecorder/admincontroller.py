@@ -469,6 +469,7 @@ class AdminController(BaseController):
             return {'defaults': data}
 
         @self.app.put('/api/v1/admin/defaults')
+        @self.admin_view
         def update_defaults():
             data = request.json
             if 'max_size' in data:
@@ -620,6 +621,19 @@ class AdminController(BaseController):
 
             return {'user': user.serialize()}
 
+        @self.app.put('/api/v1/admin/make-private/<username>/<collection>')
+        @self.admin_view
+        def set_collection_private(username, collection):
+            user = self.get_user(user=username)
+            coll = user.get_collection_by_name(collection)
+
+            if not coll:
+                return {'errors': 'Collection for user not found.'}
+
+            coll.set_bool_prop('public', False)
+
+            return {'success': True}
+
         # Grafana Stats APIs
         wr_api_spec.set_curr_tag('Stats')
 
@@ -649,6 +663,3 @@ class AdminController(BaseController):
             return []
 
         wr_api_spec.set_curr_tag(None)
-
-
-

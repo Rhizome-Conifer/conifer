@@ -11,6 +11,7 @@ import SidebarHeader from 'components/SidebarHeader';
 import TimeFormat from 'components/TimeFormat';
 import WYSIWYG from 'components/WYSIWYG';
 import { BookmarkIcon, InfoIcon } from 'components/icons';
+import { InlineBrowserSelect } from 'containers';
 
 import './style.scss';
 
@@ -61,7 +62,7 @@ class InspectorPanelUI extends PureComponent {
       selectedBk
     } = this.props;
 
-    const bk = selectedBk ? list.get('bookmarks').find(o => o.get('id') === selectedBk) : false;
+    const bk = selectedBk ? list.get('bookmarks').find(o => o.get('id') === selectedBk) : null;
     const pg = bk ? bk.get('page') : collection.get('pages').find(p => p.get('id') === selectedPage);
     const selectedIndex = selectedBk ? list.get('bookmarks').findIndex(o => o.get('id') === selectedBk) : null;
 
@@ -100,6 +101,13 @@ class InspectorPanelUI extends PureComponent {
                               onSave={this.editBookmarkDesc}
                               success={bkEdited} />
                           </React.Fragment>
+                      }
+
+                      <h4>Access Browser</h4>
+                      {
+                        !__PLAYER__ ?
+                          <InlineBrowserSelect bookmark={bk} /> :
+                          <span className="value">{pg.get('browser', 'Current Browser')}</span>
                       }
                     </header>
                 }

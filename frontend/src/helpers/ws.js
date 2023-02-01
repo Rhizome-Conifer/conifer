@@ -201,11 +201,12 @@ class WebSocketHandler {
     let prefix;
 
     if (this.currMode.includes('replay')) {
+      const embed = this.params.embed;
       if (this.params.bookmarkId) {
         const { listSlug, bookmarkId } = this.params;
-        prefix = `${config.appHost}/${this.user}/${this.coll}/list/${listSlug}/b${bookmarkId}/`;
+        prefix = `${config.appHost}/${embed ? embed + '/' : ''}${this.user}/${this.coll}/list/${listSlug}/b${bookmarkId}/`;
       } else {
-        prefix = `${config.appHost}/${this.user}/${this.coll}/`;
+        prefix = `${config.appHost}/${embed ? embed + '/' : ''}${this.user}/${this.coll}/`;
       }
     } else if (['patch', 'record'].includes(this.currMode)) {
       prefix = `${config.appHost}/${this.user}/${this.coll}/${this.rec}/${this.currMode}/`;

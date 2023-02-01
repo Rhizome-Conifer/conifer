@@ -7,9 +7,21 @@ const BK_COUNT = 'wr/coll/BK_COUNT';
 const BK_COUNT_SUCCESS = 'wr/coll/BK_COUNT_SUCCESS';
 const BK_COUNT_FAIL = 'wr/coll/BK_COUNT_FAIL';
 
+const COLL_INDEX = 'wr/coll/COLL_INDEX';
+const COLL_INDEX_SUCCESS = 'wr/coll/COLL_INDEX_SUCCESS';
+const COLL_INDEX_FAIL = 'wr/coll/COLL_INDEX_FAIL';
+
+const COLL_MAKE_PRIVATE = 'wr/coll/COLL_MAKE_PRIVATE';
+const COLL_MAKE_PRIVATE_SUCCESS = 'wr/coll/COLL_MAKE_PRIVATE_SUCCESS';
+const COLL_MAKE_PRIVATE_FAIL = 'wr/coll/COLL_MAKE_PRIVATE_FAIL';
+
 const COLL_LOAD = 'wr/coll/COLL_LOAD';
 const COLL_LOAD_SUCCESS = 'wr/coll/COLL_LOAD_SUCCESS';
 const COLL_LOAD_FAIL = 'wr/coll/COLL_LOAD_FAIL';
+
+const COLL_LOAD_META = 'wr/coll/COLL_LOAD_META';
+const COLL_LOAD_META_SUCCESS = 'wr/coll/COLL_LOAD_META_SUCCESS';
+const COLL_LOAD_META_FAIL = 'wr/coll/COLL_LOAD_META_FAIL';
 
 const COLL_EDIT = 'wr/coll/COLL_EDIT';
 const COLL_EDIT_SUCCESS = 'wr/coll/COLL_EDIT_SUCCESS';
@@ -44,6 +56,7 @@ const SEARCH = 'wr/coll/SEARCH';
 const SEARCH_SUCCESS = 'wr/coll/SEARCH_SUCCESS';
 const SEARCH_FAIL = 'wr/coll/SEARCH_FAIL';
 const CLEAR_SEARCH = 'wr/coll/CLEAR_SEARCH';
+const CLEAR_INDEXING = 'wr/coll/CLEAR_INDEXING';
 
 const initialState = fromJS({
   editing: false,
@@ -87,6 +100,40 @@ export default function collection(state = initialState, action = {}) {
       return state.set('editing', true);
     case COLL_LOAD:
       return state.set('loading', true);
+    case COLL_LOAD_META_SUCCESS: {
+      const {
+        collection: {
+          autoindexed,
+          created_at,
+          desc,
+          duration,
+          id,
+          indexing,
+          owner,
+          public_index,
+          size,
+          slug,
+          timespan,
+          title,
+          updated_at
+        }
+      } = action.result;
+      return state.merge({
+        autoindexed,
+        created_at,
+        desc,
+        duration,
+        id,
+        indexing,
+        owner,
+        public_index,
+        size,
+        slug,
+        timespan,
+        title,
+        updated_at
+      });
+    }
     case COLL_EDIT_SUCCESS:
     case COLL_LOAD_SUCCESS: {
       const {
@@ -100,6 +147,7 @@ export default function collection(state = initialState, action = {}) {
           duration,
           featured_list,
           id,
+          indexing,
           lists,
           owner,
           pages,
@@ -138,6 +186,7 @@ export default function collection(state = initialState, action = {}) {
         desc,
         duration,
         id,
+        indexing,
         featured_list,
         'public': action.result.collection.public,
         public_index,
@@ -228,6 +277,10 @@ export default function collection(state = initialState, action = {}) {
         searching: false,
         searched: false,
       });
+    case CLEAR_INDEXING:
+      return state.merge({
+        indexing: false
+      });
 
     case LISTS_LOAD_FAIL:
     case LISTS_LOAD:
@@ -272,10 +325,39 @@ export function getBookmarkCount(user, coll, list) {
 }
 
 
+export function indexCollection(user, coll, include_existing) {
+  return {
+    types: [COLL_INDEX, COLL_INDEX_SUCCESS, COLL_INDEX_FAIL],
+    promise: client => client.post(`${apiPath}/collection/${coll}/generate_derivs`, {
+      params: { user, include_existing }
+    })
+  };
+}
+
+
 export function isLoaded({ app }) {
   return app.get('collection') &&
          app.getIn(['collection', 'loaded']) &&
          Date.now() - app.getIn(['collection', 'accessed']) < 15 * 60 * 1000;
+}
+
+
+export function makeCollectionPrivate(username, collection) {
+  return {
+    types: [COLL_MAKE_PRIVATE, COLL_MAKE_PRIVATE, COLL_MAKE_PRIVATE],
+    promise: client => client.put(`${apiPath}/admin/make-private/${username}/${collection}`)
+  };
+}
+
+
+export function loadMetadata(user, coll, host = '') {
+  return {
+    types: [COLL_LOAD_META, COLL_LOAD_META_SUCCESS, COLL_LOAD_META_FAIL],
+    accessed: Date.now(),
+    promise: client => client.get(`${host}${apiPath}/collection/${coll}`, {
+      params: { user, shallow: true }
+    })
+  };
 }
 
 
@@ -311,6 +393,12 @@ export function resetEditState() {
 export function clearSearch() {
   return { type: CLEAR_SEARCH };
 }
+
+
+export function clearIndexing() {
+  return { type: CLEAR_INDEXING };
+}
+
 
 export function search(user, coll, searchParams, fullText = false) {
   return {

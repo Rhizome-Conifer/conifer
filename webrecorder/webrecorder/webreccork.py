@@ -112,6 +112,8 @@ class WebRecCork(Cork):
 
         # role initiation
         roles = [r[0] for r in cork.list_roles()]
+        if 'suspended' not in roles:
+            cork.create_role('suspended', 0)
         if 'archivist' not in roles:
             cork.create_role('archivist', 50)
         if 'admin' not in roles:
@@ -149,5 +151,3 @@ class RedisCorkBackend(object):
 class ValidationException(Exception):
     def __init__(self, msg=None):
         self.msg = msg
-
-

@@ -1,11 +1,14 @@
 import logging
 import os
+import re
 import traceback
 from datetime import date
 
 import gevent
-from pywb.utils.loaders import load
+from pywb.utils.loaders import BlockLoader, load
 from pywb.warcserver.index.cdxobject import CDXObject
+
+from warcio.archiveiterator import ArchiveIterator
 
 from webrecorder.models.auto import Auto
 from webrecorder.models.base import RedisNamedMap, RedisOrderedList, RedisUniqueComponent, RedisUnorderedList
@@ -15,7 +18,9 @@ from webrecorder.models.pages import PagesMixin
 from webrecorder.models.recording import Recording
 from webrecorder.rec.storage import get_storage as get_global_storage
 from webrecorder.rec.storage.storagepaths import strip_prefix
-from webrecorder.utils import get_new_id, sanitize_title
+from webrecorder.solrmanager import SolrManager
+from webrecorder.utils import get_new_id, load_wr_config, sanitize_title
+
 
 logger = logging.getLogger('wr.io')
 
@@ -106,6 +111,25 @@ class Collection(PagesMixin, RedisUniqueComponent):
                               access=self.access)
 
         rec = recording.init_new(**kwargs)
+
+        self.recs.add_object(recording, owner=True)
+
+        return recording
+
+    def create_derivs_recording(self, src_rec):
+        """Create derivatives recording.
+
+        :returns: recording
+        :rtype: Recording
+        """
+        self.access.assert_can_admin_coll(self)
+
+        title = 'Full text search index for session {}'.format(src_rec.my_id)
+
+        recording = Recording(redis=self.redis,
+                              access=self.access)
+
+        rec = recording.init_new(title=title, rec_type='derivs')
 
         self.recs.add_object(recording, owner=True)
 
@@ -372,15 +396,22 @@ class Collection(PagesMixin, RedisUniqueComponent):
         """
         return self.recs.num_objects()
 
-    def get_recordings(self, load=True):
+    def get_recordings(self, load=True, include_derivs=False):
         """Return recordings.
 
         :param bool load: whether to load Redis entries
+        :param bool include_derivs: whether to include derivative recordings
 
         :returns: list of recordings
         :rtype: list
         """
-        return self.recs.get_objects(Recording, load=load)
+        recs = self.recs.get_objects(Recording, load=load)
+
+        # filter out deriv recs
+        if not include_derivs:
+            return list(filter(lambda r: r.get('rec_type') != 'derivs', recs))
+
+        return recs
 
     def _get_rec_keys(self, key_templ):
         """Return recording Redis keys.
@@ -441,7 +472,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         open_recs = []
 
-        for recording in self.get_recordings():
+        for recording in self.get_recordings(include_derivs=True):
             if recording.is_open():
                 recording.set_closed()
                 recording.commit_to_storage()
@@ -535,6 +566,9 @@ class Collection(PagesMixin, RedisUniqueComponent):
                         check_slug=False,
                         include_files=False):
 
+        # access check
+        self.access.assert_can_read_coll(self)
+
         data = super(Collection, self).serialize(convert_date=convert_date)
         data['id'] = self.name
 
@@ -570,6 +604,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         data['public'] = self.is_public()
         data['public_index'] = self.get_bool_prop('public_index', False)
         data['autoindexed'] = self.get_bool_prop('autoindexed', False)
+        data['indexing'] = self.get_bool_prop('indexing', False)
 
         if DatShare.DAT_SHARE in data:
             data[DatShare.DAT_SHARE] = self.get_bool_prop(DatShare.DAT_SHARE, False)
@@ -596,7 +631,13 @@ class Collection(PagesMixin, RedisUniqueComponent):
         else:
             self.incr_size(-recording.size)
 
-        size = recording.size
+        # remove derivative recording from collection if it exists
+        deriv = recording.get_derivs_recording()
+        if deriv:
+            if self.recs.remove_object(deriv):
+                self.incr_size(-deriv.size)
+
+
         user = self.get_owner()
         if user:
             user.incr_size(-recording.size)
@@ -801,6 +842,93 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         if not do_async:
             res = gevent.joinall(ges)
+
+    def sync_solr_derivatives(self, do_async=True):
+        jobs = [gevent.spawn(self._ingest_stored_derivs)]
+
+        if not do_async:
+            gevent.joinall(jobs)
+
+    def _ingest_stored_derivs(self):
+        loader = BlockLoader()
+        pages = self.list_pages()
+        solr_mgr = SolrManager(load_wr_config())
+
+        solr_batch = []
+
+        # mapping of recording ids to warc files
+        rec_warcs = {
+            r.my_id: [f[0] for f in r.iter_all_files()]
+            for r in self.get_recordings()
+        }
+
+        for line, _ in self.get_cdxj_iter():
+            # submit chunk of docs to be indexed
+            if len(solr_batch) >= 500:
+                solr_mgr.batch_ingest(solr_batch)
+                solr_batch = []
+
+
+            cdxo = CDXObject(line.encode('utf-8'))
+
+            if (cdxo['mime'] == 'warc/revisit'
+                or cdxo['urlkey'].startswith('urn:screenshot')):
+                continue
+
+            # index non-text/hml cdxj entries
+            if cdxo['mime'] != 'text/html':
+                rec = ''
+                for k,itm in rec_warcs.items():
+                    if cdxo['filename'] in itm:
+                        rec = k
+                        break
+
+                solr_batch.append(solr_mgr.prepare_doc({
+                    'user': self.get_owner().name,
+                    'coll': self.my_id,
+                    'rec': rec,
+                    'url': cdxo['url'],
+                    'timestamp': cdxo['timestamp'],
+                    'mime': cdxo['mime']
+                }))
+
+            # skip non-text records
+            if not cdxo['urlkey'].startswith('urn:text'):
+                continue
+
+            f = self.redis.hget(self.get_warc_key(), cdxo['filename'])
+
+            if not f:
+                print('warc file not found')
+                continue
+
+            page = next((p for p in pages if 'urn:text:{timestamp}/{url}'.format(**p).startswith(cdxo['urlkey'])), None)
+
+            if not page:
+                print('page not found..')
+                continue
+
+            fh = loader.load(f, offset=int(cdxo['offset']), length=int(cdxo['length']))
+            for record in ArchiveIterator(fh):
+                data = record.raw_stream.read()
+                record = {
+                    'user': self.get_owner().name,
+                    'coll': self.my_id,
+                    'rec': page.get('rec'),
+                    'pid': page.get('id'),
+                    'title': page.get('title'),
+                    'url': page.get('url'),
+                    'timestamp': page.get('timestamp'),
+                    'hasScreenshot': page.get('hasScreenshot', False),
+                    'mime': 'text/html',
+                }
+                solr_batch.append(solr_mgr.prepare_doc(record, data))
+
+        # submit final batch
+        solr_mgr.batch_ingest(solr_batch)
+
+        # all done
+        self.set_bool_prop('indexing', False)
 
     def _do_download_cdxj(self, cdxj_key, output_key):
         lock_key = None

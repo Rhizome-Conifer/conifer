@@ -24,6 +24,7 @@ class CollectionManagementUI extends Component {
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
+    derivs: PropTypes.object,
     location: PropTypes.object,
     match: PropTypes.object,
     recordings: PropTypes.object,
@@ -51,6 +52,7 @@ class CollectionManagementUI extends Component {
     const {
       auth,
       collection,
+      derivs,
       recordings,
       location: { search },
       match: { params: { user } }

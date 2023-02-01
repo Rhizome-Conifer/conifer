@@ -183,25 +183,6 @@ class HomeUI extends PureComponent {
                   <p>{product} is a project of Rhizome, a registered 501(c)(3) non-profit organization. Your donations are tax-deductible.</p>
                 </div>
             }
-
-            <div className="tools-intro">
-              <h2>Desktop Tools</h2>
-              <p>In partnership with the <a href="https://webrecorder.net" target="_blank">Webrecorder project</a>, we aim to make web archiving accessible to all, and ensure interoperability in between tools. Here are some apps we have developed together:</p>
-            </div>
-
-            <div className="tool">
-              <img src={require('shared/images/homepage/desktop.png')} alt="Desktop Logo" />
-              <h4>Webrecorder Desktop App</h4>
-              <p>Create, manage and store web archives on your local computer; import them to Conifer for public presentation.</p>
-              <Button size="lg" variant="primary" onClick={this.desktopApp}>Download Desktop App</Button>
-            </div>
-
-            <div className="tool">
-              <img src={require('shared/images/homepage/player.png')} alt="Player Logo" />
-              <h4>Webrecorder Player App</h4>
-              <p>Export Conifer collections and access them offline.</p>
-              <Button size="lg" variant="primary" onClick={this.playerApp}>Download Player App</Button>
-            </div>
           </Col>
         </Row>
       </React.Fragment>

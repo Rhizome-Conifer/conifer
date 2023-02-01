@@ -91,6 +91,16 @@ a.collection-title:hover {
         svg {
             margin-right: rem(.5rem);
         }
+
+        a {
+            margin-left: rem(.5rem);
+
+            svg {
+                path {
+                    fill: $deep-pine;
+                }
+            }
+        }
     }
 
     .wr-editor {
