@@ -339,7 +339,7 @@ class UserManager(object):
             return False
 
         # username already exists! (shouldn't match if lowercase exists, but just in case)
-        if username in self.all_users:
+        if self.redis.exists(self.config['info_key_templ']['user'].format(user=username)):
             return False
 
         return True
@@ -802,7 +802,7 @@ class CLIUserManager(UserManager):
         username = input('username to modify: ')
         has_modified = False
 
-        if username not in self.all_users:
+        if not self.redis.exists(self.config['info_key_templ']['user'].format(user=username)):
             print('{0} doesn\'t exist'.format(username))
             return
 
@@ -915,7 +915,7 @@ class CLIUserManager(UserManager):
 
         :param str username: username
         """
-        if username not in self.all_users:
+        if not self.redis.exists(self.config['info_key_templ']['user'].format(user=username)):
             print("User {username} does not exist".format(username=username))
             return False
         else:
@@ -932,7 +932,7 @@ class CLIUserManager(UserManager):
             print('Username confirmation didn\'t match! Aborting..')
             return
 
-        if username not in self.all_users:
+        if not self.redis.exists(self.config['info_key_templ']['user'].format(user=username)):
             print('The username {0} doesn\'t exist..'.format(username))
             return
 
