@@ -39,6 +39,7 @@ class UserManager(object):
     EMAIL_RX = re.compile(r'[\w./+-]+@[\w.-]+')
 
     LC_USERNAMES_KEY = 'h:lc_users'
+    USER_EMAILS_KEY = 'h:user_emails'
 
     def __init__(self, redis, cork, config):
         self.redis = redis
@@ -301,13 +302,7 @@ class UserManager(object):
         return
 
     def has_user_email(self, email):
-        #TODO: implement a email table, if needed?
-
-        for n, user_data in self.all_users.items():
-            if user_data['email_addr'] == email:
-                return True
-
-        return False
+        return self.redis.hexists(self.USER_EMAILS_KEY, email)
 
     def get_user_email(self, user):
         if not user:
@@ -543,6 +538,9 @@ class UserManager(object):
         self.redis.hset(self.LC_USERNAMES_KEY, lower_username,
                         username if lower_username != username else '')
 
+        # add email to email -> username table
+        self.redis.hset(self.USER_EMAILS_KEY, user['email_addr'], username)
+
         first_coll = None
 
         move_info = init_info.get('move_info')
@@ -682,6 +680,10 @@ class UserManager(object):
 
         # remove user and from all users table
         del self.all_users[username]
+
+        # delete user from lowercase and email -> user mappings
+        self.redis.hdel(self.LC_USERNAMES_KEY, username.lower())
+        self.redis.hdel(self.USER_EMAILS_KEY, user['email_addr'])
 
         try:
             self.get_session().delete()
