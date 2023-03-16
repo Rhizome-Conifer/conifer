@@ -664,6 +664,25 @@ class UserManager(object):
             user['customer_max_size'] = data['customer_max_size']
 
         if 'email_addr' in data:
+            new_email = data['email_addr']
+            if not re.match(r'[\w.-/+]+@[\w.-]+.\w+', new_email):
+                return ['valid email required!']
+
+            if self.has_user_email(new_email):
+                return ['A user already exists with {0} email!'.format(new_email)]
+
+            # assume the 3rd party mailing list doesn't support updating addresses
+            # so if add & remove are turned on, remove the old and add the
+            # new address.
+            if self.mailing_list and self.remove_on_delete:
+                self.remove_from_mailing_list(user['email_addr'])
+                name = user['name']
+                self.add_to_mailing_list(user.my_id, new_email, name)
+
+            # update email lookup table
+            if self.redis.hset(self.USER_EMAILS_KEY, new_email, user.my_id):
+                self.redis.hdel(self.USER_EMAILS_KEY, user['email_addr'])
+
             user['email_addr'] = data['email_addr']
 
         return None
