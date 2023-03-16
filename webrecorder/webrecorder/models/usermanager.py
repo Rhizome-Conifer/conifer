@@ -825,7 +825,7 @@ class CLIUserManager(UserManager):
                 print('valid email required!')
                 return
 
-            if new_email in [data['email_addr'] for u, data in self.all_users.items()]:
+            if self.has_user_email(new_email):
                 print('A user already exists with {0} email!'.format(new_email))
                 return
 
@@ -837,6 +837,10 @@ class CLIUserManager(UserManager):
                 #name = json.loads(self.get_users()[username].get('desc', '{}')).get('name', '')
                 name = user['name']
                 self.add_to_mailing_list(username, new_email, name)
+
+            # update email lookup table
+            if self.redis.hset(self.USER_EMAILS_KEY, new_email, username):
+                self.redis.hdel(self.USER_EMAILS_KEY, user['email_addr'])
 
             user['email_addr'] = new_email
             print('assigned {0} with the new email: {1}'.format(username, new_email))
@@ -971,7 +975,6 @@ class CLIUserManager(UserManager):
 
     def get_user_by_email(self, email):
         """Helper function to look up a username by email"""
-        for u, data in self.all_users.items():
-            if data.get('email_addr') == email:
-                return print('Username: {} for email address {}'.format(u, email))
+        if self.has_user_email(email):
+            return print('Username: {} for email address {}'.format(self.redis.hget(self.USER_EMAILS_KEY, email), email))
         print('No user found...')
