@@ -1,3 +1,4 @@
+import bleach
 from bottle import request, response
 from six.moves.urllib.parse import quote
 import os
@@ -202,7 +203,7 @@ class CollsController(BaseController):
                 collection['title'] = new_coll_title
 
             if 'desc' in data:
-                collection['desc'] = data['desc']
+                collection['desc'] = bleach.clean(data['desc'], tags=self.BLEACH_ALLOWED_TAGS, strip=True)
 
 
             # TODO: notify the user if this is a request from the admin panel

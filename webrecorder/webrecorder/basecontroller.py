@@ -14,6 +14,7 @@ from webrecorder.apiutils import api_decorator, wr_api_spec
 class BaseController(object):
     SKIP_REDIR_LOCK_KEY = '__skip:{id}:{url}'
     SKIP_REDIR_LOCK_TTL = 10
+    BLEACH_ALLOWED_TAGS = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol', 'p', 'strong', 'ul']
 
     def __init__(self, *args, **kwargs):
         self.app = kwargs['app']

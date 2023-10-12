@@ -1,4 +1,5 @@
 
+import bleach
 import json
 import redis
 import requests
@@ -313,12 +314,12 @@ class UserController(BaseController):
             data = request.json or {}
 
             if 'desc' in data:
-                user['desc'] = data['desc']
+                user['desc'] = bleach.clean(data['desc'], tags=self.BLEACH_ALLOWED_TAGS, strip=True)
 
             if 'full_name' in data:
-                user['full_name'] = data['full_name'][:150]
+                user['full_name'] = bleach.clean(data['full_name'][:150], tags=[], strip=True)
 
             if 'display_url' in data:
-                user['display_url'] = data['display_url'][:500]
+                user['display_url'] = bleach.clean(data['display_url'][:500], tags=[], strip=True)
 
             return {'success': True}

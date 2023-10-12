@@ -1,6 +1,6 @@
 from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.gh_reporter import GitHubIssueImporter
-from werkzeug.useragents import UserAgent
+from werkzeug.user_agent import UserAgent
 from bottle import request
 
 from datetime import datetime
