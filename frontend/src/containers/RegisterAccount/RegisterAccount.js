@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import querystring from 'querystring';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { Button } from 'react-bootstrap';
 
-import { apiPath, supportEmail } from 'config';
+import config from 'config';
 import { apiFetch } from 'helpers/utils';
 
 import { showModal } from 'store/modules/userLogin';
@@ -23,20 +22,20 @@ class RegisterAccount extends Component {
 
   constructor(props) {
     super(props);
-    const qs = querystring.parse(props.location.search.replace('?', ''));
+    const qs = new URLSearchParams(props.location.search);
 
     this.state = {
       submitted: false,
       error: false,
       success: false,
-      username: qs.username
+      username: qs.get('username')
     };
   }
 
   finalizeRegistration = () => {
     const { match } = this.props;
     const reg = match.params.registration;
-    const validateApi = `${apiPath}/auth/validate`;
+    const validateApi = `${config.apiPath}/auth/validate`;
     document.cookie = `valreg=${reg}; Max-Age=60; Path=${validateApi}`;
 
     const data = { reg };
@@ -80,7 +79,7 @@ class RegisterAccount extends Component {
           finished && error === 'invalid_code' &&
             <React.Fragment>
               <h4>Error Validating Registration</h4>
-              <p>Please try the link again or contact <a href={`mailto:${supportEmail}`}>{supportEmail}</a> if the problem persists.</p>
+              <p>Please try the link again or contact <a href={`mailto:${config.supportEmail}`}>{config.supportEmail}</a> if the problem persists.</p>
             </React.Fragment>
         }
         {

@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { matchPath, NavLink } from 'react-router-dom';
 
-import { product } from 'config';
+import config from 'config';
 
 import { AdminHeader, UserManagement } from 'containers';
 
@@ -44,7 +44,7 @@ class AppHeader extends PureComponent {
             <NavLink to={__DESKTOP__ ? `/${authUser.get('username')}` : hostedLink} className={classNames('wr-logomark', { desktop: __DESKTOP__ })}>
               {
                 __DESKTOP__ ?
-                  product :
+                  config.product :
                   <div className="logo-anchor">
                     <LogoIcon darkMode={canAdmin} />
                     {

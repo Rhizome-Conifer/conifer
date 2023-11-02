@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { homepageAnnouncement } from 'config';
+import config from 'config';
 
 import './style.scss';
 
@@ -11,7 +11,7 @@ function HomepageAnnouncement() {
   return (
     <div id="news-alert" className="alert alert-info" role="alert">
       <button type="button" className="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <div className="wr-alert-info" dangerouslySetInnerHTML={{ __html: homepageAnnouncement }} />
+      <div className="wr-alert-info" dangerouslySetInnerHTML={{ __html: config.homepageAnnouncement }} />
     </div>
   );
 }

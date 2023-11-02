@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'react-bootstrap';
 
-import { truncWord } from 'config';
+import config from 'config';
 import { getCollectionLink, truncate } from 'helpers/utils';
 
 import { CollectionDropdown } from 'containers';
@@ -53,7 +53,7 @@ class AdminHeaderUI extends PureComponent {
         <Button variant="dark" onClick={this.goToManager} className="d-none d-md-block">
           Collection Manager
         </Button>
-        <span className="active-collection d-none d-sm-block" title={collection.get('title')}>{truncate(collection.get('title'), 10, truncWord)}</span>
+        <span className="active-collection d-none d-sm-block" title={collection.get('title')}>{truncate(collection.get('title'), 10, config.truncWord)}</span>
         {
           collection.get('public') &&
             <span className="visibility-badge d-none d-sm-block">PUBLIC</span>

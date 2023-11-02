@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 
-import { appHost, product } from 'config';
+import config from 'config';
 import { apiFetch } from 'helpers/utils';
 
 import { ShareWidget } from 'containers';
@@ -56,7 +56,7 @@ class RecordingToolsUI extends PureComponent {
     // generate recording url
     apiFetch('/new', data, { method: 'POST' })
       .then(res => res.json())
-      .then(({ url }) => { history.push(url.replace(appHost, '')); })
+      .then(({ url }) => { history.push(url.replace(config.appHost, '')); })
       .catch(err => console.log('error', err));
   }
 
@@ -77,7 +77,7 @@ class RecordingToolsUI extends PureComponent {
     // generate recording url
     apiFetch('/new', data, { method: 'POST' })
       .then(res => res.json())
-      .then(({ url }) => { history.push(url.replace(appHost, '')); })
+      .then(({ url }) => { history.push(url.replace(config.appHost, '')); })
       .catch(err => console.log('error', err));
   }
 

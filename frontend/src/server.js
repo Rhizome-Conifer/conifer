@@ -10,7 +10,7 @@ import { ReduxAsyncConnect, loadOnServer } from 'redux-connect';
 import { Provider } from 'react-redux';
 
 import ApiClient from './helpers/ApiClient';
-import config from './config';
+import config from './config.mjs';
 import createStore from './store/create';
 import baseRoute from './baseRoute';
 import BaseHtml from './helpers/BaseHtml';
@@ -18,7 +18,7 @@ import BaseHtml from './helpers/BaseHtml';
 import './base.scss';
 
 
-export default function (parameters) {
+export default function (manifest) {
   const app = new express();
   const server = new http.Server(app);
 
@@ -34,7 +34,7 @@ export default function (parameters) {
 
     if (__DISABLE_SSR__) {
       res.send(`<!doctype html>\n
-        ${renderToString(<BaseHtml assets={parameters && parameters.chunks()} store={store} />)}`);
+        ${renderToString(<BaseHtml assets={manifest} store={store} />)}`);
 
       return;
     }
@@ -54,7 +54,7 @@ export default function (parameters) {
 
       const outputHtml = renderToString(
         <BaseHtml
-          assets={parameters && parameters.chunks()}
+          assets={manifest}
           component={component}
           store={store} />
       );

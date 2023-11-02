@@ -1,5 +1,5 @@
 import { fromJS } from 'immutable';
-import { apiPath } from 'config';
+import config from 'config';
 
 const ADD_NEW_COLLECTION = 'wr/auth/ADD_NEW_COLLECTION';
 const COLLECTION_DELETION = 'wr/auth/COLLECTION_DELETION';
@@ -171,7 +171,7 @@ export function addUserCollection(coll) {
 export function deleteUser(user) {
   return {
     types: [USER_DELETE, USER_DELETE_SUCCESS, USER_DELETE_FAIL],
-    promise: client => client.del(`${apiPath}/user/${user}`)
+    promise: client => client.del(`${config.apiPath}/user/${user}`)
   };
 }
 
@@ -205,7 +205,7 @@ export function load(include_colls = true) {
   return {
     types: [LOAD, LOAD_SUCCESS, LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${apiPath}/auth/curr_user`, {
+    promise: client => client.get(`${config.apiPath}/auth/curr_user`, {
       params: { include_colls }
     })
   };
@@ -216,7 +216,7 @@ export function loadCollections(user) {
   return {
     types: [USER_LOAD_COLLECTIONS, USER_LOAD_COLLECTIONS_SUCCESS, USER_LOAD_COLLECTIONS_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${apiPath}/collections`, {
+    promise: client => client.get(`${config.apiPath}/collections`, {
       params: {
         user,
         include_recordings: false,
@@ -230,7 +230,7 @@ export function loadCollections(user) {
 export function loadRoles() {
   return {
     types: [USER_ROLES, USER_ROLES_SUCCESS, USER_ROLES_FAIL],
-    promise: client => client.get(`${apiPath}/admin/user_roles`)
+    promise: client => client.get(`${config.apiPath}/admin/user_roles`)
   };
 }
 
@@ -239,7 +239,7 @@ export function login(postData) {
   return {
     types: [LOGIN, LOGIN_SUCCESS, LOGIN_FAIL],
     accessed: Date.now(),
-    promise: client => client.post(`${apiPath}/auth/login`, {
+    promise: client => client.post(`${config.apiPath}/auth/login`, {
       params: { include_colls: true },
       data: {
         ...postData
@@ -252,7 +252,7 @@ export function login(postData) {
 export function logout() {
   return {
     types: [LOGOUT, LOGOUT_SUCCESS, LOGOUT_FAIL],
-    promise: client => client.post(`${apiPath}/auth/logout`)
+    promise: client => client.post(`${config.apiPath}/auth/logout`)
   };
 }
 
@@ -268,7 +268,7 @@ export function selectCollection(id) {
 export function updatePassword(currPass, newPass, newPass2) {
   return {
     types: [USER_PASS, USER_PASS_SUCCESS, USER_PASS_FAIL],
-    promise: client => client.post(`${apiPath}/auth/password/update`, {
+    promise: client => client.post(`${config.apiPath}/auth/password/update`, {
       data: {
         currPass,
         newPass,

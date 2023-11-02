@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { Col, Row } from 'react-bootstrap';
 
-import { product } from 'config';
+import config from 'config';
 
 import './style.scss';
 
@@ -17,7 +17,7 @@ function FAQ() {
       <Row className="heading">
         <Col as="aside" sm={3} className="d-none d-md-block" />
         <Col xs={12} md={9}>
-          <h2>{product} is both a tool to create high-fidelity, interactive captures of any web site you browse and a platform to make those captured websites accessible.</h2>
+          <h2>{config.product} is both a tool to create high-fidelity, interactive captures of any web site you browse and a platform to make those captured websites accessible.</h2>
         </Col>
       </Row>
 
@@ -54,22 +54,22 @@ function FAQ() {
             Web archives can provide better context than isolated screenshots. They can capture not only content but the behaviors of users and their relationships to one another. They can also offer vivid windows into a moment in time. At the same time, web archives should be made with great care and consideration. Keep in mind that what you archive might become public, and what you publish might be used in ways you do not anticipate.
           </p>
 
-          <h4 className="q">What makes {product} different?</h4>
+          <h4 className="q">What makes {config.product} different?</h4>
           <p className="a">
-            While most web archive projects automatically create copies of material found on the public web, {product} is a user-driven platform. Users can create, curate, and share their own collections of web materials. This can even include items that would be only revealed after logging in or performing complicated actions on a web site.
+            While most web archive projects automatically create copies of material found on the public web, {config.product} is a user-driven platform. Users can create, curate, and share their own collections of web materials. This can even include items that would be only revealed after logging in or performing complicated actions on a web site.
           </p>
           <p className="a">
-            On the technical side, {product} focuses on “high fidelity” web archiving. Items relying on complex scripting, such as embedded videos, fancy navigation, or 3D graphics have a much higher success rate for capture with {product} than with traditional web archives.
+            On the technical side, {config.product} focuses on “high fidelity” web archiving. Items relying on complex scripting, such as embedded videos, fancy navigation, or 3D graphics have a much higher success rate for capture with {config.product} than with traditional web archives.
           </p>
 
-          <h4 className="q">How do I use {product}?</h4>
+          <h4 className="q">How do I use {config.product}?</h4>
           <p className="a">
             <a href="https://guide.conifer.rhizome.org/" target="_blank">We created a user guide to help get acquainted.</a>
           </p>
 
-          <h4 className="q">Is {product} free to use?</h4>
+          <h4 className="q">Is {config.product} free to use?</h4>
           <p className="a">
-            Generally, yes! {product} offers a limited free tier with 5GB of storage space with some networking quota restrictions. Access to collections that users made public is always free of charge and unlimited.
+            Generally, yes! {config.product} offers a limited free tier with 5GB of storage space with some networking quota restrictions. Access to collections that users made public is always free of charge and unlimited.
           </p>
           <p className="a">
             The software driving the service is open source under the Apache license.
@@ -80,9 +80,9 @@ function FAQ() {
             <Link to="/_policies">Yes!</Link>
           </p>
 
-          <h4 className="q">Who created {product}?</h4>
+          <h4 className="q">Who created {config.product}?</h4>
           <p className="a">
-            {product} is the result of a multi-year research and development project to create a next generation web archiving service that was hosted at Rhizome from 2015 to 2020 under the name “Webrecorder.io.” The open source components created during this time now form the foundation of {product}. These components are maintained independently by the <a href="https://webrecorder.net">Webrecorder</a> project. With the renaming from Webrecorder.io to {product}, Rhizome became the permanent steward of the service.
+            {config.product} is the result of a multi-year research and development project to create a next generation web archiving service that was hosted at Rhizome from 2015 to 2020 under the name “Webrecorder.io.” The open source components created during this time now form the foundation of {config.product}. These components are maintained independently by the <a href="https://webrecorder.net">Webrecorder</a> project. With the renaming from Webrecorder.io to {config.product}, Rhizome became the permanent steward of the service.
           </p>
 
           <h4 className="q">What's Rhizome?</h4>
@@ -90,7 +90,7 @@ function FAQ() {
             Founded on the internet in 1996, Rhizome is a non-profit organization which commissions, presents, and preserves digital art. Since 2003, Rhizome has been an independent affiliate in residence at the <a href="http://newmuseum.org/" target="_blank">New Museum</a> in New York City, and is based at <a href="http://www.newinc.org/" target="_blank">NEW INC</a>, the first museum-led incubator. As it happens, to preserve net art you need to build complex things that can capture complex things.
           </p>
 
-          <h4 className="q">How is {product} funded?</h4>
+          <h4 className="q">How is {config.product} funded?</h4>
           <p className="a">
             Major support has been provided by The Andrew W. Mellon Foundation.
             <br /><br />

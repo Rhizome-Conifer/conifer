@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { saveDelay } from 'config';
+import config from 'config';
 
 import { load as loadColl } from 'store/modules/collection';
 import { deleteRecording, edit, resetEditState } from 'store/modules/recordings';
@@ -39,7 +39,7 @@ const mapDispatchToProps = (dispatch) => {
     editRec: (user, coll, rec, data) => {
       dispatch(edit(user, coll, rec, data))
         .then(() => dispatch(loadColl(user, coll)))
-        .then(() => setTimeout(() => dispatch(resetEditState()), saveDelay), () => {});
+        .then(() => setTimeout(() => dispatch(resetEditState()), config.saveDelay), () => {});
     },
     dispatch
   };

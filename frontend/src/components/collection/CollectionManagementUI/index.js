@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
-import querystring from 'querystring';
 import { Button } from 'react-bootstrap';
 
 import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
@@ -63,8 +62,8 @@ class CollectionManagementUI extends Component {
 
     let activeSession = null;
     if (search) {
-      const qs = querystring.parse(search.replace(/^\?/, ''));
-      activeSession = qs.session;
+      const qs = new URLSearchParams(search);
+      activeSession = qs.get('session');
     }
 
     if (!canAdmin) {

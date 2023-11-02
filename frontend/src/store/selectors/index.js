@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect';
 import { List } from 'immutable';
 
-import { columnMappings } from 'config';
+import config from 'config';
 
 import { rts, truncate } from 'helpers/utils';
 
@@ -232,7 +232,7 @@ export const getPageCount = createSelector(
 // export const getQueryPages = createSelector(
 //   [getOrderedPages, getColumn, getQuery],
 //   (orderedPages, column, query) => {
-//     const c = columnMappings.hasOwnProperty(column) ? columnMappings[column] : column;
+//     const c = config.columnMappings.hasOwnProperty(column) ? config.columnMappings[column] : column;
 //     const exact = query.startsWith('"') && query.endsWith('"') && query.length > 1;
 //     const _query = exact ? query.substring(1, query.length - 1) : query;
 //

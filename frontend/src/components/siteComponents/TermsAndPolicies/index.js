@@ -1,8 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import { Button } from 'react-bootstrap';
 
-import { supportEmail } from 'config';
+import config from 'config';
 
 import './style.scss';
 
@@ -215,7 +214,7 @@ function TermsAndPolicies() {
 
               <li>
                 <b>How do I contact Conifer?</b>
-                <p>If you have any questions regarding this Privacy Policy, you can contact us by sending an email to <a href={`mailto:${supportEmail}`}>{supportEmail}</a></p>
+                <p>If you have any questions regarding this Privacy Policy, you can contact us by sending an email to <a href={`mailto:${config.supportEmail}`}>{config.supportEmail}</a></p>
               </li>
             </ul>
             <p className="section-updated">This Privacy Policy was last updated August 8, 2016</p>

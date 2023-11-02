@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { passwordReset as passwordResetErrors } from 'helpers/userMessaging';
+import userMessaging from 'helpers/userMessaging';
 import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
 
 import './style.scss';
@@ -48,7 +48,7 @@ class ResetPasswordUI extends Component {
               <Alert className="top-buffer" variant={error ? 'danger' : 'success'}>
                 {
                   error ?
-                    <span>{passwordResetErrors[error] || 'Error encountered'}</span> :
+                    <span>{userMessaging.passwordReset[error] || 'Error encountered'}</span> :
                     <span>A password reset email will been sent to the email address associated with that account if it exists.</span>
                 }
               </Alert>

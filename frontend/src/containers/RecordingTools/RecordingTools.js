@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { toggleAutopilotSidebar } from 'store/modules/automation';
-import { setAutoscroll } from 'store/modules/controls';
 import { toggleClipboard } from 'store/modules/toolBin';
 
 import { RecordingToolsUI } from 'components/controls';
@@ -24,7 +23,6 @@ const mapStateToProps = ({ app }) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     toggleClipboard: b => dispatch(toggleClipboard(b)),
-    toggleAutoscroll: b => dispatch(setAutoscroll(b)),
     toggleAutopilotSidebar: b => dispatch(toggleAutopilotSidebar(b))
   };
 };

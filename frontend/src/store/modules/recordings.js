@@ -1,6 +1,6 @@
 import { fromJS } from 'immutable';
 
-import { apiPath } from 'config';
+import config from 'config';
 
 const RECS_LOAD = 'wr/recordings/RECS_LOAD';
 const RECS_LOAD_SUCCESS = 'wr/recordings/RECS_LOAD_SUCCESS';
@@ -111,7 +111,7 @@ export default function recordings(state = initialState, action = {}) {
 export function collRecordings(user, coll) {
   return {
     types: [RECS_LOAD, RECS_LOAD_SUCCESS, RECS_LOAD_FAIL],
-    promise: client => client.get(`${apiPath}/recordings`, {
+    promise: client => client.get(`${config.apiPath}/recordings`, {
       params: { user, coll: decodeURIComponent(coll) }
     })
   };
@@ -121,7 +121,7 @@ export function collRecordings(user, coll) {
 export function loadRecording(user, coll, rec) {
   return {
     types: [REC_LOAD, REC_LOAD_SUCCESS, REC_LOAD_FAIL],
-    promise: client => client.get(`${apiPath}/recording/${rec}`, {
+    promise: client => client.get(`${config.apiPath}/recording/${rec}`, {
       params: { user, coll: decodeURIComponent(coll) }
     })
   };
@@ -131,7 +131,7 @@ export function loadRecording(user, coll, rec) {
 export function edit(user, coll, rec, data) {
   return {
     types: [REC_EDIT, REC_EDIT_SUCCESS, REC_EDIT_FAIL],
-    promise: client => client.post(`${apiPath}/recording/${rec}`, {
+    promise: client => client.post(`${config.apiPath}/recording/${rec}`, {
       params: { user, coll: decodeURIComponent(coll) },
       data
     }),
@@ -143,7 +143,7 @@ export function edit(user, coll, rec, data) {
 export function getRecordingBookmarks(user, coll, rec) {
   return {
     types: [REC_BK, REC_BK_SUCCESS, REC_BK_FAIL],
-    promise: client => client.get(`${apiPath}/collection/${coll}/page_bookmarks`, {
+    promise: client => client.get(`${config.apiPath}/collection/${coll}/page_bookmarks`, {
       params: { user, rec }
     })
   };
@@ -158,7 +158,7 @@ export function resetEditState() {
 export function deleteRecording(user, coll, rec) {
   return {
     types: [REC_DELETE, REC_DELETE_SUCCESS, REC_DELETE_FAIL],
-    promise: client => client.del(`${apiPath}/recording/${rec}`, {
+    promise: client => client.del(`${config.apiPath}/recording/${rec}`, {
       params: { user, coll: decodeURIComponent(coll) }
     })
   };

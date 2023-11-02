@@ -13,10 +13,10 @@ import {
   Row
 } from 'react-bootstrap';
 
-import { defaultCollDesc, product, supporterPortal } from 'config';
+import config from 'config';
 import { passwordPassRegex } from 'helpers/utils';
 import { AccessContext } from 'store/contexts';
-import { settings as settingsErr } from 'helpers/userMessaging';
+import userMessaging from 'helpers/userMessaging';
 
 import HttpStatus from 'components/HttpStatus';
 import Modal from 'components/Modal';
@@ -111,7 +111,7 @@ class UserSettingsUI extends Component {
   }
 
   goToSupporterPortal = () => {
-    window.location.href = supporterPortal;
+    window.location.href = config.supporterPortal;
   }
 
   toggleDelete = evt => this.setState({ showModal: !this.state.showModal })
@@ -268,6 +268,7 @@ class UserSettingsUI extends Component {
     const { auth, collections, deleting, edited, editing, match: { params }, user } = this.props;
     const { currPassword, indexColl, password, password2, privateColl, showModal } = this.state;
 
+    const { defaultCollDesc, product, supporterPortal } = config;
     const username = params.user;
     const canAdmin = username === auth.getIn(['user', 'username']);
     const superuser = auth.getIn(['user', 'role']) === 'admin';
@@ -509,7 +510,7 @@ class UserSettingsUI extends Component {
               {
                 passUpdateFail &&
                   <Alert variant="danger">
-                    {settingsErr[passUpdateFail] || 'Error encountered'}
+                    {userMessaging.settings[passUpdateFail] || 'Error encountered'}
                   </Alert>
               }
               {

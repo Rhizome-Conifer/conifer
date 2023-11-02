@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Form } from 'react-bootstrap';
 
 import { getCollectionLink } from 'helpers/utils';
-import { collection as collectionErr } from 'helpers/userMessaging';
+import userMessaging from 'helpers/userMessaging';
 import { AppContext } from 'store/contexts';
 
 import Modal from 'components/Modal';
@@ -128,7 +128,7 @@ class DeleteCollectionUI extends Component {
           }
           {
             error &&
-              <Form.Text style={{ color: 'red' }}>{ collectionErr[error] || 'Error encountered' }</Form.Text>
+              <Form.Text style={{ color: 'red' }}>{ userMessaging.collection[error] || 'Error encountered' }</Form.Text>
           }
         </Modal>
       </React.Fragment>

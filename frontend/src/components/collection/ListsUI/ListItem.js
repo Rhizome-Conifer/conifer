@@ -5,13 +5,14 @@ import classNames from 'classnames';
 import { DragSource, DropTarget } from 'react-dnd';
 import { withRouter } from 'react-router';
 
-import { draggableTypes as dt } from 'config';
+import config from 'config';
 
 import { AccessContext } from 'store/contexts';
 
 import VisibilityLamp from 'components/collection/VisibilityLamp';
 import { LoaderIcon } from 'components/icons';
 
+const dt = config.draggableTypes;
 
 const listSource = {
   beginDrag({ index, list }) {

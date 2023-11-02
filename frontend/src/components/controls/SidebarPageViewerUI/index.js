@@ -6,7 +6,7 @@ import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
 import { batchActions } from 'redux-batched-actions';
 
-import { untitledEntry } from 'config';
+import config from 'config';
 
 import { updateUrlAndTimestamp } from 'store/modules/controls';
 import { setBrowser } from 'store/modules/remoteBrowsers';
@@ -56,19 +56,19 @@ class SidebarPageViewer extends Component {
   onKeyNavigate = ({ scrollToRow }) => {
     const { pages } = this.props;
     const page = pages.get(scrollToRow);
-    // this.props.dispatch(updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry));
+    // this.props.dispatch(updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || config.untitledEntry));
     // TODO: add change to history ?
     this.props.dispatch(batchActions([
-      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry, false),
+      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || config.untitledEntry, false),
       setBrowser(page.get('browser') || null)
     ]));
   }
 
   onSelectRow = ({ index, rowData }) => {
-    // this.props.dispatch(updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || untitledEntry));
+    // this.props.dispatch(updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || config.untitledEntry));
     // TODO: add change to history ?
     this.props.dispatch(batchActions([
-      updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || untitledEntry, false),
+      updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || config.untitledEntry, false),
       setBrowser(rowData.get('browser') || null)
     ]));
   }

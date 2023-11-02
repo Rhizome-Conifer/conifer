@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button, Form, InputGroup } from 'react-bootstrap';
 
-import { product, apiPath } from 'config';
+import config from 'config';
 import { apiFormatUrl } from 'helpers/utils';
 
-import { upload as uploadErrors } from 'helpers/userMessaging';
+import userMessaging from 'helpers/userMessaging';
 
 import { incrementCollCount } from 'store/modules/auth';
 
@@ -77,7 +77,7 @@ class UploadUI extends PureComponent {
 
     this.xhr = new XMLHttpRequest();
     const target = targetColl === 'chosen' ? activeCollection : '';
-    const url = apiFormatUrl(`${apiPath}/upload?force-coll=${target}&filename=${file}`);
+    const url = apiFormatUrl(`${config.apiPath}/upload?force-coll=${target}&filename=${file}`);
 
     this.xhr.upload.addEventListener('progress', this.uploadProgress);
     this.xhr.addEventListener('load', this.uploadSuccess);
@@ -145,7 +145,7 @@ class UploadUI extends PureComponent {
   indexing = (data) => {
     this.setState({ canCancel: false, status: 'Indexing...' });
 
-    const url = apiFormatUrl(`${apiPath}/upload/${data.upload_id}?user=${data.user}`);
+    const url = apiFormatUrl(`${config.apiPath}/upload/${data.upload_id}?user=${data.user}`);
 
     this.interval = setInterval(() => {
       fetch(url, { headers: new Headers({ 'x-requested-with': 'XMLHttpRequest' }) })
@@ -167,7 +167,7 @@ class UploadUI extends PureComponent {
 
     this.setState({
       canCancel: true,
-      status: uploadErrors[data.error] || 'Error Encountered'
+      status: userMessaging.upload[data.error] || 'Error Encountered'
     });
   }
 
@@ -188,7 +188,7 @@ class UploadUI extends PureComponent {
     const { file, isUploading, progress, status, targetColl } = this.state;
 
     const modalHeader = (
-      <h4>{ __DESKTOP__ ? 'Import' : 'Upload' } Web Archive to { product }</h4>
+      <h4>{ __DESKTOP__ ? 'Import' : 'Upload' } Web Archive to { config.product }</h4>
     );
 
     const Wrapper = this.props.wrapper || Button

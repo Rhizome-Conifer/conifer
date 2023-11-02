@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import DatePicker from 'react-datepicker';
-import querystring from 'querystring';
 import OutsideClick from 'components/OutsideClick';
 import { Button, Dropdown, DropdownButton, Form, InputGroup } from 'react-bootstrap';
 import { LoaderIcon, SearchIcon, XIcon } from 'components/icons';
@@ -207,36 +206,37 @@ class Searchbox extends PureComponent {
     };
 
     if (props.location.search) {
-      const qs = querystring.parse(props.location.search.replace(/^\?/, ''));
+      const qs = new URLSearchParams(props.location.search);
 
-      if (qs.search || qs.url) {
-        props.search(qs);
-        search = qs.search;
-        searchFrag = qs.search;
-        urlFrag = qs.url ? decodeURIComponent(qs.url) : '';
+      if (qs.has('search') || qs.has('url')) {
+        props.search(qs.get('user'), qs.get('coll'), qs.get('params'), qs.get('fullText')); // TODO - test this
+        search = qs.get('search');
+        searchFrag = qs.get('search');
+        urlFrag = qs.has('url') ? decodeURIComponent(qs.get('url')) : '';
       }
 
-      if (qs.mime) {
-        includeAll = qs.mime.includes('*');
-        includeWebpages = qs.mime.includes('text/html');
-        includeImages = qs.mime.includes('image/');
-        includeAudio = qs.mime.includes('audio/');
-        includeVideo = qs.mime.includes('video/');
-        includeDocuments = qs.mime.includes('application/pdf');
+      if (qs.has('mime')) {
+        const mime = qs.get('mime');
+        includeAll = mime.includes('*');
+        includeWebpages = mime.includes('text/html');
+        includeImages = mime.includes('image/');
+        includeAudio = mime.includes('audio/');
+        includeVideo = mime.includes('video/');
+        includeDocuments = mime.includes('application/pdf');
       }
 
-      if (qs.session) {
-        session = qs.session;
+      if (qs.has('session')) {
+        session = qs.get('session');
         date = 'session';
       }
 
-      if (qs.from || qs.to) {
-        startDate = qs.from ? this.parseDate(qs.from) : startDate;
-        endDate = qs.to ? this.parseDate(qs.to) : endDate;
+      if (qs.has('from') || qs.has('to')) {
+        startDate = qs.has('from') ? this.parseDate(qs.get('from')) : startDate;
+        endDate = qs.has('to') ? this.parseDate(qs.get('to')) : endDate;
         date = 'daterange';
       }
 
-      if (qs.method === 'url') {
+      if (qs.get('method') === 'url') {
         urlSearch = true;
       }
     }
@@ -390,7 +390,8 @@ class Searchbox extends PureComponent {
     };
 
     if (typeof window !== "undefined") {
-      window.history.replaceState({}, '', `?${querystring.stringify(searchParams)}`);
+      const querystring = new URLSearchParams(searchParams);
+      window.history.replaceState({}, '', `?${querystring.toString()}`);
     }
 
     this.props.search(

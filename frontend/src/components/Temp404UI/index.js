@@ -2,9 +2,9 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import { Panel } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
 
-import { product } from 'config';
+import config from 'config';
 
 import SetStatus from 'components/SetStatus';
 
@@ -38,13 +38,13 @@ class Temp404UI extends PureComponent {
         <Helmet>
           <title>Temporary Collection Not Found</title>
         </Helmet>
-        <Panel variant="danger" className="wr-error-notice">
-          <Panel.Heading>Temporary Collection Not Found</Panel.Heading>
-          <Panel.Body>
+        <Card variant="danger" className="wr-error-notice">
+          <Card.Heading>Temporary Collection Not Found</Card.Heading>
+          <Card.Body>
             <p>Sorry, this link is to a temporary collection, which is no longer available.</p>
-            <p><Link to="/_register">Sign Up</Link> or <button className="button-link" type="button" onClick={showLoginModal}>Login</button> to keep shareable permanent collctions on {product}</p>
-          </Panel.Body>
-        </Panel>
+            <p><Link to="/_register">Sign Up</Link> or <button className="button-link" type="button" onClick={showLoginModal}>Login</button> to keep shareable permanent collctions on {config.product}</p>
+          </Card.Body>
+        </Card>
       </SetStatus>
     );
   }

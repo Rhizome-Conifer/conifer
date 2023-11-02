@@ -8,7 +8,7 @@ import Collapsible from 'react-collapsible';
 import { List } from 'immutable';
 import { Button, Overlay, Popover } from 'react-bootstrap';
 
-import { appHost, defaultRecDesc } from 'config';
+import config from 'config';
 import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
 
 import { getRecordingBookmarks } from 'store/modules/recordings';
@@ -73,7 +73,7 @@ class SessionCollapsibleUI extends PureComponent {
   downloadAction = (evt) => {
     evt.stopPropagation();
     const { collection, recording } = this.props;
-    window.location.href = `${appHost}/${getCollectionLink(collection)}/${recording.get('id')}/$download`;
+    window.location.href = `${config.appHost}/${getCollectionLink(collection)}/${recording.get('id')}/$download`;
   }
 
   editDescription = (txt) => {
@@ -164,7 +164,7 @@ class SessionCollapsibleUI extends PureComponent {
             <WYSIWYG
               initial={recording.get('desc')}
               onSave={this.editDescription}
-              placeholder={defaultRecDesc}
+              placeholder={config.defaultRecDesc}
               success={this.props.recordingEdited} />
           </div>
           <div className="session-pages">

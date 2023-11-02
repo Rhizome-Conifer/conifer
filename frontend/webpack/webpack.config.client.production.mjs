@@ -1,17 +1,15 @@
-import autoprefixer from 'autoprefixer';
-import merge from 'webpack-merge';
 import path from 'path';
 import webpack from 'webpack';
+import { merge } from 'webpack-merge';
+import { fileURLToPath } from 'node:url';
 
-import CleanPlugin from 'clean-webpack-plugin';
-import CopyWebpackPlugin from 'copy-webpack-plugin';
+import CopyPlugin from 'copy-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import TerserPlugin from "terser-webpack-plugin";
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+import WebpackAssetsManifest from 'webpack-assets-manifest';
 
-import getBaseConfig from './webpack.config.client';
-
-const projectRootPath = path.resolve(__dirname, '../');
-const assetsPath = path.resolve(projectRootPath, './static/dist');
-const baseConfig = getBaseConfig({ development: false, useMiniCssExtractPlugin: true }, { silent: process.env.STATS });
+import baseConfiguration from './webpack.config.mjs';
 
 
 const prodConfig = {
@@ -19,7 +17,7 @@ const prodConfig = {
   mode: 'production',
   entry: {
     main: [
-      './config/polyfills',
+      //'./config/polyfills',
       './src/client.js'
     ]
   },
@@ -37,20 +35,6 @@ const prodConfig = {
           },
           {
             loader: 'postcss-loader',
-            options: {
-              plugins: () => {
-                return [
-                  autoprefixer({
-                    browsers: [
-                      '>1%',
-                      'last 4 versions',
-                      'Firefox ESR',
-                      'not ie < 10',
-                    ]
-                  })
-                ];
-              }
-            }
           },
           'sass-loader'
         ]
@@ -65,8 +49,7 @@ const prodConfig = {
           {
             loader: 'css-loader',
             options: {
-              modules: true,
-              minimize: true
+              modules: true
             }
           }
         ]
@@ -80,20 +63,37 @@ const prodConfig = {
           },
           {
             loader: 'css-loader',
-            options: { minimize: true }
           }
         ]
       },
     ]
   },
 
-  plugins: [
-    new CleanPlugin([assetsPath], { root: projectRootPath, verbose: false }),
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        extractComments: false,
+      })
+    ]
+  },
 
-    new CopyWebpackPlugin([
-      'src/shared/images/favicon.ico',
-      'src/shared/images/conifer-social.jpg'
-    ]),
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: '[name]-[contenthash].css',
+    }),
+    new WebpackAssetsManifest({
+      output: 'webpack-manifest.json',
+      writeToDisk: true,
+      publicPath: true
+    }),
+
+    new CopyPlugin({
+      patterns: [
+        'src/shared/images/favicon.ico',
+        'src/shared/images/conifer-social.jpg'
+      ]
+    }),
 
     new webpack.DefinePlugin({
       __CLIENT__: true,
@@ -108,10 +108,9 @@ const prodConfig = {
 };
 
 if (process.env.STATS) {
-  const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
   prodConfig.plugins.push(new BundleAnalyzerPlugin());
   prodConfig.stats = { all: false };
 }
 
 
-export default merge(baseConfig, prodConfig);
+export default merge(baseConfiguration, prodConfig);

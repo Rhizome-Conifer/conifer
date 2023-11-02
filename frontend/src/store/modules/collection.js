@@ -1,7 +1,5 @@
-import { apiPath } from 'config';
+import config from 'config';
 import { fromJS } from 'immutable';
-
-import { defaultSort } from 'config';
 
 const BK_COUNT = 'wr/coll/BK_COUNT';
 const BK_COUNT_SUCCESS = 'wr/coll/BK_COUNT_SUCCESS';
@@ -69,7 +67,7 @@ const initialState = fromJS({
   loaded: false,
   searching: false,
   searched: false,
-  sortBy: defaultSort
+  sortBy: config.defaultSort
 });
 
 
@@ -295,7 +293,7 @@ export default function collection(state = initialState, action = {}) {
 export function deleteCollection(user, coll) {
   return {
     types: [COLL_DELETE, COLL_DELETE_SUCCESS, COLL_DELETE_FAIL],
-    promise: client => client.del(`${apiPath}/collection/${coll}`, {
+    promise: client => client.del(`${config.apiPath}/collection/${coll}`, {
       params: { user }
     })
   };
@@ -305,7 +303,7 @@ export function deleteCollection(user, coll) {
 export function edit(user, coll, data) {
   return {
     types: [COLL_EDIT, COLL_EDIT_SUCCESS, COLL_EDIT_FAIL],
-    promise: client => client.post(`${apiPath}/collection/${coll}`, {
+    promise: client => client.post(`${config.apiPath}/collection/${coll}`, {
       params: { user },
       data
     }),
@@ -318,7 +316,7 @@ export function getBookmarkCount(user, coll, list) {
   return {
     types: [BK_COUNT, BK_COUNT_SUCCESS, BK_COUNT_FAIL],
     list,
-    promise: client => client.get(`${apiPath}/list/${list}`, {
+    promise: client => client.get(`${config.apiPath}/list/${list}`, {
       params: { user, coll: decodeURIComponent(coll), include_bookmarks: 'none' }
     })
   };
@@ -328,7 +326,7 @@ export function getBookmarkCount(user, coll, list) {
 export function indexCollection(user, coll, include_existing) {
   return {
     types: [COLL_INDEX, COLL_INDEX_SUCCESS, COLL_INDEX_FAIL],
-    promise: client => client.post(`${apiPath}/collection/${coll}/generate_derivs`, {
+    promise: client => client.post(`${config.apiPath}/collection/${coll}/generate_derivs`, {
       params: { user, include_existing }
     })
   };
@@ -345,7 +343,7 @@ export function isLoaded({ app }) {
 export function makeCollectionPrivate(username, collection) {
   return {
     types: [COLL_MAKE_PRIVATE, COLL_MAKE_PRIVATE, COLL_MAKE_PRIVATE],
-    promise: client => client.put(`${apiPath}/admin/make-private/${username}/${collection}`)
+    promise: client => client.put(`${config.apiPath}/admin/make-private/${username}/${collection}`)
   };
 }
 
@@ -354,7 +352,7 @@ export function loadMetadata(user, coll, host = '') {
   return {
     types: [COLL_LOAD_META, COLL_LOAD_META_SUCCESS, COLL_LOAD_META_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${host}${apiPath}/collection/${coll}`, {
+    promise: client => client.get(`${host}${config.apiPath}/collection/${coll}`, {
       params: { user, shallow: true }
     })
   };
@@ -365,7 +363,7 @@ export function load(user, coll, host = '') {
   return {
     types: [COLL_LOAD, COLL_LOAD_SUCCESS, COLL_LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${host}${apiPath}/collection/${coll}`, {
+    promise: client => client.get(`${host}${config.apiPath}/collection/${coll}`, {
       params: { user }
     })
   };
@@ -378,7 +376,7 @@ export function load(user, coll, host = '') {
 export function loadLists(user, coll, withBookmarks = 'first', host = '') {
   return {
     types: [LISTS_LOAD, LISTS_LOAD_SUCCESS, LISTS_LOAD_FAIL],
-    promise: client => client.get(`${host}${apiPath}/lists`, {
+    promise: client => client.get(`${host}${config.apiPath}/lists`, {
       params: { user, coll: decodeURIComponent(coll), include_bookmarks: withBookmarks }
     })
   };
@@ -403,7 +401,7 @@ export function clearIndexing() {
 export function search(user, coll, searchParams, fullText = false) {
   return {
     types: [SEARCH, SEARCH_SUCCESS, SEARCH_FAIL],
-    promise: client => client.get(`${apiPath}/${fullText ? 'text' : 'url'}_search`, {
+    promise: client => client.get(`${config.apiPath}/${fullText ? 'text' : 'url'}_search`, {
       params: {
         user,
         coll,
@@ -425,7 +423,7 @@ export function setSort(sortBy) {
 export function shareToDat(user, coll) {
   return {
     types: [DAT_SHARE, DAT_SHARE_SUCCESS, DAT_SHARE_FAIL],
-    promise: client => client.post(`${apiPath}/collection/${coll}/dat/share`, {
+    promise: client => client.post(`${config.apiPath}/collection/${coll}/dat/share`, {
       params: { user }
     })
   };
@@ -436,7 +434,7 @@ export function sortLists(user, coll, order) {
   return {
     types: [LISTS_REORDER, LISTS_REORDER_SUCCESS, LISTS_REORDER_FAIL],
     order,
-    promise: client => client.post(`${apiPath}/lists/reorder`, {
+    promise: client => client.post(`${config.apiPath}/lists/reorder`, {
       params: { user, coll: decodeURIComponent(coll) },
       data: {
         order
@@ -449,7 +447,7 @@ export function sortLists(user, coll, order) {
 export function unshareFromDat(user, coll) {
   return {
     types: [DAT_UNSHARE, DAT_UNSHARE_SUCCESS, DAT_UNSHARE_FAIL],
-    promise: client => client.post(`${apiPath}/collection/${coll}/dat/unshare`, {
+    promise: client => client.post(`${config.apiPath}/collection/${coll}/dat/unshare`, {
       params: { user }
     })
   };

@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-import { onboardingLink } from 'config';
+import config from 'config';
 
 import Modal from 'components/Modal';
 
@@ -56,7 +56,7 @@ class OnBoarding extends PureComponent {
         dialogClassName="on-boarding"
         header="Introducing New Features"
         visible={this.state.show}>
-        <iframe src={onboardingLink} />
+        <iframe src={config.onboardingLink} />
       </Modal>
     );
   }

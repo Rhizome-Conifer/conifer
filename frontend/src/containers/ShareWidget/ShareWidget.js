@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { appHost } from 'config';
+import config from 'config';
 import { remoteBrowserMod } from 'helpers/utils';
 import { edit } from 'store/modules/collection';
 import { showModal } from 'store/modules/userLogin';
@@ -41,8 +41,8 @@ class ShareWidget extends Component {
     const tsMod = remoteBrowserMod(activeBrowser, timestamp, '/');
     const listFrag = activeList ? `list/${activeList}/b${activeBookmarkId}/` : '';
 
-    const shareUrl = `${appHost}/${user}/${coll}/${listFrag}${tsMod}${url}`;
-    const embedUrl = `${appHost}/_embed/${user}/${coll}/${listFrag}${tsMod}${url}`;
+    const shareUrl = `${config.appHost}/${user}/${coll}/${listFrag}${tsMod}${url}`;
+    const embedUrl = `${config.appHost}/_embed/${user}/${coll}/${listFrag}${tsMod}${url}`;
 
     return (
       <ShareWidgetUI

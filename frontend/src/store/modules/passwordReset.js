@@ -1,6 +1,6 @@
 import { fromJS } from 'immutable';
 
-import { apiPath } from 'config';
+import config from 'config';
 
 const RESET = 'wr/passwordReset/RESET';
 const RESET_SUCCESS = 'wr/passwordReset/RESET_SUCCESS';
@@ -53,7 +53,7 @@ export default function passwordReset(state = initialState, action = {}) {
 export function resetPassword(postData) {
   return {
     types: [RESET, RESET_SUCCESS, RESET_FAIL],
-    promise: client => client.post(`${apiPath}/auth/password/reset_request`, {
+    promise: client => client.post(`${config.apiPath}/auth/password/reset_request`, {
       data: {
         ...postData
       }
@@ -65,7 +65,7 @@ export function resetPassword(postData) {
 export function setNewPassword(postData) {
   return {
     types: [SET, SET_SUCCESS, SET_FAIL],
-    promise: client => client.post(`${apiPath}/auth/password/reset`, {
+    promise: client => client.post(`${config.apiPath}/auth/password/reset`, {
       data: {
         ...postData
       }

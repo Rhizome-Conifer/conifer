@@ -7,12 +7,14 @@ import classNames from 'classnames';
 import { DropTarget, DragSource } from 'react-dnd';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 
-import { draggableTypes, untitledEntry } from 'config';
+import config from 'config';
 import { capitalize, getCollectionLink, getListLink, remoteBrowserMod, stopPropagation } from 'helpers/utils';
 
 import RemoveWidget from 'components/RemoveWidget';
 import TimeFormat from 'components/TimeFormat';
 
+
+const { draggableTypes, untitledEntry } = config;
 
 function SortIndicator({sortDirection}) {
   const classes = classNames('ReactVirtualized__Table__sortableHeaderIcon', {

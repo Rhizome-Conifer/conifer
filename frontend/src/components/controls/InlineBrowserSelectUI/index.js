@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Col, Dropdown, Row } from 'react-bootstrap';
 
-import { filterBrowsers } from 'config';
+import config from 'config';
 
 
 class InlineBrowserSelectUI extends PureComponent {
@@ -32,7 +32,7 @@ class InlineBrowserSelectUI extends PureComponent {
     const { browsers, bookmark } = this.props;
 
     const availBrowsers = [];
-    filterBrowsers.forEach((id) => {
+    config.filterBrowsers.forEach((id) => {
       const browser = browsers.get(id);
       if (browser) {
         availBrowsers.push(browser);

@@ -7,7 +7,7 @@ import Table from 'react-virtualized/dist/commonjs/Table';
 import classNames from 'classnames';
 import { batchActions } from 'redux-batched-actions';
 
-import { untitledEntry } from 'config';
+import config from 'config';
 
 import { setBookmarkId, updateUrlAndTimestamp } from 'store/modules/controls';
 import { setBrowser } from 'store/modules/remoteBrowsers';
@@ -82,7 +82,7 @@ class SidebarListViewer extends Component {
     // TODO: race condition when keying quickly, old iframe change updates and makes current deselected
     this.setState({ navigated: false });
     this.props.dispatch(batchActions([
-      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry, false),
+      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || config.untitledEntry, false),
       setBrowser(page.get('browser') || null),
       setBookmarkId(page.get('id'))
     ]));
@@ -100,7 +100,7 @@ class SidebarListViewer extends Component {
     //this.context.router.history.push(`${getListLink(collection, list)}/b${rowData.get('id')}/${tsMod}${rowData.get('url')}`);
 
     this.props.dispatch(batchActions([
-      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry, false),
+      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || config.untitledEntry, false),
       setBrowser(page.get('browser') || null),
       setBookmarkId(page.get('id'))
     ]));

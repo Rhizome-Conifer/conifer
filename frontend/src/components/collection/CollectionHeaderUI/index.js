@@ -6,7 +6,7 @@ import removeMd from 'remove-markdown';
 import { Button, Dropdown, FormControl, MenuItem } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import { appHost, onboardingLink, truncSentence, truncWord } from 'config';
+import config from 'config';
 import { doubleRAF, getCollectionLink, truncate } from 'helpers/utils';
 
 
@@ -52,7 +52,7 @@ class CollectionHeaderUI extends Component {
 
   downloadCollection = () => {
     const { collection } = this.props;
-    window.location.href = `${appHost}/${getCollectionLink(collection)}/$download`;
+    window.location.href = `${config.appHost}/${getCollectionLink(collection)}/$download`;
   }
 
   copyDat = () => {
@@ -129,7 +129,7 @@ class CollectionHeaderUI extends Component {
     const isPublic = collection.get('public');
     const collTitle = collection.get('title');
 
-    const titleCapped = truncate(collTitle, 9, truncWord);
+    const titleCapped = truncate(collTitle, 9, config.truncWord);
     const allowDat = JSON.parse(process.env.ALLOW_DAT);
 
     const newFeatures = canAdmin && ['admin', 'beta-archivist'].includes(this.props.auth.get('role'));
@@ -137,7 +137,7 @@ class CollectionHeaderUI extends Component {
     return (
       <header className={containerClasses}>
         {
-          onboardingLink && !isMobile &&
+          config.onboardingLink && !isMobile &&
             <OnBoarding open={onBoarding} />
         }
         {
@@ -169,7 +169,7 @@ class CollectionHeaderUI extends Component {
               collection.get('desc') ?
                 <div className={classNames('desc', { 'click-highlight': canAdmin })} role={canAdmin ? 'button' : 'resentation'} onClick={canAdmin ? this.editModal : undefined}>
                   {
-                    truncate(removeMd(collection.get('desc'), { useImgAltText: false }), 3, truncSentence)
+                    truncate(removeMd(collection.get('desc'), { useImgAltText: false }), 3, config.truncSentence)
                   }
                 </div> :
                 canAdmin && <button className="button-link" onClick={this.editModal} type="button">+ Add description</button>
@@ -201,7 +201,7 @@ class CollectionHeaderUI extends Component {
                         </React.Fragment>
                     }
                     {
-                      onboardingLink && !isMobile &&
+                      config.onboardingLink && !isMobile &&
                         <React.Fragment>
                           <Dropdown.Divider />
                           <Dropdown.Item onClick={this.showOnboarding}><span role="img" aria-label="tada emoji">&#127881;</span> Tour New Features</Dropdown.Item>

@@ -7,7 +7,7 @@ import { remoteBrowserMod } from 'helpers/utils';
 
 import { RemoteBrowserOption } from 'components/controls';
 
-import { filterBrowsers } from 'config';
+import config from 'config';
 
 class RemoteBrowserSelectUI extends PureComponent {
   static propTypes = {
@@ -89,8 +89,8 @@ class RemoteBrowserSelectUI extends PureComponent {
 
     let showBrowsers = [];
 
-    if (browsers && filterBrowsers) {
-      filterBrowsers.forEach((id) => {
+    if (browsers && config.filterBrowsers) {
+      config.filterBrowsers.forEach((id) => {
         const browser = browsers.get(id);
         if (browser) {
           showBrowsers.push(browser);

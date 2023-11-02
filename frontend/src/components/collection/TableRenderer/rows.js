@@ -4,9 +4,11 @@ import defaultRowRenderer from 'react-virtualized/dist/commonjs/Table/defaultRow
 import { DragSource, DropTarget } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
-import { draggableTypes } from 'config';
+import config from 'config';
 import { keyIn } from 'helpers/utils';
 
+
+const { draggableTypes } = config;
 
 const baseSource = {
   isDragging(props, monitor) {

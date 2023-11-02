@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 
-import { autopilot as autopilotFields } from 'helpers/userMessaging';
+import userMessaging from 'helpers/userMessaging';
 
 import { CheckIcon, LoaderIcon, WandIcon } from 'components/icons';
 
@@ -116,7 +116,7 @@ class AutopilotUI extends Component {
     const isStopping = status === 'stopping';
     const isStopped = status === 'stopped';
 
-    const keyDomain = autopilotFields[this.state.behavior];
+    const keyDomain = userMessaging.autopilot[this.state.behavior];
 
     let buttonText;
     switch (status) {

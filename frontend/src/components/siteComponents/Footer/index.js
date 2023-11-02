@@ -2,12 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 
-import { announceMailingList, product, supportEmail, supporterPortal } from 'config';
+import config from 'config';
 
 import './style.scss';
 
 
 function Footer() {
+
+  const { announceMailingList, product, supportEmail, supporterPortal } = config;
 
   const donateNow = () => {
     window.location.href = supporterPortal;

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { DragLayer } from 'react-dnd';
 
-import { draggableTypes } from 'config';
+import config from 'config';
 
 
 const getItemStyles = ({ initialOffset, currentOffset, initialClientOffset, clientOffset }) => {
@@ -60,8 +60,8 @@ class CustomDragLayer extends Component {
     super(props);
 
     this.types = [
-      draggableTypes.PAGE_ITEM,
-      draggableTypes.BOOKMARK_ITEM
+      config.draggableTypes.PAGE_ITEM,
+      config.draggableTypes.BOOKMARK_ITEM
     ];
 
     this.state = {
@@ -81,7 +81,7 @@ class CustomDragLayer extends Component {
       return null;
     }
 
-    if (itemType === draggableTypes.BOOKMARK_ITEM &&
+    if (itemType === config.draggableTypes.BOOKMARK_ITEM &&
        (typeof pageSelection === 'number' || pageSelection === null)) {
       return null;
     }

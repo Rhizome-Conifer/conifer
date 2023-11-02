@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button, Form } from 'react-bootstrap';
 
-import { collection as collectionErrors } from 'helpers/userMessaging';
+import userMessaging from 'helpers/userMessaging';
 
 import { CheckIcon, PencilIcon, XIcon } from 'components/icons';
 
@@ -167,7 +167,7 @@ class InlineEditor extends PureComponent {
                   {
                     (error || this.state.error) &&
                     <div className="help-spanner">
-                      <Form.Control.Feedback type="invalid">{ error ? collectionErrors[error] || 'Error encountered' : this.state.error }</Form.Control.Feedback>
+                      <Form.Control.Feedback type="invalid">{ error ? userMessaging.collection[error] || 'Error encountered' : this.state.error }</Form.Control.Feedback>
                     </div>
                   }
                 </div>

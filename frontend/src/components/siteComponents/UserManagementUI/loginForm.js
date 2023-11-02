@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Alert, Button, Col, Form, FormGroup, FormControl, Row } from 'react-bootstrap';
 
-import { guestSessionTimeout, product, userRegex } from 'config';
-import { login } from 'helpers/userMessaging';
+import config from 'config';
+import userMessaging from 'helpers/userMessaging';
 
 import { TempUsage } from 'containers';
 
@@ -50,9 +50,8 @@ class LoginForm extends Component {
   }
 
   validateUsername = () => {
-    const pattern = userRegex;
     if (typeof this.state.username !== 'undefined') {
-      return this.state.username.match(pattern) === this.state.username ? null : 'warning';
+      return this.state.username.match(config.userRegex) === this.state.username ? null : 'warning';
     }
     return null;
   }
@@ -68,6 +67,7 @@ class LoginForm extends Component {
   render() {
     const { anonCTA, auth, closeLogin, error } = this.props;
     const { moveTemp, password, toColl, username } = this.state;
+    const { guestSessionTimeout, product } = config;
 
     return (
       <React.Fragment>
@@ -81,7 +81,7 @@ class LoginForm extends Component {
               error &&
                 <Alert variant="danger">
                   {
-                    login[auth.get('loginError')] || <span>Invalid Login. Please Try Again</span>
+                    userMessaging.login[auth.get('loginError')] || <span>Invalid Login. Please Try Again</span>
                   }
                 </Alert>
             }

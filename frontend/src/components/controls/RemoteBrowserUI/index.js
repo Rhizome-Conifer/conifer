@@ -8,7 +8,7 @@ import { getStorage } from 'helpers/utils';
 import { toggleAutopilot } from 'store/modules/automation';
 import { createRemoteBrowser } from 'store/modules/remoteBrowsers';
 
-import { publicIP } from 'config';
+import config from 'config';
 
 import './style.scss';
 
@@ -73,7 +73,7 @@ class RemoteBrowserUI extends Component {
       headers: { 'x-requested-with': 'XMLHttpRequest' },
       webrtc: true,
       webrtc_video: false,
-      webrtcHostIP: publicIP,
+      webrtcHostIP: config.publicIP,
     };
   }
 

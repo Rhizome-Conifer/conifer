@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { saveDelay } from 'config';
+import config from 'config';
 
 import { clear, selectBookmark } from 'store/modules/inspector';
 import { resetEditState, edit } from 'store/modules/list';
@@ -30,7 +30,7 @@ const mapDispatchToProps = (dispatch) => {
     clearInspector: () => dispatch(clear()),
     editList: (user, coll, listId, data) => {
       dispatch(edit(user, coll, listId, data))
-        .then(() => setTimeout(() => dispatch(resetEditState()), saveDelay), () => {});
+        .then(() => setTimeout(() => dispatch(resetEditState()), config.saveDelay), () => {});
     },
     setInspector: bk => dispatch(selectBookmark(bk)),
     dispatch

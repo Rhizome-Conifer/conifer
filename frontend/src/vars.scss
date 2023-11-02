@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 /* breakpoints */
 
 $xs: 576px; // <=
@@ -94,7 +96,7 @@ $tableRowFade: 150ms;
 
 @function strip-unit($number) {
   @if type-of($number) == 'number' and not unitless($number) {
-    @return $number / ($number * 0 + 1);
+    @return math.div($number, ($number * 0 + 1));
   }
 
   @return $number;

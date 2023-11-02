@@ -5,8 +5,8 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { Link } from 'react-router-dom';
 import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
 
-import { product, recaptcha, recaptchaKey, userRegex } from 'config';
-import { registration as registrationErr } from 'helpers/userMessaging';
+import config from 'config';
+import userMessaging from 'helpers/userMessaging';
 
 import { passwordPassRegex } from 'helpers/utils';
 import { TempUsage } from 'containers';
@@ -51,7 +51,7 @@ class UserSignup extends Component {
     evt.preventDefault();
 
     // invoke recaptcha
-    const captchaToken = recaptcha ? await this.recaptchaRef.current.executeAsync() : null;
+    const captchaToken = config.recaptcha ? await this.recaptchaRef.current.executeAsync() : null;
 
     const { user } = this.props;
     const {
@@ -127,7 +127,7 @@ class UserSignup extends Component {
       return false;
     }
 
-    const rgx = username.match(userRegex);
+    const rgx = username.match(config.userRegex);
     return rgx && rgx[0] === username;
   }
 
@@ -204,6 +204,7 @@ class UserSignup extends Component {
       username
     } = this.state;
 
+    const { product, recaptcha, recaptchaKey } = config;
     const classes = classNames('wr-signup', {
       success
     });
@@ -221,7 +222,7 @@ class UserSignup extends Component {
                     <b>Errors:</b>
                     <ul>
                       {
-                        errors.entrySeq().toArray().map(error => <li key={error[0]}>{`${registrationErr[error[1]]}`}</li>)
+                        errors.entrySeq().toArray().map(error => <li key={error[0]}>{`${userMessaging.collection[error[1]]}`}</li>)
                       }
                     </ul>
                   </div>

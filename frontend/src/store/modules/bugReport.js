@@ -1,6 +1,6 @@
 import { fromJS } from 'immutable';
 
-import { apiPath } from 'config';
+import config from 'config';
 
 
 const REPORT = 'wr/bugReport/REPORT';
@@ -53,7 +53,7 @@ export function toggleModal(reportType = 'dnlr') {
 export function reportBug(postData, reportType = 'dnlr') {
   return {
     types: [REPORT, REPORT_SUCCESS, REPORT_FAIL],
-    promise: client => client.post(`${apiPath}/report/${reportType}`, {
+    promise: client => client.post(`${config.apiPath}/report/${reportType}`, {
       data: {
         ...postData
       }

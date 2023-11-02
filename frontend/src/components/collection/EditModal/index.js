@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Col, Form } from 'react-bootstrap';
 
-import { defaultCollDesc } from 'config';
-import { collection as collectionErr } from 'helpers/userMessaging';
+import config from 'config';
+import userMessaging from 'helpers/userMessaging';
 
 import { LoaderIcon } from 'components/icons';
 
@@ -113,7 +113,7 @@ class EditModal extends Component {
             </Col>
             <Col>
               <Form.Control readOnly={this.props.readOnlyName} type="input" onChange={this.editName} value={this.state.name} isInvalid={error} />
-              <Form.Control.Feedback type="invalid">{ error && (collectionErr[error] || 'Error encountered') }</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">{ error && (userMessaging.collection[error] || 'Error encountered') }</Form.Control.Feedback>
             </Col>
           </Form.Group>
           <Form.Group controlId="formHorizontalDesc">
@@ -127,7 +127,7 @@ class EditModal extends Component {
                 contentSync={this.editDesc}
                 initial={this.props.desc}
                 onSave={this.editDesc}
-                placeholder={defaultCollDesc} />
+                placeholder={config.defaultCollDesc} />
             </Col>
           </Form.Group>
         </Form>

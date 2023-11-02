@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Map } from 'immutable';
 
-import { saveDelay } from 'config';
+import config from 'config';
 
 import { load } from 'store/modules/remoteBrowsers';
 import { editBookmark, load as loadList, resetBookmarkEdit } from 'store/modules/list';
@@ -40,7 +40,7 @@ const mapDispatchToProps = (dispatch) => {
       return (
         dispatch(editBookmark(user, coll, list, bkId, data))
           .then(() => dispatch(loadList(user, coll, list)))
-          .then(() => setTimeout(() => dispatch(resetBookmarkEdit()), saveDelay))
+          .then(() => setTimeout(() => dispatch(resetBookmarkEdit()), config.saveDelay))
       );
     }
   };

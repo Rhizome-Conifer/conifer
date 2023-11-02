@@ -1,5 +1,5 @@
 import { fromJS } from 'immutable';
-import { apiPath } from 'config';
+import config from 'config';
 
 
 const USER_LOAD = 'wr/user/LOAD';
@@ -77,7 +77,7 @@ export function isLoaded({ app }) {
 export function load(username, include_colls = true) {
   return {
     types: [USER_LOAD, USER_LOAD_SUCCESS, USER_LOAD_FAIL],
-    promise: client => client.get(`${apiPath}/user/${username}`, {
+    promise: client => client.get(`${config.apiPath}/user/${username}`, {
       params: { include_colls }
     })
   };
@@ -90,7 +90,7 @@ export function resetEditState() {
 export function edit(username, data) {
   return {
     types: [USER_EDIT, USER_EDIT_SUCCESS, USER_EDIT_FAIL],
-    promise: client => client.post(`${apiPath}/user/${username}`, {
+    promise: client => client.post(`${config.apiPath}/user/${username}`, {
       data
     })
   };
@@ -99,7 +99,7 @@ export function edit(username, data) {
 export function updateUser(username, data) {
   return {
     types: [USER_UPDATE, USER_UPDATE_SUCCESS, USER_UPDATE_FAIL],
-    promise: client => client.put(`${apiPath}/admin/user/${username}`, {
+    promise: client => client.put(`${config.apiPath}/admin/user/${username}`, {
       data
     })
   };

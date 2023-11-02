@@ -3,8 +3,8 @@
 if [ "$NODE_ENV" = "production" ]
 then
     echo "running production build"
-    npm run docker-prod;
+    yarn run prod;
 else
     echo "running development build"
-    npm run docker-dev;
+    yarn run dev;
 fi

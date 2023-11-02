@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import querystring from 'querystring';
 import { Alert, Button, Col, Form, Row } from 'react-bootstrap';
 
-import { product } from 'config';
+import config from 'config';
 import { passwordPassRegex } from 'helpers/utils';
-import { passwordReset as passwordResetErr } from 'helpers/userMessaging';
+import userMessaging from 'helpers/userMessaging';
 
 import './style.scss';
 
@@ -59,7 +58,7 @@ class NewPasswordUI extends Component {
   render() {
     const { error, location: { search }, success } = this.props;
     const { newPass, newPass2 } = this.state;
-    const qs = querystring.parse(search.replace('?', ''));
+    const qs = new URLSearchParams(search);
 
     return (
       <React.Fragment>
@@ -68,7 +67,7 @@ class NewPasswordUI extends Component {
             <Alert variant={error ? 'danger' : 'success'}>
               {
                 error ?
-                  <span>{passwordResetErr[error]}</span> :
+                  <span>{userMessaging.passwordReset[error]}</span> :
                   <span>Your password has been successfully reset! <Button variant="link" onClick={this.props.toggleLogin}>You can now login with your new password.</Button></span>
               }
             </Alert>
@@ -76,12 +75,12 @@ class NewPasswordUI extends Component {
         <Row className={classNames('new-pass', { success })}>
           <Col xs={12} sm={{ span: 6, offset: 3 }}>
             <Form onSubmit={this.save}>
-              <h3>{product} password reset</h3>
+              <h3>{config.product} password reset</h3>
               <p>Please enter a new password below:</p>
 
               <Form.Group>
                 <Form.Label>Username:&emsp;</Form.Label>
-                <b>{qs.username}</b>
+                <b>{qs.get('username')}</b>
               </Form.Group>
 
               <Form.Group>

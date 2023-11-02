@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { untitledEntry } from 'config';
+import config from 'config';
 import { buildDate } from 'helpers/utils';
 
 import { Collection } from 'components/icons';
@@ -14,7 +14,7 @@ export function PageIndex({ cellData, rowIndex }) {
 export function PageRenderer({ cellData, rowData }) {
   return (
     <div className="page-title" title={buildDate(rowData.get('timestamp'))}>
-      <h2>{ cellData || untitledEntry }</h2>
+      <h2>{ cellData || config.untitledEntry }</h2>
       <span>{ rowData.get('url') }</span>
     </div>
   );

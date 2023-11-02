@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import { Button, Col, Row } from 'react-bootstrap';
 
-import { anonDisabled, homepageAnnouncement, product, supporterPortal } from 'config';
+import config from 'config';
 
 import { StandaloneRecorder } from 'containers';
 import RedirectWithStatus from 'components/RedirectWithStatus';
@@ -23,7 +23,7 @@ class HomeUI extends PureComponent {
   };
 
   goToSupporterSite = () => {
-    window.location.href = supporterPortal;
+    window.location.href = config.supporterPortal;
   }
 
   desktopApp = () => {
@@ -49,6 +49,7 @@ class HomeUI extends PureComponent {
   render() {
     const { auth, showModalCB } = this.props;
     const user = auth.get('user');
+    const { anonDisabled, homepageAnnouncement, product, supporterPortal } = config;
 
     if (__DESKTOP__ || !user.get('anon')) {
       return <RedirectWithStatus to={`/${user.get('username')}`} status={302} />;
@@ -91,7 +92,7 @@ class HomeUI extends PureComponent {
               <button className="button-link existing-users-btn" onClick={this.login} type="button">Existing Users Login</button>
             </div>
 
-            { supporterPortal && <div className="note">Free accounts with 5GB of storage. Get more and support this project by <a href={supporterPortal} target="_blank">becoming a supporter</a>.</div> }
+            { config.supporterPortal && <div className="note">Free accounts with 5GB of storage. Get more and support this project by <a href={supporterPortal} target="_blank">becoming a supporter</a>.</div> }
 
             <div className="note">Conifer is an online service based on <a href="https://webrecorder.net" target="_blank">Webrecorder software</a>.</div>
 
@@ -175,11 +176,11 @@ class HomeUI extends PureComponent {
             </div>
 
             {
-              supporterPortal &&
+              config.supporterPortal &&
                 <div className="supportCTA">
                   {/*<h3>You can support free, open source tools for archiving the web.</h3>*/}
                   <Button variant="primary" size="lg" onClick={this.goToSupporterSite}>Become a Supporter</Button>
-                  <a href={supporterPortal} target="_blank">Learn more</a>
+                  <a href={config.supporterPortal} target="_blank">Learn more</a>
                   <p>{product} is a project of Rhizome, a registered 501(c)(3) non-profit organization. Your donations are tax-deductible.</p>
                 </div>
             }

@@ -2,7 +2,7 @@ import React from 'react';
 import { asyncConnect } from 'redux-connect';
 import { batchActions } from 'redux-batched-actions';
 
-import { saveDelay } from 'config';
+import config from 'config';
 
 import { addUserCollection, incrementCollCount } from 'store/modules/auth';
 import { load as loadCollections, createCollection } from 'store/modules/collections';
@@ -58,7 +58,7 @@ const mapDispatchToProps = (dispatch, { history }) => {
     },
     editUser: (user, data) => {
       dispatch(editUser(user, data))
-        .then(res => setTimeout(() => dispatch(resetEditState()), saveDelay))
+        .then(res => setTimeout(() => dispatch(resetEditState()), config.saveDelay))
         .then(() => dispatch(loadUser(user, false)));
     }
 

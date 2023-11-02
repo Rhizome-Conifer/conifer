@@ -1,15 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { dow, months } from 'config';
+import config from 'config';
 
 function DateHeader(props) {
   const date = new Date(props.dt);
   return (
     <div className="date-header">
       <span className="dom">{date.getDate()}</span>
-      <span className="mon semi">{months[date.getMonth()]}</span>
-      <span className="dow">{dow[date.getDay()]}</span>
+      <span className="mon semi">{config.months[date.getMonth()]}</span>
+      <span className="dow">{config.dow[date.getDay()]}</span>
       <span className="year semi">{date.getFullYear()}</span>
     </div>
   );

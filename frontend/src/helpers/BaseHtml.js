@@ -32,9 +32,9 @@ export default class BaseHtml extends Component {
           <link rel="shortcut icon" href="/static/favicon.ico?v=1" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           {/* styles (will be present only in production with webpack extract text plugin) */}
-          {Object.keys(assets.styles).map((style, key) => (
+          {Object.keys(assets).filter(k => /\.css$/.test(k)).map((style, key) => (
             <link
-              href={assets.styles[style]}
+              href={assets[style]}
               key={key} media="screen, projection"
               rel="stylesheet" type="text/css" charSet="UTF-8" />
           ))}
@@ -47,7 +47,9 @@ export default class BaseHtml extends Component {
             charSet="UTF-8"
           />
           <script src="/static/app/bundle/wb_frame.js" />
-          <script src={assets.javascript.main} charSet="UTF-8" />
+          {Object.keys(assets).filter(k => /\.js$/.test(k)).map((script, key) => (
+            <script src={assets[script]} charSet="UTF-8" />
+          ))}
         </body>
       </html>
     );

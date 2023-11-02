@@ -1,8 +1,7 @@
 import json
 import requests
 import os
-from werkzeug.user_agent import UserAgent
-
+from ua_parser import user_agent_parser
 
 
 DNLR_TEMPLATE = """
@@ -207,7 +206,7 @@ class GitHubIssueImporter(object):
         return issue
 
     def parse_browser(self, params):
-        ua = UserAgent(params.get('ua'))
+        ua = user_agent_parser.ParseUserAgent(params.get('ua'))
         if ua.browser:
             params['ua_platform'] = ua.platform
             params['ua_browser'] = ua.browser

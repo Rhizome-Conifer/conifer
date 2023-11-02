@@ -6,14 +6,14 @@ import memoize from 'memoize-one';
 import { Link } from 'react-router-dom';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
-import { appHost, tagline } from 'config';
+import config from 'config';
 import { doubleRAF, getCollectionLink, truncate } from 'helpers/utils';
-import { collection as collectionErr } from 'helpers/userMessaging';
+import userMessaging from 'helpers/userMessaging';
 
 import { setSort } from 'store/modules/collection';
 import { AccessContext, AppContext } from 'store/contexts';
 
-import { CollectionFilters, Temp404 } from 'containers';
+import { Temp404 } from 'containers';
 
 import Capstone from 'components/collection/Capstone';
 import HttpStatus from 'components/HttpStatus';
@@ -146,7 +146,7 @@ class CollectionCoverUI extends Component {
     if (collection.get('error')) {
       return user.startsWith('temp-') ?
         <Temp404 /> :
-        <HttpStatus>{collectionErr[collection.getIn(['error', 'error'])]}</HttpStatus>;
+        <HttpStatus>{userMessaging.collection[collection.getIn(['error', 'error'])]}</HttpStatus>;
     }
 
     if (collection.get('loaded') && !collection.get('slug_matched') && coll !== collection.get('slug')) {
@@ -156,7 +156,7 @@ class CollectionCoverUI extends Component {
     }
 
     const lists = collection.get('loaded') && this.getLists(collection);
-    const description = collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : tagline;
+    const description = collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : config.tagline;
 
     return (
       <AppContext.Consumer>
@@ -174,7 +174,7 @@ class CollectionCoverUI extends Component {
                       }
                       <meta name="robots" value="nofollow" />
                       <meta name="description" content={description} />
-                      <meta property="og:url" content={`${appHost}${getCollectionLink(collection)}`} />
+                      <meta property="og:url" content={`${config.appHost}${getCollectionLink(collection)}`} />
                       <meta property="og:type" content="website" />
                       <meta property="og:title" content={collection.get('title')} />
                       <meta property="og:description" content={description} />

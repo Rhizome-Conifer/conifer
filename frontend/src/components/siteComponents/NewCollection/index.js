@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
 import { Alert, Button, Form } from 'react-bootstrap';
 
-import { defaultCollectionTitle } from 'config';
-import { collection } from 'helpers/userMessaging';
+import config from 'config';
+import userMessaging from 'helpers/userMessaging';
 
 import { GlobeIcon } from 'components/icons';
 
@@ -25,7 +25,7 @@ class NewCollection extends Component {
     super(props);
 
     this.state = {
-      collTitle: defaultCollectionTitle,
+      collTitle: config.defaultCollectionTitle,
       isPublic: false
     };
   }
@@ -67,7 +67,7 @@ class NewCollection extends Component {
           {
             error &&
               <Alert variant="danger">
-                { collection[error] || 'Error encountered' }
+                { userMessaging.collection[error] || 'Error encountered' }
               </Alert>
           }
           <Form.Group bsPrefix="form-group col-xs-5" validationState={this.titleValidation()}>

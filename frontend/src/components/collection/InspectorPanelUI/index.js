@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-import { untitledEntry } from 'config';
+import config from 'config';
 import { getCollectionLink } from 'helpers/utils';
 
 import InlineEditor from 'components/InlineEditor';
@@ -82,7 +82,7 @@ class InspectorPanelUI extends PureComponent {
                       <InlineEditor
                         blockDisplay
                         canAdmin={canAdmin}
-                        initial={bk.get('title') || untitledEntry}
+                        initial={bk.get('title') || config.untitledEntry}
                         onSave={this.editBookmarkTitle}
                         readOnly={!canAdmin}
                         success={bkEdited}>

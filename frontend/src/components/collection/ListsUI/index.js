@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import { draggableTypes } from 'config';
+import config from 'config';
 import { getCollectionLink, keyIn } from 'helpers/utils';
 
 import { AccessContext } from 'store/contexts';
@@ -141,13 +141,13 @@ class ListsUI extends Component {
     let pageIds = [];
     if (selectionType === 'number') {
       pageIds = [
-        itemType === draggableTypes.PAGE_ITEM ?
+        itemType === config.draggableTypes.PAGE_ITEM ?
           pages.get(pageSelection).get('id') :
           pages.get(pageSelection).getIn(['page', 'id'])
       ];
     } else if (selectionType === 'object' && pageSelection !== null) {
       pageIds = pageSelection.map((pg) => {
-        return itemType === draggableTypes.PAGE_ITEM ?
+        return itemType === config.draggableTypes.PAGE_ITEM ?
           pages.get(pg).get('id') :
           pages.get(pg).getIn(['page', 'id']);
       });
@@ -162,7 +162,7 @@ class ListsUI extends Component {
       const pagesToAdd = [];
       /* eslint-disable */
       for(const pgIdx of pageSelection) {
-        const bulkPage = itemType === draggableTypes.PAGE_ITEM ?
+        const bulkPage = itemType === config.draggableTypes.PAGE_ITEM ?
                           pages.get(pgIdx).toJS() :
                           pages.get(pgIdx).filterNot(keyIn('id', 'page')).toJS();
 

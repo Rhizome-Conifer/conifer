@@ -6,7 +6,7 @@ import { fromJS } from 'immutable';
 import { Link } from 'react-router-dom';
 import { Button, Col, Row } from 'react-bootstrap';
 
-import { appHost, tagline } from 'config';
+import config from 'config';
 
 import { getCollectionLink, stopPropagation, truncate } from 'helpers/utils';
 import { AccessContext, AppContext } from 'store/contexts';
@@ -109,10 +109,10 @@ class CollectionListUI extends Component {
         <Helmet>
           <title>{`${displayName}'s Collections`}</title>
           <meta name="robots" value="nofollow" />
-          <meta property="og:url" content={`${appHost}/${userParam}`} />
+          <meta property="og:url" content={`${config.appHost}/${userParam}`} />
           <meta property="og:type" content="website" />
           <meta property="og:title" content={`${displayName}'s Collections`} />
-          <meta property="og:description" content={user.get('desc') ? truncate(user.get('desc'), 3, new RegExp(/([.!?])/)) : tagline} />
+          <meta property="og:description" content={user.get('desc') ? truncate(user.get('desc'), 3, new RegExp(/([.!?])/)) : config.tagline} />
         </Helmet>
         <Row>
           {

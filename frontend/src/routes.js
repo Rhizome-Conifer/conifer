@@ -1,6 +1,6 @@
 import HttpStatus from 'components/HttpStatus';
 import { ApiDocs, Documentation, FAQ, TermsAndPolicies } from 'components/siteComponents';
-import { product } from 'config';
+import config from 'config';
 
 import {
   CollectionCover,
@@ -328,7 +328,7 @@ export default [
   },
   {
     path: '/_login',
-    breadcrumb: `Log in to ${product}`,
+    breadcrumb: `Log in to ${config.product}`,
     component: Login,
     exact: true,
     footer: true,

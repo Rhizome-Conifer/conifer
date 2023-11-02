@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Button, FormGroup, ControlLabel, FormControl, Radio } from 'react-bootstrap';
-
-import { apiFetch } from 'helpers/utils';
+import { Button, FormGroup, Form, FormLabel, FormControl } from 'react-bootstrap';
 
 import { newAutomation, queueAutomation, toggleAutomation, toggleModal } from 'store/modules/automation';
 import { load as loadColl } from 'store/modules/collection';
 
 import Modal from 'components/Modal';
 
-import { publicIP } from 'config';
+import config from 'config';
 
 import './style.scss';
 
@@ -92,7 +90,7 @@ class Automation extends Component {
         }>
         <React.Fragment>
           <FormGroup>
-            <ControlLabel>Number of Workers:</ControlLabel>
+            <FormLabel>Number of Workers:</FormLabel>
             <FormControl
               type="text"
               name="num_browsers"
@@ -100,19 +98,19 @@ class Automation extends Component {
               onChange={this.handleChange} />
           </FormGroup>
           <FormGroup bsPrefix="form-group automation-scope">
-            <ControlLabel>Scope:</ControlLabel>
-            <Radio name="scope" onChange={this.handleChange} value="single-page" checked={scope === 'single-page'} inline>
+            <FormLabel>Scope:</FormLabel>
+            <Form.Check name="scope" type="radio" onChange={this.handleChange} value="single-page" checked={scope === 'single-page'} inline>
               Single Page
-            </Radio>
-            <Radio name="scope" onChange={this.handleChange} value="same-domain" checked={scope === 'same-domain'} inline>
+            </Form.Check>
+            <Form.Check name="scope" type="radio" onChange={this.handleChange} value="same-domain" checked={scope === 'same-domain'} inline>
               Same Domain
-            </Radio>
-            <Radio name="scope" onChange={this.handleChange} value="all-links" checked={scope === 'all-links'} inline>
+            </Form.Check>
+            <Form.Check name="scope" type="radio" onChange={this.handleChange} value="all-links" checked={scope === 'all-links'} inline>
               All Links
-            </Radio>
+            </Form.Check>
           </FormGroup>
           <FormGroup controlId="formControlsTextarea">
-            <ControlLabel>Links</ControlLabel>
+            <FormLabel>Links</FormLabel>
             <FormControl
               as="textarea"
               name="listAutoLinks"
@@ -125,10 +123,10 @@ class Automation extends Component {
           {
             this.props.workers.size > 0 &&
               <FormGroup>
-                <ControlLabel>Automation Workers:</ControlLabel>
+                <FormLabel>Automation Workers:</FormLabel>
                 <FormControl.Static>
                   {
-                    this.props.workers.map((worker, idx) => <a href={`http://${publicIP}:9020/attach/${worker}`} key={worker} target="_blank" style={{display: 'block'}}>Worker {idx + 1}</a>)
+                    this.props.workers.map((worker, idx) => <a href={`http://${config.publicIP}:9020/attach/${worker}`} key={worker} target="_blank" style={{display: 'block'}}>Worker {idx + 1}</a>)
                   }
                 </FormControl.Static>
               </FormGroup>

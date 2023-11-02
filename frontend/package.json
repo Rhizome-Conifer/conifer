@@ -9,75 +9,80 @@
     "@babel/cli": "^7.1.5",
     "enzyme": "^3.7.0",
     "enzyme-adapter-react-16": "^1.7.0",
-    "eslint": "5.9.0",
+    "eslint": "8.52.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-loader": "2.1.1",
     "eslint-plugin-import": "2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-react": "7.11.1",
+    "eslint-webpack-plugin": "^4.0.1",
     "jest": "24.8.0",
     "nodemon": "^1.18.7",
     "npm-run-all": "^4.1.5",
     "redux-devtools": "^3.4.2",
-    "speed-measure-webpack-plugin": "^1.2.3",
-    "webpack-bundle-analyzer": "^3.3.2",
-    "webpack-merge": "^4.1.4"
+    "speed-measure-webpack-plugin": "1.5.0",
+    "terser-webpack-plugin": "^5.3.9",
+    "webpack-assets-manifest": "^5.1.0",
+    "webpack-bundle-analyzer": "4.9.1",
+    "webpack-merge": "5.10.0"
   },
   "dependencies": {
-    "@babel/core": "7.1.6",
+    "@babel/core": "7.23.2",
     "@babel/node": "^7.0.0",
     "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@babel/plugin-proposal-export-default-from": "^7.0.0",
+    "@babel/plugin-proposal-private-methods": "^7.18.6",
+    "@babel/plugin-transform-react-jsx": "^7.22.15",
     "@babel/plugin-transform-runtime": "7.0.0",
     "@babel/polyfill": "^7.0.0",
-    "@babel/preset-env": "^7.1.6",
-    "@babel/preset-react": "^7.0.0",
+    "@babel/preset-env": "^7.23.2",
+    "@babel/preset-react": "^7.22.15",
     "@babel/register": "^7.0.0",
     "@babel/runtime": "^7.1.5",
+    "@hot-loader/react-dom": "^17.0.2",
     "autoprefixer": "9.3.1",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "10.0.1",
     "babel-jest": "23.4.2",
-    "babel-loader": "8.0.4",
+    "babel-loader": "9.1.3",
     "babel-plugin-add-module-exports": "^1.0.0",
     "babel-plugin-transform-imports": "^1.5.1",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.20",
     "better-npm-run": "^0.1.1",
     "bootstrap": "^4.5.0",
-    "cache-loader": "^2.0.1",
     "circular-dependency-plugin": "^5.0.2",
     "classnames": "^2.2.6",
-    "clean-webpack-plugin": "^1.0.0",
+    "clean-webpack-plugin": "^4.0.0",
     "compression": "^1.7.3",
-    "copy-webpack-plugin": "^4.6.0",
-    "css-loader": "1.0.1",
+    "copy-webpack-plugin": "^11.0.0",
+    "core-js": "3",
+    "css-loader": "6.8.1",
     "exports-loader": "^0.7.0",
-    "express": "^4.16.4",
-    "file-loader": "^2.0.0",
+    "express": "^4.18.2",
     "filesize": "3.6.1",
     "gzip-size": "5.0.0",
     "hard-source-webpack-plugin": "^0.12.0",
     "immutable": "^4.0.0-rc.12",
     "memoize-one": "^4.1.0",
-    "mini-css-extract-plugin": "^0.4.5",
-    "node-sass": "^4.14.1",
+    "mini-css-extract-plugin": "^2.7.6",
     "object-assign": "4.1.1",
+    "path-browserify": "^1.0.1",
     "piping": "^1.0.0-rc.4",
-    "pm2": "^3.2.2",
-    "postcss-loader": "^3.0.0",
+    "pm2": "^5.3.0",
+    "postcss-loader": "^7.3.3",
     "prop-types": "^15.6.2",
     "raven-for-redux": "^1.4.0",
     "raven-js": "^3.27.0",
     "react": "^16.9.0",
     "react-bootstrap": "^1.0.1",
-    "react-collapsible": "github:m4rk3r/react-collapsible#dist",
+    "react-collapsible": "^2.10.0",
     "react-datepicker": "^2.10.1",
     "react-dnd": "^6.0.0",
     "react-dnd-html5-backend": "^6.0.0",
     "react-dom": "^16.9.0",
     "react-google-recaptcha": "^2.1.0",
     "react-helmet": "^6.0.0",
-    "react-hot-loader": "^4.6.3",
+    "react-hot-loader": "^4.13.1",
     "react-redux": "^5.1.1",
     "react-router-breadcrumbs-hoc": "github:m4rk3r/react-router-breadcrumbs-hoc#dist",
     "react-router-config": "^4.4.0-beta.6",
@@ -95,80 +100,35 @@
     "remark-react": "^5.0.1",
     "remove-markdown": "^0.3.0",
     "reselect": "^4.0.0",
-    "resolve-url-loader": "^2.3.0",
-    "sass-loader": "^7.1.0",
+    "sass": "^1.69.4",
+    "sass-loader": "^13.3.2",
     "serialize-javascript": "^1.5.0",
     "shepherd-client": "github:oldweb-today/shepherd-client#rb-dimensions",
     "strip-loader": "^0.1.2",
-    "style-loader": "0.23.1",
-    "superagent": "^4.0.0",
+    "style-loader": "3.3.3",
+    "superagent": "^8.1.2",
     "swagger-ui": "^3.23.11",
-    "time-fix-plugin": "^2.0.5",
-    "universal-webpack": "^0.6.6",
-    "url-loader": "1.1.2",
-    "webpack": "4.28.0",
-    "webpack-cli": "^3.1.2",
-    "webpack-dev-middleware": "^3.5.0",
-    "webpack-hot-middleware": "^2.24.3",
-    "whatwg-fetch": "3.0.0"
+    "webpack": "5.89.0",
+    "webpack-cli": "5.1.4",
+    "webpack-dev-middleware": "6.1.1",
+    "webpack-hot-middleware": "^2.25.4",
+    "webpack-node-externals": "^3.0.0",
+    "whatwg-fetch": "3.6.19"
   },
   "engines": {
-    "node": ">=6.9"
+    "node": ">=18"
   },
   "scripts": {
     "analyze": "STATS=true webpack --config ./webpack/webpack.config.client.production.babel.js --profile --json > stats.json",
-    "build-player-dev": "better-npm-run build-player-dev",
-    "build-desktop-dev": "better-npm-run build-desktop-dev",
-    "build-player": "better-npm-run build-player",
-    "build-desktop": "better-npm-run build-desktop",
-    "dev:server:prepare": "universal-webpack --settings ./webpack/universal-webpack-settings.json prepare",
-    "docker-dev": "run-p docker-dev:client:build dev:server:prepare docker-dev:server:build docker-dev:server:start",
-    "docker-prod": "run-s prod:client:build prod:server:build docker-prod:server:start",
-    "docker-dev:client:build": "babel-node webpack/webpack-dev-server.js",
-    "docker-dev:server:build": "webpack --config ./webpack/webpack.config.server.development.babel.js --watch",
-    "docker-dev:server:start": "better-npm-run start-docker-dev",
-    "docker-prod:server:start": "better-npm-run start-docker-prod",
-    "prod:client:build": "webpack --config ./webpack/webpack.config.client.production.babel.js",
-    "prod:server:build": "webpack --config ./webpack/webpack.config.server.production.babel.js",
+    "dev": "rm -r static; run-p dev:client:build dev:server:build dev:server:start",
+    "prod": "run-s prod:client:build prod:server:build prod:server:start",
+    "dev:client:build": "NODE_ENV='development' node ./webpack/webpack-dev-server.mjs",
+    "dev:server:build": "NODE_ENV='development' webpack --config ./webpack/webpack.config.server.development.mjs --watch",
+    "prod:client:build": "NODE_ENV='production' webpack --config ./webpack/webpack.config.client.production.mjs",
+    "prod:server:build": "NODE_ENV='production' webpack --config ./webpack/webpack.config.server.production.mjs",
+    "dev:server:start": "NODE_ENV='development' nodemon ./bin/server.mjs --watch ./static/server",
+    "prod:server:start": "NODE_ENV='production' pm2 start ./bin/server.mjs -i 0 --no-daemon --name 'frontend'",
     "test": "jest --watch --env=jsdom"
-  },
-  "betterScripts": {
-    "build-player-dev": {
-      "command": "webpack --config webpack/player.config.js --watch --progress",
-      "env": {
-        "NODE_ENV": "development"
-      }
-    },
-    "build-player": {
-      "command": "webpack --verbose --colors --display-error-details --config webpack/player.config.js",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build-desktop": {
-      "command": "webpack --verbose --colors --display-error-details --config webpack/desktop.config.js",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
-    "build-desktop-dev": {
-      "command": "webpack --config webpack/desktop.config.js --watch --progress",
-      "env": {
-        "NODE_ENV": "development"
-      }
-    },
-    "start-docker-dev": {
-      "command": "nodemon ./bin/server.js --watch ./static/server",
-      "env": {
-        "NODE_ENV": "development"
-      }
-    },
-    "start-docker-prod": {
-      "command": "pm2 start ./bin/server.js -i 0 --no-daemon --name 'frontend'",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    }
   },
   "jest": {
     "collectCoverageFrom": [

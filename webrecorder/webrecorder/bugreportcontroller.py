@@ -1,6 +1,6 @@
 from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.gh_reporter import GitHubIssueImporter
-from werkzeug.user_agent import UserAgent
+from ua_parser import user_agent_parser
 from bottle import request
 
 from datetime import datetime
@@ -74,7 +74,7 @@ class BugReportController(BaseController):
     def get_email_view(self):
         @self.jinja2_view('email_error.html')
         def error_email(params):
-            ua = UserAgent(params.get('ua'))
+            ua = user_agent_parser.ParseUserAgent(params.get('ua'))
             if ua.browser:
                 browser = '{0} {1} {2} {3}'
                 lang = ua.language or ''

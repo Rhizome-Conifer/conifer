@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button, Overlay, Popover } from 'react-bootstrap';
 
-import { list as listErr } from 'helpers/userMessaging';
+import userMessaging from 'helpers/userMessaging';
 import { stopPropagation } from 'helpers/utils';
 
 // import Overlay from 'components/Overlay';
@@ -118,7 +118,7 @@ class RemoveWidget extends Component {
                 <Popover.Content>
                   {
                     error ?
-                      <p className="rm-error">{listErr[error] || 'Error Encountered'}</p> :
+                      <p className="rm-error">{userMessaging.list[error] || 'Error Encountered'}</p> :
                       <p>{deleteMsg}</p>
                   }
                   <div className="action-row">

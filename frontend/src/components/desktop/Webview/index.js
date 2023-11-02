@@ -10,7 +10,7 @@ import { autopilotCheck, autopilotReset, autopilotReady, toggleAutopilot, update
 import { setBrowserHistory } from 'store/modules/appSettings';
 import { setMethod, updateTimestamp, updateUrl } from 'store/modules/controls';
 
-import { appHost } from 'config';
+import config from 'config';
 
 import './style.scss';
 
@@ -45,7 +45,7 @@ class Webview extends Component {
   componentDidMount() {
     const { currMode, dispatch, host, params } = this.props;
 
-    const realHost = host || appHost;
+    const realHost = host || config.appHost;
 
     this.clearCookies();
 

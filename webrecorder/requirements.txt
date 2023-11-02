@@ -11,3 +11,4 @@ har2warc>=1.0.4
 fakeredis<1.0
 apispec<1.0
 psutil
+ua_parser

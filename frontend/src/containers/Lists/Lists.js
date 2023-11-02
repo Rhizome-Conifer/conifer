@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { saveDelay } from 'config';
+import config from 'config';
 
 import {
   edit as editCollection,
@@ -65,7 +65,7 @@ const mapDispatchToProps = (dispatch) => {
     editList: (user, coll, id, data) => {
       return dispatch(edit(user, coll, id, data))
         .then(() => dispatch(loadLists(user, coll)))
-        .then(() => setTimeout(() => dispatch(resetEditState()), saveDelay));
+        .then(() => setTimeout(() => dispatch(resetEditState()), config.saveDelay));
     },
     sortLists: (user, coll, ids) => dispatch(sortLists(user, coll, ids)),
     deleteList: (user, coll, id) => {

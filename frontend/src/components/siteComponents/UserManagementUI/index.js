@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Button, DropdownButton, Dropdown } from 'react-bootstrap';
 
-import { product, supporterPortal } from 'config';
+import config from 'config';
 
 import { BugReport } from 'containers';
 
@@ -164,9 +164,9 @@ class UserManagementUI extends PureComponent {
           </li>
 
           {
-            supporterPortal &&
+            config.supporterPortal &&
               <li className="d-none d-xl-block">
-                <a href={supporterPortal} target="_blank">{user.get('customer_id') ? 'Manage Support' : 'Support Us'}</a>
+                <a href={config.supporterPortal} target="_blank">{user.get('customer_id') ? 'Manage Support' : 'Support Us'}</a>
               </li>
           }
 
@@ -219,8 +219,8 @@ class UserManagementUI extends PureComponent {
                       <Dropdown.Item href="https://guide.conifer.rhizome.org/" target="_blank">User Guide</Dropdown.Item>
                       <Dropdown.Item href="mailto:support@conifer.rhizome.org" target="_blank">Contact Support</Dropdown.Item>
                       <Dropdown.Divider />
-                      <Dropdown.Item onClick={this.goToFAQ}>About {product}</Dropdown.Item>
-                      <Dropdown.Item href="https://blog.conifer.rhizome.org" target="_blank">{product} Blog</Dropdown.Item>
+                      <Dropdown.Item onClick={this.goToFAQ}>About {config.product}</Dropdown.Item>
+                      <Dropdown.Item href="https://blog.conifer.rhizome.org" target="_blank">{config.product} Blog</Dropdown.Item>
                     </React.Fragment>
                 }
 
@@ -247,7 +247,7 @@ class UserManagementUI extends PureComponent {
 
         <Modal
           dialogClassName="wr-login-modal"
-          header={anonCTA ? null : `${product} Login`}
+          header={anonCTA ? null : `${config.product} Login`}
           body={form}
           visible={open}
           closeCb={this.closeLogin} />

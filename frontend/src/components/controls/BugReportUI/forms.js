@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Form } from 'react-bootstrap';
 
-import { product } from 'config';
+import config from 'config';
 
 import { CheckboxField } from './fields';
 
@@ -111,8 +111,8 @@ export class ReportContentBugForm extends Component {
     return (
       <React.Fragment>
         <h4>This Page Doesn't Look Right? Let Us Know!</h4>
-        <p>{`Some pages are tricky for ${product} to capture and replay. Our goal is to make it work as best as possible on any page!`}</p>
-        <p>{`Please indicate anything that may have gone wrong on this page. Your feedback will help make ${product} better!`}</p>
+        <p>{`Some pages are tricky for ${config.product} to capture and replay. Our goal is to make it work as best as possible on any page!`}</p>
+        <p>{`Please indicate anything that may have gone wrong on this page. Your feedback will help make ${config.product} better!`}</p>
 
         <hr />
 

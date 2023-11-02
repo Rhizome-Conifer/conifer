@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import Collapsible from 'react-collapsible';
 import { Button, Col, Form, Row } from 'react-bootstrap';
 
-import { appHost, defaultRecDesc } from 'config';
+import config from 'config';
 
 import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
 import { AppContext } from 'store/contexts';
@@ -115,7 +115,7 @@ class StandaloneRecorderUI extends Component {
     // generate recording url
     apiFetch('/new', data, { method: 'POST' })
       .then(res => res.json())
-      .then(({ url }) => history.push(url.replace(appHost, '')))
+      .then(({ url }) => history.push(url.replace(config.appHost, '')))
       .catch(err => console.log('error', err));
   }
 
@@ -194,7 +194,7 @@ class StandaloneRecorderUI extends Component {
             <div className="session-settings">
               <div>
                 <h4>Session Notes</h4>
-                <textarea rows={5} ref={(o) => { this.textarea = o; }} onFocus={this.handleFocus} name="sessionNotes" placeholder={defaultRecDesc} value={this.state.sessionNotes} onChange={this.handleInput} />
+                <textarea rows={5} ref={(o) => { this.textarea = o; }} onFocus={this.handleFocus} name="sessionNotes" placeholder={config.defaultRecDesc} value={this.state.sessionNotes} onChange={this.handleInput} />
               </div>
             </div>
           </Collapsible>

@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import { combineReducers as combineImmutableReduers } from 'redux-immutable';
+import { combineReducers as combineImmutableReducers } from 'redux-immutable';
 import { reducer as reduxAsyncConnect } from 'redux-connect';
 
 import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './modules/auth';
@@ -48,7 +48,7 @@ const makeAppReducer = () => {
     reducers.appSettings = appSettings;
   }
 
-  return combineImmutableReduers(reducers);
+  return combineImmutableReducers(reducers);
 };
 
 

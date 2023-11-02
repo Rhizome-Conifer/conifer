@@ -1,4 +1,4 @@
-import { apiPath } from 'config';
+import config from 'config';
 import { fromJS, List, Map } from 'immutable';
 
 
@@ -99,7 +99,7 @@ export default function automation(state = initialState, action = {}) {
 export function autopilotCheck(url = '') {
   return {
     types: [AUTOPILOT_CHECK, AUTOPILOT_CHECK_SUCCESS, AUTOPILOT_CHECK_FAIL],
-    promise: client => client.get(`${apiPath}/behavior/info-list`, {
+    promise: client => client.get(`${config.apiPath}/behavior/info-list`, {
       params: { url }
     })
   };
@@ -109,7 +109,7 @@ export function autopilotCheck(url = '') {
 export function newAutomation(user, coll, crawl_depth = 0, scope = 'single-page', num_browsers = 1) {
   return {
     types: [NEW_AUTO, NEW_AUTO_SUCCESS, NEW_AUTO_FAIL],
-    promise: client => client.post(`${apiPath}/auto`, {
+    promise: client => client.post(`${config.apiPath}/auto`, {
       params: { user, coll },
       data: {
         crawl_depth,
@@ -124,7 +124,7 @@ export function newAutomation(user, coll, crawl_depth = 0, scope = 'single-page'
 export function queueAutomation(user, coll, aid, urls) {
   return {
     types: [QUEUE_AUTO, QUEUE_AUTO_SUCCESS, QUEUE_AUTO_FAIL],
-    promise: client => client.post(`${apiPath}/auto/${aid}/queue_urls`, {
+    promise: client => client.post(`${config.apiPath}/auto/${aid}/queue_urls`, {
       params: { user, coll },
       data: {
         urls
@@ -152,7 +152,7 @@ export function autopilotReset(url = '') {
 export function toggleAutomation(mode, user, coll, aid) {
   return {
     types: [TOGGLE_AUTOMATION, TOGGLE_AUTOMATION_SUCCESS, TOGGLE_AUTOMATION_FAIL],
-    promise: client => client.post(`${apiPath}/auto/${aid}/${mode}`, {
+    promise: client => client.post(`${config.apiPath}/auto/${aid}/${mode}`, {
       params: { user, coll }
     }),
     mode
