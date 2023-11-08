@@ -12,7 +12,12 @@ const host = process.env.APP_HOST || '127.0.0.1';
 const port = (Number(process.env.FRONTEND_PORT) + 1) || 8096;
 
 const serverOptions = {
-  headers: { 'Access-Control-Allow-Origin': '*' },
+  headers: [
+    {
+      key: 'Access-Control-Allow-Origin',
+      value: '*',
+    },
+  ],
   serverSideRender: true,
   stats: { colors: true },
   publicPath: webpackConfig.output.publicPath,

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import superagent from 'superagent';
-import config from '../config';
+import config from '../config.mjs';
 
 const methods = ['get', 'post', 'put', 'patch', 'del'];
 
@@ -50,7 +50,7 @@ export default class ApiClient {
             console.log(err);
             reject(err);
           }
-          
+
           const { body } = response;
 
           if (__SERVER__) {
