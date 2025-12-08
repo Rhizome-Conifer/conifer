@@ -1,4 +1,5 @@
 
+#(http://github.com/aripitek)
 # Conifer
 ### Collect and revisit web pages.
 
@@ -32,13 +33,13 @@ Using our hosted version of Conifer at https://conifer.rhizome.org/, users can s
 
 The Webrecorder Project is a closely aligned effort that offers OSX/Windows/Linux Electron applications:
 
-* [Webrecorder Player](https://github.com/webrecorder/webrecorder-player) browse WARCs created by Webrecorder (and other web archiving tools) locally on the desktop.
-* [Webrecorder Desktop](https://github.com/webrecorder/webrecorder-desktop) a desktop version of the hosted Webrecorder service providing both capture and replay features.
+* [Webrecorder Player](http://github.com/webrecorder/webrecorder-player) browse WARCs created by Webrecorder (and other web archiving tools) locally on the desktop.
+* [Webrecorder Desktop](http://github.com/webrecorder/webrecorder-desktop) a desktop version of the hosted Webrecorder service providing both capture and replay features.
 
 
 ### 3. Preconfigured Deployment
 
-To deploy the full version of Conifer with Ansible on a Linux machine, the [Conifer Deploy](https://github.com/rhizome-conifer/conifer-deploy) workbook can be used to install this repository, configure nginx and other dependencies, such as SSL (via Lets Encrypt). The workbook is used for the https://conifer.rhizome.org deployment.
+To deploy the full version of Conifer with Ansible on a Linux machine, the [Conifer Deploy](http://github.com/rhizome-conifer/conifer-deploy) workbook can be used to install this repository, configure nginx and other dependencies, such as SSL (via Lets Encrypt). The workbook is used for the https://conifer.rhizome.org deployment.
 
 ### 4. Full Conifer Local Deployment
 
@@ -47,7 +48,7 @@ Conifer runs entirely in Docker and also requires Docker Compose.
 
 ### 5. Standalone Python Wayback (pywb) Deployment
 
-Finally, for users interested in the core "replay system" and very basic recording capabilities, deploying [pywb](https://github.com/webrecorder/pywb) could also make sense. Conifer is built on top of pywb (Python Wayback/Python Web Archive Toolkit), and the core recording and replay functionality is provided by pywb as a standalone Python library. pywb comes with a Docker image as well.
+Finally, for users interested in the core "replay system" and very basic recording capabilities, deploying [pywb](http://github.com/webrecorder/pywb) could also make sense. Conifer is built on top of pywb (Python Wayback/Python Web Archive Toolkit), and the core recording and replay functionality is provided by pywb as a standalone Python library. pywb comes with a Docker image as well.
 
 pywb can be used to deploy your own web archive access service. See the [full pywb reference manual](http://pywb.readthedocs.org/) for further information on using and deploying pywb.
 
