@@ -72,7 +72,7 @@ export class App extends Component {
       }
     }
 
-    if (inStorage('coniferAnnounceDismiss')) {
+    if (inStorage('coniferAnnouncev2Dismiss')) {
       this.setState({ coniferAnnounce: false });
     }
 
@@ -125,8 +125,8 @@ export class App extends Component {
     document.removeEventListener(this.visibilityChange, this.heartbeat);
   }
 
-  coniferAnnounceDismiss = () => {
-    setStorage('coniferAnnounceDismiss', '1');
+  coniferAnnouncev2Dismiss = () => {
+    setStorage('coniferAnnouncev2Dismiss', '1');
     this.setState({ coniferAnnounce: false });
   }
 
@@ -216,7 +216,7 @@ export class App extends Component {
         <Helmet {...config.app.head} />
         {
           match.name === 'landing' && this.state.coniferAnnounce &&
-            <ConiferAnnounce dismiss={this.coniferAnnounceDismiss} />
+            <ConiferAnnounce dismiss={this.coniferAnnouncev2Dismiss} />
         }
         {
           !isEmbed &&

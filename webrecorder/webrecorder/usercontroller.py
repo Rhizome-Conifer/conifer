@@ -112,58 +112,16 @@ class UserController(BaseController):
         def new_auth():
             return self.new_auth()
 
-        # REGISTRATION
+        # REGISTRATION (DISABLED)
         @self.app.post('/api/v1/auth/register')
         def api_register_user():
-            data = request.json or {}
-
-            # if recaptcha enabled, verify
-            if self.recaptcha:
-                # check for client token
-                if not data.get('captchaToken', None):
-                    response.status = 400
-                    return {'errors': {'recaptcha': 'suspicious'}}
-
-                cr = requests.post('https://www.google.com/recaptcha/api/siteverify',
-                    data={
-                        'secret': self.recaptcha,
-                        'response': data['captchaToken'],
-                    })
-                res = cr.json()
-
-                if res['score'] <= 0.8:
-                    response.status = 400
-                    return {'errors': {'recaptcha': 'suspicious'}}
-
-            # check for banned domains
-            domain = data['email'].split('@')[1]
-            if self.user_manager.domain_blocklisted(domain):
-                response.status = 400
-                return {'errors': {'domain': 'blocked'}}
-
-            msg, redir_extra = self.user_manager.register_user(data, self.get_host())
-
-            if 'success' in msg:
-                return msg
-
-            response.status = 400
-
-            return {'errors': msg}
+            response.status = 403
+            return {'error': 'registration_closed', 'message': 'User registration is closed'}
 
         @self.app.post('/api/v1/auth/validate')
         def api_validate_reg_user():
-            data = request.json or {}
-            reg = data.get('reg')
-
-            cookie = request.environ.get('webrec.request_cookie', '')
-
-            username = request.query.getunicode('username')
-
-            result = self.user_manager.validate_registration(reg, cookie, username)
-            if 'error' in result or 'errors' in result:
-                response.status = 400
-
-            return result
+            response.status = 403
+            return {'error': 'registration_closed', 'message': 'User registration is closed'}
 
         # LOGIN
         @self.app.post('/api/v1/auth/login')

@@ -2,14 +2,8 @@
 
 .conifer-announce {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    height: b16(300px);
-
-    @media (max-width: $sm) {
-        height: b16(400px);
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 1fr;
-    }
+    grid-template-columns: 1fr;
+    height: b16(150px);
 
     background: rgba($pine-sap, 0.25);
 
@@ -44,6 +38,10 @@
 
         strong {
             display: block;
+        }
+
+        p {
+            margin-bottom: 0;
         }
 
         .dismiss {
