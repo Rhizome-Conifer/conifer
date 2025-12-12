@@ -6,7 +6,9 @@ import webpackConfig from './webpack.config.client.development';
 
 const compiler = webpack(webpackConfig);
 
-const host = process.env.APP_HOST || '127.0.0.1';
+// Extract hostname from APP_HOST (which may include port like "localhost:8089")
+const appHost = process.env.APP_HOST || '127.0.0.1';
+const host = appHost.split(':')[0];
 const port = (Number(process.env.FRONTEND_PORT) + 1) || 8096;
 
 const serverOptions = {
