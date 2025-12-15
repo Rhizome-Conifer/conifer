@@ -1,0 +1,51 @@
+Dear Conifer user,
+
+You are receiving this email because you have an account ({{ username }}) on Rhizome's Conifer web archiving service (https://conifer.rhizome.org). The following is an important announcement about the hosted Conifer service.
+
+---
+
+Rhizome's mission has always involved promotion and preservation of born-digital art and culture. Web archiving and preservation has been and remains an integral part of this mission.
+
+Since 2016, we have maintained the Conifer platform as a hosted service for web archiving. In conversation with our partners at Webrecorder, we have decided to begin a responsible transition away from this platform in favor of other tools and systems, while ensuring that our community is supported in ongoing access to their archives and in their adoption of new tools. It's not a sunset, it's twilight.
+
+BACKGROUND
+
+Beginning in 2015, we incubated Webrecorder, a service for archiving the dynamic web created by Ilya Kreymer. When Webrecorder spun off as a standalone entity in 2020, we continued to operate Conifer as a hosted service based on that software.
+
+Our intention was to integrate Webrecorder updates into Conifer on an ongoing basis. However, Webrecorder's tooling had to undergo significant technical change to keep up with an ever-evolving web, and can no longer be meaningfully integrated into the hosted service as initially envisioned.
+
+TWILIGHT ROAD MAP
+
+From December 15, 2025 on, Conifer will no longer support the creation of new accounts or the purchase of subscriptions as Rhizome prepares for the platform's transition.
+
+In May 2026, capturing new resources and editing collections will be halted. All prepaid supporters will receive a pro-rated refund up to when these functions are disabled.
+
+In June 2026, a tombstone web application will replace Conifer. While users will no longer be able to add to or modify collections, all existing materials will remain accessible and hosted by Rhizome. Private collections will continue to be available through the tombstone application to their respective owners, using their existing login credentials.
+
+Each user will also have the following options for every collection:
+
+1. Continue hosting with Rhizome, including both public and private collections (the default if you do nothing!)
+
+2. Download and self-host collections, with the option to install a redirect from Conifer to the self-hosted access URL
+
+3. Transfer collections to Browsertrix, with the option to install a redirect to the Browsertrix access URL. Existing Conifer users will receive a discount code for the Browsertrix service (https://webrecorder.net/browsertrix/) for one year.
+
+4. Delete the collection, if preferred.
+
+Downloading and migration to Browsertrix or self-hosting is going to be facilitated by the WACZ format, which packages web archival data (WARC), curated bookmark lists and descriptions, and full text search indices. All collections will be available in WACZ format in June 2026. (WACZ specification: https://specs.webrecorder.net/wacz/1.1.1/)
+
+Rhizome remains fully committed to safeguarding all user data for as long as we are in business, empowering users to retain control of their collections, and ensuring that the practice of web archiving remains accessible to all.
+
+Through partnership with Webrecorder (https://webrecorder.net/) this commitment continues. Webrecorder's team develops and maintains a suite of widely used web archiving tools, centered around its flagship Browsertrix archiving service which provides an integrated approach to high-fidelity archiving including sophisticated automation options, as well as desktop-tools for creating web archives independently, and simple ways for self-hosting web archives.
+
+COMMUNITY SUPPORT AND LEARNING OPPORTUNITIES
+
+To ensure a smooth and well-supported transition, Rhizome and Webrecorder will host a series of community calls in spring 2026 to guide users through the options available. We'll cover the tombstone app that replaces Conifer, migrating collections into the Browsertrix-hosted service, as well as utilizing Webrecorder's other open source tools, desktop web archiving, and self-hosting.
+
+CONTINUING YOUR WEB ARCHIVING JOURNEY
+
+Whether you are interested in personal web archiving, archiving net art, or large dynamic websites, Browsertrix provides an accessible and flexible solution for you.
+
+We thank you for your continued support for the Conifer platform over the years, and we look forward to continuing our collective mission of providing accessible web archiving tools for all to meet your needs! Conifer has served as a workhorse for Rhizome's internal web archiving program and we hope you will remember it as a useful tool as well.
+
+For any questions, please reach out via email to support@conifer.rhizome.org.
