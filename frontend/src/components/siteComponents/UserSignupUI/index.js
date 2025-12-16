@@ -18,7 +18,7 @@ function UserSignup() {
           <div className="registration-closed">
             <h2>Conifer user registration is closed.</h2>
             <p>
-              Details are described in the twilight announcement on the <a href="https://blog.conifer.rhizome.org/2025/12/12/twilight-announcement.html">Conifer blog</a>.
+              Details are described in the twilight announcement on the <a href="https://blog.conifer.rhizome.org/2025/12/15/twilight-announcement.html">Conifer blog</a>.
             </p>
           </div>
         </Col>
