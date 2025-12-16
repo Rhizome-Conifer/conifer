@@ -1,4 +1,3 @@
-import bleach
 from bottle import request, response
 from six.moves.urllib.parse import quote
 
@@ -69,7 +68,7 @@ class RecsController(BaseController):
 
             desc = data.get('desc', '')
 
-            recording['desc'] = bleach.clean(desc, tags=self.BLEACH_ALLOWED_TAGS, strip=True)
+            recording['desc'] = desc
 
             recording.mark_updated()
             return {'recording': recording.serialize()}

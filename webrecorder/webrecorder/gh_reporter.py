@@ -1,7 +1,7 @@
 import json
 import requests
 import os
-from werkzeug.user_agent import UserAgent
+from werkzeug.useragents import UserAgent
 
 
 
