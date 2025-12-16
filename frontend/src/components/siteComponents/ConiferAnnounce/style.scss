@@ -71,4 +71,13 @@
             }
         }
     }
+
+
+    &.condensed {
+        height: b16(60px);
+
+        .announcement .dismiss{
+            top: revert;
+        }
+    }
 }

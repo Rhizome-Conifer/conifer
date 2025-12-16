@@ -219,6 +219,10 @@ export class App extends Component {
             <ConiferAnnounce dismiss={this.coniferAnnouncev2Dismiss} />
         }
         {
+          match.name === 'collectionPages' && this.state.coniferAnnounce &&
+            <ConiferAnnounce condensed dismiss={this.coniferAnnouncev2Dismiss} />
+        }
+        {
           !isEmbed &&
             <AppHeader routes={this.props.route.routes} />
         }
