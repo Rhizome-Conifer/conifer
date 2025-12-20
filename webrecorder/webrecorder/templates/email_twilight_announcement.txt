@@ -49,3 +49,9 @@ Whether you are interested in personal web archiving, archiving net art, or larg
 We thank you for your continued support for the Conifer platform over the years, and we look forward to continuing our collective mission of providing accessible web archiving tools for all to meet your needs! Conifer has served as a workhorse for Rhizome's internal web archiving program and we hope you will remember it as a useful tool as well.
 
 For any questions, please reach out via email to support@conifer.rhizome.org.
+
+---
+
+CONIFER
+https://conifer.rhizome.org
+A project of Rhizome (https://rhizome.org)

@@ -3,6 +3,7 @@
 Send Twilight Announcement Email to All Conifer Users
 
 This script sends the twilight announcement email to all users with support for:
+- Email validation: validates syntax, checks SES suppression list, verifies MX records
 - Test mode: send to a specific email address for testing
 - Rate limiting: respects SES sending limits (14 emails/second by default)
 - Total send quota: enforces max emails per run (50,000 by default for SES quota)
@@ -16,25 +17,21 @@ Progress Database:
     Schema: username, email, status (sent/failed/skipped), timestamp, error_message
     Query failed emails: sqlite3 twilight_email_progress.db "SELECT * FROM email_progress WHERE status='failed'"
 
-Setup:
-    Configure your EMAIL_SMTP_URL to use Amazon SES:
-    EMAIL_SMTP_URL=starttls://SMTP_USER:SMTP_PASS@email-smtp.REGION.amazonaws.com:587
-
 Usage:
     # Test mode - send to specific email
     python send_twilight_announcement.py --test your.email@example.com
 
-    # Send to all users with default settings (14 emails/sec, max 50,000)
-    python send_twilight_announcement.py
+    # Send to all users with SES suppression list validation
+    python send_twilight_announcement.py --suppression-db ses_suppression.db
 
     # Send with custom rate limit and total quota
-    python send_twilight_announcement.py --max-send-rate 10 --max-total-send 25000
+    python send_twilight_announcement.py --suppression-db ses_suppression.db --max-send-rate 10 --max-total-send 25000
 
     # Resume after a specific username (optional - auto-resumes by default)
-    python send_twilight_announcement.py --resume-from username123
+    python send_twilight_announcement.py --suppression-db ses_suppression.db --resume-from username123
 
     # Dry run - show what would be sent without actually sending
-    python send_twilight_announcement.py --dry-run
+    python send_twilight_announcement.py --suppression-db ses_suppression.db --dry-run
 """
 
 import os
@@ -44,11 +41,20 @@ import argparse
 import json
 import smtplib
 import sqlite3
+import re
 from datetime import datetime
 from bottle import template
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 from urllib.parse import urlparse, unquote
+
+try:
+    import dns.resolver
+    DNS_VALIDATION_AVAILABLE = True
+except ImportError:
+    DNS_VALIDATION_AVAILABLE = False
+    print("Warning: dnspython not available. DNS/MX validation disabled.")
 
 # Add the webrecorder directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'webrecorder'))
@@ -57,9 +63,140 @@ from webrecorder.models.usermanager import CLIUserManager
 from webrecorder.webreccork import WebRecCork
 
 
+def is_valid_email_syntax(email):
+    """
+    Validate email format using regex
+
+    Args:
+        email: Email address to validate
+
+    Returns:
+        bool: True if email has valid syntax
+    """
+    if not email or '@' not in email:
+        return False
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
+
+def load_ses_suppression_list_from_db(db_file):
+    """
+    Load SES suppression list from SQLite database
+
+    Args:
+        db_file: Path to SQLite database file created by build_ses_suppression_db.py
+
+    Returns:
+        dict: Dictionary mapping email -> reason (BOUNCE or COMPLAINT)
+    """
+    if not db_file:
+        return {}
+
+    suppressed_emails = {}
+
+    try:
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+
+        print(f"Loading SES suppression list from {db_file}...")
+
+        cursor.execute('SELECT email, reason FROM suppressed_emails')
+        for email, reason in cursor.fetchall():
+            suppressed_emails[email.lower()] = reason
+
+        # Get stats
+        cursor.execute('SELECT reason, COUNT(*) FROM suppressed_emails GROUP BY reason')
+        stats = dict(cursor.fetchall())
+
+        conn.close()
+
+        print(f"✓ Loaded {len(suppressed_emails)} suppressed email addresses")
+        if stats:
+            print(f"  Breakdown: ", end='')
+            print(', '.join(f"{reason}: {count}" for reason, count in stats.items()))
+
+        return suppressed_emails
+
+    except sqlite3.Error as e:
+        print(f"Warning: Could not load SES suppression list from {db_file}: {e}")
+        print("Continuing without SES suppression checking...")
+        return {}
+    except Exception as e:
+        print(f"Warning: Unexpected error loading suppression list: {e}")
+        return {}
+
+
+def is_email_suppressed(email, suppression_list):
+    """
+    Check if email is on the pre-downloaded SES suppression list
+
+    Args:
+        email: Email address to check
+        suppression_list: Dictionary from download_ses_suppression_list()
+
+    Returns:
+        tuple: (is_suppressed, reason) where reason is BOUNCE or COMPLAINT
+    """
+    email_lower = email.lower()
+    if email_lower in suppression_list:
+        return (True, suppression_list[email_lower])
+    return (False, None)
+
+
+def check_domain_mx_records(domain, mx_cache):
+    """
+    Check if domain has valid MX records with caching
+
+    Args:
+        domain: Domain name to check
+        mx_cache: Dictionary cache of domain -> has_mx_bool
+
+    Returns:
+        bool: True if domain has MX records and can receive email
+    """
+    if not DNS_VALIDATION_AVAILABLE:
+        return True  # Assume valid if DNS checking not available
+
+    # Check cache first
+    if domain in mx_cache:
+        return mx_cache[domain]
+
+    try:
+        mx_records = dns.resolver.resolve(domain, 'MX')
+        result = len(mx_records) > 0
+        mx_cache[domain] = result
+        return result
+    except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.resolver.NoNameservers):
+        mx_cache[domain] = False
+        return False
+    except Exception as e:
+        print(f"Warning: Could not check MX records for {domain}: {e}")
+        # Don't cache errors - try again next time
+        return True  # Assume valid on error to avoid false positives
+
+
+def has_valid_mx_record(email, mx_cache):
+    """
+    Check if email domain has valid MX records
+
+    Args:
+        email: Email address to validate
+        mx_cache: Dictionary cache of domain -> has_mx_bool
+
+    Returns:
+        bool: True if domain has MX records and can receive email
+    """
+    try:
+        domain = email.split('@')[1].lower()
+        return check_domain_mx_records(domain, mx_cache)
+    except IndexError:
+        # Invalid email format (no @ sign)
+        return False
+
+
 class TwilightAnnouncementSender:
     def __init__(self, test_email=None, batch_size=200, delay=0, dry_run=False, resume_from=None,
-                 max_send_rate=14.0, max_total_send=50000):
+                 max_send_rate=14.0, max_total_send=50000, suppression_db=None):
         """
         Initialize the announcement sender
 
@@ -71,6 +208,7 @@ class TwilightAnnouncementSender:
             resume_from: Username to resume after (skips this user and all before it)
             max_send_rate: Maximum emails per second (default 14 for SES)
             max_total_send: Maximum total emails to send in one run (default 50000 for SES quota)
+            suppression_db: Path to SES suppression list SQLite database (optional)
         """
         self.user_manager = CLIUserManager()
         self.cork = self.user_manager.cork
@@ -98,17 +236,36 @@ class TwilightAnnouncementSender:
         self.db_file = 'twilight_email_progress.db'
         self.sent_users = set()  # Cache of usernames already sent to
 
+        # Initialize validation caches
+        self.ses_suppression_list = {}  # Email -> reason mapping
+        self.mx_cache = {}  # Domain -> has_mx_bool mapping
+
         # Initialize database
         self._init_database()
 
         # Load sent users into memory for fast lookup
         self._load_sent_users()
 
+        # Load SES suppression list from database (unless in test mode)
+        if not test_email and suppression_db:
+            self.ses_suppression_list = load_ses_suppression_list_from_db(suppression_db)
+        else:
+            if not test_email and not suppression_db:
+                print("Warning: No suppression database provided. Use --suppression-db to enable SES bounce filtering.")
+                print("         Generate one with: python build_ses_suppression_db.py --profile PROFILE --region REGION")
+
         self.stats = {
             'total_users': 0,
             'emails_sent': 0,
             'emails_failed': 0,
             'emails_skipped': 0,
+            'validation_stats': {
+                'invalid_syntax': 0,
+                'ses_suppressed': 0,
+                'no_mx_records': 0,
+                'suspended': 0,
+                'no_email': 0
+            },
             'start_time': None,
             'end_time': None
         }
@@ -139,20 +296,37 @@ class TwilightAnnouncementSender:
         port = parsed.port or 587
         sender = 'no-reply@conifer.rhizome.org'
 
-        # Create message
+        # Create message with alternative parts for text and HTML
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = f'Conifer <{sender}>'
         msg['To'] = to_addr
         msg['Reply-To'] = reply_to
+        msg['List-Unsubscribe'] = '<mailto:unsubscribe@conifer.rhizome.org?subject=Unsubscribe%20from%20Conifer%20emails>'
 
-        # Attach plain text and HTML bodies
-        # According to RFC 2046, the last part (HTML) is preferred
+        # Attach plain text
         text_part = MIMEText(body_text, 'plain', 'utf-8')
         msg.attach(text_part)
 
+        # Create related part for HTML + embedded images
+        msg_related = MIMEMultipart('related')
+        msg.attach(msg_related)
+
+        # Attach HTML body
         html_part = MIMEText(body_html, 'html', 'utf-8')
-        msg.attach(html_part)
+        msg_related.attach(html_part)
+
+        # Attach logo image with CID
+        logo_path = os.path.join(os.path.dirname(__file__), 'conifer-logo.png')
+        if os.path.exists(logo_path):
+            with open(logo_path, 'rb') as img_file:
+                img_data = img_file.read()
+                img = MIMEImage(img_data, 'png')
+                img.add_header('Content-ID', '<conifer-logo>')
+                img.add_header('Content-Disposition', 'inline', filename='conifer-logo.png')
+                msg_related.attach(img)
+        else:
+            print(f"Warning: Logo file not found at {logo_path}")
 
         # Send via SMTP
         if use_tls:
@@ -256,7 +430,33 @@ class TwilightAnnouncementSender:
         if not email:
             print(f"Skipping {username}: No email address")
             self.stats['emails_skipped'] += 1
+            self.stats['validation_stats']['no_email'] += 1
             self.save_progress(username, email or '', 'skipped', 'No email address')
+            return False
+
+        # Validate email syntax
+        if not is_valid_email_syntax(email):
+            print(f"Skipping {username}: Invalid email syntax ({email})")
+            self.stats['emails_skipped'] += 1
+            self.stats['validation_stats']['invalid_syntax'] += 1
+            self.save_progress(username, email, 'skipped', 'Invalid email syntax')
+            return False
+
+        # Check SES suppression list (bounces/complaints) - uses pre-downloaded list
+        suppressed, reason = is_email_suppressed(email, self.ses_suppression_list)
+        if suppressed:
+            print(f"Skipping {username}: Email suppressed by SES ({reason})")
+            self.stats['emails_skipped'] += 1
+            self.stats['validation_stats']['ses_suppressed'] += 1
+            self.save_progress(username, email, 'skipped', f'SES suppressed: {reason}')
+            return False
+
+        # Check DNS/MX records - uses cached domain lookups
+        if not has_valid_mx_record(email, self.mx_cache):
+            print(f"Skipping {username}: Invalid domain (no MX records)")
+            self.stats['emails_skipped'] += 1
+            self.stats['validation_stats']['no_mx_records'] += 1
+            self.save_progress(username, email, 'skipped', 'No MX records')
             return False
 
         try:
@@ -299,15 +499,16 @@ class TwilightAnnouncementSender:
         Returns:
             list: List of (username, user_data) tuples sorted alphabetically
         """
+        active_users = [[u,d] for u,d in self.user_manager.all_users.items() if int(d.get('size')) > 0]
         # Sort users alphabetically for deterministic ordering
-        all_users = sorted(self.user_manager.all_users.items(), key=lambda x: x[0])
-        self.stats['total_users'] = len(all_users)
+        sorted_active = sorted(active_users, key=lambda x: x[0])
+        self.stats['total_users'] = len(sorted_active)
 
         # Filter out users already sent to
         users_to_process = []
         already_sent_count = 0
 
-        for username, user_data in all_users:
+        for username, user_data in sorted_active:
             # If resume_from is set, skip users up to and including it
             if self.resume_from and username <= self.resume_from:
                 continue
@@ -323,7 +524,7 @@ class TwilightAnnouncementSender:
             print(f"Skipping {already_sent_count} users already sent to (from database)")
 
         if self.resume_from:
-            skipped = len(all_users) - len(users_to_process) - already_sent_count
+            skipped = len(sorted_active) - len(users_to_process) - already_sent_count
             if skipped > 0:
                 print(f"Resuming after user: {self.resume_from}")
                 print(f"Skipping {skipped} users up to and including resume point")
@@ -401,6 +602,7 @@ class TwilightAnnouncementSender:
             if user_data.get('role') == 'suspended':
                 print(f"Skipping {username}: Account suspended")
                 self.stats['emails_skipped'] += 1
+                self.stats['validation_stats']['suspended'] += 1
                 self.save_progress(username, email or '', 'skipped', 'Account suspended')
                 continue
 
@@ -456,6 +658,23 @@ class TwilightAnnouncementSender:
         print(f"  Emails sent: {db_stats.get('sent', 0)}")
         print(f"  Emails failed: {db_stats.get('failed', 0)}")
         print(f"  Emails skipped: {db_stats.get('skipped', 0)}")
+
+        # Show validation breakdown from this run
+        if any(self.stats['validation_stats'].values()):
+            print(f"\nValidation breakdown (this run):")
+            for reason, count in self.stats['validation_stats'].items():
+                if count > 0:
+                    print(f"  {reason.replace('_', ' ').title()}: {count}")
+
+        # Show validation cache stats
+        if self.ses_suppression_list or self.mx_cache:
+            print(f"\nValidation cache stats:")
+            if self.ses_suppression_list:
+                print(f"  SES suppression list: {len(self.ses_suppression_list)} addresses loaded")
+            if self.mx_cache:
+                valid_domains = sum(1 for v in self.mx_cache.values() if v)
+                invalid_domains = sum(1 for v in self.mx_cache.values() if not v)
+                print(f"  MX cache: {len(self.mx_cache)} domains checked ({valid_domains} valid, {invalid_domains} invalid)")
 
         # Show this run's stats if different from totals
         if self.stats['start_time'] and self.stats['end_time']:
@@ -542,6 +761,12 @@ def main():
         help='Maximum total emails to send in one run (default: 50000 for SES quota)'
     )
 
+    parser.add_argument(
+        '--suppression-db',
+        metavar='FILE',
+        help='Path to SES suppression list database (generated by build_ses_suppression_db.py)'
+    )
+
     args = parser.parse_args()
 
     # Validate batch size and delay
@@ -569,7 +794,8 @@ def main():
         dry_run=args.dry_run,
         resume_from=args.resume_from,
         max_send_rate=args.max_send_rate,
-        max_total_send=args.max_total_send
+        max_total_send=args.max_total_send,
+        suppression_db=args.suppression_db
     )
 
     try:
