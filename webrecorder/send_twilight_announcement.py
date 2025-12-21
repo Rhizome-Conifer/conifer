@@ -235,6 +235,7 @@ class TwilightAnnouncementSender:
 
         self.db_file = 'twilight_email_progress.db'
         self.sent_users = set()  # Cache of usernames already sent to
+        self.user_cache_file = 'twilight_user_cache.json'  # Cache for sorted active users
 
         # Initialize validation caches
         self.ses_suppression_list = {}  # Email -> reason mapping
@@ -377,6 +378,52 @@ class TwilightAnnouncementSender:
         if self.sent_users:
             print(f"Loaded {len(self.sent_users)} previously sent users from database")
 
+    def _load_cached_users(self):
+        """
+        Load cached sorted active users from file
+
+        Returns:
+            list: List of [username, user_data_dict] or None if cache doesn't exist
+        """
+        if not os.path.exists(self.user_cache_file):
+            return None
+
+        try:
+            with open(self.user_cache_file, 'r') as f:
+                cache_data = json.load(f)
+
+            print(f"Loaded {len(cache_data)} users from cache file: {self.user_cache_file}")
+            return cache_data
+        except Exception as e:
+            print(f"Warning: Could not load user cache from {self.user_cache_file}: {e}")
+            return None
+
+    def _save_cached_users(self, users):
+        """
+        Save sorted active users to cache file with the fields in use.
+
+        Args:
+            users: List of [username, user_data] tuples to cache
+        """
+        try:
+            # Extract only the fields we need
+            cache_data = []
+            for username, user_data in users:
+                cache_data.append([
+                    username,
+                    {
+                        'email_addr': user_data.get('email_addr', ''),
+                        'role': user_data.get('role', '')
+                    }
+                ])
+
+            with open(self.user_cache_file, 'w') as f:
+                json.dump(cache_data, f, indent=2)
+
+            print(f"Saved {len(cache_data)} active users to cache file: {self.user_cache_file}")
+        except Exception as e:
+            print(f"Warning: Could not save user cache to {self.user_cache_file}: {e}")
+
     def save_progress(self, username, email, status, error_message=None):
         """
         Save progress to SQLite database
@@ -499,13 +546,23 @@ class TwilightAnnouncementSender:
     def get_users_to_process(self):
         """
         Get list of users to process, filtering out already-sent users
+        Uses cached sorted active users for subsequent runs to improve performance.
 
         Returns:
             list: List of (username, user_data) tuples sorted alphabetically
         """
-        active_users = [[u,d] for u,d in self.user_manager.all_users.items() if int(d.get('size')) > 0]
-        # Sort users alphabetically for deterministic ordering
-        sorted_active = sorted(active_users, key=lambda x: x[0])
+        # Try to load from cache first
+        sorted_active = self._load_cached_users()
+
+        # If cache doesn't exist, compute and save it
+        if sorted_active is None:
+            print("Computing active users list (first run)...")
+            active_users = [[u,d] for u,d in self.user_manager.all_users.items() if int(d.get('size')) > 0]
+            # Sort users alphabetically for deterministic ordering
+            sorted_active = sorted(active_users, key=lambda x: x[0])
+            # Save to cache for future runs
+            self._save_cached_users(sorted_active)
+
         self.stats['total_users'] = len(sorted_active)
 
         # Filter out users already sent to
