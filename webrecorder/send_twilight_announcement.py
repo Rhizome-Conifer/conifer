@@ -387,6 +387,10 @@ class TwilightAnnouncementSender:
             status: Status - 'sent', 'failed', or 'skipped'
             error_message: Error message if status is 'failed'
         """
+        # Skip database writes in dry-run mode
+        if self.dry_run:
+            return
+
         conn = sqlite3.connect(self.db_file)
         cursor = conn.cursor()
 
