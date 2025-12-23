@@ -24,6 +24,9 @@ Usage:
     # Send to all users with SES suppression list validation
     python send_twilight_announcement.py --suppression-db ses_suppression.db
 
+    # Send only to users who logged in after a specific date
+    python send_twilight_announcement.py --suppression-db ses_suppression.db --last-login 2020-01-01
+
     # Send with custom rate limit and total quota
     python send_twilight_announcement.py --suppression-db ses_suppression.db --max-send-rate 10 --max-total-send 25000
 
@@ -196,7 +199,7 @@ def has_valid_mx_record(email, mx_cache):
 
 class TwilightAnnouncementSender:
     def __init__(self, test_email=None, batch_size=200, delay=0, dry_run=False, resume_from=None,
-                 max_send_rate=14.0, max_total_send=50000, suppression_db=None):
+                 max_send_rate=14.0, max_total_send=50000, suppression_db=None, last_login_after=None):
         """
         Initialize the announcement sender
 
@@ -209,6 +212,7 @@ class TwilightAnnouncementSender:
             max_send_rate: Maximum emails per second (default 14 for SES)
             max_total_send: Maximum total emails to send in one run (default 50000 for SES quota)
             suppression_db: Path to SES suppression list SQLite database (optional)
+            last_login_after: Only send to users who logged in after this date (YYYY-MM-DD format)
         """
         self.user_manager = CLIUserManager()
         self.cork = self.user_manager.cork
@@ -219,6 +223,7 @@ class TwilightAnnouncementSender:
         self.resume_from = resume_from
         self.max_send_rate = max_send_rate
         self.max_total_send = max_total_send
+        self.last_login_after = last_login_after
 
         # Calculate delay between emails to respect rate limit
         # Add a small buffer (10%) to be safe
@@ -413,7 +418,8 @@ class TwilightAnnouncementSender:
                     username,
                     {
                         'email_addr': user_data.get('email_addr', ''),
-                        'role': user_data.get('role', '')
+                        'role': user_data.get('role', ''),
+                        'last_login': user_data.get('last_login', ''),
                     }
                 ])
 
@@ -466,6 +472,59 @@ class TwilightAnnouncementSender:
 
         # Save to database with 'failed' status
         self.save_progress(username, email, 'failed', error_msg)
+
+    def _filter_by_last_login(self, users):
+        """
+        Filter users by last_login date, supporting both Unix epoch and ISO timestamp formats
+
+        Args:
+            users: List of [username, user_data] tuples
+
+        Returns:
+            list: Filtered list of users who logged in after self.last_login_after
+        """
+        if not self.last_login_after:
+            return users
+
+        filtered = []
+        skipped = 0
+
+        # Parse the threshold date
+        try:
+            threshold_dt = datetime.fromisoformat(self.last_login_after)
+        except ValueError:
+            print(f"Error: Invalid date format for --last-login: {self.last_login_after}")
+            print("Expected format: YYYY-MM-DD")
+            return users
+
+        for username, user_data in users:
+            last_login = user_data.get('last_login', '')
+
+            if not last_login:
+                skipped += 1
+                continue
+
+            try:
+                # Try to parse as Unix epoch (integer/float)
+                if isinstance(last_login, (int, float)) or (isinstance(last_login, str) and last_login.isdigit()):
+                    login_dt = datetime.fromtimestamp(float(last_login))
+                else:
+                    # Parse as ISO datetime string (handle format: '2018-02-01 16:33:10.873750')
+                    login_dt = datetime.fromisoformat(str(last_login).split('.')[0])
+
+                if login_dt > threshold_dt:
+                    filtered.append([username, user_data])
+                else:
+                    skipped += 1
+            except (ValueError, AttributeError, OSError) as e:
+                # Skip users with invalid last_login format
+                skipped += 1
+                continue
+
+        if skipped > 0:
+            print(f"Filtered out {skipped} users with last_login <= {self.last_login_after} or invalid dates")
+
+        return filtered
 
     def send_email(self, username, email):
         """
@@ -557,11 +616,16 @@ class TwilightAnnouncementSender:
         # If cache doesn't exist, compute and save it
         if sorted_active is None:
             print("Computing active users list (first run)...")
-            active_users = [[u,d] for u,d in self.user_manager.all_users.items() if int(d.get('size')) > 0]
+            active_users = [[u,d] for u,d in self.user_manager.all_users.items() if int(d.get('size', 0)) > 0]
             # Sort users alphabetically for deterministic ordering
             sorted_active = sorted(active_users, key=lambda x: x[0])
             # Save to cache for future runs
             self._save_cached_users(sorted_active)
+
+        # Apply last_login filter to either cached or freshly computed users
+        if self.last_login_after:
+            print(f"Filtering users by last_login > {self.last_login_after}...")
+            sorted_active = self._filter_by_last_login(sorted_active)
 
         self.stats['total_users'] = len(sorted_active)
 
@@ -828,6 +892,12 @@ def main():
         help='Path to SES suppression list database (generated by build_ses_suppression_db.py)'
     )
 
+    parser.add_argument(
+        '--last-login',
+        metavar='DATE',
+        help='Only send to users who logged in after this date (format: YYYY-MM-DD)'
+    )
+
     args = parser.parse_args()
 
     # Validate batch size and delay
@@ -856,7 +926,8 @@ def main():
         resume_from=args.resume_from,
         max_send_rate=args.max_send_rate,
         max_total_send=args.max_total_send,
-        suppression_db=args.suppression_db
+        suppression_db=args.suppression_db,
+        last_login_after=args.last_login
     )
 
     try:
