@@ -27,6 +27,12 @@ Usage:
     # Send only to users who logged in after a specific date
     python send_twilight_announcement.py --suppression-db ses_suppression.db --last-login 2020-01-01
 
+    # Send only to users with collection size >= 1MB
+    python send_twilight_announcement.py --suppression-db ses_suppression.db --min-size 1048576
+
+    # Combine filters: recent logins AND larger collections
+    python send_twilight_announcement.py --suppression-db ses_suppression.db --last-login 2020-01-01 --min-size 1048576
+
     # Send with custom rate limit and total quota
     python send_twilight_announcement.py --suppression-db ses_suppression.db --max-send-rate 10 --max-total-send 25000
 
@@ -199,7 +205,8 @@ def has_valid_mx_record(email, mx_cache):
 
 class TwilightAnnouncementSender:
     def __init__(self, test_email=None, batch_size=200, delay=0, dry_run=False, resume_from=None,
-                 max_send_rate=14.0, max_total_send=50000, suppression_db=None, last_login_after=None):
+                 max_send_rate=14.0, max_total_send=50000, suppression_db=None, last_login_after=None,
+                 min_size=None):
         """
         Initialize the announcement sender
 
@@ -213,6 +220,7 @@ class TwilightAnnouncementSender:
             max_total_send: Maximum total emails to send in one run (default 50000 for SES quota)
             suppression_db: Path to SES suppression list SQLite database (optional)
             last_login_after: Only send to users who logged in after this date (YYYY-MM-DD format)
+            min_size: Only send to users with collection size >= this value in bytes (optional)
         """
         self.user_manager = CLIUserManager()
         self.cork = self.user_manager.cork
@@ -224,6 +232,7 @@ class TwilightAnnouncementSender:
         self.max_send_rate = max_send_rate
         self.max_total_send = max_total_send
         self.last_login_after = last_login_after
+        self.min_size = min_size
 
         # Calculate delay between emails to respect rate limit
         # Add a small buffer (10%) to be safe
@@ -420,6 +429,7 @@ class TwilightAnnouncementSender:
                         'email_addr': user_data.get('email_addr', ''),
                         'role': user_data.get('role', ''),
                         'last_login': user_data.get('last_login', ''),
+                        'size': user_data.get('size', 0),
                     }
                 ])
 
@@ -526,6 +536,40 @@ class TwilightAnnouncementSender:
 
         return filtered
 
+    def _filter_by_size(self, users):
+        """
+        Filter users by collection size
+
+        Args:
+            users: List of [username, user_data] tuples
+
+        Returns:
+            list: Filtered list of users with collection size >= self.min_size
+        """
+        if not self.min_size:
+            return users
+
+        filtered = []
+        skipped = 0
+
+        for username, user_data in users:
+            try:
+                size = int(user_data.get('size', 0))
+
+                if size >= self.min_size:
+                    filtered.append([username, user_data])
+                else:
+                    skipped += 1
+            except (ValueError, TypeError):
+                # Skip users with invalid size
+                skipped += 1
+                continue
+
+        if skipped > 0:
+            print(f"Filtered out {skipped} users with collection size < {self.min_size} bytes")
+
+        return filtered
+
     def send_email(self, username, email):
         """
         Send the twilight announcement email to a single user
@@ -622,10 +666,14 @@ class TwilightAnnouncementSender:
             # Save to cache for future runs
             self._save_cached_users(sorted_active)
 
-        # Apply last_login filter to either cached or freshly computed users
+        # Apply filters to either cached or freshly computed users
         if self.last_login_after:
             print(f"Filtering users by last_login > {self.last_login_after}...")
             sorted_active = self._filter_by_last_login(sorted_active)
+
+        if self.min_size:
+            print(f"Filtering users by collection size >= {self.min_size} bytes...")
+            sorted_active = self._filter_by_size(sorted_active)
 
         self.stats['total_users'] = len(sorted_active)
 
@@ -898,6 +946,13 @@ def main():
         help='Only send to users who logged in after this date (format: YYYY-MM-DD)'
     )
 
+    parser.add_argument(
+        '--min-size',
+        type=int,
+        metavar='BYTES',
+        help='Only send to users with collection size >= this value in bytes'
+    )
+
     args = parser.parse_args()
 
     # Validate batch size and delay
@@ -927,7 +982,8 @@ def main():
         max_send_rate=args.max_send_rate,
         max_total_send=args.max_total_send,
         suppression_db=args.suppression_db,
-        last_login_after=args.last_login
+        last_login_after=args.last_login,
+        min_size=args.min_size
     )
 
     try:
