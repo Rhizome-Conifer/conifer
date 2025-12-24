@@ -273,24 +273,38 @@ def is_suspicious_email(email, username=None):
     return (False, None)
 
 
-def is_excluded_domain(email, excluded_domains):
+def is_excluded_domain(email, excluded_domains, excluded_wildcards):
     """
     Check if email domain is in the exclusion set (high bounce rate domains)
 
+    Supports both exact matches and wildcard patterns (e.g., *.edu)
+
     Args:
         email: Email address to check
-        excluded_domains: Set of excluded domain names
+        excluded_domains: Set of exact excluded domain names
+        excluded_wildcards: Set of wildcard patterns (stored as '.edu' for *.edu)
 
     Returns:
-        tuple: (is_excluded, domain) where domain is the excluded domain name
+        tuple: (is_excluded, domain) where domain is the excluded domain name or pattern
     """
-    if not email or '@' not in email or not excluded_domains:
+    if not email or '@' not in email:
+        return (False, None)
+
+    # Skip if no exclusions are configured
+    if not (excluded_domains or excluded_wildcards):
         return (False, None)
 
     domain = email.split('@')[1].lower()
 
-    if domain in excluded_domains:
+    # Check exact match first
+    if excluded_domains and domain in excluded_domains:
         return (True, domain)
+
+    # Check wildcard patterns (e.g., *.edu matches anything.edu)
+    if excluded_wildcards:
+        for pattern in excluded_wildcards:
+            if domain.endswith(pattern):
+                return (True, f'*{pattern}')
 
     return (False, None)
 
@@ -313,7 +327,7 @@ class TwilightAnnouncementSender:
             suppression_db: Path to SES suppression list SQLite database (optional)
             last_login_after: Only send to users who logged in after this date (YYYY-MM-DD format)
             min_size: Only send to users with collection size >= this value in bytes (optional)
-            exclude_domains_file: Path to file with domains to exclude (one per line, optional)
+            exclude_domains_file: Path to file with domains to exclude (one per line, supports *.edu wildcards, optional)
         """
         self.user_manager = CLIUserManager()
         self.cork = self.user_manager.cork
@@ -347,7 +361,8 @@ class TwilightAnnouncementSender:
         # Initialize validation caches
         self.ses_suppression_list = {}  # Email -> reason mapping
         self.mx_cache = {}  # Domain -> has_mx_bool mapping
-        self.excluded_domains = set()  # Set of excluded domain names
+        self.excluded_domains = set()  # Set of excluded domain names (exact matches)
+        self.excluded_wildcards = set()  # Set of wildcard patterns (e.g., '.edu' for *.edu)
 
         # Initialize database
         self._init_database()
@@ -365,7 +380,7 @@ class TwilightAnnouncementSender:
 
         # Load excluded domains from file (unless in test mode)
         if not test_email and exclude_domains_file:
-            self.excluded_domains = self._load_excluded_domains(exclude_domains_file)
+            self.excluded_domains, self.excluded_wildcards = self._load_excluded_domains(exclude_domains_file)
 
         self.stats = {
             'total_users': 0,
@@ -506,35 +521,53 @@ class TwilightAnnouncementSender:
         """
         Load excluded domains from file (high bounce rate domains to skip)
 
+        Supports both exact domains and wildcard patterns:
+        - exact: example.com
+        - wildcard: *.edu (matches all .edu domains)
+
         Args:
             exclude_file: Path to file with excluded domains (one per line)
 
         Returns:
-            set: Set of excluded domain names (lowercase)
+            tuple: (exact_domains_set, wildcard_patterns_set)
         """
-        excluded = set()
+        exact_domains = set()
+        wildcard_patterns = set()
 
         try:
             with open(exclude_file, 'r') as f:
                 for line in f:
                     domain = line.strip().lower()
                     if domain and not domain.startswith('#'):  # Skip empty lines and comments
-                        excluded.add(domain)
+                        # Check if it's a wildcard pattern
+                        if domain.startswith('*.'):
+                            # Store wildcard as '.edu' for *.edu
+                            wildcard_patterns.add(domain[1:])  # Remove the *
+                        else:
+                            exact_domains.add(domain)
 
-            print(f"Loaded {len(excluded)} excluded domains from {exclude_file}")
-            if excluded:
-                print(f"  Excluded domains: {', '.join(sorted(list(excluded)[:10]))}")
-                if len(excluded) > 10:
-                    print(f"  ... and {len(excluded) - 10} more")
+            total = len(exact_domains) + len(wildcard_patterns)
+            print(f"Loaded {total} excluded domain patterns from {exclude_file}")
 
-            return excluded
+            if exact_domains:
+                print(f"  Exact domains: {', '.join(sorted(list(exact_domains)[:5]))}")
+                if len(exact_domains) > 5:
+                    print(f"  ... and {len(exact_domains) - 5} more")
+
+            if wildcard_patterns:
+                patterns_display = [f'*{p}' for p in sorted(list(wildcard_patterns)[:5])]
+                print(f"  Wildcard patterns: {', '.join(patterns_display)}")
+                if len(wildcard_patterns) > 5:
+                    print(f"  ... and {len(wildcard_patterns) - 5} more")
+
+            return exact_domains, wildcard_patterns
 
         except FileNotFoundError:
             print(f"Warning: Excluded domains file not found: {exclude_file}")
-            return set()
+            return set(), set()
         except Exception as e:
             print(f"Warning: Could not load excluded domains from {exclude_file}: {e}")
-            return set()
+            return set(), set()
 
     def _load_cached_users(self):
         """
@@ -750,7 +783,7 @@ class TwilightAnnouncementSender:
             return False
 
         # Check excluded domains (high bounce rate domains)
-        excluded, excluded_domain = is_excluded_domain(email, self.excluded_domains)
+        excluded, excluded_domain = is_excluded_domain(email, self.excluded_domains, self.excluded_wildcards)
         if excluded:
             print(f"Skipping {username}: Excluded domain ({excluded_domain})")
             self.stats['emails_skipped'] += 1
@@ -1123,7 +1156,7 @@ def main():
     parser.add_argument(
         '--exclude-domains',
         metavar='FILE',
-        help='Path to file with domains to exclude (one per line, e.g., hotmail.com)'
+        help='Path to file with domains to exclude (one per line, supports wildcards like *.edu)'
     )
 
     args = parser.parse_args()
