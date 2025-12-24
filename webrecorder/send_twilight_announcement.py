@@ -4,18 +4,20 @@ Send Twilight Announcement Email to All Conifer Users
 
 This script sends the twilight announcement email to all users with support for:
 - Email validation: validates syntax, checks SES suppression list, verifies MX records
+- Spam/bot detection: quarantines suspicious emails (gambling keywords, bot domains, random patterns)
 - Test mode: send to a specific email address for testing
 - Rate limiting: respects SES sending limits (14 emails/second by default)
 - Total send quota: enforces max emails per run (50,000 by default for SES quota)
-- Progress tracking: uses SQLite database to track sent/failed/skipped emails
-- Automatic resume: skips users already sent to (no manual resume needed)
+- Progress tracking: uses SQLite database to track sent/failed/skipped/quarantined emails
+- Automatic resume: skips users already sent to or quarantined (no manual resume needed)
 - Error handling: logs errors to database and continues processing
 - Deterministic ordering: sorts users alphabetically for consistent processing
 
 Progress Database:
     All progress is stored in twilight_email_progress.db (SQLite)
-    Schema: username, email, status (sent/failed/skipped), timestamp, error_message
+    Schema: username, email, status (sent/failed/skipped/quarantined), timestamp, error_message
     Query failed emails: sqlite3 twilight_email_progress.db "SELECT * FROM email_progress WHERE status='failed'"
+    Query quarantined emails: sqlite3 twilight_email_progress.db "SELECT * FROM email_progress WHERE status='quarantined'"
 
 Usage:
     # Test mode - send to specific email
@@ -203,10 +205,100 @@ def has_valid_mx_record(email, mx_cache):
         return False
 
 
+def is_suspicious_email(email, username=None):
+    """
+    Check if email or username matches suspicious patterns commonly associated with spam/bot signups
+
+    Patterns detected:
+    - Bot-generated domains (bydgoszczanin.net, gdanszczanin.net, cursosgratuitossepe.info)
+    - Spam keywords (gambling, betting, escort services: win, bet, casino, escort, etc.)
+    - Excessive random character mixing (high letter/number transitions)
+
+    Args:
+        email: Email address to check
+        username: Username to check (optional)
+
+    Returns:
+        tuple: (is_suspicious, reason) where reason describes why it's suspicious
+    """
+    if not email or '@' not in email:
+        return (False, None)
+
+    email_lower = email.lower()
+    local_part, domain = email_lower.split('@', 1)
+
+    # Check for known bot/spam domains
+    suspicious_domains = [
+        'bydgoszczanin.net',
+        'gdanszczanin.net',
+        'cursosgratuitossepe.info',
+        'lospapelesdelcoche.com',
+    ]
+
+    for spam_domain in suspicious_domains:
+        if domain == spam_domain:
+            return (True, f'Bot-generated domain: {spam_domain}')
+
+    # Check for spam keywords (gambling, betting, escort services, etc.)
+    suspicious_keywords = [
+        'win', 'bet', 'casino', 'club', 'king', 'poker', 'slot', 'escort', 'seo',
+        '789', '888', '88bet', '8k', '33win', '12bet', '28bet', '78win', '79king', '11win', '9bet'
+    ]
+
+    # Check username for suspicious keywords
+    if username:
+        username_lower = username.lower()
+        for keyword in suspicious_keywords:
+            if keyword in username_lower:
+                return (True, f'Spam keyword in username: {keyword}')
+
+    # For Gmail addresses, check both local part and full email
+    if domain == 'gmail.com':
+        for keyword in suspicious_keywords:
+            if keyword in local_part:
+                return (True, f'Spam keyword in email: {keyword}')
+
+    # Check for excessive random character mixing (likely bot-generated)
+    # Only check if email has sufficient length and mixed chars
+    if len(local_part) > 15 and re.search(r'[0-9]', local_part) and re.search(r'[a-z]', local_part):
+        # Count transitions between letters and numbers
+        transitions = sum(1 for i in range(len(local_part)-1)
+                         if local_part[i].isdigit() != local_part[i+1].isdigit())
+
+        # High number of transitions suggests random generation
+        # Example: loganh10dqba8rdr3ocr has many letter-number transitions
+        if transitions > 5:
+            return (True, f'Random character pattern (bot-like): {transitions} transitions')
+
+    return (False, None)
+
+
+def is_excluded_domain(email, excluded_domains):
+    """
+    Check if email domain is in the exclusion set (high bounce rate domains)
+
+    Args:
+        email: Email address to check
+        excluded_domains: Set of excluded domain names
+
+    Returns:
+        tuple: (is_excluded, domain) where domain is the excluded domain name
+    """
+    if not email or '@' not in email or not excluded_domains:
+        return (False, None)
+
+    domain = email.split('@')[1].lower()
+
+    if domain in excluded_domains:
+        return (True, domain)
+
+    return (False, None)
+
+
 class TwilightAnnouncementSender:
     def __init__(self, test_email=None, batch_size=200, delay=0, dry_run=False, resume_from=None,
                  max_send_rate=14.0, max_total_send=50000, suppression_db=None, last_login_after=None,
-                 min_size=None):
+                 min_size=None, exclude_domains_file=None):
         """
         Initialize the announcement sender
 
@@ -221,6 +313,7 @@ class TwilightAnnouncementSender:
             suppression_db: Path to SES suppression list SQLite database (optional)
             last_login_after: Only send to users who logged in after this date (YYYY-MM-DD format)
             min_size: Only send to users with collection size >= this value in bytes (optional)
+            exclude_domains_file: Path to file with domains to exclude (one per line, optional)
         """
         self.user_manager = CLIUserManager()
         self.cork = self.user_manager.cork
@@ -254,6 +347,7 @@ class TwilightAnnouncementSender:
         # Initialize validation caches
         self.ses_suppression_list = {}  # Email -> reason mapping
         self.mx_cache = {}  # Domain -> has_mx_bool mapping
+        self.excluded_domains = set()  # Set of excluded domain names
 
         # Initialize database
         self._init_database()
@@ -269,6 +363,10 @@ class TwilightAnnouncementSender:
                 print("Warning: No suppression database provided. Use --suppression-db to enable SES bounce filtering.")
                 print("         Generate one with: python build_ses_suppression_db.py --profile PROFILE --region REGION")
 
+        # Load excluded domains from file (unless in test mode)
+        if not test_email and exclude_domains_file:
+            self.excluded_domains = self._load_excluded_domains(exclude_domains_file)
+
         self.stats = {
             'total_users': 0,
             'emails_sent': 0,
@@ -277,9 +375,11 @@ class TwilightAnnouncementSender:
             'validation_stats': {
                 'invalid_syntax': 0,
                 'ses_suppressed': 0,
+                'excluded_domain': 0,
                 'no_mx_records': 0,
                 'suspended': 0,
-                'no_email': 0
+                'no_email': 0,
+                'quarantined': 0
             },
             'start_time': None,
             'end_time': None
@@ -380,17 +480,61 @@ class TwilightAnnouncementSender:
         conn.close()
 
     def _load_sent_users(self):
-        """Load all successfully sent usernames into memory for fast lookup"""
+        """Load all successfully sent and quarantined usernames into memory for fast lookup"""
         conn = sqlite3.connect(self.db_file)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT username FROM email_progress WHERE status='sent'")
+        # Load both sent and quarantined users to skip them in future runs
+        cursor.execute("SELECT username FROM email_progress WHERE status IN ('sent', 'quarantined')")
         self.sent_users = set(row[0] for row in cursor.fetchall())
+
+        # Get separate counts for reporting
+        cursor.execute("SELECT COUNT(*) FROM email_progress WHERE status='sent'")
+        sent_count = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM email_progress WHERE status='quarantined'")
+        quarantined_count = cursor.fetchone()[0]
 
         conn.close()
 
-        if self.sent_users:
-            print(f"Loaded {len(self.sent_users)} previously sent users from database")
+        if sent_count > 0:
+            print(f"Loaded {sent_count} previously sent users from database")
+        if quarantined_count > 0:
+            print(f"Loaded {quarantined_count} quarantined users from database (will be skipped)")
+
+    def _load_excluded_domains(self, exclude_file):
+        """
+        Load excluded domains from file (high bounce rate domains to skip)
+
+        Args:
+            exclude_file: Path to file with excluded domains (one per line)
+
+        Returns:
+            set: Set of excluded domain names (lowercase)
+        """
+        excluded = set()
+
+        try:
+            with open(exclude_file, 'r') as f:
+                for line in f:
+                    domain = line.strip().lower()
+                    if domain and not domain.startswith('#'):  # Skip empty lines and comments
+                        excluded.add(domain)
+
+            print(f"Loaded {len(excluded)} excluded domains from {exclude_file}")
+            if excluded:
+                print(f"  Excluded domains: {', '.join(sorted(list(excluded)[:10]))}")
+                if len(excluded) > 10:
+                    print(f"  ... and {len(excluded) - 10} more")
+
+            return excluded
+
+        except FileNotFoundError:
+            print(f"Warning: Excluded domains file not found: {exclude_file}")
+            return set()
+        except Exception as e:
+            print(f"Warning: Could not load excluded domains from {exclude_file}: {e}")
+            return set()
 
     def _load_cached_users(self):
         """
@@ -447,8 +591,8 @@ class TwilightAnnouncementSender:
         Args:
             username: User's username
             email: User's email address
-            status: Status - 'sent', 'failed', or 'skipped'
-            error_message: Error message if status is 'failed'
+            status: Status - 'sent', 'failed', 'skipped', or 'quarantined'
+            error_message: Error/reason message (used for 'failed', 'skipped', and 'quarantined')
         """
         # Skip database writes in dry-run mode
         if self.dry_run:
@@ -466,8 +610,8 @@ class TwilightAnnouncementSender:
 
             conn.commit()
 
-            # Update in-memory cache if sent successfully
-            if status == 'sent':
+            # Update in-memory cache if sent successfully or quarantined
+            if status in ('sent', 'quarantined'):
                 self.sent_users.add(username)
 
         except Exception as e:
@@ -603,6 +747,24 @@ class TwilightAnnouncementSender:
             self.stats['emails_skipped'] += 1
             self.stats['validation_stats']['ses_suppressed'] += 1
             self.save_progress(username, email, 'skipped', f'SES suppressed: {reason}')
+            return False
+
+        # Check excluded domains (high bounce rate domains)
+        excluded, excluded_domain = is_excluded_domain(email, self.excluded_domains)
+        if excluded:
+            print(f"Skipping {username}: Excluded domain ({excluded_domain})")
+            self.stats['emails_skipped'] += 1
+            self.stats['validation_stats']['excluded_domain'] += 1
+            self.save_progress(username, email, 'deferred', f'Excluded domain: {excluded_domain}')
+            return False
+
+        # Check for suspicious email patterns (spam/bot signups)
+        suspicious, sus_reason = is_suspicious_email(email, username)
+        if suspicious:
+            print(f"Quarantined {username}: {sus_reason} ({email})")
+            self.stats['emails_skipped'] += 1
+            self.stats['validation_stats']['quarantined'] += 1
+            self.save_progress(username, email, 'quarantined', sus_reason)
             return False
 
         # Check DNS/MX records - uses cached domain lookups
@@ -831,6 +993,7 @@ class TwilightAnnouncementSender:
         print(f"  Emails sent: {db_stats.get('sent', 0)}")
         print(f"  Emails failed: {db_stats.get('failed', 0)}")
         print(f"  Emails skipped: {db_stats.get('skipped', 0)}")
+        print(f"  Emails quarantined: {db_stats.get('quarantined', 0)}")
 
         # Show validation breakdown from this run
         if any(self.stats['validation_stats'].values()):
@@ -869,6 +1032,10 @@ class TwilightAnnouncementSender:
         if db_stats.get('failed', 0) > 0:
             print(f"\nFailed emails can be queried from: {self.db_file}")
             print(f"  Example: sqlite3 {self.db_file} \"SELECT * FROM email_progress WHERE status='failed'\"")
+
+        if db_stats.get('quarantined', 0) > 0:
+            print(f"\nQuarantined emails (suspicious patterns) can be queried from: {self.db_file}")
+            print(f"  Example: sqlite3 {self.db_file} \"SELECT username, email, error_message FROM email_progress WHERE status='quarantined'\"")
 
         print(f"\nProgress database: {self.db_file}")
         print(f"{'='*60}\n")
@@ -953,6 +1120,12 @@ def main():
         help='Only send to users with collection size >= this value in bytes'
     )
 
+    parser.add_argument(
+        '--exclude-domains',
+        metavar='FILE',
+        help='Path to file with domains to exclude (one per line, e.g., hotmail.com)'
+    )
+
     args = parser.parse_args()
 
     # Validate batch size and delay
@@ -983,7 +1156,8 @@ def main():
         max_total_send=args.max_total_send,
         suppression_db=args.suppression_db,
         last_login_after=args.last_login,
-        min_size=args.min_size
+        min_size=args.min_size,
+        exclude_domains_file=args.exclude_domains
     )
 
     try:
