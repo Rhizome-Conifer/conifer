@@ -12,6 +12,9 @@ This script sends the twilight announcement email to all users with support for:
 - Automatic resume: skips users already sent to or quarantined (no manual resume needed)
 - Error handling: logs errors to database and continues processing
 - Deterministic ordering: sorts users alphabetically for consistent processing
+- SMTP connection caching: reuses connections for better performance and DoS prevention
+- Google Workspace compatibility: uses conifer.rhizome.org for HELO/EHLO identification
+- Transaction limits: automatically resets SMTP transaction after 100 emails (Gmail relay limit)
 
 Progress Database:
     All progress is stored in twilight_email_progress.db (SQLite)
@@ -358,6 +361,11 @@ class TwilightAnnouncementSender:
         self.sent_users = set()  # Cache of usernames already sent to
         self.user_cache_file = 'twilight_user_cache.json'  # Cache for sorted active users
 
+        # SMTP connection caching (reuse connection for better performance)
+        self.smtp_connection = None
+        self.smtp_config = None  # Store config for reconnection
+        self.emails_on_current_connection = 0  # Track emails sent per connection (Gmail limit: 100)
+
         # Initialize validation caches
         self.ses_suppression_list = {}  # Email -> reason mapping
         self.mx_cache = {}  # Domain -> has_mx_bool mapping
@@ -400,9 +408,123 @@ class TwilightAnnouncementSender:
             'end_time': None
         }
 
+    def _get_smtp_connection(self):
+        """
+        Get or create SMTP connection with connection caching for better performance.
+        Reuses existing connection to avoid DoS limits and improve efficiency.
+
+        Returns:
+            SMTP connection object
+        """
+        # Parse SMTP configuration if not already done
+        if self.smtp_config is None:
+            smtp_url = os.path.expandvars(os.environ.get('SES_EMAIL_SMTP_URL', ''))
+            if not smtp_url:
+                raise ValueError("SES_EMAIL_SMTP_URL environment variable must be set")
+
+            parsed = urlparse(smtp_url)
+            self.smtp_config = {
+                'use_tls': parsed.scheme == 'starttls',
+                'use_ssl': parsed.scheme == 'ssl',
+                'username': unquote(parsed.username) if parsed.username else None,
+                'password': unquote(parsed.password) if parsed.password else None,
+                'host': parsed.hostname,
+                'port': parsed.port or (587 if parsed.scheme == 'starttls' else 465),
+                'local_hostname': 'conifer.rhizome.org'  # Use domain for HELO/EHLO
+            }
+
+            print(f"[SMTP] Configuration: {self.smtp_config['host']}:{self.smtp_config['port']}")
+            print(f"[SMTP] TLS mode: {'STARTTLS' if self.smtp_config['use_tls'] else 'SSL' if self.smtp_config['use_ssl'] else 'None'}")
+            print(f"[SMTP] HELO/EHLO: {self.smtp_config['local_hostname']}")
+            print(f"[SMTP] Auth: {'enabled' if self.smtp_config['username'] else 'IP-based relay'}")
+
+        # Return existing connection if still alive
+        if self.smtp_connection is not None:
+            try:
+                # Test if connection is still alive
+                self.smtp_connection.noop()
+                return self.smtp_connection
+            except Exception as e:
+                print(f"[SMTP] Connection lost ({e}), reconnecting...")
+                self._close_smtp_connection()
+
+        # Create new connection
+        try:
+            config = self.smtp_config
+            print(f"[SMTP] Opening new connection to {config['host']}:{config['port']}...")
+
+            if config['use_tls']:
+                # STARTTLS mode (port 587)
+                self.smtp_connection = smtplib.SMTP(
+                    config['host'],
+                    config['port'],
+                    local_hostname=config['local_hostname']
+                )
+                self.smtp_connection.starttls()
+            elif config['use_ssl']:
+                # SSL mode (port 465)
+                self.smtp_connection = smtplib.SMTP_SSL(
+                    config['host'],
+                    config['port'],
+                    local_hostname=config['local_hostname']
+                )
+            else:
+                # Plain SMTP (not recommended)
+                self.smtp_connection = smtplib.SMTP(
+                    config['host'],
+                    config['port'],
+                    local_hostname=config['local_hostname']
+                )
+
+            # Authenticate if credentials provided
+            if config['username'] and config['password']:
+                print(f"[SMTP] Authenticating as {config['username']}...")
+                self.smtp_connection.login(config['username'], config['password'])
+            else:
+                print(f"[SMTP] Using IP-based relay (no authentication)")
+
+            print(f"[SMTP] Connection established successfully")
+            # Reset counter for new connection
+            self.emails_on_current_connection = 0
+            return self.smtp_connection
+
+        except Exception as e:
+            print(f"[SMTP] Failed to connect: {e}")
+            self.smtp_connection = None
+            self.emails_on_current_connection = 0
+            raise
+
+    def _close_smtp_connection(self):
+        """Close SMTP connection if open"""
+        if self.smtp_connection is not None:
+            try:
+                self.smtp_connection.quit()
+                print(f"[SMTP] Connection closed")
+            except Exception as e:
+                print(f"[SMTP] Error closing connection: {e}")
+            finally:
+                self.smtp_connection = None
+                self.emails_on_current_connection = 0
+
+    def _reset_smtp_transaction(self):
+        """
+        Reset SMTP transaction using RSET command.
+        Google Workspace SMTP relay has a 100-recipient limit per transaction.
+        """
+        if self.smtp_connection is not None:
+            try:
+                self.smtp_connection.rset()
+                self.emails_on_current_connection = 0
+                print(f"[SMTP] Transaction reset (100 email limit reached)")
+            except Exception as e:
+                print(f"[SMTP] Error resetting transaction: {e}, closing connection...")
+                self._close_smtp_connection()
+
     def _send_via_smtp(self, to_addr, subject, body_text, body_html, reply_to='support@conifer.rhizome.org'):
         """
-        Send email via SMTP with Reply-To header support and multipart text/html
+        Send email via SMTP with Reply-To header support and multipart text/html.
+        Uses connection caching to reuse SMTP connections for better performance.
+        Automatically resets transaction after 100 emails (Google Workspace SMTP relay limit).
 
         Args:
             to_addr: Recipient email address
@@ -411,19 +533,6 @@ class TwilightAnnouncementSender:
             body_html: HTML email body
             reply_to: Reply-To email address (default: support@conifer.rhizome.org)
         """
-        # Get SMTP configuration from environment variables (same as cork uses)
-        smtp_url = os.path.expandvars(os.environ.get('SES_EMAIL_SMTP_URL', ''))
-
-        if not smtp_url:
-            raise ValueError("SES_EMAIL_SMTP_URL environment variable must be set")
-
-        # Parse SMTP URL (format: starttls://user:pass@host:port)
-        parsed = urlparse(smtp_url)
-        use_tls = parsed.scheme == 'starttls'
-        username = unquote(parsed.username) if parsed.username else None
-        password = unquote(parsed.password) if parsed.password else None
-        host = parsed.hostname
-        port = parsed.port or 587
         sender = 'no-reply@conifer.rhizome.org'
 
         # Create message with alternative parts for text and HTML
@@ -458,18 +567,24 @@ class TwilightAnnouncementSender:
         else:
             print(f"Warning: Logo file not found at {logo_path}")
 
-        # Send via SMTP
-        if use_tls:
-            smtp = smtplib.SMTP(host, port)
-            smtp.starttls()
-        else:
-            smtp = smtplib.SMTP_SSL(host, port)
+        # Check if we need to reset transaction (Google Workspace limit: 100 emails per transaction)
+        if self.emails_on_current_connection >= 100:
+            self._reset_smtp_transaction()
 
-        if username and password:
-            smtp.login(username, password)
+        # Get cached SMTP connection (or create new one)
+        smtp = self._get_smtp_connection()
 
-        smtp.sendmail(sender, to_addr, msg.as_string())
-        smtp.quit()
+        # Send email via cached connection
+        try:
+            smtp.sendmail(sender, to_addr, msg.as_string())
+            # Increment counter after successful send
+            self.emails_on_current_connection += 1
+        except Exception as e:
+            # If send fails, close connection and raise error
+            # Connection will be recreated on next attempt
+            print(f"[SMTP] Send failed: {e}")
+            self._close_smtp_connection()
+            raise
 
     def _init_database(self):
         """Initialize SQLite database with schema"""
@@ -917,6 +1032,9 @@ class TwilightAnnouncementSender:
         else:
             print(f"\n✗ Failed to send test email to {self.test_email}")
 
+        # Close SMTP connection when done
+        self._close_smtp_connection()
+
         return success
 
     def send_to_all_users(self):
@@ -1000,6 +1118,9 @@ class TwilightAnnouncementSender:
                     time.sleep(self.delay)
 
                 emails_in_batch = 0
+
+        # Close SMTP connection when done
+        self._close_smtp_connection()
 
         self.stats['end_time'] = datetime.utcnow().isoformat()
         self.print_summary()
@@ -1199,11 +1320,13 @@ def main():
     except KeyboardInterrupt:
         print("\n\nInterrupted by user. Progress has been saved.")
         print(f"To resume, run with: --resume-from {sender.stats.get('last_username', 'LAST_USERNAME')}")
+        sender._close_smtp_connection()
         return 1
     except Exception as e:
         print(f"\n\nFatal error: {e}")
         import traceback
         traceback.print_exc()
+        sender._close_smtp_connection()
         return 1
 
 
