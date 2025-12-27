@@ -46,6 +46,9 @@ Usage:
 
     # Dry run - show what would be sent without actually sending
     python send_twilight_announcement.py --suppression-db ses_suppression.db --dry-run
+
+    # Use a different sender email (avoids new account sending limits)
+    python send_twilight_announcement.py --suppression-db ses_suppression.db --sender-email support@conifer.rhizome.org
 """
 
 import os
@@ -315,7 +318,7 @@ def is_excluded_domain(email, excluded_domains, excluded_wildcards):
 class TwilightAnnouncementSender:
     def __init__(self, test_email=None, batch_size=200, delay=0, dry_run=False, resume_from=None,
                  max_send_rate=14.0, max_total_send=50000, suppression_db=None, last_login_after=None,
-                 min_size=None, exclude_domains_file=None):
+                 min_size=None, exclude_domains_file=None, sender_email=None):
         """
         Initialize the announcement sender
 
@@ -331,6 +334,7 @@ class TwilightAnnouncementSender:
             last_login_after: Only send to users who logged in after this date (YYYY-MM-DD format)
             min_size: Only send to users with collection size >= this value in bytes (optional)
             exclude_domains_file: Path to file with domains to exclude (one per line, supports *.edu wildcards, optional)
+            sender_email: Sender email address (default: no-reply@conifer.rhizome.org)
         """
         self.user_manager = CLIUserManager()
         self.cork = self.user_manager.cork
@@ -343,6 +347,7 @@ class TwilightAnnouncementSender:
         self.max_total_send = max_total_send
         self.last_login_after = last_login_after
         self.min_size = min_size
+        self.sender_email = sender_email or 'no-reply@conifer.rhizome.org'
 
         # Calculate delay between emails to respect rate limit
         # Add a small buffer (10%) to be safe
@@ -533,7 +538,7 @@ class TwilightAnnouncementSender:
             body_html: HTML email body
             reply_to: Reply-To email address (default: support@conifer.rhizome.org)
         """
-        sender = 'no-reply@conifer.rhizome.org'
+        sender = self.sender_email
 
         # Create message with alternative parts for text and HTML
         msg = MIMEMultipart('alternative')
@@ -1019,7 +1024,8 @@ class TwilightAnnouncementSender:
         print(f"\n{'='*60}")
         print("TEST MODE")
         print(f"{'='*60}")
-        print(f"Sending test email to: {self.test_email}\n")
+        print(f"Sending test email to: {self.test_email}")
+        print(f"Sender email: {self.sender_email}\n")
 
         # Use a dummy username and name for testing
         success = self.send_email(
@@ -1056,6 +1062,7 @@ class TwilightAnnouncementSender:
             print(f"Will only send to first {self.max_total_send} users")
             print(f"Use --resume-from to continue in a subsequent run\n")
 
+        print(f"Sender email: {self.sender_email}")
         print(f"Total users to process: {len(users_to_send)}")
         print(f"Batch size: {self.batch_size} (for progress reporting)")
         print(f"Rate limit: {self.max_send_rate} emails/second")
@@ -1280,6 +1287,12 @@ def main():
         help='Path to file with domains to exclude (one per line, supports wildcards like *.edu)'
     )
 
+    parser.add_argument(
+        '--sender-email',
+        metavar='EMAIL',
+        help='Sender email address (default: no-reply@conifer.rhizome.org). Use an established account to avoid new account sending limits.'
+    )
+
     args = parser.parse_args()
 
     # Validate batch size and delay
@@ -1311,7 +1324,8 @@ def main():
         suppression_db=args.suppression_db,
         last_login_after=args.last_login,
         min_size=args.min_size,
-        exclude_domains_file=args.exclude_domains
+        exclude_domains_file=args.exclude_domains,
+        sender_email=args.sender_email
     )
 
     try:
