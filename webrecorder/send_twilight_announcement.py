@@ -10,6 +10,7 @@ This script sends the twilight announcement email to all users with support for:
 - Total send quota: enforces max emails per run (50,000 by default for SES quota)
 - Progress tracking: uses SQLite database to track sent/failed/skipped/quarantined emails
 - Automatic resume: skips users already sent to or quarantined (no manual resume needed)
+- Retry mode: resend emails with specific statuses (failed, skipped, deferred, quarantined)
 - Error handling: logs errors to database and continues processing
 - Deterministic ordering: sorts users alphabetically for consistent processing
 - SMTP connection caching: reuses connections for better performance and DoS prevention
@@ -49,6 +50,15 @@ Usage:
 
     # Use a different sender email (avoids new account sending limits)
     python send_twilight_announcement.py --suppression-db ses_suppression.db --sender-email support@conifer.rhizome.org
+
+    # Retry mode - resend failed emails with filters still applied
+    python send_twilight_announcement.py --retry failed --suppression-db ses_suppression.db --exclude-domains exclude_domains.txt
+
+    # Retry multiple statuses - resend both failed and skipped
+    python send_twilight_announcement.py --retry failed,skipped --suppression-db ses_suppression.db
+
+    # Retry with additional filters - only resend to users who logged in recently
+    python send_twilight_announcement.py --retry failed --last-login 2020-01-01 --min-size 1048576
 """
 
 import os
@@ -318,7 +328,7 @@ def is_excluded_domain(email, excluded_domains, excluded_wildcards):
 class TwilightAnnouncementSender:
     def __init__(self, test_email=None, batch_size=200, delay=0, dry_run=False, resume_from=None,
                  max_send_rate=14.0, max_total_send=50000, suppression_db=None, last_login_after=None,
-                 min_size=None, exclude_domains_file=None, sender_email=None):
+                 min_size=None, exclude_domains_file=None, sender_email=None, retry_statuses=None):
         """
         Initialize the announcement sender
 
@@ -335,6 +345,7 @@ class TwilightAnnouncementSender:
             min_size: Only send to users with collection size >= this value in bytes (optional)
             exclude_domains_file: Path to file with domains to exclude (one per line, supports *.edu wildcards, optional)
             sender_email: Sender email address (default: no-reply@conifer.rhizome.org)
+            retry_statuses: List of statuses to retry (e.g., ['failed', 'skipped']). If set, enables retry mode.
         """
         self.user_manager = CLIUserManager()
         self.cork = self.user_manager.cork
@@ -348,6 +359,7 @@ class TwilightAnnouncementSender:
         self.last_login_after = last_login_after
         self.min_size = min_size
         self.sender_email = sender_email or 'no-reply@conifer.rhizome.org'
+        self.retry_statuses = retry_statuses
 
         # Calculate delay between emails to respect rate limit
         # Add a small buffer (10%) to be safe
@@ -961,14 +973,110 @@ class TwilightAnnouncementSender:
             self.stats['emails_failed'] += 1
             return False
 
+    def get_users_to_retry(self):
+        """
+        Get list of users to retry from database based on their status.
+        Only includes users with statuses specified in self.retry_statuses.
+
+        Returns:
+            list: List of (username, email) tuples from database
+        """
+        if not self.retry_statuses:
+            return []
+
+        conn = sqlite3.connect(self.db_file)
+        cursor = conn.cursor()
+
+        # Build query to select users with specified statuses
+        placeholders = ','.join('?' * len(self.retry_statuses))
+        query = f"""
+            SELECT username, email
+            FROM email_progress
+            WHERE status IN ({placeholders})
+            ORDER BY username
+        """
+
+        cursor.execute(query, self.retry_statuses)
+        users_from_db = cursor.fetchall()
+
+        conn.close()
+
+        print(f"\nRetry mode: Found {len(users_from_db)} users with status(es): {', '.join(self.retry_statuses)}")
+
+        # Get full user data from user manager for filtering
+        users_to_retry = []
+        not_found_count = 0
+
+        for username, email in users_from_db:
+            # Get user data from user manager
+            if username not in self.user_manager.all_users:
+                print(f"Warning: User {username} not found in user manager (may have been deleted)")
+                not_found_count += 1
+                # Still include them with minimal data (just email)
+                users_to_retry.append((username, {'email_addr': email}))
+            else:
+                user_data = self.user_manager.all_users[username]
+                users_to_retry.append((username, user_data))
+
+        if not_found_count > 0:
+            print(f"Warning: {not_found_count} users from database not found in current user data")
+
+        # Apply filters to retry list
+        users_filtered = []
+
+        for username, user_data in users_to_retry:
+            # Apply last_login filter if specified
+            if self.last_login_after:
+                last_login = user_data.get('last_login', '')
+                if last_login:
+                    try:
+                        # Parse last_login (same logic as _filter_by_last_login)
+                        threshold_dt = datetime.fromisoformat(self.last_login_after)
+                        if isinstance(last_login, (int, float)) or (isinstance(last_login, str) and last_login.isdigit()):
+                            login_dt = datetime.fromtimestamp(float(last_login))
+                        else:
+                            login_dt = datetime.fromisoformat(str(last_login).split('.')[0])
+
+                        if login_dt <= threshold_dt:
+                            continue  # Skip this user
+                    except (ValueError, AttributeError, OSError):
+                        continue  # Skip users with invalid dates
+
+            # Apply min_size filter if specified
+            if self.min_size:
+                try:
+                    size = int(user_data.get('size', 0))
+                    if size < self.min_size:
+                        continue  # Skip this user
+                except (ValueError, TypeError):
+                    continue  # Skip users with invalid size
+
+            # Apply resume_from filter if specified
+            if self.resume_from and username <= self.resume_from:
+                continue  # Skip this user
+
+            users_filtered.append((username, user_data))
+
+        filters_applied = len(users_to_retry) - len(users_filtered)
+        if filters_applied > 0:
+            print(f"Filtered out {filters_applied} users based on --last-login, --min-size, or --resume-from")
+
+        return users_filtered
+
     def get_users_to_process(self):
         """
         Get list of users to process, filtering out already-sent users
         Uses cached sorted active users for subsequent runs to improve performance.
+        In retry mode, gets users from database instead.
 
         Returns:
             list: List of (username, user_data) tuples sorted alphabetically
         """
+        # Retry mode: get users from database with specified statuses
+        if self.retry_statuses:
+            return self.get_users_to_retry()
+
+        # Normal mode: get all active users
         # Try to load from cache first
         sorted_active = self._load_cached_users()
 
@@ -1046,7 +1154,10 @@ class TwilightAnnouncementSender:
     def send_to_all_users(self):
         """Send announcement email to all users in batches with rate limiting"""
         print(f"\n{'='*60}")
-        print("SENDING TWILIGHT ANNOUNCEMENT TO ALL USERS")
+        if self.retry_statuses:
+            print(f"RETRY MODE: Resending emails with status(es): {', '.join(self.retry_statuses).upper()}")
+        else:
+            print("SENDING TWILIGHT ANNOUNCEMENT TO ALL USERS")
         print(f"{'='*60}")
 
         if self.dry_run:
@@ -1293,6 +1404,12 @@ def main():
         help='Sender email address (default: no-reply@conifer.rhizome.org). Use an established account to avoid new account sending limits.'
     )
 
+    parser.add_argument(
+        '--retry',
+        metavar='STATUSES',
+        help='Retry mode: resend emails with specified statuses (comma-separated). Common statuses: failed, skipped, deferred, quarantined. Example: --retry failed,skipped'
+    )
+
     args = parser.parse_args()
 
     # Validate batch size and delay
@@ -1312,6 +1429,17 @@ def main():
         print("Error: max-total-send must be at least 1")
         return 1
 
+    # Parse retry statuses
+    retry_statuses = None
+    if args.retry:
+        retry_statuses = [s.strip() for s in args.retry.split(',')]
+        valid_statuses = {'failed', 'skipped', 'deferred', 'quarantined'}
+        invalid_statuses = set(retry_statuses) - valid_statuses
+        if invalid_statuses:
+            print(f"Error: Invalid retry status(es): {', '.join(invalid_statuses)}")
+            print(f"Valid statuses are: {', '.join(sorted(valid_statuses))}")
+            return 1
+
     # Create and run sender
     sender = TwilightAnnouncementSender(
         test_email=args.test,
@@ -1325,7 +1453,8 @@ def main():
         last_login_after=args.last_login,
         min_size=args.min_size,
         exclude_domains_file=args.exclude_domains,
-        sender_email=args.sender_email
+        sender_email=args.sender_email,
+        retry_statuses=retry_statuses
     )
 
     try:
