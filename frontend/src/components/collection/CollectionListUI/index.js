@@ -6,7 +6,7 @@ import { fromJS } from 'immutable';
 import { Link } from 'react-router-dom';
 import { Button, Col, Row } from 'react-bootstrap';
 
-import { appHost, tagline } from 'config';
+import config, { appHost, tagline } from 'config';
 
 import { getCollectionLink, stopPropagation, truncate } from 'helpers/utils';
 import { AccessContext, AppContext } from 'store/contexts';
@@ -119,10 +119,10 @@ class CollectionListUI extends Component {
             !__DESKTOP__ &&
               <Col xs={12} sm={3} className="collection-description">
                 <InlineEditor
-                  canAdmin={canAdmin}
+                  canAdmin={canAdmin && !config.readOnly}
                   initial={displayName}
                   onSave={this.editName}
-                  readOnly={isAnon || !canAdmin}
+                  readOnly={isAnon || !canAdmin || config.readOnly}
                   success={this.props.edited}>
                   <h2>{displayName}</h2>
                 </InlineEditor>
@@ -136,11 +136,11 @@ class CollectionListUI extends Component {
                 {
                   (user.get('display_url') || canAdmin) &&
                     <InlineEditor
-                      canAdmin={canAdmin}
+                      canAdmin={canAdmin && !config.readOnly}
                       initial={user.get('display_url') || 'Add website...'}
                       placeholder="Add website..."
                       onSave={this.editURL}
-                      readOnly={isAnon || !canAdmin}
+                      readOnly={isAnon || !canAdmin || config.readOnly}
                       success={this.props.edited}>
                       <div className="user-link">
                         <a target="_blank" onClick={stopPropagation} href={userLink}><LinkIcon />
@@ -155,13 +155,13 @@ class CollectionListUI extends Component {
                   onSave={this.updateUser}
                   placeholder="Add a description..."
                   clickToEdit
-                  readOnly={isAnon || !canAdmin}
+                  readOnly={isAnon || !canAdmin || config.readOnly}
                   success={this.props.edited} />
               </Col>
           }
           <Col xs={12} sm={{ span: __DESKTOP__ ? 10 : 9, offset: __DESKTOP__ ? 1 : 0}} className="wr-coll-meta">
             {
-              canAdmin &&
+              canAdmin && !config.readOnly &&
                 <Row className="collection-start-form">
                   <Col className="start-form" xs={12}>
                     <h4>New Capture</h4>
@@ -174,10 +174,10 @@ class CollectionListUI extends Component {
                 <Row>
                   <Col xs={12} className={classNames('collections-index-nav', { desktop: __DESKTOP__ })}>
                     { __DESKTOP__ && <h4>My Collections</h4> }
-                    <Button size="lg" onClick={this.toggle} variant="outline-secondary">
+                    <Button size="lg" disabled={config.readOnly} title={config.readOnly ? config.sunsetTooltip : undefined} onClick={config.readOnly ? undefined : this.toggle} variant="outline-secondary">
                       <PlusIcon /> New Collection
                     </Button>
-                    <Upload size="lg">
+                    <Upload size="lg" disabled={config.readOnly}>
                       <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' }
                     </Upload>
                   </Col>

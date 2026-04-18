@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import { draggableTypes } from 'config';
+import config, { draggableTypes } from 'config';
 import { getCollectionLink, keyIn } from 'helpers/utils';
 
 import { AccessContext } from 'store/contexts';
@@ -251,7 +251,7 @@ class ListsUI extends Component {
                   canAdmin &&
                     <React.Fragment>
                       <button onClick={this.openEditModal} className="button-link list-edit" type="button">EDIT</button>
-                      <button onClick={this.openEditModal} className="borderless" type="button"><PlusIcon /></button>
+                      <button disabled={config.readOnly} title={config.readOnly ? config.sunsetTooltip : undefined} onClick={config.readOnly ? undefined : this.openEditModal} className="borderless" type="button"><PlusIcon /></button>
                     </React.Fragment>
                 }
               </li>
@@ -286,11 +286,11 @@ class ListsUI extends Component {
               dialogClassName="lists-edit-modal">
               <header>
                 <button className="borderless" onClick={this.clearInput} disabled={!title.length} type="button"><XIcon /></button>
-                <input name="title" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="Create new list" autoFocus />
+                <input name="title" disabled={config.readOnly} onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="Create new list" autoFocus />
                 {
                   created ?
                     <button className="borderless" type="button"><CheckIcon success /></button> :
-                    <button className={classNames('borderless', { 'wr-add-list': Boolean(title.length) })} onClick={this.createList} disabled={!title.length || isCreating} title="Add list" type="button"><PlusIcon /></button>
+                    <button className={classNames('borderless', { 'wr-add-list': Boolean(title.length) })} onClick={this.createList} disabled={config.readOnly || !title.length || isCreating} title={config.readOnly ? config.sunsetTooltip : 'Add list'} type="button"><PlusIcon /></button>
                 }
               </header>
               <ul className="lists-modal-list">

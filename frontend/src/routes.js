@@ -1,6 +1,9 @@
+import React from 'react';
+import { Redirect } from 'react-router-dom';
+
 import HttpStatus from 'components/HttpStatus';
 import { ApiDocs, Documentation, FAQ, TermsAndPolicies } from 'components/siteComponents';
-import { product } from 'config';
+import config, { product } from 'config';
 
 import {
   CollectionCover,
@@ -97,12 +100,17 @@ const userRoutes = [
   }
 ];
 
+// When read-only, redirect capture URLs back to the collection page
+const collRedirect = ({ match: { params } }) => (
+  <Redirect to={`/${params.user}/${params.coll}`} />
+);
+
 const captureRoutes = [
   {
     path: `${userPath}/:coll/$new`,
     breadcrumb: 'New Session',
     classOverride: '',
-    component: NewRecording,
+    component: config.readOnly ? collRedirect : NewRecording,
     exact: true,
     footer: false,
     name: 'new recording'
@@ -112,7 +120,7 @@ const captureRoutes = [
     path: `${userPath}/:coll/:rec/record/$br::br/:splat(.*)`,
     breadcrumb: 'Recording',
     classOverride: '',
-    component: Record,
+    component: config.readOnly ? collRedirect : Record,
     exact: true,
     footer: false,
     getLocation: ({ user, coll, rec }) => `/${user}/${coll}/manage?filter=${rec}`,
@@ -122,7 +130,7 @@ const captureRoutes = [
     path: `${userPath}/:coll/:rec/record/:splat([^$].*)`,
     breadcrumb: 'Recording',
     classOverride: '',
-    component: Record,
+    component: config.readOnly ? collRedirect : Record,
     exact: true,
     footer: false,
     getLocation: ({ user, coll, rec }) => `/${user}/${coll}/manage?filter=${rec}`,
@@ -132,7 +140,7 @@ const captureRoutes = [
     path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
     breadcrumb: 'Patching',
     classOverride: '',
-    component: Patch,
+    component: config.readOnly ? collRedirect : Patch,
     exact: true,
     footer: false,
     name: 'rb patch'
@@ -141,7 +149,7 @@ const captureRoutes = [
     path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?/:splat([^$|^\\d].*)`,
     breadcrumb: 'Patching',
     classOverride: '',
-    component: Patch,
+    component: config.readOnly ? collRedirect : Patch,
     exact: true,
     footer: false,
     name: 'patch'
@@ -150,7 +158,7 @@ const captureRoutes = [
     path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
     breadcrumb: 'Extracting',
     classOverride: '',
-    component: Extract,
+    component: config.readOnly ? collRedirect : Extract,
     exact: true,
     footer: false,
     name: 'rb extract'
@@ -159,7 +167,7 @@ const captureRoutes = [
     path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?/:splat([^$|^\\d].*)`,
     breadcrumb: 'Extracting',
     classOverride: '',
-    component: Extract,
+    component: config.readOnly ? collRedirect : Extract,
     exact: true,
     footer: false,
     name: 'extract'
@@ -174,7 +182,7 @@ if (__DESKTOP__) {
       path: `${userPath}/:coll/live/:splat(.*)`,
       breadcrumb: 'Live',
       classOverride: '',
-      component: Live,
+      component: config.readOnly ? () => <Redirect to="/" /> : Live,
       exact: true,
       footer: false,
       name: 'live prepare'

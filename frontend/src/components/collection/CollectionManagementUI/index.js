@@ -120,7 +120,7 @@ class CollectionManagementUI extends Component {
                 </Button>
                 {
                   !this.context.isAnon &&
-                    <Upload size="lg" fromCollection={collection.get('id')} classes="btn btn-default">
+                    <Upload size="lg" disabled={config.readOnly} fromCollection={collection.get('id')} classes="btn btn-default">
                       <UploadIcon /> { __DESKTOP__ ? 'Import' : 'Upload' } WARC to Collection
                     </Upload>
                 }

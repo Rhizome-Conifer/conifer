@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import { Button, Col, Row } from 'react-bootstrap';
 
-import { anonDisabled, homepageAnnouncement, product, supporterPortal } from 'config';
+import config, { anonDisabled, homepageAnnouncement, product, supporterPortal } from 'config';
 
 import { StandaloneRecorder } from 'containers';
 import RedirectWithStatus from 'components/RedirectWithStatus';
@@ -87,7 +87,7 @@ class HomeUI extends PureComponent {
             <p>{product} is a web archiving service that creates an interactive copy of any web page that you browse, including content revealed by your interactions such as playing video and audio, scrolling, clicking buttons, and so forth.</p>
 
             <div className="cta">
-              <Button variant="primary" size="md" onClick={this.signup}>Create a Free Account</Button>
+              <Button variant="primary" size="md" disabled={config.readOnly} title={config.readOnly ? config.sunsetTooltip : undefined} onClick={config.readOnly ? undefined : this.signup}>Create a Free Account</Button>
               <button className="button-link existing-users-btn" onClick={this.login} type="button">Existing Users Login</button>
             </div>
 

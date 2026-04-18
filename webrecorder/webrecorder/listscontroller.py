@@ -31,6 +31,8 @@ class ListsController(BaseController):
                   req=['title', 'desc', 'public', 'before_id'],
                   resp='list')
         def add_list():
+            if self.read_only:
+                return self._feature_disabled()
             user, collection = self.load_user_coll()
 
             blist = collection.create_bookmark_list(request.json)
@@ -58,6 +60,8 @@ class ListsController(BaseController):
                   req=['title', 'desc', 'public'],
                   resp='list')
         def update_list(list_id):
+            if self.read_only and any(k in (request.json or {}) for k in ('title', 'desc')):
+                return self._feature_disabled()
             user, collection, blist = self.load_user_coll_list(list_id)
 
             blist.update(request.json)
@@ -82,6 +86,8 @@ class ListsController(BaseController):
                   req=['before_id'],
                   resp='success')
         def move_list_before(list_id):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, blist = self.load_user_coll_list(list_id)
 
             before_id = request.json.get('before_id')
@@ -101,6 +107,8 @@ class ListsController(BaseController):
                   req=['order'],
                   resp='success')
         def reorder_lists():
+            if self.read_only:
+                return self._feature_disabled()
             user, collection = self.load_user_coll()
 
             self.access.assert_can_write_coll(collection)
@@ -123,6 +131,8 @@ class ListsController(BaseController):
                   req=['title', 'url', 'timestamp', 'browser', 'desc', 'page_id', 'before_id'],
                   resp='bookmark')
         def create_bookmark(list_id):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, blist = self.load_user_coll_list(list_id)
 
             bookmark = blist.create_bookmark(request.json)
@@ -138,6 +148,8 @@ class ListsController(BaseController):
                   req={'type': 'array', 'item_type': ['title', 'url', 'timestamp', 'browser', 'desc', 'page_id', 'before_id']},
                   resp='list')
         def create_bookmarks(list_id):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, blist = self.load_user_coll_list(list_id)
 
             bookmark_list = request.json
@@ -171,6 +183,8 @@ class ListsController(BaseController):
                   req=['title', 'url', 'timestamp', 'browser', 'desc', 'page_id', 'before_id'],
                   resp='bookmark')
         def update_bookmark(bid):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, blist = self.load_user_coll_list()
 
             bookmark = blist.update_bookmark(bid, request.json)
@@ -182,6 +196,8 @@ class ListsController(BaseController):
         @self.api(query=['user', 'coll', 'list'],
                   resp='deleted')
         def delete_bookmark(bid):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, blist = self.load_user_coll_list()
             if blist.remove_bookmark(bid):
                 blist.mark_updated()
@@ -195,6 +211,8 @@ class ListsController(BaseController):
                   req=['order'],
                   resp='success')
         def reorder_bookmarks(list_id):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, blist = self.load_user_coll_list(list_id)
 
             self.access.assert_can_write_coll(collection)

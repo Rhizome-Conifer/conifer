@@ -4,6 +4,8 @@ import classNames from 'classnames';
 import Collapsible from 'react-collapsible';
 import { Button } from 'react-bootstrap';
 
+import config from 'config';
+
 import { AccessContext } from 'store/contexts';
 
 import EditModal from 'components/collection/EditModal';
@@ -72,7 +74,7 @@ class ListHeaderUI extends Component {
       <div className="wr-list-header">
         <div className={classNames('banner')}>
           <ListIcon />
-          <h2 role={canAdmin ? 'button' : 'presentation'} className={classNames({ 'click-highlight': canAdmin })} onClick={canAdmin ? this.editModal : undefined}>{list.get('title')}</h2>
+          <h2 role={canAdmin && !config.readOnly ? 'button' : 'presentation'} className={classNames({ 'click-highlight': canAdmin && !config.readOnly })} onClick={canAdmin && !config.readOnly ? this.editModal : undefined}>{list.get('title')}</h2>
         </div>
 
         {
@@ -87,7 +89,7 @@ class ListHeaderUI extends Component {
                   overflowWhenOpen="visible"
                   transitionTime={300}
                   trigger={trigger}>
-                  <div role={canAdmin ? 'button' : 'presentation'} className={classNames({ 'click-highlight': canAdmin })} onClick={canAdmin ? this.editModal : undefined}>
+                  <div role={canAdmin && !config.readOnly ? 'button' : 'presentation'} className={classNames({ 'click-highlight': canAdmin && !config.readOnly })} onClick={canAdmin && !config.readOnly ? this.editModal : undefined}>
                     <WYSIWYG
                       readOnly
                       initial={list.get('desc') || '\\+ Add Description'}

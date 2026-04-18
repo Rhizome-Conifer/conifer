@@ -52,6 +52,7 @@ class ModeSelectorUI extends PureComponent {
   }
 
   onPatch = () => {
+    if (config.readOnly) { window.dispatchEvent(new CustomEvent('featureDisabled')); return; }
     if (this.props.currMode === 'record') return;
 
     const { activeBrowser, history, match: { params: { coll } }, timestamp, url } = this.props;
@@ -76,6 +77,7 @@ class ModeSelectorUI extends PureComponent {
   }
 
   onRecord = () => {
+    if (config.readOnly) { window.dispatchEvent(new CustomEvent('featureDisabled')); return; }
     if (this.props.currMode === 'record') return;
 
     const { activeBrowser, history, match: { params: { coll } }, url } = this.props;

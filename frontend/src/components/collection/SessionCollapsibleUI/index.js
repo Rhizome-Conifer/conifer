@@ -8,7 +8,7 @@ import Collapsible from 'react-collapsible';
 import { List } from 'immutable';
 import { Button, Overlay, Popover } from 'react-bootstrap';
 
-import { appHost, defaultRecDesc } from 'config';
+import config, { appHost, defaultRecDesc } from 'config';
 import { applyLocalTimeOffset, getCollectionLink } from 'helpers/utils';
 
 import { getRecordingBookmarks } from 'store/modules/recordings';
@@ -165,6 +165,7 @@ class SessionCollapsibleUI extends PureComponent {
               initial={recording.get('desc')}
               onSave={this.editDescription}
               placeholder={defaultRecDesc}
+              readOnly={config.readOnly}
               success={this.props.recordingEdited} />
           </div>
           <div className="session-pages">

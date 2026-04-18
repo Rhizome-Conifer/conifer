@@ -90,6 +90,13 @@ $font-family-base: $sans;
           background-color: $pine;
           box-shadow: none;
         }
+
+        &:disabled {
+          background-color: $gray400;
+          border-color: $gray400;
+          color: $gray600;
+          opacity: 1;
+        }
     }
 
     &.btn-danger {

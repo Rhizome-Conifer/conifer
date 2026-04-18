@@ -266,6 +266,8 @@ class UserController(BaseController):
 
         @self.app.post('/api/v1/user/<username>')
         def update_user(username):
+            if self.read_only:
+                return self._feature_disabled()
             user = self.get_user_or_raise(username=username)
 
             data = request.json or {}

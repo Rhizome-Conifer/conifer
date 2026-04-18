@@ -15,6 +15,8 @@ class RecsController(BaseController):
                   req=['title', 'desc'],
                   resp='recording')
         def create_recording():
+            if self.read_only:
+                return self._feature_disabled()
             user, collection = self.load_user_coll()
 
             self.access.assert_can_write_coll(collection)
@@ -60,6 +62,8 @@ class RecsController(BaseController):
                   req=['desc'],
                   resp='recording')
         def update_rec_desc(rec):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, recording = self.load_recording(rec)
 
             self.access.assert_can_write_coll(collection)
@@ -91,6 +95,8 @@ class RecsController(BaseController):
         @self.api(query=['user', 'coll'],
                   resp='rec_move')
         def move_recording(rec, new_coll_name):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, recording = self.load_recording(rec)
 
             new_collection = user.get_collection_by_name(new_coll_name)
@@ -112,6 +118,8 @@ class RecsController(BaseController):
         @self.api(query=['user', 'coll'],
                   resp='recording')
         def copy_recording(rec, new_coll_name):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, recording = self.load_recording(rec)
 
             new_collection = user.get_collection_by_name(new_coll_name)
@@ -134,6 +142,8 @@ class RecsController(BaseController):
                   req=['url', 'timestamp', 'title', 'browser'],
                   resp='page_id')
         def add_page(rec):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, recording = self.load_recording(rec)
 
             page_data = request.json or {}
@@ -167,6 +177,8 @@ class RecsController(BaseController):
         @self.api(query=['user', 'coll'],
                   resp='deleted')
         def delete_page(rec):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, recording = self.load_recording(rec)
 
             self.access.assert_can_write_coll(collection)

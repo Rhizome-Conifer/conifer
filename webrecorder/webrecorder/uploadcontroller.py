@@ -21,6 +21,8 @@ class UploadController(BaseController):
 
         @self.app.put(['/_upload', '/api/v1/upload'])
         def upload_file():
+            if self.read_only:
+                return self._feature_disabled()
             user = self.access.session_user
             force_coll_name = request.query.getunicode('force-coll', '')
 
@@ -56,6 +58,8 @@ class UploadController(BaseController):
 
         @self.app.get(['/_upload/<upload_id>', '/api/v1/upload/<upload_id>'])
         def get_upload_status(upload_id):
+            if self.read_only:
+                return self._feature_disabled()
             user = self.get_user(api=True)
 
             props = self.uploader.get_upload_status(user, upload_id)

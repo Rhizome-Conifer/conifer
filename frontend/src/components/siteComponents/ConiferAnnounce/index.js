@@ -14,14 +14,14 @@ const ConiferAnnounce = React.memo(({ dismiss, condensed }) => {
       {
         condensed ?
           <div className="announcement">
-            <div><b>Twilight announcement</b>: Conifer is going to be discontinued in June 2026. Please read the <a href="https://blog.conifer.rhizome.org/" target="_blank">Conifer blog</a> to learn more.</div>
+            <div><b>Twilight announcement</b>: Creating and modifying collections was disabled before Conifer's discontinuation in June 2026. Please read the <a href="https://blog.conifer.rhizome.org/" target="_blank">Conifer blog</a> to learn more.</div>
             <Button variant="link" className="dismiss" aria-label="Dismiss Conifer Announcement" onClick={dismiss}><XIcon /></Button>
           </div> :
           <div className="announcement">
             <div>
-              <h2>Twilight announcement: Conifer is going to be discontinued in June 2026.</h2>
+              <h2>Twilight announcement: Creating and modifying collections was disabled before Conifer's discontinuation in June 2026.</h2>
               <p>
-                Read the announcement post to <a href="https://blog.conifer.rhizome.org/2025/12/15/twilight-announcement.html" target="_blank">learn more</a>.
+                Please read the the <a href="https://blog.conifer.rhizome.org/" target="_blank">Conifer blog</a> to learn more.
               </p>
             </div>
             <Button variant="link" className="dismiss" aria-label="Dismiss Conifer Announcement" onClick={dismiss}><XIcon /></Button>

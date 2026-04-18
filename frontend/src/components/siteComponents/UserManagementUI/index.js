@@ -148,13 +148,6 @@ class UserManagementUI extends PureComponent {
               </li>
           }
 
-          {
-            !__DESKTOP__ &&
-              <li className="navbar-text d-none d-lg-block">
-                <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
-              </li>
-          }
-
           <li className="d-none d-lg-block">
             {
               __DESKTOP__ ?
@@ -251,8 +244,6 @@ class UserManagementUI extends PureComponent {
           body={form}
           visible={open}
           closeCb={this.closeLogin} />
-
-        <BugReport route={this.props.route} />
 
       </React.Fragment>
     );

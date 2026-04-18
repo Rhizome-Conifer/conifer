@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-import { untitledEntry } from 'config';
+import config, { untitledEntry } from 'config';
 import { getCollectionLink } from 'helpers/utils';
 
 import InlineEditor from 'components/InlineEditor';
@@ -81,10 +81,10 @@ class InspectorPanelUI extends PureComponent {
 
                       <InlineEditor
                         blockDisplay
-                        canAdmin={canAdmin}
+                        canAdmin={canAdmin && !config.readOnly}
                         initial={bk.get('title') || untitledEntry}
                         onSave={this.editBookmarkTitle}
-                        readOnly={!canAdmin}
+                        readOnly={!canAdmin || config.readOnly}
                         success={bkEdited}>
                         <h2>{bk.get('title')}</h2>
                       </InlineEditor>
@@ -97,7 +97,7 @@ class InspectorPanelUI extends PureComponent {
                               clickToEdit
                               initial={bk.get('desc')}
                               placeholder="Add annotation"
-                              readOnly={!canAdmin}
+                              readOnly={!canAdmin || config.readOnly}
                               onSave={this.editBookmarkDesc}
                               success={bkEdited} />
                           </React.Fragment>

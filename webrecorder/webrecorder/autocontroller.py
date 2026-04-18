@@ -13,6 +13,8 @@ class AutoController(BaseController):
         # CREATE AUTO
         @self.app.post('/api/v1/auto')
         def create_auto():
+            if self.read_only:
+                return self._feature_disabled()
             user, collection = self.load_user_coll()
 
             autoid = collection.create_auto(request.json)
@@ -22,6 +24,8 @@ class AutoController(BaseController):
         # QUEUE URLS
         @self.app.post('/api/v1/auto/<autoid>/queue_urls')
         def add_urls(autoid):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, auto = self.load_user_coll_auto(autoid)
 
             data = request.json or {}
@@ -31,6 +35,8 @@ class AutoController(BaseController):
         # START
         @self.app.post('/api/v1/auto/<autoid>/start')
         def add_urls(autoid):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, auto = self.load_user_coll_auto(autoid)
 
             data = request.json or {}
@@ -42,6 +48,8 @@ class AutoController(BaseController):
         # STOP
         @self.app.post('/api/v1/auto/<autoid>/stop')
         def add_urls(autoid):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, auto = self.load_user_coll_auto(autoid)
 
             return auto.stop()
@@ -63,6 +71,8 @@ class AutoController(BaseController):
         # DELETE AUTO
         @self.app.delete('/api/v1/auto/<autoid>')
         def delete_auto(autoid):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection, auto = self.load_user_coll_auto(autoid)
 
             auto.delete_me()

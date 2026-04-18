@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 
-import { appHost, product } from 'config';
+import config, { appHost, product } from 'config';
 import { apiFetch } from 'helpers/utils';
 
 import { ShareWidget } from 'containers';
@@ -37,6 +37,7 @@ class RecordingToolsUI extends PureComponent {
   }
 
   onPatch = () => {
+    if (config.readOnly) { window.dispatchEvent(new CustomEvent('featureDisabled')); return; }
     if (this.props.currMode === 'record') return;
 
     const { activeBrowser, history, match: { params: { coll } }, timestamp, url } = this.props;
@@ -61,6 +62,7 @@ class RecordingToolsUI extends PureComponent {
   }
 
   onRecord = () => {
+    if (config.readOnly) { window.dispatchEvent(new CustomEvent('featureDisabled')); return; }
     if (this.props.currMode === 'record') return;
 
     const { activeBrowser, history, match: { params: { coll } }, url } = this.props;

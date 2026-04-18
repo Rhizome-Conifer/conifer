@@ -21,6 +21,7 @@ class RemoveWidget extends Component {
     classes: PropTypes.string,
     children: PropTypes.node,
     deleteMsg: PropTypes.string,
+    disabled: PropTypes.bool,
     error: PropTypes.oneOfType([
       PropTypes.object,
       PropTypes.string
@@ -28,6 +29,7 @@ class RemoveWidget extends Component {
     isDeleting: PropTypes.bool,
     placement: PropTypes.string,
     scrollCheck: PropTypes.string,
+    title: PropTypes.string,
     withConfirmation: PropTypes.bool,
   };
 
@@ -35,6 +37,7 @@ class RemoveWidget extends Component {
     borderless: true,
     classes: '',
     deleteMsg: 'Are you sure you want to delete this item?',
+    disabled: false,
     error: null,
     isDeleting: false,
     placement: 'bottom',
@@ -94,7 +97,7 @@ class RemoveWidget extends Component {
   }
 
   render() {
-    const { borderless, children, classes, deleteMsg, error, isDeleting, placement } = this.props;
+    const { borderless, children, classes, deleteMsg, disabled, error, isDeleting, placement, title } = this.props;
     const { confirmRemove } = this.state;
     const styles = { position: 'relative' };
 
@@ -107,8 +110,10 @@ class RemoveWidget extends Component {
         <div className="wr-remove-widget" style={styles}>
           <button
             className={classNames('remove-widget-icon', [classes], { borderless })}
-            onClick={this.removeClick}
+            disabled={disabled}
+            onClick={disabled ? undefined : this.removeClick}
             ref={(obj) => { this.target = obj; }}
+            title={title}
             type="button">
             { children || <TrashIcon />}
           </button>

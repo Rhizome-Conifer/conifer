@@ -27,6 +27,8 @@ class WebsockController(BaseController):
     def init_routes(self):
         @self.app.get('/_client_ws')
         def client_ws():
+            if self.read_only:
+                return self._feature_disabled()
             try:
                 return self.client_ws()
             except OSError:
@@ -35,6 +37,8 @@ class WebsockController(BaseController):
 
         @self.app.get('/_client_ws_cont')
         def client_ws_cont():
+            if self.read_only:
+                return self._feature_disabled()
             try:
                 return self.client_ws_cont()
             except OSError:

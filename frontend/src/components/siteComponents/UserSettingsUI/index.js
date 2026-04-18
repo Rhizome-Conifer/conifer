@@ -13,7 +13,7 @@ import {
   Row
 } from 'react-bootstrap';
 
-import { defaultCollDesc, product, supporterPortal } from 'config';
+import config, { defaultCollDesc, product, supporterPortal } from 'config';
 import { passwordPassRegex } from 'helpers/utils';
 import { AccessContext } from 'store/contexts';
 import { settings as settingsErr } from 'helpers/userMessaging';
@@ -470,6 +470,7 @@ class UserSettingsUI extends Component {
                   <input
                     id="display-name"
                     className="form-control input-sm"
+                    disabled={config.readOnly}
                     onChange={this.handleChange}
                     name="full_name"
                     value={this.state.full_name} />
@@ -481,6 +482,7 @@ class UserSettingsUI extends Component {
                   <input
                     id="display-url"
                     className="form-control input-sm"
+                    disabled={config.readOnly}
                     onChange={this.handleChange}
                     name="display_url"
                     value={this.state.display_url} />
@@ -494,9 +496,10 @@ class UserSettingsUI extends Component {
                     externalEditButton
                     contentSync={this.editDesc}
                     initial={user.get('desc') || ''}
-                    placeholder={defaultCollDesc} />
+                    placeholder={defaultCollDesc}
+                    readOnly={config.readOnly} />
                 </div>
-                <Button size="lg" variant="primary" type="submit" disabled={editing}>{(editing || edited) && (edited ? <CheckIcon success /> : <LoaderIcon />)}Update Profile</Button>
+                <Button size="lg" variant="primary" type="submit" disabled={editing || config.readOnly} title={config.readOnly ? config.sunsetTooltip : undefined}>{(editing || edited) && (edited ? <CheckIcon success /> : <LoaderIcon />)}Update Profile</Button>
               </Form>
             </div>
 

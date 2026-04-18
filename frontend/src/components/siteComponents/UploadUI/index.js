@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button, Form, InputGroup } from 'react-bootstrap';
 
-import { product, apiPath } from 'config';
+import config, { product, apiPath } from 'config';
 import { apiFormatUrl } from 'helpers/utils';
 
 import { upload as uploadErrors } from 'helpers/userMessaging';
@@ -20,6 +20,7 @@ import './style.scss';
 class UploadUI extends PureComponent {
   static propTypes = {
     activeCollection: PropTypes.string,
+    disabled: PropTypes.bool,
     dispatch: PropTypes.func,
     fromCollection: PropTypes.string,
     history: PropTypes.object,
@@ -202,7 +203,7 @@ class UploadUI extends PureComponent {
 
     return (
       <React.Fragment>
-        <Wrapper size={this.props.size} variant="outline-secondary" onClick={this.open}>
+        <Wrapper size={this.props.size} variant="outline-secondary" disabled={this.props.disabled} title={this.props.disabled ? config.sunsetTooltip : undefined} onClick={this.props.disabled ? undefined : this.open}>
           { this.props.children || 'Upload'}
         </Wrapper>
         <Modal

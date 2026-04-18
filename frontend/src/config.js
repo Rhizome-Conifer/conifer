@@ -56,6 +56,8 @@ const publicIP = process.env.PUBLIC_IP ? process.env.PUBLIC_IP : appHost;
 export default Object.assign({
   anonDisabled: process.env.ANON_DISABLED,
   announceMailingList: process.env.ANNOUNCE_MAILING_LIST,
+  readOnly: JSON.parse(process.env.READ_ONLY || 'false'),
+  sunsetTooltip: 'Feature no longer available — Conifer is sunsetting in June 2026',
   apiProxy: false,
   apiPath: '/api/v1',
   appHost: `${hostScheme}://${appHost}`,

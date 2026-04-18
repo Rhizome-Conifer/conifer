@@ -106,6 +106,8 @@ class ContentController(BaseController, RewriterApp):
         def create_browser():
             """ Api to launch remote browser instances
             """
+            if self.read_only:
+                return self._feature_disabled()
             sesh = self.get_session()
 
             if sesh.is_new() and self.is_content_request():
@@ -204,6 +206,8 @@ class ContentController(BaseController, RewriterApp):
         # UPDATE REMOTE BROWSER CONFIG
         @self.app.get('/api/v1/update_remote_browser/<reqid>')
         def update_remote_browser(reqid):
+            if self.read_only:
+                return self._feature_disabled()
             user, collection = self.load_user_coll(api=True)
 
             timestamp = request.query.getunicode('timestamp')
@@ -223,6 +227,8 @@ class ContentController(BaseController, RewriterApp):
         # REDIRECTS
         @self.app.route('/record/<wb_url:path>', method='ANY')
         def redir_new_temp_rec(wb_url):
+            if self.read_only:
+                return redirect('/')
             coll_name = 'temp'
             rec_title = self.DEF_REC_NAME
             wb_url = self.add_query(wb_url)
@@ -230,6 +236,8 @@ class ContentController(BaseController, RewriterApp):
 
         @self.app.route('/$record/<coll_name>/<rec_title>/<wb_url:path>', method='ANY')
         def redir_new_record(coll_name, rec_title, wb_url):
+            if self.read_only:
+                return redirect('/')
             wb_url = self.add_query(wb_url)
             return self.do_create_new_and_redir(coll_name, rec_title, wb_url, 'record')
 
@@ -238,6 +246,8 @@ class ContentController(BaseController, RewriterApp):
 
         @self.app.post('/api/v1/new')
         def api_create_new():
+            if self.read_only:
+                return self._feature_disabled()
             self.redir_host()
 
             url = request.json.get('url')
@@ -342,6 +352,8 @@ class ContentController(BaseController, RewriterApp):
         # Record
         @self.app.route('/<user>/<coll>/<rec>/record/<wb_url:path>', method='ANY')
         def do_record(user, coll, rec, wb_url):
+            if self.read_only:
+                return self._feature_disabled()
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='record', redir_route='record')
@@ -349,6 +361,8 @@ class ContentController(BaseController, RewriterApp):
         # Patch
         @self.app.route('/<user>/<coll>/<rec>/patch/<wb_url:path>', method='ANY')
         def do_patch(user, coll, rec, wb_url):
+            if self.read_only:
+                return self._feature_disabled()
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='patch', redir_route='patch')
@@ -356,6 +370,8 @@ class ContentController(BaseController, RewriterApp):
         # Extract
         @self.app.route('/<user>/<coll>/<rec>/extract\:<archive>/<wb_url:path>', method='ANY')
         def do_extract_patch_archive(user, coll, rec, wb_url, archive):
+            if self.read_only:
+                return self._feature_disabled()
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='extract',
@@ -365,6 +381,8 @@ class ContentController(BaseController, RewriterApp):
 
         @self.app.route('/<user>/<coll>/<rec>/extract_only\:<archive>/<wb_url:path>', method='ANY')
         def do_extract_only_archive(user, coll, rec, wb_url, archive):
+            if self.read_only:
+                return self._feature_disabled()
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='extract',
@@ -374,6 +392,8 @@ class ContentController(BaseController, RewriterApp):
 
         @self.app.route('/<user>/<coll>/<rec>/extract/<wb_url:path>', method='ANY')
         def do_extract_all(user, coll, rec, wb_url):
+            if self.read_only:
+                return self._feature_disabled()
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='extract',

@@ -34,6 +34,8 @@ class CollsController(BaseController):
             req=['title', 'public', 'public_index'],
             resp='collection')
         def create_collection():
+            if self.read_only:
+                return self._feature_disabled()
             user = self.get_user_or_raise()
 
             data = request.json or {}
@@ -146,6 +148,8 @@ class CollsController(BaseController):
 
         @self.app.put('/api/v1/collection/<coll_name>/warc')
         def add_external_warc(coll_name):
+            if self.read_only:
+                return self._feature_disabled()
             if not self.allow_external:
                 self._raise_error(403, 'external_not_allowed')
 
@@ -162,6 +166,8 @@ class CollsController(BaseController):
 
         @self.app.put('/api/v1/collection/<coll_name>/cdx')
         def add_external_cdxj(coll_name):
+            if self.read_only:
+                return self._feature_disabled()
             if not self.allow_external:
                 self._raise_error(403, 'external_not_allowed')
 
@@ -186,6 +192,9 @@ class CollsController(BaseController):
             self.access.assert_can_admin_coll(collection)
 
             data = request.json or {}
+
+            if self.read_only and any(k in data for k in ('title', 'desc')):
+                return self._feature_disabled()
 
             if 'title' in data:
                 new_coll_title = data['title']

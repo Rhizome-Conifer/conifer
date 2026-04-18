@@ -110,6 +110,7 @@ module.exports = smp.wrap({
       APP_HOST: 'localhost:8089',
       ALLOW_DAT: false,
       ANON_DISABLED: false,
+      READ_ONLY: false,
       ANNOUNCE_MAILING_LIST: null,
       CONTENT_HOST: 'localhost:8092',
       FRONTEND_PORT: 8095,

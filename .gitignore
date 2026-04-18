@@ -63,3 +63,7 @@ _webarchives.yaml
 proxy-certs/
 
 *.DS_Store
+
+*.txt
+*.yarn
+.*

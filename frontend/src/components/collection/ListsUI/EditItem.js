@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import config from 'config';
 import RemoveWidget from 'components/RemoveWidget';
 import { CheckIcon, PencilIcon } from 'components/icons';
 
@@ -60,12 +61,12 @@ class EditItem extends Component {
 
     return (
       <li>
-        <RemoveWidget callback={this.confirmDelete} error={this.props.deleteError} isDeleting={this.props.isDeleting} placement="left" scrollCheck=".lists-modal-list" />
-        <input name="title" className="borderless-input" onBlur={this.editListItem} onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} />
+        <RemoveWidget callback={this.confirmDelete} disabled={config.readOnly} error={this.props.deleteError} isDeleting={this.props.isDeleting} placement="left" scrollCheck=".lists-modal-list" title={config.readOnly ? config.sunsetTooltip : undefined} />
+        <input name="title" className="borderless-input" disabled={config.readOnly} onBlur={this.editListItem} onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} />
         {
           edited ?
             <button className="borderless" type="button"><CheckIcon success /></button> :
-            <button className="borderless" onClick={this.editListItem} disabled={!hasChanges} title="Save edit" type="button"><PencilIcon /></button>
+            <button className="borderless" onClick={this.editListItem} disabled={config.readOnly || !hasChanges} title={config.readOnly ? config.sunsetTooltip : 'Save edit'} type="button"><PencilIcon /></button>
         }
       </li>
     );

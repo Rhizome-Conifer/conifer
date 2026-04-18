@@ -6,7 +6,7 @@ import removeMd from 'remove-markdown';
 import { Button, Dropdown, FormControl, MenuItem } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import { appHost, onboardingLink, truncSentence, truncWord } from 'config';
+import config, { appHost, onboardingLink, truncSentence, truncWord } from 'config';
 import { doubleRAF, getCollectionLink, truncate } from 'helpers/utils';
 
 
@@ -159,27 +159,27 @@ class CollectionHeaderUI extends Component {
           <div className={classNames('heading-row', { 'is-public': !canAdmin })}>
             <Capstone user={collection.get('owner')} />
             <h1
-              className={classNames({ 'click-highlight': canAdmin })}
-              onClick={canAdmin ? this.editModal : undefined}
-              role={canAdmin ? 'button' : 'presentation'}
+              className={classNames({ 'click-highlight': canAdmin && !config.readOnly })}
+              onClick={canAdmin && !config.readOnly ? this.editModal : undefined}
+              role={canAdmin && !config.readOnly ? 'button' : 'presentation'}
               title={collection.get('title')}>
               {titleCapped}
             </h1>
             {
               collection.get('desc') ?
-                <div className={classNames('desc', { 'click-highlight': canAdmin })} role={canAdmin ? 'button' : 'resentation'} onClick={canAdmin ? this.editModal : undefined}>
+                <div className={classNames('desc', { 'click-highlight': canAdmin && !config.readOnly })} role={canAdmin && !config.readOnly ? 'button' : 'presentation'} onClick={canAdmin && !config.readOnly ? this.editModal : undefined}>
                   {
                     truncate(removeMd(collection.get('desc'), { useImgAltText: false }), 3, truncSentence)
                   }
                 </div> :
-                canAdmin && <button className="button-link" onClick={this.editModal} type="button">+ Add description</button>
+                canAdmin && <button className="button-link" onClick={config.readOnly ? undefined : this.editModal} disabled={config.readOnly} type="button">+ Add description</button>
             }
           </div>
 
           {
             canAdmin &&
               <div className="menu-row">
-                <Button variant="outline-secondary" onClick={this.newSession}><PlusIcon /><span className="d-none d-sm-inline"> New Session</span></Button>
+                <Button variant="outline-secondary" disabled={config.readOnly} title={config.readOnly ? config.sunsetTooltip : undefined} onClick={config.readOnly ? undefined : this.newSession}><PlusIcon /><span className="d-none d-sm-inline"> New Session</span></Button>
                 <Dropdown id="coll-menu">
                   <Dropdown.Toggle variant="outline-secondary">
                     <MoreIcon />
@@ -188,7 +188,7 @@ class CollectionHeaderUI extends Component {
                     <Dropdown.Item onClick={this.manageCollection}>Manage Sessions</Dropdown.Item>
                     {
                       !isAnon &&
-                      <Upload classes="" fromCollection={collection.get('id')} wrapper={Dropdown.Item}>{ __DESKTOP__ ? 'Import' : 'Upload' } To Collection</Upload>
+                      <Upload classes="" disabled={config.readOnly} fromCollection={collection.get('id')} wrapper={Dropdown.Item}>{ __DESKTOP__ ? 'Import' : 'Upload' } To Collection</Upload>
                     }
                     <Dropdown.Item onClick={this.downloadCollection}>{ __DESKTOP__ ? 'Export' : 'Download' } Collection</Dropdown.Item>
                     <Dropdown.Divider />

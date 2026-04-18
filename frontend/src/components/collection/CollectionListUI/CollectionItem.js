@@ -7,6 +7,8 @@ import { Button, Col, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
 
 import { buildDate, getCollectionLink, truncate } from 'helpers/utils';
 
+import config from 'config';
+
 import SizeFormat from 'components/SizeFormat';
 import { DeleteCollection } from 'containers';
 import { TrashIcon, PlusIcon } from 'components/icons';
@@ -72,7 +74,7 @@ class CollectionItem extends PureComponent {
                   <Button size="lg" variant="outline-secondary" onClick={this.manageCollection}>
                     Manage Collection
                   </Button>
-                  <Button size="lg" variant="outline-secondary" onClick={this.newSession}><PlusIcon /> New Session</Button>
+                  <Button size="lg" variant="outline-secondary" disabled={config.readOnly} title={config.readOnly ? config.sunsetTooltip : undefined} onClick={config.readOnly ? undefined : this.newSession}><PlusIcon /> New Session</Button>
                 </React.Fragment>
             }
           </Col>

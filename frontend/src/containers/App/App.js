@@ -47,6 +47,7 @@ export class App extends Component {
     this.state = {
       coniferAnnounce: true,
       error: null,
+      featureDisabledAlert: false,
       lastPathname: null,
       loginStateAlert: false,
       mobileAlert: true,
@@ -72,7 +73,7 @@ export class App extends Component {
       }
     }
 
-    if (inStorage('coniferAnnouncev2Dismiss')) {
+    if (inStorage('coniferAnnouncev3Dismiss')) {
       this.setState({ coniferAnnounce: false });
     }
 
@@ -88,6 +89,7 @@ export class App extends Component {
     }
 
     document.addEventListener(this.visibilityChange, this.heartbeat);
+    window.addEventListener('featureDisabled', this.showFeatureDisabledAlert);
 
     if (__DESKTOP__) {
       //this.setState({ match: this.getActiveRoute("/") });
@@ -123,10 +125,15 @@ export class App extends Component {
   componentWillUnmount() {
     clearTimeout(this.handle);
     document.removeEventListener(this.visibilityChange, this.heartbeat);
+    window.removeEventListener('featureDisabled', this.showFeatureDisabledAlert);
   }
 
-  coniferAnnouncev2Dismiss = () => {
-    setStorage('coniferAnnouncev2Dismiss', '1');
+  showFeatureDisabledAlert = () => this.setState({ featureDisabledAlert: true })
+
+  dismissFeatureDisabledAlert = () => this.setState({ featureDisabledAlert: false })
+
+  coniferAnnouncev3Dismiss = () => {
+    setStorage('coniferAnnouncev3Dismiss', '1');
     this.setState({ coniferAnnounce: false });
   }
 
@@ -216,11 +223,11 @@ export class App extends Component {
         <Helmet {...config.app.head} />
         {
           match.name === 'landing' && this.state.coniferAnnounce &&
-            <ConiferAnnounce dismiss={this.coniferAnnouncev2Dismiss} />
+            <ConiferAnnounce dismiss={this.coniferAnnouncev3Dismiss} />
         }
         {
-          match.name === 'collectionPages' && this.state.coniferAnnounce &&
-            <ConiferAnnounce condensed dismiss={this.coniferAnnouncev2Dismiss} />
+          ['collection', 'collectionPages', 'collectionCover', 'collectionMgmt', 'settings', 'collectionDetailList', 'collectionDetailListManager', 'replay', 'rb replay', 'list replay', 'list rb replay'].includes(match.name) && this.state.coniferAnnounce &&
+            <ConiferAnnounce condensed dismiss={this.coniferAnnouncev3Dismiss} />
         }
         {
           !isEmbed &&
@@ -238,6 +245,12 @@ export class App extends Component {
                 }
                 <li>Download some collections or sessions and then delete them to make more space.</li>
               </ul>
+            </Alert>
+        }
+        {
+          this.state.featureDisabledAlert &&
+            <Alert variant="warning" dismissible onClose={this.dismissFeatureDisabledAlert}>
+              This feature is no longer available — Conifer is sunsetting in June 2026.
             </Alert>
         }
         {

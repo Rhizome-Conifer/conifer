@@ -21,10 +21,14 @@ class SnapshotController(BaseController):
     def init_routes(self):
         @self.app.route('/_snapshot', method='PUT')
         def snapshot():
+            if self.read_only:
+                return self._feature_disabled()
             return self.snapshot()
 
         @self.app.route('/_snapshot_cont', method='POST')
         def snapshot_cont():
+            if self.read_only:
+                return self._feature_disabled()
             return self.snapshot_cont()
 
     def snapshot(self):

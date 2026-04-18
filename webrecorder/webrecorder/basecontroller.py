@@ -30,6 +30,7 @@ class BaseController(object):
         self.cache_template = self.config.get('cache_template')
 
         self.anon_disabled = get_bool(os.environ.get('ANON_DISABLED'))
+        self.read_only = get_bool(os.environ.get('READ_ONLY'))
 
         self.allow_beta_features_role = os.environ.get('ALLOW_BETA_FEATURES_ROLE', 'beta-archivist')
 
@@ -201,6 +202,9 @@ class BaseController(object):
         response.status = code
 
         raise HTTPError(code, message, exception=result)
+
+    def _feature_disabled(self):
+        return self._raise_error(410, 'feature_disabled')
 
     def get_session(self):
         return request.environ['webrec.session']
