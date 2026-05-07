@@ -59,6 +59,10 @@ Usage:
 
     # Retry with additional filters - only resend to users who logged in recently
     python send_twilight_announcement.py --retry failed --last-login 2020-01-01 --min-size 1048576
+
+    # V2 mode - send the May announcement (read-only/webinar) to users who got the original
+    # Pulls users with status='sent' from the progress DB, sends the may template, marks them 'sent_v2'
+    python send_twilight_announcement.py --v2 --suppression-db ses_suppression.db
 """
 
 import os
@@ -328,7 +332,8 @@ def is_excluded_domain(email, excluded_domains, excluded_wildcards):
 class TwilightAnnouncementSender:
     def __init__(self, test_email=None, batch_size=200, delay=0, dry_run=False, resume_from=None,
                  max_send_rate=14.0, max_total_send=50000, suppression_db=None, last_login_after=None,
-                 min_size=None, exclude_domains_file=None, sender_email=None, retry_statuses=None):
+                 min_size=None, exclude_domains_file=None, sender_email=None, retry_statuses=None,
+                 v2_mode=False):
         """
         Initialize the announcement sender
 
@@ -346,6 +351,8 @@ class TwilightAnnouncementSender:
             exclude_domains_file: Path to file with domains to exclude (one per line, supports *.edu wildcards, optional)
             sender_email: Sender email address (default: no-reply@conifer.rhizome.org)
             retry_statuses: List of statuses to retry (e.g., ['failed', 'skipped']). If set, enables retry mode.
+            v2_mode: If True, send the May announcement to users with status='sent' and mark them 'sent_v2' on success.
+                     Uses email_twilight_may_announcement.{html,txt} templates.
         """
         self.user_manager = CLIUserManager()
         self.cork = self.user_manager.cork
@@ -360,18 +367,38 @@ class TwilightAnnouncementSender:
         self.min_size = min_size
         self.sender_email = sender_email or 'no-reply@conifer.rhizome.org'
         self.retry_statuses = retry_statuses
+        self.v2_mode = v2_mode
 
         # Calculate delay between emails to respect rate limit
         # Add a small buffer (10%) to be safe
         self.email_delay = (1.0 / max_send_rate) * 1.1 if max_send_rate > 0 else 0
 
+        if v2_mode:
+            template_html_name = 'email_twilight_may_announcement.html'
+            template_text_name = 'email_twilight_may_announcement.txt'
+            self.email_subject = 'Conifer Twilight: Read-only mode and webinar on May 21st'
+            self.success_status = 'sent_v2'
+            self.failed_status = 'failed_v2'
+            self.skipped_status = 'skipped_v2'
+            self.deferred_status = 'deferred_v2'
+            self.quarantined_status = 'quarantined_v2'
+        else:
+            template_html_name = 'email_twilight_announcement.html'
+            template_text_name = 'email_twilight_announcement.txt'
+            self.email_subject = 'Important Update: Conifer Twilight Announcement'
+            self.success_status = 'sent'
+            self.failed_status = 'failed'
+            self.skipped_status = 'skipped'
+            self.deferred_status = 'deferred'
+            self.quarantined_status = 'quarantined'
+
         self.template_path_html = os.path.join(
             os.path.dirname(__file__),
-            'webrecorder/templates/email_twilight_announcement.html'
+            'webrecorder/templates/' + template_html_name
         )
         self.template_path_text = os.path.join(
             os.path.dirname(__file__),
-            'webrecorder/templates/email_twilight_announcement.txt'
+            'webrecorder/templates/' + template_text_name
         )
 
         self.db_file = 'twilight_email_progress.db'
@@ -789,8 +816,8 @@ class TwilightAnnouncementSender:
         error_msg = str(error)
         print(f"ERROR: User: {username}, Email: {email}, Error: {error_msg}")
 
-        # Save to database with 'failed' status
-        self.save_progress(username, email, 'failed', error_msg)
+        # Save to database with the failed status (or 'failed_v2' in v2 mode)
+        self.save_progress(username, email, self.failed_status, error_msg)
 
     def _filter_by_last_login(self, users):
         """
@@ -894,7 +921,7 @@ class TwilightAnnouncementSender:
             print(f"Skipping {username}: No email address")
             self.stats['emails_skipped'] += 1
             self.stats['validation_stats']['no_email'] += 1
-            self.save_progress(username, email or '', 'skipped', 'No email address')
+            self.save_progress(username, email or '', self.skipped_status, 'No email address')
             return False
 
         # Validate email syntax
@@ -902,7 +929,7 @@ class TwilightAnnouncementSender:
             print(f"Skipping {username}: Invalid email syntax ({email})")
             self.stats['emails_skipped'] += 1
             self.stats['validation_stats']['invalid_syntax'] += 1
-            self.save_progress(username, email, 'skipped', 'Invalid email syntax')
+            self.save_progress(username, email, self.skipped_status, 'Invalid email syntax')
             return False
 
         # Check SES suppression list (bounces/complaints) - uses pre-downloaded list
@@ -911,7 +938,7 @@ class TwilightAnnouncementSender:
             print(f"Skipping {username}: Email suppressed by SES ({reason})")
             self.stats['emails_skipped'] += 1
             self.stats['validation_stats']['ses_suppressed'] += 1
-            self.save_progress(username, email, 'skipped', f'SES suppressed: {reason}')
+            self.save_progress(username, email, self.skipped_status, f'SES suppressed: {reason}')
             return False
 
         # Check excluded domains (high bounce rate domains)
@@ -920,7 +947,7 @@ class TwilightAnnouncementSender:
             print(f"Skipping {username}: Excluded domain ({excluded_domain})")
             self.stats['emails_skipped'] += 1
             self.stats['validation_stats']['excluded_domain'] += 1
-            self.save_progress(username, email, 'deferred', f'Excluded domain: {excluded_domain}')
+            self.save_progress(username, email, self.deferred_status, f'Excluded domain: {excluded_domain}')
             return False
 
         # Check for suspicious email patterns (spam/bot signups)
@@ -929,7 +956,7 @@ class TwilightAnnouncementSender:
             print(f"Quarantined {username}: {sus_reason} ({email})")
             self.stats['emails_skipped'] += 1
             self.stats['validation_stats']['quarantined'] += 1
-            self.save_progress(username, email, 'quarantined', sus_reason)
+            self.save_progress(username, email, self.quarantined_status, sus_reason)
             return False
 
         # Check DNS/MX records - uses cached domain lookups
@@ -937,7 +964,7 @@ class TwilightAnnouncementSender:
             print(f"Skipping {username}: Invalid domain (no MX records)")
             self.stats['emails_skipped'] += 1
             self.stats['validation_stats']['no_mx_records'] += 1
-            self.save_progress(username, email, 'skipped', 'No MX records')
+            self.save_progress(username, email, self.skipped_status, 'No MX records')
             return False
 
         try:
@@ -958,14 +985,14 @@ class TwilightAnnouncementSender:
             # Send the email with both plain text and HTML versions
             self._send_via_smtp(
                 email,
-                'Important Update: Conifer Twilight Announcement',
+                self.email_subject,
                 email_text,
                 email_html
             )
 
             print(f"✓ Sent to: {username} ({email})")
             self.stats['emails_sent'] += 1
-            self.save_progress(username, email, 'sent')
+            self.save_progress(username, email, self.success_status)
             return True
 
         except Exception as e:
@@ -1063,15 +1090,106 @@ class TwilightAnnouncementSender:
 
         return users_filtered
 
+    def get_v2_users(self):
+        """
+        Get list of users to send the v2 (May) announcement to.
+
+        Pulls all users with status='sent' from the progress database (i.e. those who
+        successfully received the original twilight announcement) and looks up their
+        current data from the user manager. Applies last_login/min_size/resume_from
+        filters the same way retry mode does.
+
+        Returns:
+            list: List of (username, user_data) tuples
+        """
+        conn = sqlite3.connect(self.db_file)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT username, email
+            FROM email_progress
+            WHERE status = 'sent'
+            ORDER BY username
+        """)
+        users_from_db = cursor.fetchall()
+
+        conn.close()
+
+        print(f"\nV2 mode: Found {len(users_from_db)} users with status='sent' (recipients of the original announcement)")
+
+        users_to_send = []
+        not_found_count = 0
+
+        for username, email in users_from_db:
+            if username not in self.user_manager.all_users:
+                # User no longer exists in user manager (deleted) - send to recorded email anyway
+                not_found_count += 1
+                users_to_send.append((username, {'email_addr': email}))
+            else:
+                users_to_send.append((username, self.user_manager.all_users[username]))
+
+        if not_found_count > 0:
+            print(f"Warning: {not_found_count} users from database not found in current user data (using recorded email)")
+
+        # Apply optional filters (same logic as retry mode)
+        users_filtered = []
+        threshold_dt = None
+        if self.last_login_after:
+            try:
+                threshold_dt = datetime.fromisoformat(self.last_login_after)
+            except ValueError:
+                print(f"Error: Invalid date format for --last-login: {self.last_login_after}")
+                print("Expected format: YYYY-MM-DD")
+                threshold_dt = None
+
+        for username, user_data in users_to_send:
+            if threshold_dt is not None:
+                last_login = user_data.get('last_login', '')
+                if not last_login:
+                    continue
+                try:
+                    if isinstance(last_login, (int, float)) or (isinstance(last_login, str) and last_login.isdigit()):
+                        login_dt = datetime.fromtimestamp(float(last_login))
+                    else:
+                        login_dt = datetime.fromisoformat(str(last_login).split('.')[0])
+                    if login_dt <= threshold_dt:
+                        continue
+                except (ValueError, AttributeError, OSError):
+                    continue
+
+            if self.min_size:
+                try:
+                    if int(user_data.get('size', 0)) < self.min_size:
+                        continue
+                except (ValueError, TypeError):
+                    continue
+
+            if self.resume_from and username <= self.resume_from:
+                continue
+
+            users_filtered.append((username, user_data))
+
+        filtered_out = len(users_to_send) - len(users_filtered)
+        if filtered_out > 0:
+            print(f"Filtered out {filtered_out} users based on --last-login, --min-size, or --resume-from")
+
+        self.stats['total_users'] = len(users_to_send)
+        return users_filtered
+
     def get_users_to_process(self):
         """
         Get list of users to process, filtering out already-sent users
         Uses cached sorted active users for subsequent runs to improve performance.
         In retry mode, gets users from database instead.
+        In v2 mode, gets users with status='sent' from database (recipients of the original announcement).
 
         Returns:
             list: List of (username, user_data) tuples sorted alphabetically
         """
+        # V2 mode: pull recipients of the original announcement from the progress DB
+        if self.v2_mode:
+            return self.get_v2_users()
+
         # Retry mode: get users from database with specified statuses
         if self.retry_statuses:
             return self.get_users_to_retry()
@@ -1129,11 +1247,15 @@ class TwilightAnnouncementSender:
 
     def send_test_email(self):
         """Send a test email to the specified test email address"""
+        mode_label = "TEST MODE (V2)" if self.v2_mode else "TEST MODE"
         print(f"\n{'='*60}")
-        print("TEST MODE")
+        print(mode_label)
         print(f"{'='*60}")
         print(f"Sending test email to: {self.test_email}")
-        print(f"Sender email: {self.sender_email}\n")
+        print(f"Sender email: {self.sender_email}")
+        print(f"Subject: {self.email_subject}")
+        print(f"HTML template: {self.template_path_html}")
+        print(f"Text template: {self.template_path_text}\n")
 
         # Use a dummy username and name for testing
         success = self.send_email(
@@ -1154,7 +1276,9 @@ class TwilightAnnouncementSender:
     def send_to_all_users(self):
         """Send announcement email to all users in batches with rate limiting"""
         print(f"\n{'='*60}")
-        if self.retry_statuses:
+        if self.v2_mode:
+            print("V2 MODE: Sending May announcement to original recipients (status='sent' -> 'sent_v2')")
+        elif self.retry_statuses:
             print(f"RETRY MODE: Resending emails with status(es): {', '.join(self.retry_statuses).upper()}")
         else:
             print("SENDING TWILIGHT ANNOUNCEMENT TO ALL USERS")
@@ -1207,7 +1331,7 @@ class TwilightAnnouncementSender:
                 print(f"Skipping {username}: Account suspended")
                 self.stats['emails_skipped'] += 1
                 self.stats['validation_stats']['suspended'] += 1
-                self.save_progress(username, email or '', 'skipped', 'Account suspended')
+                self.save_progress(username, email or '', self.skipped_status, 'Account suspended')
                 continue
 
             # Send the email
@@ -1262,10 +1386,18 @@ class TwilightAnnouncementSender:
         print(f"{'='*60}")
         print(f"Total users in system: {self.stats['total_users']}")
         print(f"Total processed: {total_processed}")
-        print(f"  Emails sent: {db_stats.get('sent', 0)}")
-        print(f"  Emails failed: {db_stats.get('failed', 0)}")
-        print(f"  Emails skipped: {db_stats.get('skipped', 0)}")
-        print(f"  Emails quarantined: {db_stats.get('quarantined', 0)}")
+        if self.v2_mode:
+            print(f"  Emails sent (v2): {db_stats.get(self.success_status, 0)}")
+            print(f"  Emails failed (v2): {db_stats.get(self.failed_status, 0)}")
+            print(f"  Emails skipped (v2): {db_stats.get(self.skipped_status, 0)}")
+            print(f"  Emails deferred (v2): {db_stats.get(self.deferred_status, 0)}")
+            print(f"  Emails quarantined (v2): {db_stats.get(self.quarantined_status, 0)}")
+            print(f"  Original announcement still pending (status='sent'): {db_stats.get('sent', 0)}")
+        else:
+            print(f"  Emails sent: {db_stats.get('sent', 0)}")
+            print(f"  Emails failed: {db_stats.get('failed', 0)}")
+            print(f"  Emails skipped: {db_stats.get('skipped', 0)}")
+            print(f"  Emails quarantined: {db_stats.get('quarantined', 0)}")
 
         # Show validation breakdown from this run
         if any(self.stats['validation_stats'].values()):
@@ -1301,13 +1433,13 @@ class TwilightAnnouncementSender:
                 actual_rate = self.stats['emails_sent'] / duration.total_seconds()
                 print(f"  Actual send rate: {actual_rate:.2f} emails/second")
 
-        if db_stats.get('failed', 0) > 0:
+        if db_stats.get(self.failed_status, 0) > 0:
             print(f"\nFailed emails can be queried from: {self.db_file}")
-            print(f"  Example: sqlite3 {self.db_file} \"SELECT * FROM email_progress WHERE status='failed'\"")
+            print(f"  Example: sqlite3 {self.db_file} \"SELECT * FROM email_progress WHERE status='{self.failed_status}'\"")
 
-        if db_stats.get('quarantined', 0) > 0:
+        if db_stats.get(self.quarantined_status, 0) > 0:
             print(f"\nQuarantined emails (suspicious patterns) can be queried from: {self.db_file}")
-            print(f"  Example: sqlite3 {self.db_file} \"SELECT username, email, error_message FROM email_progress WHERE status='quarantined'\"")
+            print(f"  Example: sqlite3 {self.db_file} \"SELECT username, email, error_message FROM email_progress WHERE status='{self.quarantined_status}'\"")
 
         print(f"\nProgress database: {self.db_file}")
         print(f"{'='*60}\n")
@@ -1410,6 +1542,12 @@ def main():
         help='Retry mode: resend emails with specified statuses (comma-separated). Common statuses: failed, skipped, deferred, quarantined. Example: --retry failed,skipped'
     )
 
+    parser.add_argument(
+        '--v2',
+        action='store_true',
+        help='V2 mode: send the May announcement (email_twilight_may_announcement) to users with status=sent in the progress DB. On success their status is updated to sent_v2.'
+    )
+
     args = parser.parse_args()
 
     # Validate batch size and delay
@@ -1433,12 +1571,22 @@ def main():
     retry_statuses = None
     if args.retry:
         retry_statuses = [s.strip() for s in args.retry.split(',')]
-        valid_statuses = {'failed', 'skipped', 'deferred', 'quarantined'}
+        valid_statuses = {'failed', 'skipped', 'deferred', 'quarantined',
+                          'failed_v2', 'skipped_v2', 'deferred_v2', 'quarantined_v2'}
         invalid_statuses = set(retry_statuses) - valid_statuses
         if invalid_statuses:
             print(f"Error: Invalid retry status(es): {', '.join(invalid_statuses)}")
             print(f"Valid statuses are: {', '.join(sorted(valid_statuses))}")
             return 1
+
+    if args.v2 and retry_statuses:
+        print("Error: --v2 and --retry cannot be combined.")
+        print("       --v2 already pulls users with status='sent' from the progress DB.")
+        return 1
+
+    if args.v2 and args.test:
+        # In test mode --v2 is still useful: it just switches the template/subject
+        pass
 
     # Create and run sender
     sender = TwilightAnnouncementSender(
@@ -1454,7 +1602,8 @@ def main():
         min_size=args.min_size,
         exclude_domains_file=args.exclude_domains,
         sender_email=args.sender_email,
-        retry_statuses=retry_statuses
+        retry_statuses=retry_statuses,
+        v2_mode=args.v2,
     )
 
     try:
