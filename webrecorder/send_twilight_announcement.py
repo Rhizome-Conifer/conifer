@@ -951,13 +951,16 @@ class TwilightAnnouncementSender:
             return False
 
         # Check for suspicious email patterns (spam/bot signups)
-        suspicious, sus_reason = is_suspicious_email(email, username)
-        if suspicious:
-            print(f"Quarantined {username}: {sus_reason} ({email})")
-            self.stats['emails_skipped'] += 1
-            self.stats['validation_stats']['quarantined'] += 1
-            self.save_progress(username, email, self.quarantined_status, sus_reason)
-            return False
+        # Skipped in v2 mode: v2 recipients already passed this check during v1, and
+        # we trust that decision rather than re-quarantining users who got the original.
+        if not self.v2_mode:
+            suspicious, sus_reason = is_suspicious_email(email, username)
+            if suspicious:
+                print(f"Quarantined {username}: {sus_reason} ({email})")
+                self.stats['emails_skipped'] += 1
+                self.stats['validation_stats']['quarantined'] += 1
+                self.save_progress(username, email, self.quarantined_status, sus_reason)
+                return False
 
         # Check DNS/MX records - uses cached domain lookups
         if not has_valid_mx_record(email, self.mx_cache):
@@ -1094,13 +1097,12 @@ class TwilightAnnouncementSender:
         """
         Get list of users to send the v2 (May) announcement to.
 
-        Pulls all users with status='sent' from the progress database (i.e. those who
-        successfully received the original twilight announcement) and looks up their
-        current data from the user manager. Applies last_login/min_size/resume_from
-        filters the same way retry mode does.
+        Pulls all (username, email) rows with status='sent' straight from the progress
+        database. No user_manager lookup, no filtering — every recipient of the original
+        announcement gets the v2 message.
 
         Returns:
-            list: List of (username, user_data) tuples
+            list: List of (username, user_data) tuples where user_data has only email_addr
         """
         conn = sqlite3.connect(self.db_file)
         cursor = conn.cursor()
@@ -1117,64 +1119,9 @@ class TwilightAnnouncementSender:
 
         print(f"\nV2 mode: Found {len(users_from_db)} users with status='sent' (recipients of the original announcement)")
 
-        users_to_send = []
-        not_found_count = 0
-
-        for username, email in users_from_db:
-            if username not in self.user_manager.all_users:
-                # User no longer exists in user manager (deleted) - send to recorded email anyway
-                not_found_count += 1
-                users_to_send.append((username, {'email_addr': email}))
-            else:
-                users_to_send.append((username, self.user_manager.all_users[username]))
-
-        if not_found_count > 0:
-            print(f"Warning: {not_found_count} users from database not found in current user data (using recorded email)")
-
-        # Apply optional filters (same logic as retry mode)
-        users_filtered = []
-        threshold_dt = None
-        if self.last_login_after:
-            try:
-                threshold_dt = datetime.fromisoformat(self.last_login_after)
-            except ValueError:
-                print(f"Error: Invalid date format for --last-login: {self.last_login_after}")
-                print("Expected format: YYYY-MM-DD")
-                threshold_dt = None
-
-        for username, user_data in users_to_send:
-            if threshold_dt is not None:
-                last_login = user_data.get('last_login', '')
-                if not last_login:
-                    continue
-                try:
-                    if isinstance(last_login, (int, float)) or (isinstance(last_login, str) and last_login.isdigit()):
-                        login_dt = datetime.fromtimestamp(float(last_login))
-                    else:
-                        login_dt = datetime.fromisoformat(str(last_login).split('.')[0])
-                    if login_dt <= threshold_dt:
-                        continue
-                except (ValueError, AttributeError, OSError):
-                    continue
-
-            if self.min_size:
-                try:
-                    if int(user_data.get('size', 0)) < self.min_size:
-                        continue
-                except (ValueError, TypeError):
-                    continue
-
-            if self.resume_from and username <= self.resume_from:
-                continue
-
-            users_filtered.append((username, user_data))
-
-        filtered_out = len(users_to_send) - len(users_filtered)
-        if filtered_out > 0:
-            print(f"Filtered out {filtered_out} users based on --last-login, --min-size, or --resume-from")
-
-        self.stats['total_users'] = len(users_to_send)
-        return users_filtered
+        users = [(username, {'email_addr': email}) for username, email in users_from_db]
+        self.stats['total_users'] = len(users)
+        return users
 
     def get_users_to_process(self):
         """
