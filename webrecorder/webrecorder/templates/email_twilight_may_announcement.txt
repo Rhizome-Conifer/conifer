@@ -1,0 +1,36 @@
+Dear Conifer users,
+
+You are receiving this email because you have an account ({{ username }}) on Rhizome's Conifer web archiving service (https://conifer.rhizome.org).
+
+---
+
+Conifer is currently in the process of entering its Twilight Phase--read more about the reasoning in the original announcement from December 2025 (https://blog.conifer.rhizome.org/2025/12/15/twilight-announcement.html).
+
+The process is divided into 3 steps:
+
+  [complete] December 2025: The creation of new accounts and subscriptions is closed.
+
+  [complete] May 2026: Paying users' subscriptions are stopped, with a pro-rated refund.
+
+  [to do]    June 2026: The Conifer platform is replaced with a "tombstone app" that will allow continued hosting of collections with Rhizome, move them to the Browsertrix service (https://webrecorder.net/browsertrix/), self-host, or delete.
+
+
+WEBINAR FOR CONIFER USERS ON MAY 21ST 2026!
+
+Conifer users are invited to a zoom webinar on May 21st 2026, at 10am PST / 1pm EST / 19:00 CEST. Please RSVP via Google Form (https://forms.gle/YWejksFFaSih3fKR9) to receive an invitation with the meeting Link.
+
+The webinar will cover the features of the new tombstone app, explain how self-hosting web archives works, how to continue capturing web archives with the Webrecorder desktop app or browser extensions, and how to migrate to the Browsertrix web archiving platform.
+
+You're welcome to bring any questions to the session that will help smooth the transition into your next stage of creating and offering web archives.
+
+The webinar will be recorded and made available publicly on Rhizome's own video hosting platform.
+
+Looking forward to seeing you there!
+
+For any questions, please reach out via email to support@conifer.rhizome.org.
+
+---
+
+CONIFER
+https://conifer.rhizome.org
+A project of Rhizome (https://rhizome.org)
