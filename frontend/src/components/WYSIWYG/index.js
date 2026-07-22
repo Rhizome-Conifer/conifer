@@ -82,14 +82,21 @@ class WYSIWYG extends Component {
 
     this.state = {
       renderable: false,
-      editorState: createValueFromString(this.getText(), this.method),
+      editorState: null,
       markdownEdit: false,
       localEditMode: false
     };
   }
 
   componentDidMount() {
-    this.setState({ renderable: true });
+    const nextState = { renderable: true };
+
+    // Build the react-rte value lazily, on the client only
+    if (this.usesEditor()) {
+      nextState.editorState = createValueFromString(this.getText(), this.method);
+    }
+
+    this.setState(nextState);
   }
 
   shouldComponentUpdate(nextProps) {
@@ -118,15 +125,22 @@ class WYSIWYG extends Component {
         this.toggleEditMode();
       }
 
-      const text = this.props.readOnly ? this.props.initial : this.props.initial || this.props.placeholder;
-      this.setState({ editorState: createValueFromString(text, this.method) });
+      if (this.usesEditor()) {
+        const text = this.props.initial || this.props.placeholder;
+        this.setState({ editorState: createValueFromString(text, this.method) });
+      }
     }
 
-    // readOnly state changed
-    if (prevProps.readOnly && !this.props.readOnly) {
+    // readOnly state changed: entering the editable path, so build the value now
+    if (prevProps.readOnly && !this.props.readOnly && this.usesEditor()) {
       const text = this.props.initial || this.props.placeholder;
       this.setState({ editorState: createValueFromString(text, this.method) });
     }
+  }
+
+  usesEditor = () => {
+    const canAdmin = typeof this.context.canAdmin !== 'undefined' ? this.context.canAdmin : true;
+    return !this.props.readOnly && canAdmin;
   }
 
   onChange = (editorState) => {
@@ -242,7 +256,7 @@ class WYSIWYG extends Component {
         onClick={canAdmin && !readOnly && clickToEdit && !_editMode ? this.enterEditMode : undefined}>
         <div>
           {
-            renderable &&
+            renderable && editorState &&
               <RichTextEditor
                 value={editorState}
                 onChange={this.onChange}
