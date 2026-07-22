@@ -65,6 +65,22 @@ export default function (parameters) {
         res.status(context.status || 200);
         res.send(`<!doctype html>\n ${outputHtml}`);
       }
+    }).catch((error) => {
+      console.log('ERROR: SSR render failed, serving client-render fallback:', error);
+
+      if (res.headersSent) {
+        return;
+      }
+
+      try {
+        res.status(500).send(`<!doctype html>\n
+          ${renderToString(<BaseHtml assets={parameters && parameters.chunks()} store={store} />)}`);
+      } catch (fallbackError) {
+        console.log('ERROR: SSR fallback render failed:', fallbackError);
+        if (!res.headersSent) {
+          res.status(500).send('Internal Server Error');
+        }
+      }
     });
   });
 
